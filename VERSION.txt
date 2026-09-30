@@ -1,6 +1,23 @@
 OPTIFLOW
-Release: 4.12.0 (2026-09-30)
+Release: 4.13.0 (2026-09-30)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.13.0 (ÜTS bildirimleri)
+  - YENİ özellik anahtarı "uts_bildirim" (merkez panelden mağaza bazında açılır, varsayılan kapalı).
+  - ÜTS Takip ve İzleme REST servisleri (app/uts.php, uts.php): alma (mal kabul), tüketiciye verme
+    (ücretli satış, GIT = teslim tarihi), tüketiciden iade alma (TID), imha/bertaraf (GRK + BNO),
+    verme (tedarikçiye iade, KUN + BNO). Kuyruk + kalıcı günlük (uts_bildirimler), üstel geri çekilmeli
+    tekrar deneme, yetki hatasında tur durur, zaman aşımında adetli (lot) bildirim elle kontrole bırakılır.
+  - SGK'lı sipariş (e-reçete ya da SGK katkısı): ÜTS düşümünü Medula yapar, OptiFlow bildirim GÖNDERMEZ;
+    teslimden sonra SGK girilirse ücretli satış bildirimi iptal / iade edilir.
+  - Karekodla satış: sipariş sayfasında "ÜTS ürünleri" kartı; GTIN çerçeve kartına bağlıysa siparişin
+    çerçevesi ve fiyatı kendiliğinden gelir. Barkod okuyucu modu ÜTS ürün kartını açar.
+  - Ortamlar: Deneme (ağ yok) / ÜTS test / Canlı. Sistem token'ı şifreli (storage/.gizli-anahtar);
+    istek yalnızca https://*.saglik.gov.tr adresine gider. Servis yolları Ayarlar › ÜTS › Gelişmiş'ten.
+  - Gönderim modu: otomatik ya da onaylı (ÜTS › Bildirimler'de toplu onay).
+  - Tedarikçi kartına "ÜTS kurum no"; çerçeve hareketlerine "Tedarikçiye iade" ve "İmha".
+  - Veritabanı: şema 23 (uts_urunler, uts_bildirimler, suppliers.uts_kurum_no). Yalnızca ekleme.
+  - Testler: tests/uts (SQLite + sahte ÜTS, 168 + 34 kontrol). Hosting paketine dahil değildir.
 
 DEĞİŞİKLİK NOTLARI — 4.12.0 (merkezden açılan yeni modüller)
   - YENİ: Özellik anahtarları (app/ozellik.php). Merkez panel › mağaza detayı › "Özellikler"

@@ -34,6 +34,8 @@ foreach (array(
     'app/labels.php'          => array('label_layouts', 'etiket sihirbazı'),
     'app/pages/tahsilat.php'  => array('Bakiye ve tahsilat', 'bakiye takibi'),
     'app/pages/sgk-aktar.php' => array('Nereye aktarılsın', 'yeni aktarım ekranı'),
+    'app/uts.php'             => array('uts_kuyrugu_isle', 'ÜTS bildirimleri (4.13.0)'),
+    'app/pages/uts.php'       => array('ÜTS bildirimleri', 'ÜTS ekranı (4.13.0)'),
     'assets/app.css'          => array('.pick-list', 'yeni seçim listesi biçimi'),
     'kopru-eklenti/icerik.js' => array('kutuSayilirMi', 'yeni köprü betiği'),
     'assets/uts-karekod.js'   => array('OptiFlow ÜTS Karekod 4.7.0', 'ÜTS karekod modülü'),

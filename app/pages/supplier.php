@@ -29,7 +29,8 @@ if (is_post()) {
             'tax_no'       => mb_substr(post('tax_no'), 0, 30) ?: null,
             'note'         => mb_substr(post('note'), 0, 2000) ?: null,
             'updated_at'   => date('Y-m-d H:i:s'),
-        ] + (column_exists('suppliers', 'email') ? ['email' => filter_var(trim(post('email')), FILTER_VALIDATE_EMAIL) ?: null] : []), 'id = ?', [$id]);
+        ] + (column_exists('suppliers', 'email') ? ['email' => filter_var(trim(post('email')), FILTER_VALIDATE_EMAIL) ?: null] : [])
+          + (array_key_exists('uts_kurum_no', $supplier) ? ['uts_kurum_no' => mb_substr(preg_replace('/\D/', '', post('uts_kurum_no')) ?? '', 0, 20) ?: null] : []), 'id = ?', [$id]);
         flash('Tedarikçi bilgileri güncellendi.');
         redirect($self);
     }
@@ -420,6 +421,7 @@ page_start($supplier['name'], 'suppliers');
         <?php if (array_key_exists('email', $supplier)): ?><label class="field"><span>E-posta (cam siparişi için)</span><input name="email" type="email" value="<?= e($supplier['email'] ?? '') ?>"></label><?php endif; ?>
         <label class="field"><span>Adres</span><input name="address" value="<?= e($supplier['address'] ?? '') ?>"></label>
         <label class="field"><span>Vergi no</span><input name="tax_no" value="<?= e($supplier['tax_no'] ?? '') ?>"></label>
+        <?php if (array_key_exists('uts_kurum_no', $supplier)): ?><label class="field"><span>ÜTS kurum no <small class="muted">(ÜTS'de iade için)</small></span><input name="uts_kurum_no" inputmode="numeric" maxlength="20" value="<?= e($supplier['uts_kurum_no'] ?? '') ?>"></label><?php endif; ?>
         <label class="field"><span>Not</span><textarea name="note" rows="3"><?= e($supplier['note'] ?? '') ?></textarea></label>
         <button class="btn btn-block">Bilgileri kaydet</button>
       </form>

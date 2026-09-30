@@ -19,7 +19,7 @@ if ($kod !== '' && query('json') === '1') {
     exit;
 }
 $sonuc = $kod !== '' ? barkod_coz($kod) : null;
-if ($sonuc && in_array($sonuc['tur'], ['cerceve', 'siparis'], true) && query('git') !== '0') {
+if ($sonuc && in_array($sonuc['tur'], ['cerceve', 'siparis', 'uts_urun'], true) && query('git') !== '0') {
     redirect($sonuc['hedef']);
 }
 
@@ -44,6 +44,7 @@ page_header('Barkod okut', 'USB okuyucuyla ÜTS karekodu, çerçeve barkodu ya d
         <?php if ($g['parti']): ?><li><span>Parti / lot</span><b><?= e($g['parti']) ?></b></li><?php endif; ?>
         <?php if ($g['seri']): ?><li><span>Seri no</span><b><?= e($g['seri']) ?></b></li><?php endif; ?>
       </ul>
+      <?php if (ozellik_acik('uts_bildirim')): ?><p><a class="btn btn-sm btn-primary" href="uts.php?tab=stok&amp;kod=<?= e(rawurlencode($kod)) ?>"><?= icon('plus') ?> ÜTS stoğuna kaydet</a></p><?php endif; ?>
       <p class="hint">Bu ürün çerçeve stoğunda kayıtlı değil. <a class="link" href="cerceve.php">Çerçeve stoğuna ekleyin</a> (barkod alanına GTIN'i yazın)<?= pro_ozellik_acik('uts') ? ' ya da <a class="link" href="uts-karekod.php">ÜTS karekod</a> ekranını kullanın' : '' ?>.</p>
     <?php else: ?>
       <p><b><?= e($sonuc['etiket']) ?></b> — <code><?= e($kod) ?></code></p>

@@ -30,11 +30,13 @@ $sonuc = cron_tum_magazalar();
 merkez_scalar("SELECT RELEASE_LOCK('optiflow_cron')");
 $toplamGonderilen = 0;
 $toplamKuyruk = 0;
+$toplamUts = 0;
 foreach ($sonuc as $r) {
     if (is_array($r)) {
         $toplamGonderilen += $r['gonderilen'];
         $toplamKuyruk += $r['kuyruga'];
+        $toplamUts += (int) ($r['uts'] ?? 0);
     }
 }
-echo 'tamam · mağaza ' . count($sonuc) . ' · kuyruğa ' . $toplamKuyruk . ' · gönderilen ' . $toplamGonderilen
+echo 'tamam · mağaza ' . count($sonuc) . ' · kuyruğa ' . $toplamKuyruk . ' · gönderilen ' . $toplamGonderilen . ' · ÜTS ' . $toplamUts
     . ' · ' . round(microtime(true) - $bas, 2) . " sn\n";

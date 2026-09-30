@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 22;
+const SCHEMA_VERSION = 23;
 
 function run_migrations(): void
 {
@@ -53,6 +53,7 @@ function run_migrations(): void
         if ($current < 20) { migrate_v20_reminders(); set_schema_version(20); }
         if ($current < 21) { migrate_v21_frames_stock(); set_schema_version(21); }
         if ($current < 22) { migrate_v22_moduller(); set_schema_version(22); }
+        if ($current < 23) { migrate_v23_uts(); set_schema_version(23); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1154,4 +1155,80 @@ function migrate_v22_moduller(): void
         $tarih = preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $tr, $m) ? "$m[3]-$m[2]-$m[1]" : null;
         q('UPDATE sgk_incoming SET erecete = ?, recete_tarihi = ? WHERE id = ?', [$no !== '' ? $no : null, $tarih, (int) $r['id']]);
     }
+}
+
+
+/* ------------------------------------------------------------------ */
+/*  v23 (4.13.0) — ÜTS bildirimleri: tekil ürün envanteri + bildirim     */
+/*  kuyruğu/günlüğü, tedarikçinin ÜTS kurum numarası.                   */
+/*  Yalnızca YENİ tablo/sütun ekler; mevcut veriye dokunmaz.            */
+/* ------------------------------------------------------------------ */
+
+function migrate_v23_uts(): void
+{
+    // Mağazadaki her ÜTS tekil ürünü (seri takipli: 1 satır = 1 ürün; lot takipli: 1 satır = aynı lot, adet).
+    db()->exec("CREATE TABLE IF NOT EXISTS uts_urunler (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        anahtar VARCHAR(120) NOT NULL,
+        uno VARCHAR(23) NOT NULL,
+        lno VARCHAR(40) NULL,
+        sno VARCHAR(40) NULL,
+        adet INT NOT NULL DEFAULT 1,
+        kaynak VARCHAR(10) NOT NULL DEFAULT 'uts',
+        skt DATE NULL,
+        urt DATE NULL,
+        kategori VARCHAR(10) NOT NULL DEFAULT 'diger',
+        marka_model VARCHAR(200) NULL,
+        gonderen VARCHAR(200) NULL,
+        gonderen_kurum VARCHAR(20) NULL,
+        belge_no VARCHAR(40) NULL,
+        vbi CHAR(36) NULL,
+        durum VARCHAR(14) NOT NULL DEFAULT 'stokta',
+        frame_item_id INT UNSIGNED NULL,
+        order_id INT UNSIGNED NULL,
+        satis_turu VARCHAR(8) NULL,
+        alma_at DATETIME NULL,
+        cikis_at DATETIME NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_uts_anahtar (anahtar),
+        KEY idx_uts_urun_durum (durum, skt),
+        KEY idx_uts_urun_uno (uno),
+        KEY idx_uts_urun_siparis (order_id),
+        KEY idx_uts_urun_vbi (vbi)
+    ) " . t_opts());
+
+    // Her ÜTS isteği: kuyruk + kalıcı günlük (istek gövdesi, yanıt, ÜTS bildirim ID).
+    db()->exec("CREATE TABLE IF NOT EXISTS uts_bildirimler (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        tur VARCHAR(20) NOT NULL,
+        urun_id INT UNSIGNED NULL,
+        order_id INT UNSIGNED NULL,
+        adet INT NOT NULL DEFAULT 1,
+        govde TEXT NOT NULL,
+        durum VARCHAR(14) NOT NULL DEFAULT 'bekliyor',
+        ortam VARCHAR(8) NOT NULL DEFAULT 'deneme',
+        uts_id VARCHAR(40) NULL,
+        ilgili_id INT UNSIGNED NULL,
+        deneme TINYINT UNSIGNED NOT NULL DEFAULT 0,
+        son_hata VARCHAR(500) NULL,
+        yanit TEXT NULL,
+        tekil VARCHAR(80) NULL,
+        planlanan DATETIME NOT NULL,
+        gonderilme DATETIME NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_uts_bildirim_tekil (tekil),
+        KEY idx_uts_bildirim_durum (durum, planlanan),
+        KEY idx_uts_bildirim_urun (urun_id),
+        KEY idx_uts_bildirim_siparis (order_id)
+    ) " . t_opts());
+
+    add_column('suppliers', 'uts_kurum_no', 'VARCHAR(20) NULL');
+
+    foreach (['uts_ortam' => 'deneme', 'uts_gonderim' => 'otomatik'] as $k => $v) {
+        q('INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES (?, ?)', [$k, $v]);
+    }
+    setting('__reload__');
 }

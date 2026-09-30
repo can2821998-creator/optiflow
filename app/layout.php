@@ -379,6 +379,9 @@ function ozellik_menusu_ekle(array &$nav): void
         $ekle($a, 'stock', ['cam-siparis', 'cam-siparis.php', 'Cam siparişleri', 'truck',
             $sayi("SELECT COUNT(*) FROM cam_siparisleri WHERE durum = 'taslak'")]);
     }
+    if (ozellik_acik('uts_bildirim') && function_exists('uts_menu_rozeti')) {
+        $ekle($a, 'stock', ['uts-bildirim', 'uts.php', 'ÜTS bildirimleri', 'barcode', uts_menu_rozeti()]);
+    }
     if (ozellik_acik('stok_oneri')) {
         $ekle($a, 'stock', ['stok-oneri', 'stok-oneri.php', 'Satın alma önerisi', 'box', 0]);
     }

@@ -18,12 +18,12 @@ declare(strict_types=1);
 
 const GS1_AYIRICI = "\x1D";
 
-/** GS1 öğe ayrıştırma. Dönüş: ['gtin','skt','parti','seri'] (bulunamayan ''). */
+/** GS1 öğe ayrıştırma. Dönüş: ['gtin','skt','parti','seri','urt'] (bulunamayan ''). urt: üretim tarihi (AI 11, 4.13.0). */
 function gs1_coz(string $kod): array
 {
     $k = str_replace(['(', ')'], '', $kod);   // "(01)…" yazımı
     $k = ltrim($k, "]C1d2Q3 ");              // okuyucu ön ekleri (AIM)
-    $s = ['gtin' => '', 'skt' => '', 'parti' => '', 'seri' => ''];
+    $s = ['gtin' => '', 'skt' => '', 'parti' => '', 'seri' => '', 'urt' => ''];
     $i = 0;
     $n = strlen($k);
     $sabit = ['01' => 14, '17' => 6, '11' => 6, '15' => 6];
@@ -41,6 +41,8 @@ function gs1_coz(string $kod): array
                 $s['gtin'] = $v;
             } elseif ($ai === '17') {
                 $s['skt'] = $v;
+            } elseif ($ai === '11') {
+                $s['urt'] = $v;
             }
             continue;
         }
@@ -57,13 +59,19 @@ function gs1_coz(string $kod): array
     if ($s['gtin'] !== '' && !preg_match('/^\d{14}$/', $s['gtin'])) {
         $s['gtin'] = '';
     }
-    if ($s['skt'] !== '' && preg_match('/^(\d{2})(\d{2})(\d{2})$/', $s['skt'], $m)) {
-        $gun = $m[3] === '00' ? (int) date('t', strtotime("20$m[1]-$m[2]-01")) : (int) $m[3];
-        $s['skt'] = checkdate((int) $m[2], $gun, 2000 + (int) $m[1]) ? sprintf('20%s-%s-%02d', $m[1], $m[2], $gun) : '';
-    } else {
-        $s['skt'] = '';
-    }
+    $s['skt'] = gs1_tarih($s['skt']);
+    $s['urt'] = gs1_tarih($s['urt']);
     return $s;
+}
+
+/** GS1 YYMMDD → YYYY-MM-DD (gün 00 = ayın son günü); geçersizse ''. */
+function gs1_tarih(string $v): string
+{
+    if (!preg_match('/^(\d{2})(\d{2})(\d{2})$/', $v, $m) || (int) $m[2] < 1 || (int) $m[2] > 12) {
+        return '';
+    }
+    $gun = $m[3] === '00' ? (int) date('t', (int) strtotime("20$m[1]-$m[2]-01")) : (int) $m[3];
+    return checkdate((int) $m[2], $gun, 2000 + (int) $m[1]) ? sprintf('20%s-%s-%02d', $m[1], $m[2], $gun) : '';
 }
 
 /**
@@ -102,6 +110,16 @@ function barkod_coz(string $ham): array
     if (preg_match('/^(\]?[A-Za-z]\d)?\(?01\)?\d{14}/', $kod)) {
         $g = gs1_coz($kod);
         if ($g['gtin'] !== '') {
+            // 4.13.0 — ÜTS tekil ürün kaydı varsa ürün kartı açılır (fiyat, durum, sipariş)
+            if (function_exists('uts_karekod_coz') && ozellik_acik('uts_bildirim')) {
+                $uk = uts_karekod_coz($kod);
+                if ($uk['sno'] !== '' || $uk['lno'] !== '') {
+                    $uu = uts_urun_anahtarla(uts_anahtar($uk['uno'], $uk['lno'], $uk['sno']));
+                    if ($uu) {
+                        return ['tur' => 'uts_urun', 'hedef' => 'uts.php?urun=' . (int) $uu['id'], 'etiket' => uts_urun_etiketi($uu), 'ayrinti' => $g];
+                    }
+                }
+            }
             $adaylar = [$g['gtin'], ltrim($g['gtin'], '0'), substr($g['gtin'], 1)];
             $f = row('SELECT id, brand, model FROM frame_items WHERE barcode IN (' . in_placeholders($adaylar) . ') LIMIT 1', $adaylar);
             if ($f) {

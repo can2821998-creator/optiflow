@@ -1765,3 +1765,8 @@ input.kopyala { width: 100%; font: 12px/1.4 ui-monospace, Consolas, monospace; p
   .no-print, .sidebar, .topbar, .bottom-nav, .back-link { display: none !important; }
   .cam-fis { box-shadow: none; border: 0; }
 }
+
+/* 4.13.0 — ÜTS */
+.row-highlight td { background: var(--amber-bg); }
+.card.inset { box-shadow: none; background: var(--surface-2); border: 1px solid var(--line); padding: 14px 16px; margin: 0; }
+.card.inset > summary { cursor: pointer; font-weight: 650; }

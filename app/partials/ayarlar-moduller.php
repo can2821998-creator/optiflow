@@ -21,6 +21,9 @@ function moduller_ayar_sekmeleri(): array
     if (ozellik_acik('lens_takip')) {
         $t['lens'] = 'Kontakt lens';
     }
+    if (ozellik_acik('uts_bildirim')) {
+        $t['uts'] = 'ÜTS';
+    }
     return $t;
 }
 
@@ -108,6 +111,49 @@ function moduller_ayar_post(string $tab, string $action): bool
         audit('settings_update', 'settings', null, ['bölüm' => 'e-Fatura']);
         $eksik = fatura_firma_eksikleri();
         flash($eksik ? 'Kaydedildi. Eksikler: ' . implode(' ', $eksik) : 'e-Fatura bilgileri kaydedildi.', $eksik ? 'warn' : 'ok');
+        return true;
+    }
+    if ($tab === 'uts' && $action === 'uts_kaydet' && ozellik_acik('uts_bildirim')) {
+        $eskiOrtam = uts_ortam();
+        $ortam = isset(UTS_ORTAMLAR[post('uts_ortam')]) ? post('uts_ortam') : 'deneme';
+        setting_set('uts_kurum_no', mb_substr(preg_replace('/\D/', '', post('uts_kurum_no')) ?? '', 0, 20));
+        if (post('uts_token') !== '') {
+            gizli_ayar_yaz('uts_token', trim(post('uts_token')));
+        }
+        if (post('uts_token_sil') === '1') {
+            gizli_ayar_yaz('uts_token', '');
+        }
+        if ($ortam !== 'deneme' && gizli_ayar('uts_token') === '') {
+            flash('Test / Canlı ortam için önce sistem token\'ını girin. Ortam "Deneme" olarak kaldı.', 'error');
+            $ortam = 'deneme';
+        }
+        setting_set('uts_ortam', $ortam);
+        setting_set('uts_gonderim', post('uts_gonderim') === 'onayli' ? 'onayli' : 'otomatik');
+        setting_set('uts_ad_gonder', $bayrak('uts_ad_gonder'));
+        // Gelişmiş: taban adres (yalnızca *.saglik.gov.tr) ve servis yolları
+        foreach (['test', 'canli'] as $o) {
+            $url = rtrim(trim(post('uts_taban_' . $o)), '/');
+            setting_set('uts_taban_' . $o, $url !== '' && uts_adres_guvenli_mi($url) && $url !== UTS_TABAN_VARSAYILAN[$o] ? $url : '');
+        }
+        foreach (array_merge(uts_turler(), uts_sorgular()) as $k => $tanim) {
+            $yol = uts_yol_temizle(post('uts_yol_' . $k));
+            setting_set('uts_yol_' . $k, $yol !== '' && $yol !== '/' && $yol !== $tanim['yol'] ? $yol : '');
+        }
+        setting_set('uts_yetki_hatasi', '');
+        audit('settings_update', 'settings', null, ['bölüm' => 'ÜTS', 'ortam' => $ortam]);
+        flash('ÜTS ayarları kaydedildi.');
+        if ($eskiOrtam === 'deneme' && $ortam !== 'deneme') {
+            flash('Gerçek ortama geçtiniz. Deneme modunda "iletildi" sayılan bildirimler ÜTS\'ye gitmedi; ÜTS › Bildirimler ekranından gönderebilirsiniz.', 'warn');
+        }
+        return true;
+    }
+    if ($tab === 'uts' && $action === 'uts_test' && ozellik_acik('uts_bildirim')) {
+        if (uts_ortam() === 'deneme') {
+            flash('Deneme modunda ÜTS\'ye bağlanılmaz. Ortamı Test ya da Canlı yapıp kaydedin.', 'info');
+            return true;
+        }
+        $r = uts_gelenleri_getir();
+        flash($r['ok'] ? 'ÜTS bağlantısı çalışıyor: ' . $r['sayi'] . ' kabul bekleyen ürün alındı.' : 'ÜTS bağlantısı başarısız: ' . $r['mesaj'], $r['ok'] ? 'ok' : 'error');
         return true;
     }
     if ($tab === 'lens' && $action === 'lens_kaydet' && ozellik_acik('lens_takip')) {
@@ -266,6 +312,47 @@ function moduller_ayar_goster(string $tab): void
     </section>
     <div class="form-actions"><button class="btn btn-primary">Kaydet</button></div>
   </form>
+  <?php
+        return;
+    }
+
+    if ($tab === 'uts') {
+        $token = gizli_ayar('uts_token');
+        $ortam = uts_ortam(); ?>
+  <form method="post" class="stack" style="gap:16px" autocomplete="off">
+    <?= csrf_field() ?><input type="hidden" name="tab" value="uts"><input type="hidden" name="action" value="uts_kaydet">
+    <section class="card">
+      <div class="card-head"><h2>ÜTS bağlantısı</h2></div>
+      <p class="hint" style="margin-top:0">Sistem token'ı ÜTS'de (<b>utsuygulama.saglik.gov.tr</b>) firma yetkilisinin e-imza ya da mobil imzasıyla, <b>“Sistem Token'ı Üret”</b> seçeneğinden alınır. Token şifreli saklanır; ekranda yalnızca son 4 karakteri görünür.</p>
+      <div class="grid cols-3">
+        <label class="field"><span>Ortam</span><select name="uts_ortam"><?= select_options(UTS_ORTAMLAR, $ortam) ?></select></label>
+        <label class="field"><span>ÜTS kurum numaranız</span><input name="uts_kurum_no" inputmode="numeric" maxlength="20" value="<?= e(uts_kurum_no()) ?>"></label>
+        <label class="field"><span>Sistem token <?= $token !== '' ? '· kayıtlı ' . e(gizli_maske($token)) : '' ?></span><input name="uts_token" type="password" autocomplete="new-password" placeholder="<?= $token !== '' ? 'Değiştirmek için yazın' : 'Token\'ı yapıştırın' ?>"></label>
+      </div>
+      <?php if ($token !== ''): ?><label class="check"><input type="checkbox" name="uts_token_sil" value="1"> Kayıtlı token'ı sil</label><?php endif; ?>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2>Gönderim</h2></div>
+      <label class="check"><input type="radio" name="uts_gonderim" value="otomatik" <?= uts_gonderim_modu() === 'otomatik' ? 'checked' : '' ?>> <b>Otomatik</b> — ücretli satış teslim edilince "tüketiciye verme" bildirimi kendiliğinden gider.</label>
+      <label class="check"><input type="radio" name="uts_gonderim" value="onayli" <?= uts_gonderim_modu() === 'onayli' ? 'checked' : '' ?>> <b>Onaylı</b> — bildirimler ÜTS › Bildirimler ekranında birikir; personel kontrol edip toplu gönderir.</label>
+      <label class="check" style="margin-top:8px"><input type="checkbox" name="uts_ad_gonder" value="1" <?= setting('uts_ad_gonder', '0') === '1' ? 'checked' : '' ?>> Tüketiciye verme bildiriminde müşterinin adını ve soyadını da gönder <small class="muted">(optik ürünlerde genellikle gerekmez; ÜTS "kimlik bilgisi zorunlu" hatası verirse açın)</small></label>
+      <p class="hint">SGK'lı satışlarda (e-reçete ya da SGK katkısı olan sipariş) ÜTS düşümünü Medula yapar; OptiFlow bu ürünler için bildirim göndermez.</p>
+    </section>
+    <details class="card">
+      <summary class="card-head" style="cursor:pointer"><h2>Gelişmiş: servis adresleri</h2></summary>
+      <p class="hint" style="margin-top:0">ÜTS web servis dokümanı güncellenirse buradan değiştirin. Boş bırakılan alan varsayılanı kullanır. Güvenlik gereği yalnızca <code>https://…saglik.gov.tr</code> adresleri kabul edilir.</p>
+      <div class="grid cols-2">
+        <?php foreach (['test', 'canli'] as $o): ?>
+          <label class="field"><span><?= e(UTS_ORTAMLAR[$o]) ?> taban adresi</span><input name="uts_taban_<?= $o ?>" value="<?= e(setting('uts_taban_' . $o, '')) ?>" placeholder="<?= e(UTS_TABAN_VARSAYILAN[$o]) ?>"></label>
+        <?php endforeach; ?>
+        <?php foreach (array_merge(uts_turler(), uts_sorgular()) as $k => $tanim): ?>
+          <label class="field"><span><?= e($tanim['ad']) ?></span><input name="uts_yol_<?= e($k) ?>" value="<?= e(setting('uts_yol_' . $k, '')) ?>" placeholder="<?= e($tanim['yol']) ?>"></label>
+        <?php endforeach; ?>
+      </div>
+    </details>
+    <div class="form-actions"><button class="btn btn-primary">Kaydet</button></div>
+  </form>
+  <form method="post" style="margin-top:8px"><?= csrf_field() ?><input type="hidden" name="tab" value="uts"><input type="hidden" name="action" value="uts_test"><button class="btn btn-sm">Bağlantıyı dene (kabul bekleyen ürünleri sorgular)</button></form>
   <?php
         return;
     }

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.12.0';
+const APP_VERSION = '4.13.0';
 const APP_ROOT = __DIR__ . '/..';
 
 /**
@@ -112,7 +112,8 @@ require __DIR__ . '/gorevler.php';
 require __DIR__ . '/odeme.php';
 require __DIR__ . '/tedarik.php';
 require __DIR__ . '/sgk-mutabakat.php';
-require __DIR__ . '/barkod.php';   // 4.12.0 merkezden aç/kapat özellikler
+require __DIR__ . '/barkod.php';
+require __DIR__ . '/uts.php';      // 4.13.0 ÜTS bildirimleri   // 4.12.0 merkezden aç/kapat özellikler
 require __DIR__ . '/karsilama.php';
 
 set_exception_handler('handle_fatal');

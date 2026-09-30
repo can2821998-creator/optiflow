@@ -19,6 +19,8 @@ function frame_reasons(): array
         'iade'   => 'İade / geri geldi',
         'sayim'  => 'Sayım düzeltmesi',
         'fire'   => 'Fire / kırık',
+        'tedarikci_iade' => 'Tedarikçiye iade',   // 4.13.0 ÜTS
+        'imha'   => 'İmha / bertaraf',            // 4.13.0 ÜTS
     ];
 }
 

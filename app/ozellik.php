@@ -54,6 +54,11 @@ function ozellik_tanimlari(): array
             'kisa'     => 'Aktarılan reçeteler, SGK siparişleri ve Medula listesinde henüz aktarılmamış reçeteler.',
             'masaustu' => false,
         ],
+        'uts_bildirim' => [
+            'ad'       => 'ÜTS bildirimleri',
+            'kisa'     => 'Mal kabul (alma), ücretli satışta tüketiciye verme, iade, imha ve tedarikçiye iade bildirimleri; karekodla satış. SGK\'lı satışlarda bildirim Medula\'ya bırakılır.',
+            'masaustu' => false,
+        ],
         'barkod' => [
             'ad'       => 'Barkod / karekod okuyucu modu',
             'kisa'     => 'USB okuyucuyla ÜTS karekodu, çerçeve barkodu veya sipariş fişi okutunca ilgili kayıt açılır.',

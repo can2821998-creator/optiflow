@@ -40,6 +40,17 @@ if (is_post()) {
                 frame_move((int) $order['frame_item_id'], +1, 'iade', $id, 'Sipariş iptal edildi');
                 q('UPDATE orders SET frame_item_id = NULL WHERE id = ?', [$id]);
             }
+            // 4.13.0 ÜTS: teslimde tüketiciye verme (SGK'lıda Medula'ya bırakılır), geri alma/iptalde iade
+            if (function_exists('uts_siparis_asama_degisti')) {
+                try {
+                    foreach (uts_siparis_asama_degisti($id, (string) $order['order_stage'], $stage) as $utsMesaj) {
+                        flash('ÜTS: ' . $utsMesaj, 'info');
+                    }
+                } catch (Throwable $e) {
+                    app_log('uts asama ' . $id . ': ' . $e->getMessage());
+                    flash('ÜTS kaydı güncellenemedi: ' . $e->getMessage(), 'error');
+                }
+            }
             push_order_event($id, match ($stage) {
                 'hazirlandi'    => 'hazir',
                 'teslim_edildi' => 'teslim',
@@ -264,6 +275,31 @@ if (is_post()) {
         redirect($self . '#odeme');
     }
 
+    // 4.13.0 — ÜTS karekodu okut / ürünü siparişten çıkar
+    if ($action === 'uts_okut' && ozellik_acik('uts_bildirim')) {
+        try {
+            $r = uts_siparise_okut($id, (string) ($_POST['kod'] ?? ''), post('kategori', 'cerceve'), max(1, post_int('adet')));
+            audit('uts_okut', 'order', $id, ['ürün' => uts_urun_etiketi($r['urun']), 'UNO' => $r['urun']['uno']]);
+            flash('Karekod okundu: ' . uts_urun_etiketi($r['urun']) . '.');
+            foreach ($r['mesajlar'] as $m) {
+                flash($m, 'info');
+            }
+        } catch (DomainException $e) {
+            flash($e->getMessage(), 'error');
+        }
+        redirect($self . '#uts');
+    }
+    if ($action === 'uts_cikar' && ozellik_acik('uts_bildirim')) {
+        try {
+            uts_siparisten_cikar($id, post_int('urun_id'));
+            audit('uts_cikar', 'order', $id, ['ürün' => post_int('urun_id')]);
+            flash('Ürün siparişten çıkarıldı, stoğa döndü.');
+        } catch (DomainException $e) {
+            flash($e->getMessage(), 'error');
+        }
+        redirect($self . '#uts');
+    }
+
     if ($action === 'delete_payment' && is_super()) {
         $p = row('SELECT * FROM payments WHERE id = ? AND order_id = ?', [post_int('payment_id'), $id]);
         if ($p) {
@@ -291,6 +327,10 @@ if (is_post()) {
             'durum'   => stage_label($order['order_stage']),
             'not'     => mb_substr(trim(post('reason')), 0, 255),
         ]);
+        // 4.13.0 ÜTS: stokta bekleyen (teslim edilmemiş) ürünler serbest kalır; çıkış yapmışlar geçmiş için kalır.
+        if (function_exists('uts_siparis_asama_degisti')) {
+            q("UPDATE uts_urunler SET order_id = NULL WHERE order_id = ? AND durum = 'stokta'", [$id]);
+        }
         q('DELETE FROM orders WHERE id = ?', [$id]);
         flash(order_no($id) . ' numaralı sipariş kalıcı olarak silindi.', 'info');
         redirect('index.php');
@@ -597,6 +637,8 @@ page_start($name . ' ' . order_no($id), 'orders');
       <?php endforeach; ?>
     </section>
     <?php endif; ?>
+
+    <?php if (ozellik_acik('uts_bildirim') && $order['transaction_type'] !== 'tamir') { require dirname(__DIR__) . '/partials/uts-siparis-karti.php'; } ?>
 
     <section class="card">
       <div class="card-head"><h2>Sipariş bilgileri</h2></div>

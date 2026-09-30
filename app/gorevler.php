@@ -19,6 +19,9 @@ declare(strict_types=1);
 
 const GOREV_ARALIK_SN = 300;
 
+/** Arka plan görevi gerektiren özellikler (biri açıksa görevler çalışır). */
+const GOREV_OZELLIKLERI = ['whatsapp', 'odeme_linki', 'uts_bildirim'];
+
 /** Mesaj gönderimi için izinli saat aralığı (gece 21:00 – 09:00 arası otomatik mesaj gitmez). */
 function gorev_mesaj_saati_mi(): bool
 {
@@ -31,7 +34,7 @@ function gorev_mesaj_saati_mi(): bool
 /** Bu mağaza için görevleri çalıştırır. Hata olsa da sessizce devam eder; özet döner. */
 function gorev_magaza_calistir(): array
 {
-    $ozet = ['kuyruga' => 0, 'gonderilen' => 0, 'link_kapatilan' => 0];
+    $ozet = ['kuyruga' => 0, 'gonderilen' => 0, 'link_kapatilan' => 0, 'uts' => 0];
     $simdi = time();
     $son = (int) setting('gorev_son', '0');
     if ($simdi - $son < GOREV_ARALIK_SN - 5) {
@@ -62,6 +65,13 @@ function gorev_magaza_calistir(): array
             app_log('gorev odeme: ' . $e->getMessage());
         }
     }
+    if (function_exists('uts_gorev') && ozellik_acik_arka_plan('uts_bildirim')) {
+        try {
+            $ozet['uts'] = uts_gorev()['gonderilen'];
+        } catch (Throwable $e) {
+            app_log('gorev uts: ' . $e->getMessage());
+        }
+    }
     return $ozet;
 }
 
@@ -69,7 +79,7 @@ function gorev_magaza_calistir(): array
 function gorev_belki_calistir(): void
 {
     try {
-        $acik = array_intersect(['whatsapp', 'odeme_linki'], magaza_ozellikleri());
+        $acik = array_intersect(GOREV_OZELLIKLERI, magaza_ozellikleri());
         if (!$acik || time() - (int) setting('gorev_son', '0') < GOREV_ARALIK_SN) {
             return;
         }
@@ -139,7 +149,7 @@ function cron_tum_magazalar(): array
     $magazalar = merkez_rows("SELECT id, ozellikler FROM magazalar WHERE durum = 'aktif' AND ozellikler IS NOT NULL AND ozellikler <> '[]' ORDER BY id");
     foreach ($magazalar as $m) {
         $oz = ozellik_listesi_temizle($m['ozellikler']);
-        if (!array_intersect(['whatsapp', 'odeme_linki'], $oz)) {
+        if (!array_intersect(GOREV_OZELLIKLERI, $oz)) {
             continue;
         }
         try {

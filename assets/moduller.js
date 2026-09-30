@@ -6,6 +6,8 @@
     if (!t.closest) return;
     var yaz = t.closest('[data-yazdir]');
     if (yaz) { e.preventDefault(); window.print(); return; }
+    var onay = t.closest('button[data-onay]');
+    if (onay && !window.confirm(onay.getAttribute('data-onay'))) { e.preventDefault(); return; }
     var kop = t.closest('[data-kopyala]');
     if (kop && typeof kop.select === 'function') { kop.select(); }
   });

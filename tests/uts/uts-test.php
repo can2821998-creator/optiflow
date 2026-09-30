@@ -413,7 +413,24 @@ esit(2, (int) scalar("SELECT COUNT(*) FROM uts_urunler WHERE durum = 'gelen' AND
 esit(15, (int) scalar("SELECT SUM(adet) FROM uts_urunler WHERE durum = 'gelen' AND uno = '08690000000064'"), 'adetler korunur (10 + 5)');
 $geriGelen = row("SELECT * FROM uts_urunler WHERE durum = 'gelen' AND sno = 'VG100'");
 ok($geriGelen !== null && $geriGelen['vbi'] === $vs, 'satılmış seri yeniden gelince yeni kayıt açıldı');
-esit(1, (int) scalar("SELECT COUNT(*) FROM uts_urunler WHERE sno = 'VG100' AND anahtar LIKE '%|arsiv%'"), 'eski kayıt arşivde, geçmişi korunuyor');
+esit(0, (int) scalar("SELECT COUNT(*) FROM uts_urunler WHERE sno = 'VG100' AND anahtar LIKE '%|arsiv%'"), 'eski kayıt yalnızca listelendiği için arşivlenmez');
+uts_gelenleri_kabul_et([(int) $geriGelen['id']], [], false, false);
+esit(1, (int) scalar("SELECT COUNT(*) FROM uts_urunler WHERE sno = 'VG100' AND anahtar LIKE '%|arsiv%'"), 'kabulde eski kayıt arşive alındı, geçmişi korunuyor');
+esit('S|08690000000019|VG100', scalar('SELECT anahtar FROM uts_urunler WHERE id = ?', [(int) $geriGelen['id']]), 'yeni kayıt asıl anahtarı aldı');
+// Arşivdeki eski kaydın siparişi geri alınırsa eski kayıt stoğa dönmez (tek canlı kayıt kalır)
+$eskiVg = row("SELECT * FROM uts_urunler WHERE sno = 'VG100' AND anahtar LIKE '%|arsiv%'");
+$m = uts_siparis_asama_degisti((int) $eskiVg['order_id'], 'teslim_edildi', 'hazirlandi');
+esit('satildi', uts_urun((int) $eskiVg['id'])['durum'], 'arşiv kaydı stoğa döndürülmedi');
+ok(str_contains(implode(' ', $m), 'elle kontrol'), 'personel uyarıldı');
+// Listelendi ama gönderen iptal etti: eski kayıt hiç değişmez
+$vs2 = $uts->gonder('08690000000071', 'IPT1', 'İptal edilecek');
+$sIpt = uts_stoga_okut($kk('08690000000071', 'IPT1'), 'cerceve');
+q("UPDATE uts_urunler SET durum = 'iade' WHERE id = ?", [(int) $sIpt['id']]);
+uts_gelenleri_getir();
+unset($uts->bekleyen[$vs2]);
+uts_gelenleri_getir();
+esit('S|08690000000071|IPT1', scalar('SELECT anahtar FROM uts_urunler WHERE id = ?', [(int) $sIpt['id']]), 'gönderen iptal edince eski kayıt arşivlenmemiş kalır');
+esit(0, (int) scalar("SELECT COUNT(*) FROM uts_urunler WHERE sno = 'IPT1' AND durum = 'gelen'"), 'iptal edilen gelen satır temizlendi');
 $lotIdler = array_map('intval', array_column(rows("SELECT id FROM uts_urunler WHERE durum = 'gelen' AND uno = '08690000000064'"), 'id'));
 uts_gelenleri_kabul_et($lotIdler, [], false, false);
 uts_kuyrugu_isle();
@@ -476,7 +493,7 @@ esit(1, (int) scalar("SELECT COUNT(*) FROM uts_bildirimler WHERE order_id = ? AN
 
 echo "18) Özet ve rozet\n";
 $oz = uts_ozet();
-ok($oz['stokta'] > 0 && $oz['gelen'] === (int) scalar("SELECT COUNT(*) FROM uts_urunler WHERE durum = 'gelen'") && $oz['gelen'] >= 1, 'özet sayıları');
+ok($oz['stokta'] > 0 && $oz['gelen'] === (int) scalar("SELECT COUNT(*) FROM uts_urunler WHERE durum = 'gelen'"), 'özet sayıları');
 ok(uts_menu_rozeti() >= $oz['gelen'] + $oz['hata'], 'menü rozeti');
 
 bitir();

@@ -443,7 +443,13 @@ function uts_urun_karekodla(array $k): ?array
         );
 }
 
-/** Çıkış yapmış seri kaydı, aynı ürün yeniden geldiğinde arşiv anahtarına taşınır (geçmiş bildirimleri korunur). */
+/** Arşivlenmiş (aynı seri sonradan yeniden mal kabul edilmiş) eski kayıt mı? Arşiv kaydı stoğa geri döndürülmez. */
+function uts_arsivde_mi(array $u): bool
+{
+    return str_contains((string) $u['anahtar'], '|arsiv');
+}
+
+/** Çıkış yapmış seri kaydı, aynı ürün yeniden kabul edildiğinde arşiv anahtarına taşınır (geçmiş bildirimleri korunur). */
 function uts_seri_arsivle(array $u): void
 {
     q('UPDATE uts_urunler SET anahtar = ?, updated_at = ? WHERE id = ?', [mb_substr($u['anahtar'] . '|arsiv' . (int) $u['id'], 0, 120), uts_simdi(), (int) $u['id']]);
@@ -794,7 +800,7 @@ function uts_bildirim_iptal(int $id): bool
         }
         if (in_array($b['tur'], ['imha', 'verme'], true) && $b['urun_id']) {
             $u = uts_urun((int) $b['urun_id']);
-            if ($u && in_array($u['durum'], ['imha', 'iade'], true)) {
+            if ($u && in_array($u['durum'], ['imha', 'iade'], true) && !uts_arsivde_mi($u)) {
                 q("UPDATE uts_urunler SET durum = 'stokta', cikis_at = NULL, updated_at = ? WHERE id = ?", [uts_simdi(), (int) $u['id']]);
                 if ($u['frame_item_id']) {
                     frame_move((int) $u['frame_item_id'], max(1, (int) $u['adet']), 'sayim', null, 'ÜTS bildirimi iptal edildi, ürün stoğa döndü');
@@ -1016,7 +1022,7 @@ function uts_siparis_sgk_guncellendi(int $siparisId): array
             $mesaj[] = 'Bu ürün ÜTS\'de elle ücretli satış olarak bildirilmişti: Medula\'ya okutmadan önce ÜTS\'den tüketiciden iade alma yapın.';
         } else {
             $govde = uts_seri_mi($u) ? [] : ['ADT' => max(1, (int) $u['adet'])];
-            uts_bildirim_ekle('tuketiciden_iade', $govde, (int) $u['id'], $siparisId, (int) $u['adet'], 'ti:b' . (int) $tv['id'], (int) $tv['id']);
+            uts_bildirim_ekle('tuketiciden_iade', $govde, (int) $u['id'], $siparisId, (int) $u['adet'], 'ti:b' . (int) $tv['id'], (int) $tv['id'], true);
             $mesaj[] = 'Sipariş SGK\'lı oldu ama ürün ÜTS\'ye ücretli satış olarak bildirilmişti: "tüketiciden iade alma" sıraya alındı. İade ÜTS\'ye iletilmeden karekod Medula\'da "stokta yok" hatası verebilir.';
         }
     }
@@ -1066,6 +1072,10 @@ function uts_siparis_teslim_geri(array $o): array
     $sid = (int) $o['id'];
     $mesaj = [];
     foreach (rows("SELECT * FROM uts_urunler WHERE order_id = ? AND durum IN ('satildi','sgk')", [$sid]) as $u) {
+        if (uts_arsivde_mi($u)) {
+            $mesaj[] = uts_urun_etiketi($u) . ' daha sonra yeniden mal kabul edilmiş; stok ve ÜTS kaydı otomatik değiştirilmedi, elle kontrol edin.';
+            continue;
+        }
         if ($u['durum'] === 'sgk') {
             q("UPDATE uts_urunler SET durum = 'stokta', satis_turu = NULL, cikis_at = NULL, updated_at = ? WHERE id = ? AND durum = 'sgk'", [uts_simdi(), (int) $u['id']]);
             $mesaj[] = 'SGK\'lı satış geri alındı: Medula\'da reçete iptal edildiyse ÜTS kaydı da geri döner; kontrol edin.';
@@ -1144,7 +1154,9 @@ function uts_gelenleri_getir(): array
                 continue;
             }
             if ($seri && in_array($seri['durum'], ['satildi', 'sgk', 'iade', 'imha'], true)) {
-                uts_seri_arsivle($seri);   // aynı ürün yeniden gönderildi (ör. iade edilip geri geldi)
+                // Aynı ürün yeniden gönderildi (ör. iade edilip geri geldi). Eski kayıt KABUL anında arşivlenir;
+                // o zamana kadar gelen satır geçici anahtarla durur.
+                $anahtar = mb_substr('G|' . $x['uno'] . '|' . $x['sno'] . '|v' . $x['vbi'], 0, 120);
                 $seri = null;
             }
             if ($seri) {
@@ -1249,6 +1261,19 @@ function uts_gelenleri_kabul_et(array $idler, array $kategoriler, bool $cerceveS
         }
         if (!$u['vbi']) {
             continue;   // ÜTS'den gelmemiş (okutulmuş) ürün: kabul edilecek verme bildirimi yok
+        }
+        if (str_starts_with((string) $u['anahtar'], 'G|')) {
+            // Yeniden gelen seri: eski kayıt çıkış yapmışsa arşivlenir, bu satır asıl anahtarı alır.
+            $asil = uts_anahtar((string) $u['uno'], (string) ($u['lno'] ?? ''), (string) $u['sno']);
+            $eski = uts_urun_anahtarla($asil);
+            if ($eski && !in_array($eski['durum'], ['satildi', 'sgk', 'iade', 'imha'], true)) {
+                continue;   // aynı seri hâlâ stokta / yolda: ikinci kayıt açılmaz
+            }
+            if ($eski) {
+                uts_seri_arsivle($eski);
+            }
+            q('UPDATE uts_urunler SET anahtar = ?, updated_at = ? WHERE id = ?', [$asil, uts_simdi(), (int) $u['id']]);
+            $u['anahtar'] = $asil;
         }
         transaction(static function () use ($u, $kategoriler, $cerceveStokArtir, $kartOlustur, &$n): void {
             $id = (int) $u['id'];

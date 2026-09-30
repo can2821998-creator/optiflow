@@ -47,7 +47,7 @@ function scalar(string $sql, array $p = []): mixed { $v = q($sql, $p)->fetchColu
 function insert(string $t, array $d): int { $c = array_keys($d); q('INSERT INTO `' . $t . '` (`' . implode('`,`', $c) . '`) VALUES (' . implode(',', array_fill(0, count($c), '?')) . ')', array_values($d)); return (int) db()->lastInsertId(); }
 function update(string $t, array $d, string $w, array $wp): int { $set = implode(',', array_map(static fn($c) => "`$c`=?", array_keys($d))); return q("UPDATE `$t` SET $set WHERE $w", array_merge(array_values($d), $wp))->rowCount(); }
 function in_placeholders(array $v): string { return implode(',', array_fill(0, max(1, count($v)), '?')); }
-function transaction(callable $fn): mixed { $p = db(); if ($p->inTransaction()) { return $fn(); } $p->beginTransaction(); try { $r = $fn(); $p->commit(); return $r; } catch (Throwable $e) { $p->rollBack(); throw $e; } }
+function transaction(callable $fn): mixed { $p = db(); $p->beginTransaction(); try { $r = $fn(); $p->commit(); return $r; } catch (Throwable $e) { $p->rollBack(); throw $e; } }
 function setting(string $k, string $d = ''): string { $v = scalar('SELECT setting_value FROM app_settings WHERE setting_key = ?', [$k]); return $v === null ? $d : (string) $v; }
 function setting_set(string $k, string $v): void { q('INSERT OR REPLACE INTO app_settings (setting_key, setting_value) VALUES (?, ?)', [$k, $v]); }
 

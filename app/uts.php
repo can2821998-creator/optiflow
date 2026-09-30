@@ -257,7 +257,10 @@ function uts_yanit_coz(int $durum, string $govde, string $agHatasi = ''): array
 {
     $kisa = mb_substr($govde, 0, 4000);
     if ($durum === 0) {
-        return ['ok' => false, 'id' => null, 'mesaj' => 'ÜTS\'ye bağlanılamadı' . ($agHatasi !== '' ? ': ' . mb_substr($agHatasi, 0, 150) : '.'), 'tur' => 'gecici', 'yanit' => $kisa, 'veri' => null];
+        // Bağlantı kurulamadıysa istek ÜTS'ye hiç ulaşmamıştır (güvenle tekrar denenir). Zaman aşımı gibi
+        // durumlarda ise ÜTS isteği işlemiş olabilir: 'belirsiz' işaretlenir.
+        $kurulamadi = (bool) preg_match('/resolve|Failed to connect|Connection refused|Connection timed out after|Could not connect|No route|SSL connect/i', $agHatasi);
+        return ['ok' => false, 'id' => null, 'mesaj' => 'ÜTS\'ye bağlanılamadı' . ($agHatasi !== '' ? ': ' . mb_substr($agHatasi, 0, 150) : '.'), 'tur' => 'gecici', 'belirsiz' => !$kurulamadi, 'yanit' => $kisa, 'veri' => null];
     }
     $veri = json_decode($govde, true);
     $mesajlar = [];
@@ -267,16 +270,17 @@ function uts_yanit_coz(int $durum, string $govde, string $agHatasi = ''): array
     $id = uts_bildirim_id_bul($veri);
 
     if ($durum === 401 || $durum === 403 || ($durum >= 400 && preg_match('/\btoken\b/iu', $metin))) {
-        return ['ok' => false, 'id' => null, 'mesaj' => 'ÜTS yetki hatası: ' . ($metin !== '' ? mb_substr($metin, 0, 300) : 'HTTP ' . $durum) . ' — sistem token\'ını kontrol edin.', 'tur' => 'yetki', 'yanit' => $kisa, 'veri' => $veri];
+        return ['ok' => false, 'id' => null, 'mesaj' => 'ÜTS yetki hatası: ' . ($metin !== '' ? mb_substr($metin, 0, 300) : 'HTTP ' . $durum) . ' — sistem token\'ını kontrol edin.', 'tur' => 'yetki', 'belirsiz' => false, 'yanit' => $kisa, 'veri' => $veri];
     }
     if ($durum >= 200 && $durum < 300 && !$hataVar) {
-        return ['ok' => true, 'id' => $id, 'mesaj' => mb_substr($metin, 0, 500), 'tur' => 'basarili', 'yanit' => $kisa, 'veri' => $veri];
+        return ['ok' => true, 'id' => $id, 'mesaj' => mb_substr($metin, 0, 500), 'tur' => 'basarili', 'belirsiz' => false, 'yanit' => $kisa, 'veri' => $veri];
     }
     if ($durum === 429 || $durum >= 500) {
-        return ['ok' => false, 'id' => null, 'mesaj' => 'ÜTS geçici hata (HTTP ' . $durum . ')' . ($metin !== '' ? ': ' . mb_substr($metin, 0, 300) : ''), 'tur' => 'gecici', 'yanit' => $kisa, 'veri' => $veri];
+        // 502/504 ağ geçidi zaman aşımı: ÜTS arkada işlemiş olabilir.
+        return ['ok' => false, 'id' => null, 'mesaj' => 'ÜTS geçici hata (HTTP ' . $durum . ')' . ($metin !== '' ? ': ' . mb_substr($metin, 0, 300) : ''), 'tur' => 'gecici', 'belirsiz' => in_array($durum, [502, 504], true), 'yanit' => $kisa, 'veri' => $veri];
     }
     // 2xx + HATA mesajı ya da 4xx: aynı istek tekrar gönderilse de düzelmez → personel bakmalı.
-    return ['ok' => false, 'id' => null, 'mesaj' => $metin !== '' ? mb_substr($metin, 0, 500) : 'ÜTS isteği reddetti (HTTP ' . $durum . ').', 'tur' => 'kalici', 'yanit' => $kisa, 'veri' => $veri];
+    return ['ok' => false, 'id' => null, 'mesaj' => $metin !== '' ? mb_substr($metin, 0, 500) : 'ÜTS isteği reddetti (HTTP ' . $durum . ').', 'tur' => 'kalici', 'belirsiz' => false, 'yanit' => $kisa, 'veri' => $veri];
 }
 
 /** @internal */
@@ -393,7 +397,11 @@ function uts_karekod_coz(string $ham): array
     ];
 }
 
-/** Tekil ürün anahtarı: seri takipli "S|UNO|SNO", lot takipli "L|UNO|LNO". */
+/**
+ * Tekil ürün anahtarı. Seri takipli: "S|UNO|SNO" (her ürün tek satır).
+ * Lot takipli ürünlerde aynı lot birden çok satırda olabilir (her sevkiyat ve her sipariş parçası
+ * ayrı satır); onların anahtarı uts_lot_anahtari() ile üretilir, bu fonksiyon yalnızca taban değeri verir.
+ */
 function uts_anahtar(string $uno, string $lno, string $sno): string
 {
     return $sno !== '' ? 'S|' . $uno . '|' . $sno : 'L|' . $uno . '|' . $lno;
@@ -402,6 +410,43 @@ function uts_anahtar(string $uno, string $lno, string $sno): string
 function uts_seri_mi(array $u): bool
 {
     return trim((string) ($u['sno'] ?? '')) !== '';
+}
+
+/** Lot satırı anahtarı: "L|UNO|LNO|<ek>" (ek: sevkiyat VBI'si, okutma ya da sipariş parçası). */
+function uts_lot_anahtari(string $uno, string $lno, string $ek): string
+{
+    return mb_substr('L|' . $uno . '|' . $lno . '|' . $ek, 0, 120);
+}
+
+/** Aynı lotun stokta ve siparişe ayrılmamış satırı (adedi en büyük olan). */
+function uts_lot_serbest(string $uno, string $lno, int $haricId = 0): ?array
+{
+    return row(
+        "SELECT * FROM uts_urunler WHERE uno = ? AND COALESCE(lno, '') = ? AND COALESCE(sno, '') = '' AND durum = 'stokta' AND order_id IS NULL AND id <> ? ORDER BY adet DESC, id LIMIT 1",
+        [$uno, $lno, $haricId]
+    );
+}
+
+/**
+ * Okutulan karekodun kaydı. Seri: tek kayıt. Lot: önce satılabilir (serbest) satır; yoksa
+ * hata mesajı için lotun en son kaydı. Kabul bekleyen ("gelen") satırlar dikkate alınmaz.
+ */
+function uts_urun_karekodla(array $k): ?array
+{
+    if (($k['sno'] ?? '') !== '') {
+        return uts_urun_anahtarla(uts_anahtar($k['uno'], $k['lno'], $k['sno']));
+    }
+    return uts_lot_serbest($k['uno'], $k['lno'])
+        ?? row(
+            "SELECT * FROM uts_urunler WHERE uno = ? AND COALESCE(lno, '') = ? AND COALESCE(sno, '') = '' AND durum <> 'gelen' ORDER BY (durum = 'stokta') DESC, id DESC LIMIT 1",
+            [$k['uno'], $k['lno']]
+        );
+}
+
+/** Çıkış yapmış seri kaydı, aynı ürün yeniden geldiğinde arşiv anahtarına taşınır (geçmiş bildirimleri korunur). */
+function uts_seri_arsivle(array $u): void
+{
+    q('UPDATE uts_urunler SET anahtar = ?, updated_at = ? WHERE id = ?', [mb_substr($u['anahtar'] . '|arsiv' . (int) $u['id'], 0, 120), uts_simdi(), (int) $u['id']]);
 }
 
 function uts_urun(int $id): ?array
@@ -490,22 +535,29 @@ function uts_stoga_okut(string $kod, string $kategori, int $adet = 1, bool $cerc
         throw new DomainException('Karekodda seri ya da parti (lot) numarası yok; ÜTS tekil ürünü okunamadı. Ürünün üzerindeki karekodu (düz barkodu değil) okutun.');
     }
     $kategori = isset(uts_kategoriler()[$kategori]) ? $kategori : 'diger';
-    $adet = uts_seri_mi($k) ? 1 : max(1, min(9999, $adet));
-    $anahtar = uts_anahtar($k['uno'], $k['lno'], $k['sno']);
-    $var = uts_urun_anahtarla($anahtar);
-    if ($var) {
-        if (uts_seri_mi($var)) {
+    $seri = $k['sno'] !== '';
+    $adet = $seri ? 1 : max(1, min(999, $adet));
+    if ($seri) {
+        $anahtar = uts_anahtar($k['uno'], $k['lno'], $k['sno']);
+        $var = uts_urun_anahtarla($anahtar);
+        if ($var && $var['durum'] === 'iade') {
+            uts_seri_arsivle($var);   // tedarikçiye iade edilmiş ürün geri geldi
+            $var = null;
+        }
+        if ($var) {
             $d = uts_urun_durumlari()[$var['durum']][0] ?? $var['durum'];
             throw new DomainException('Bu ürün zaten kayıtlı (' . $d . ').');
         }
-        if ($var['durum'] !== 'stokta') {
-            throw new DomainException('Bu lot "' . (uts_urun_durumlari()[$var['durum']][0] ?? $var['durum']) . '" durumunda; okutmayla adet eklenemez.');
+    } else {
+        $var = uts_lot_serbest($k['uno'], $k['lno']);
+        if ($var) {
+            q("UPDATE uts_urunler SET adet = adet + ?, updated_at = ? WHERE id = ? AND durum = 'stokta' AND order_id IS NULL", [$adet, uts_simdi(), (int) $var['id']]);
+            if ($cerceveStokArtir && $var['frame_item_id']) {
+                frame_move((int) $var['frame_item_id'], $adet, 'giris', null, 'ÜTS karekod okutma');
+            }
+            return uts_urun((int) $var['id']);
         }
-        q('UPDATE uts_urunler SET adet = adet + ?, updated_at = ? WHERE id = ?', [$adet, uts_simdi(), (int) $var['id']]);
-        if ($cerceveStokArtir && $var['frame_item_id']) {
-            frame_move((int) $var['frame_item_id'], $adet, 'giris', null, 'ÜTS karekod okutma');
-        }
-        return uts_urun((int) $var['id']);
+        $anahtar = uts_lot_anahtari($k['uno'], $k['lno'], 'k' . bin2hex(random_bytes(4)));
     }
     $f = in_array($kategori, ['cerceve', 'gunes'], true) ? uts_cerceve_bul($k['uno']) : null;
     $id = insert('uts_urunler', [
@@ -599,13 +651,14 @@ function uts_bildirim_basari_etkisi(array $b): void
  * Sıradaki bildirimleri ÜTS'ye gönderir. En çok $limit kayıt.
  * Dönüş: ['gonderilen' => int, 'hata' => int, 'durdu' => string ('' ya da yetki hatası metni)]
  */
-function uts_kuyrugu_isle(int $limit = 20): array
+function uts_kuyrugu_isle(int $limit = 20, int $sureSn = 40): array
 {
     $ozet = ['gonderilen' => 0, 'hata' => 0, 'durdu' => ''];
-    // Çöken süreçten "gönderiliyor"da kalanlar 15 dk sonra yeniden denenir.
+    $bitis = microtime(true) + max(5, $sureSn);
+    // Çöken süreçten "gönderiliyor"da kalanlar: ÜTS'ye ulaşmış olabilir → otomatik yeniden GÖNDERİLMEZ, personel bakar.
     q(
-        "UPDATE uts_bildirimler SET durum = 'hata', son_hata = ? WHERE durum = 'gonderiliyor' AND planlanan < ?",
-        ['Gönderim yarıda kaldı; ÜTS\'de oluşmuş olabilir. ÜTS\'den kontrol edip gerekirse "ÜTS\'de elle yapıldı" deyin.', uts_simdi(-900)]
+        "UPDATE uts_bildirimler SET durum = 'hata', deneme = 99, son_hata = ? WHERE durum = 'gonderiliyor' AND planlanan < ?",
+        ['Gönderim yarıda kaldı; ÜTS\'ye ulaşmış olabilir. ÜTS\'den kontrol edin: oluşmuşsa "ÜTS\'de elle yapıldı", oluşmamışsa "Tekrar dene".', uts_simdi(-900)]
     );
     if (!uts_hazir_mi()) {
         return $ozet;
@@ -615,7 +668,14 @@ function uts_kuyrugu_isle(int $limit = 20): array
         [uts_simdi()]
     );
     foreach ($liste as $b) {
-        $kilit = q("UPDATE uts_bildirimler SET durum = 'gonderiliyor', planlanan = ? WHERE id = ? AND durum IN ('bekliyor','hata')", [uts_simdi(), (int) $b['id']]);
+        if (microtime(true) > $bitis) {
+            break;   // web isteğinde zaman aşımına düşmemek için; kalanlar sonraki turda
+        }
+        // Kilit: satırı yalnızca hâlâ gönderilebilir durumdaysa al (eşzamanlı ikinci süreç aynı satırı gönderemez).
+        $kilit = q(
+            "UPDATE uts_bildirimler SET durum = 'gonderiliyor', planlanan = ? WHERE id = ? AND durum IN ('bekliyor','hata') AND deneme < 6 AND planlanan <= ?",
+            [uts_simdi(), (int) $b['id'], uts_simdi()]
+        );
         if ($kilit->rowCount() === 0) {
             continue;
         }
@@ -630,6 +690,11 @@ function uts_kuyrugu_isle(int $limit = 20): array
             }
             if ($ilgili['durum'] === 'elle' && !$ilgili['uts_id']) {
                 q("UPDATE uts_bildirimler SET durum = 'hata', deneme = 99, son_hata = ? WHERE id = ?", ['Satış bildirimi ÜTS\'de elle yapılmıştı; ÜTS bildirim numarası bilinmediği için iadeyi de ÜTS\'de elle yapın.', (int) $b['id']]);
+                $ozet['hata']++;
+                continue;
+            }
+            if ($ilgili['durum'] === 'hata' && (int) $ilgili['deneme'] >= 6) {
+                q("UPDATE uts_bildirimler SET durum = 'hata', deneme = 99, son_hata = ? WHERE id = ?", ['Bağlı satış bildirimi (#' . (int) $ilgili['id'] . ') hatalı. Önce onu çözün, sonra bu iadeyi "Tekrar dene" ile gönderin.', (int) $b['id']]);
                 $ozet['hata']++;
                 continue;
             }
@@ -664,10 +729,17 @@ function uts_kuyrugu_isle(int $limit = 20): array
         }
         $deneme = (int) $b['deneme'] + 1;
         $kalici = $s['tur'] === 'kalici';
+        $mesaj = $s['mesaj'];
+        // ÜTS isteği almış olabilir (zaman aşımı): adetli (lot) bildirim tekrar gönderilirse iki kez düşebilir → personel bakar.
+        // Seri takipli üründe tekrar güvenlidir: ÜTS aynı ürünü ikinci kez kabul etmez.
+        if (!empty($s['belirsiz']) && isset($govde['ADT'])) {
+            $kalici = true;
+            $mesaj .= ' — ÜTS isteği almış olabilir. ÜTS\'den kontrol edin: oluşmuşsa "ÜTS\'de elle yapıldı", oluşmamışsa "Tekrar dene".';
+        }
         $bekleDk = $kalici ? 0 : min(360, 5 * (2 ** $deneme));
         q(
             "UPDATE uts_bildirimler SET durum = 'hata', ortam = ?, son_hata = ?, yanit = ?, deneme = ?, planlanan = ? WHERE id = ?",
-            [$ortam, mb_substr($s['mesaj'], 0, 500), $s['yanit'], $kalici ? 99 : $deneme, uts_simdi($bekleDk * 60), (int) $b['id']]
+            [$ortam, mb_substr($mesaj, 0, 500), $s['yanit'], $kalici ? 99 : $deneme, uts_simdi($bekleDk * 60), (int) $b['id']]
         );
     }
     return $ozet;
@@ -772,8 +844,7 @@ function uts_siparise_okut(int $siparisId, string $kod, string $kategori = 'cerc
         throw new DomainException('Okutulan kod bir ÜTS karekodu değil.');
     }
     $mesajlar = [];
-    $anahtar = uts_anahtar($k['uno'], $k['lno'], $k['sno']);
-    $u = uts_urun_anahtarla($anahtar);
+    $u = uts_urun_karekodla($k);
     if (!$u) {
         if ($k['sno'] === '' && $k['lno'] === '') {
             throw new DomainException('Karekodda seri / lot numarası okunamadı; ürünün ÜTS karekodunu okutun.');
@@ -807,7 +878,7 @@ function uts_siparise_okut(int $siparisId, string $kod, string $kategori = 'cerc
                 }
                 $yeni = $u;
                 unset($yeni['id']);
-                $yeni['anahtar'] = mb_substr($u['anahtar'] . '|o' . $siparisId . '|' . bin2hex(random_bytes(3)), 0, 120);
+                $yeni['anahtar'] = uts_lot_anahtari((string) $u['uno'], (string) $u['lno'], 'o' . $siparisId . '-' . bin2hex(random_bytes(4)));
                 $yeni['adet'] = $adet;
                 $yeni['created_at'] = $yeni['updated_at'] = uts_simdi();
                 $urunId = insert('uts_urunler', $yeni);
@@ -827,6 +898,8 @@ function uts_siparise_okut(int $siparisId, string $kod, string $kategori = 'cerc
                     q('UPDATE orders SET frame_info = ? WHERE id = ?', [mb_substr(frame_item_label($f), 0, 255), $siparisId]);
                 }
                 $mesajlar[] = 'Siparişin çerçevesi olarak işlendi: ' . frame_item_label($f) . ($fiyat !== null ? ' — ' . money($fiyat) : '') . '.';
+            } elseif ((int) $o['frame_item_id'] !== (int) $f['id']) {
+                $mesajlar[] = 'Siparişte başka bir stok çerçevesi seçili; çerçeve stoğu değiştirilmedi. Gerekirse sipariş bilgilerinden düzeltin.';
             }
         }
         return ['urun' => uts_urun($urunId), 'mesajlar' => $mesajlar, 'fiyat' => $fiyat];
@@ -863,14 +936,28 @@ function uts_lot_birlestir(int $urunId): void
     if (!$u || uts_seri_mi($u) || $u['durum'] !== 'stokta' || $u['order_id']) {
         return;
     }
-    $taban = uts_anahtar((string) $u['uno'], (string) $u['lno'], '');
-    if ($u['anahtar'] === $taban) {
+    $diger = uts_lot_serbest((string) $u['uno'], (string) ($u['lno'] ?? ''), $urunId);
+    if (!$diger) {
         return;
     }
-    $ana = uts_urun_anahtarla($taban);
-    if ($ana && $ana['durum'] === 'stokta' && !$ana['order_id']) {
-        q('UPDATE uts_urunler SET adet = adet + ?, updated_at = ? WHERE id = ?', [(int) $u['adet'], uts_simdi(), (int) $ana['id']]);
-        q('DELETE FROM uts_urunler WHERE id = ?', [(int) $u['id']]);
+    // Bildirim geçmişi olmayan satır silinir, adedi diğerine eklenir. İkisinin de geçmişi varsa ayrı kalırlar.
+    $gecmis = static fn(int $id): bool => (bool) scalar('SELECT COUNT(*) FROM uts_bildirimler WHERE urun_id = ?', [$id]);
+    [$kalan, $silinen] = !$gecmis($urunId) ? [$diger, $u] : (!$gecmis((int) $diger['id']) ? [$u, $diger] : [null, null]);
+    if ($kalan === null) {
+        return;
+    }
+    $n = q("DELETE FROM uts_urunler WHERE id = ? AND durum = 'stokta' AND order_id IS NULL", [(int) $silinen['id']])->rowCount();
+    if ($n > 0) {
+        q('UPDATE uts_urunler SET adet = adet + ?, updated_at = ? WHERE id = ?', [(int) $silinen['adet'], uts_simdi(), (int) $kalan['id']]);
+    }
+}
+
+/** Sipariş iptal edildi / silindi: teslim edilmemiş (stoktaki) ürünler siparişten çözülür. */
+function uts_siparis_urunlerini_coz(int $siparisId): void
+{
+    foreach (rows("SELECT id FROM uts_urunler WHERE order_id = ? AND durum = 'stokta'", [$siparisId]) as $r) {
+        q("UPDATE uts_urunler SET order_id = NULL, updated_at = ? WHERE id = ? AND durum = 'stokta'", [uts_simdi(), (int) $r['id']]);
+        uts_lot_birlestir((int) $r['id']);
     }
 }
 
@@ -897,12 +984,43 @@ function uts_siparis_asama_degisti(int $siparisId, string $eski, string $yeni): 
         $mesaj = array_merge($mesaj, uts_siparis_teslim_geri($o));
     }
     if ($yeni === 'iptal') {
-        foreach (rows("SELECT id FROM uts_urunler WHERE order_id = ? AND durum = 'stokta'", [$siparisId]) as $r) {
-            q('UPDATE uts_urunler SET order_id = NULL, updated_at = ? WHERE id = ?', [uts_simdi(), (int) $r['id']]);
-            uts_lot_birlestir((int) $r['id']);
-        }
+        uts_siparis_urunlerini_coz($siparisId);
     }
     return $mesaj;
+}
+
+/**
+ * Teslim edilmiş siparişe SONRADAN SGK bilgisi (e-reçete / SGK katkısı) girildi.
+ * Ücretli satış bildirimi gönderilmemişse iptal edilir; gönderilmişse "tüketiciden iade alma"
+ * sıraya girer (aksi hâlde Medula aynı ürünü ikinci kez düşmeye çalışır).
+ */
+function uts_siparis_sgk_guncellendi(int $siparisId): array
+{
+    $o = row('SELECT * FROM orders WHERE id = ?', [$siparisId]);
+    if (!$o || !uts_siparis_sgk_mi($o)) {
+        return [];
+    }
+    $mesaj = [];
+    foreach (rows("SELECT * FROM uts_urunler WHERE order_id = ? AND durum = 'satildi'", [$siparisId]) as $u) {
+        if (q("UPDATE uts_urunler SET durum = 'sgk', satis_turu = 'sgk', updated_at = ? WHERE id = ? AND durum = 'satildi'", [uts_simdi(), (int) $u['id']])->rowCount() === 0) {
+            continue;
+        }
+        $tv = row("SELECT * FROM uts_bildirimler WHERE tur = 'tuketiciye_verme' AND urun_id = ? AND durum <> 'iptal' ORDER BY id DESC LIMIT 1", [(int) $u['id']]);
+        if (!$tv) {
+            continue;
+        }
+        if (in_array($tv['durum'], ['onay_bekliyor', 'bekliyor', 'hata'], true)) {
+            q("UPDATE uts_bildirimler SET durum = 'iptal', son_hata = ? WHERE id = ? AND durum IN ('onay_bekliyor','bekliyor','hata')", ['Sipariş SGK\'lı oldu; ÜTS düşümünü Medula yapar.', (int) $tv['id']]);
+            $mesaj[] = 'Sipariş SGK\'lı oldu: gönderilmemiş ücretli satış bildirimi iptal edildi; ÜTS düşümünü Medula yapar.';
+        } elseif ($tv['durum'] === 'elle') {
+            $mesaj[] = 'Bu ürün ÜTS\'de elle ücretli satış olarak bildirilmişti: Medula\'ya okutmadan önce ÜTS\'den tüketiciden iade alma yapın.';
+        } else {
+            $govde = uts_seri_mi($u) ? [] : ['ADT' => max(1, (int) $u['adet'])];
+            uts_bildirim_ekle('tuketiciden_iade', $govde, (int) $u['id'], $siparisId, (int) $u['adet'], 'ti:b' . (int) $tv['id'], (int) $tv['id']);
+            $mesaj[] = 'Sipariş SGK\'lı oldu ama ürün ÜTS\'ye ücretli satış olarak bildirilmişti: "tüketiciden iade alma" sıraya alındı. İade ÜTS\'ye iletilmeden karekod Medula\'da "stokta yok" hatası verebilir.';
+        }
+    }
+    return array_values(array_unique($mesaj));
 }
 
 /** @internal */
@@ -918,10 +1036,14 @@ function uts_siparis_teslim(array $o): array
     $n = 0;
     foreach ($urunler as $u) {
         if ($sgk) {
-            q("UPDATE uts_urunler SET durum = 'sgk', satis_turu = 'sgk', cikis_at = ?, updated_at = ? WHERE id = ?", [uts_simdi(), uts_simdi(), (int) $u['id']]);
+            q("UPDATE uts_urunler SET durum = 'sgk', satis_turu = 'sgk', cikis_at = ?, updated_at = ? WHERE id = ? AND durum = 'stokta'", [uts_simdi(), uts_simdi(), (int) $u['id']]);
             continue;
         }
-        q("UPDATE uts_urunler SET durum = 'satildi', satis_turu = 'ucretli', cikis_at = ?, updated_at = ? WHERE id = ?", [uts_simdi(), uts_simdi(), (int) $u['id']]);
+        // Koşullu güncelleme: aynı teslim iki istekle (çift tıklama) gelirse yalnızca biri bildirim üretir.
+        $degisti = q("UPDATE uts_urunler SET durum = 'satildi', satis_turu = 'ucretli', cikis_at = ?, updated_at = ? WHERE id = ? AND durum = 'stokta'", [uts_simdi(), uts_simdi(), (int) $u['id']])->rowCount();
+        if ($degisti !== 1) {
+            continue;
+        }
         $govde = uts_govde_urun($u) + ['GIT' => $tarih, 'BEN' => 'HAYIR'];
         if (setting('uts_ad_gonder', '0') === '1') {
             $govde['TUA'] = mb_substr(trim((string) $o['first_name']), 0, 60);
@@ -945,12 +1067,14 @@ function uts_siparis_teslim_geri(array $o): array
     $mesaj = [];
     foreach (rows("SELECT * FROM uts_urunler WHERE order_id = ? AND durum IN ('satildi','sgk')", [$sid]) as $u) {
         if ($u['durum'] === 'sgk') {
-            q("UPDATE uts_urunler SET durum = 'stokta', satis_turu = NULL, cikis_at = NULL, updated_at = ? WHERE id = ?", [uts_simdi(), (int) $u['id']]);
+            q("UPDATE uts_urunler SET durum = 'stokta', satis_turu = NULL, cikis_at = NULL, updated_at = ? WHERE id = ? AND durum = 'sgk'", [uts_simdi(), (int) $u['id']]);
             $mesaj[] = 'SGK\'lı satış geri alındı: Medula\'da reçete iptal edildiyse ÜTS kaydı da geri döner; kontrol edin.';
             continue;
         }
+        if (q("UPDATE uts_urunler SET durum = 'stokta', satis_turu = NULL, cikis_at = NULL, updated_at = ? WHERE id = ? AND durum = 'satildi'", [uts_simdi(), (int) $u['id']])->rowCount() === 0) {
+            continue;
+        }
         $tv = row("SELECT * FROM uts_bildirimler WHERE tur = 'tuketiciye_verme' AND urun_id = ? AND durum <> 'iptal' ORDER BY id DESC LIMIT 1", [(int) $u['id']]);
-        q("UPDATE uts_urunler SET durum = 'stokta', satis_turu = NULL, cikis_at = NULL, updated_at = ? WHERE id = ?", [uts_simdi(), (int) $u['id']]);
         if (!$tv) {
             continue;
         }
@@ -982,10 +1106,14 @@ function uts_gelenleri_getir(): array
     }
     $ogeler = uts_liste_ogeleri($s['veri']);
     $gorulen = [];
+    $sayi = 0;
     foreach ($ogeler as $x) {
-        $anahtar = uts_anahtar($x['uno'], $x['lno'], $x['sno']);
-        $gorulen[] = $anahtar;
-        $var = uts_urun_anahtarla($anahtar);
+        if ($x['vbi'] === '') {
+            continue;   // verme bildirim numarası olmadan alma yapılamaz
+        }
+        $sayi++;
+        $iz = $x['vbi'] . '|' . $x['uno'] . '|' . $x['lno'] . '|' . $x['sno'];
+        $gorulen[$iz] = true;
         $alanlar = [
             'adet'           => $x['sno'] !== '' ? 1 : max(1, $x['adet']),
             'skt'            => $x['skt'] ?: null,
@@ -994,35 +1122,58 @@ function uts_gelenleri_getir(): array
             'gonderen'       => $x['gonderen'] ?: null,
             'gonderen_kurum' => $x['gonderen_kurum'] ?: null,
             'belge_no'       => $x['belge_no'] ?: null,
-            'vbi'            => $x['vbi'] ?: null,
             'updated_at'     => uts_simdi(),
         ];
-        if (!$var) {
-            insert('uts_urunler', $alanlar + [
-                'anahtar'    => $anahtar,
-                'uno'        => $x['uno'],
-                'lno'        => $x['lno'] ?: null,
-                'sno'        => $x['sno'] ?: null,
-                'kaynak'     => 'uts',
-                'kategori'   => uts_kategori_tahmini($x['marka_model']),
-                'durum'      => 'gelen',
-                'created_at' => uts_simdi(),
-            ]);
-        } elseif ($var['durum'] === 'gelen') {
-            update('uts_urunler', $alanlar, 'id = ?', [(int) $var['id']]);
-        } elseif ($var['durum'] === 'stokta' && !$var['vbi']) {
-            // Stoğa okutulmuş ama ÜTS'de henüz kabul edilmemiş: kabul için VBI'yi sakla.
-            update('uts_urunler', ['vbi' => $x['vbi'] ?: null, 'gonderen' => $x['gonderen'] ?: $var['gonderen'], 'belge_no' => $x['belge_no'] ?: $var['belge_no'], 'updated_at' => uts_simdi()], 'id = ?', [(int) $var['id']]);
+        // Aynı sevkiyat (VBI) daha önce getirildiyse güncelle.
+        $var = row(
+            "SELECT * FROM uts_urunler WHERE vbi = ? AND uno = ? AND COALESCE(lno, '') = ? AND COALESCE(sno, '') = ? ORDER BY id DESC LIMIT 1",
+            [$x['vbi'], $x['uno'], $x['lno'], $x['sno']]
+        );
+        if ($var) {
+            if ($var['durum'] === 'gelen') {
+                update('uts_urunler', $alanlar, 'id = ?', [(int) $var['id']]);
+            }
+            continue;
         }
+        if ($x['sno'] !== '') {
+            $anahtar = uts_anahtar($x['uno'], $x['lno'], $x['sno']);
+            $seri = uts_urun_anahtarla($anahtar);
+            if ($seri && $seri['durum'] === 'stokta' && !$seri['vbi']) {
+                // Karekodu okutularak stoğa girmiş ama ÜTS'de henüz kabul edilmemiş: kabul için VBI'yi sakla.
+                update('uts_urunler', ['vbi' => $x['vbi'], 'gonderen' => $x['gonderen'] ?: $seri['gonderen'], 'belge_no' => $x['belge_no'] ?: $seri['belge_no'], 'updated_at' => uts_simdi()], 'id = ?', [(int) $seri['id']]);
+                continue;
+            }
+            if ($seri && in_array($seri['durum'], ['satildi', 'sgk', 'iade', 'imha'], true)) {
+                uts_seri_arsivle($seri);   // aynı ürün yeniden gönderildi (ör. iade edilip geri geldi)
+                $seri = null;
+            }
+            if ($seri) {
+                continue;   // zaten izleniyor (stokta / alma bekliyor / başka sevkiyattan gelen)
+            }
+        } else {
+            $anahtar = uts_lot_anahtari($x['uno'], $x['lno'], 'v' . $x['vbi']);
+        }
+        insert('uts_urunler', $alanlar + [
+            'anahtar'    => $anahtar,
+            'uno'        => $x['uno'],
+            'lno'        => $x['lno'] ?: null,
+            'sno'        => $x['sno'] ?: null,
+            'kaynak'     => 'uts',
+            'kategori'   => uts_kategori_tahmini($x['marka_model']),
+            'vbi'        => $x['vbi'],
+            'durum'      => 'gelen',
+            'created_at' => uts_simdi(),
+        ]);
     }
     // ÜTS listesinden kalkmış (gönderen iptal etmiş / başka yerden kabul edilmiş) "gelen" kayıtları temizle.
-    foreach (rows("SELECT id, anahtar FROM uts_urunler WHERE durum = 'gelen'") as $r) {
-        if (!in_array($r['anahtar'], $gorulen, true)) {
+    foreach (rows("SELECT id, vbi, uno, lno, sno FROM uts_urunler WHERE durum = 'gelen'") as $r) {
+        $iz = $r['vbi'] . '|' . $r['uno'] . '|' . ($r['lno'] ?? '') . '|' . ($r['sno'] ?? '');
+        if (!isset($gorulen[$iz])) {
             q("DELETE FROM uts_urunler WHERE id = ? AND durum = 'gelen'", [(int) $r['id']]);
         }
     }
     setting_set('uts_gelen_son', uts_simdi());
-    return ['ok' => true, 'sayi' => count($ogeler), 'mesaj' => $s['mesaj']];
+    return ['ok' => true, 'sayi' => $sayi, 'mesaj' => $s['mesaj']];
 }
 
 /** @internal ÜTS sorgu yanıtındaki ürün listesini (UNO içeren nesneler) düz diziye çevirir. */
@@ -1265,7 +1416,7 @@ function uts_menu_rozeti(): int
 /** Zamanlanmış görev: kuyruğu işler. Gelen listesi günde en çok birkaç kez otomatik tazelenir. */
 function uts_gorev(): array
 {
-    $ozet = uts_kuyrugu_isle(30);
+    $ozet = uts_kuyrugu_isle(30, 30);
     if (uts_ortam() !== 'deneme' && uts_hazir_mi() && time() - (int) strtotime(setting('uts_gelen_son', '2000-01-01')) > 3 * 3600) {
         try {
             uts_gelenleri_getir();

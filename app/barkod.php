@@ -114,7 +114,7 @@ function barkod_coz(string $ham): array
             if (function_exists('uts_karekod_coz') && ozellik_acik('uts_bildirim')) {
                 $uk = uts_karekod_coz($kod);
                 if ($uk['sno'] !== '' || $uk['lno'] !== '') {
-                    $uu = uts_urun_anahtarla(uts_anahtar($uk['uno'], $uk['lno'], $uk['sno']));
+                    $uu = uts_urun_karekodla($uk);
                     if ($uu) {
                         return ['tur' => 'uts_urun', 'hedef' => 'uts.php?urun=' . (int) $uu['id'], 'etiket' => uts_urun_etiketi($uu), 'ayrinti' => $g];
                     }

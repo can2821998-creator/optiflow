@@ -297,6 +297,17 @@ if (is_post()) {
             redirect('sgk-aktar.php');
         }
 
+        // 4.13.0 ÜTS: teslim edilmiş ücretli satışa sonradan SGK reçetesi bağlandıysa ÜTS satış bildirimi geri alınır
+        if (ozellik_acik('uts_bildirim')) {
+            try {
+                foreach (uts_siparis_sgk_guncellendi((int) $sonuc['order']) as $utsMesaj) {
+                    flash('ÜTS: ' . $utsMesaj, 'warn');
+                }
+            } catch (Throwable $e) {
+                app_log('uts sgk ' . (int) $sonuc['order'] . ': ' . $e->getMessage());
+            }
+        }
+
         if ($sonuc['sgk']['uyari']) {
             flash($sonuc['sgk']['uyari'], 'warn');
         }

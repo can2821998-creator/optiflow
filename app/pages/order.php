@@ -40,8 +40,13 @@ if (is_post()) {
                 frame_move((int) $order['frame_item_id'], +1, 'iade', $id, 'Sipariş iptal edildi');
                 q('UPDATE orders SET frame_item_id = NULL WHERE id = ?', [$id]);
             }
-            // 4.13.0 ÜTS: teslimde tüketiciye verme (SGK'lıda Medula'ya bırakılır), geri alma/iptalde iade
-            if (function_exists('uts_siparis_asama_degisti')) {
+            // 4.13.0 ÜTS: teslimde tüketiciye verme (SGK'lıda Medula'ya bırakılır), geri alma/iptalde iade.
+            // Özellik kapalıyken bildirim üretilmez; iptalde yalnızca ayrılmış ürünler serbest bırakılır.
+            if (!ozellik_acik('uts_bildirim')) {
+                if ($stage === 'iptal') {
+                    uts_siparis_urunlerini_coz($id);
+                }
+            } else {
                 try {
                     foreach (uts_siparis_asama_degisti($id, (string) $order['order_stage'], $stage) as $utsMesaj) {
                         flash('ÜTS: ' . $utsMesaj, 'info');
@@ -239,6 +244,12 @@ if (is_post()) {
         }
         update('orders', $data, 'id = ?', [$id]);
         order_set_frame_item($id, $stokCerceve, $order['frame_item_id'] !== null ? (int) $order['frame_item_id'] : null);
+        // 4.13.0 ÜTS: teslimden sonra SGK katkısı girildiyse ücretli satış bildirimi geri alınır
+        if (isset($changes['sgk_amount']) && ozellik_acik('uts_bildirim')) {
+            foreach (uts_siparis_sgk_guncellendi($id) as $utsMesaj) {
+                flash('ÜTS: ' . $utsMesaj, 'warn');
+            }
+        }
         if ($changes) {
             audit('order_update', 'order', $id, $changes);
         }
@@ -328,9 +339,7 @@ if (is_post()) {
             'not'     => mb_substr(trim(post('reason')), 0, 255),
         ]);
         // 4.13.0 ÜTS: stokta bekleyen (teslim edilmemiş) ürünler serbest kalır; çıkış yapmışlar geçmiş için kalır.
-        if (function_exists('uts_siparis_asama_degisti')) {
-            q("UPDATE uts_urunler SET order_id = NULL WHERE order_id = ? AND durum = 'stokta'", [$id]);
-        }
+        uts_siparis_urunlerini_coz($id);
         q('DELETE FROM orders WHERE id = ?', [$id]);
         flash(order_no($id) . ' numaralı sipariş kalıcı olarak silindi.', 'info');
         redirect('index.php');

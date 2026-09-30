@@ -315,11 +315,27 @@ gizli_ayar_yaz('uts_token', 'yeni-token');
 // Yarıda kalan "gönderiliyor" 15 dk sonra hata olur
 $yk = uts_bildirim_ekle('imha', ['UNO' => '1'], null, null, 1, 'yarida:1');
 q("UPDATE uts_bildirimler SET durum = 'gonderiliyor', planlanan = ? WHERE id = ?", [uts_simdi(-3600), $yk]);
-$uts->zorla[] = [0, ''];   // sonraki istek bağlantı hatası
+$once = count($uts->istekler);
 uts_kuyrugu_isle();
 $ykr = row('SELECT * FROM uts_bildirimler WHERE id = ?', [$yk]);
-ok($ykr['durum'] === 'hata' && (str_contains((string) $ykr['son_hata'], 'yarıda') || str_contains((string) $ykr['son_hata'], 'bağlanılamadı')), 'yarıda kalan kayıt kurtarıldı');
+ok($ykr['durum'] === 'hata' && (int) $ykr['deneme'] === 99 && str_contains((string) $ykr['son_hata'], 'yarıda'), 'yarıda kalan kayıt personele bırakılır (deneme 99)');
+esit($once, count($uts->istekler), 'yarıda kalan kayıt otomatik yeniden gönderilmez (çift bildirim riski)');
 q('DELETE FROM uts_bildirimler WHERE id = ?', [$yk]);
+
+// Zaman aşımı (belirsiz): lot adetli bildirim otomatik tekrar edilmez; seri takipli tekrar edilir
+$bl = uts_bildirim_ekle('imha', ['UNO' => '1', 'LNO' => 'L', 'ADT' => 3, 'GRK' => 'DIGER', 'BNO' => '1'], null, null, 3, 'belirsiz:lot');
+$uts->zorla[] = [0, ''];
+uts_kuyrugu_isle();
+$blr = row('SELECT * FROM uts_bildirimler WHERE id = ?', [$bl]);
+ok((int) $blr['deneme'] === 99 && str_contains((string) $blr['son_hata'], 'almış olabilir'), 'lot + zaman aşımı: elle kontrol istenir');
+$bs = uts_bildirim_ekle('imha', ['UNO' => '1', 'SNO' => 'S', 'GRK' => 'DIGER', 'BNO' => '1'], null, null, 1, 'belirsiz:seri');
+$uts->zorla[] = [0, ''];
+uts_kuyrugu_isle();
+esit(1, (int) scalar('SELECT deneme FROM uts_bildirimler WHERE id = ?', [$bs]), 'seri + zaman aşımı: otomatik tekrar (deneme 1)');
+$r = uts_yanit_coz(0, '', 'Failed to connect to utsuygulama.saglik.gov.tr port 443: Connection refused');
+ok($r['belirsiz'] === false, 'bağlantı kurulamadı = belirsiz değil');
+esit(true, uts_yanit_coz(0, '', 'Operation timed out after 30001 milliseconds with 0 bytes received')['belirsiz'], 'işlem zaman aşımı = belirsiz');
+q("DELETE FROM uts_bildirimler WHERE tekil LIKE 'belirsiz:%'");
 
 echo "14) İade bağımlılığı: satış gönderilmeden iade gitmez\n";
 $u9 = uts_stoga_okut($kk('08690000000019', 'VG300'), 'cerceve');
@@ -365,9 +381,102 @@ esit('uts_urun', $bk['tur'], 'okutulan ÜTS ürünü tanındı');
 ok(str_starts_with($bk['hedef'], 'uts.php?urun='), 'ürün kartına yönlendirir');
 esit('cerceve', barkod_coz('08690000000019')['tur'] === 'cerceve' ? 'cerceve' : barkod_coz('8690000000019')['tur'], 'düz GTIN hâlâ çerçeve kartını açar');
 
+echo "19) İnceleme bulguları (regresyon)\n";
+setting_set('uts_ortam', 'deneme');
+// (1)+(3) Lot: ayrılmış parçaya okutmayla adet eklenmez; serbest parça satılabilir
+$lot2 = '0108680000000062' . '10LOTZ' . $GS . '17291231';
+$ana = uts_stoga_okut($lot2, 'lens', 5);
+$oa = insert('orders', ['first_name' => 'A', 'last_name' => 'A']);
+$ob = insert('orders', ['first_name' => 'B', 'last_name' => 'B']);
+$pa = uts_siparise_okut($oa, $lot2, 'lens', 2);
+$pb = uts_siparise_okut($ob, $lot2, 'lens', 3);   // ana satırın tamamı B'ye geçer
+esit($ob, (int) uts_urun((int) $pb['urun']['id'])['order_id'], 'B lotun kalanını aldı');
+uts_siparis_asama_degisti($oa, 'atolyede', 'iptal');
+$yeniOkut = uts_stoga_okut($lot2, 'lens', 4);
+esit(3, (int) uts_urun((int) $pb['urun']['id'])['adet'], 'B\'ye ayrılmış lot satırına adet eklenmedi');
+esit(6, (int) $yeniOkut['adet'], 'yeni okutma serbest parçaya eklendi (2 + 4)');
+$oc = insert('orders', ['first_name' => 'C', 'last_name' => 'C']);
+$pc = uts_siparise_okut($oc, $lot2, 'lens', 1);
+esit(1, (int) $pc['urun']['adet'], 'serbest lot parçası başka siparişe okutulabildi');
+uts_siparis_urunlerini_coz($oc);
+esit(6, (int) uts_urun((int) $yeniOkut['id'])['adet'], 'çözülen parça serbest satıra birleşti');
+
+// (2) Aynı lot ikinci kez geliyor (iki sevkiyat) ve daha önce satılmış seri geri geliyor
+setting_set('uts_ortam', 'test');
+$uts->bekleyen = [];
+$va = uts_uuid4(); $vb = uts_uuid4();
+$uts->bekleyen[$va] = ['UNO' => '08690000000064', 'LNO' => 'LX1', 'ADT' => 10, 'VBI' => $va, 'AKU' => 'Lens A.Ş.', 'MME' => 'Kontakt lens aylık'];
+$uts->bekleyen[$vb] = ['UNO' => '08690000000064', 'LNO' => 'LX1', 'ADT' => 5, 'VBI' => $vb, 'AKU' => 'Lens A.Ş.', 'MME' => 'Kontakt lens aylık'];
+$vs = $uts->gonder('08690000000019', 'VG100', 'Vogue geri geldi');   // VG100 daha önce satılmıştı
+uts_gelenleri_getir();
+esit(2, (int) scalar("SELECT COUNT(*) FROM uts_urunler WHERE durum = 'gelen' AND uno = '08690000000064'"), 'aynı lotun iki sevkiyatı ayrı satır');
+esit(15, (int) scalar("SELECT SUM(adet) FROM uts_urunler WHERE durum = 'gelen' AND uno = '08690000000064'"), 'adetler korunur (10 + 5)');
+$geriGelen = row("SELECT * FROM uts_urunler WHERE durum = 'gelen' AND sno = 'VG100'");
+ok($geriGelen !== null && $geriGelen['vbi'] === $vs, 'satılmış seri yeniden gelince yeni kayıt açıldı');
+esit(1, (int) scalar("SELECT COUNT(*) FROM uts_urunler WHERE sno = 'VG100' AND anahtar LIKE '%|arsiv%'"), 'eski kayıt arşivde, geçmişi korunuyor');
+$lotIdler = array_map('intval', array_column(rows("SELECT id FROM uts_urunler WHERE durum = 'gelen' AND uno = '08690000000064'"), 'id'));
+uts_gelenleri_kabul_et($lotIdler, [], false, false);
+uts_kuyrugu_isle();
+esit(2, (int) scalar("SELECT COUNT(*) FROM uts_bildirimler WHERE tur = 'alma' AND urun_id IN (" . implode(',', $lotIdler) . ") AND durum = 'gonderildi'"), 'iki sevkiyat için iki alma bildirimi');
+ok(!isset($uts->bekleyen[$va]) && !isset($uts->bekleyen[$vb]), 'sahte ÜTS iki sevkiyatı da kabul etti');
+
+// (5) Eşzamanlılık: ertelenmiş hatalı kaydı ikinci süreç kilitleyemez
+$ez = uts_bildirim_ekle('imha', ['UNO' => '9', 'SNO' => 'Z', 'GRK' => 'DIGER', 'BNO' => '1'], null, null, 1, 'ez:1');
+q("UPDATE uts_bildirimler SET durum = 'hata', deneme = 2, planlanan = ? WHERE id = ?", [uts_simdi(600), $ez]);
+$once = count($uts->istekler);
+uts_kuyrugu_isle();
+esit($once, count($uts->istekler), 'ertelenmiş kayıt gönderilmedi');
+q("DELETE FROM uts_bildirimler WHERE id = ?", [$ez]);
+
+// (6) Satış kalıcı hatalıysa iade sessizce beklemez
+$su = uts_stoga_okut($kk('08690000000071', 'IA1'), 'cerceve');
+$so = insert('orders', ['first_name' => 'I', 'last_name' => 'A']);
+uts_siparise_okut($so, $kk('08690000000071', 'IA1'));
+q("UPDATE orders SET order_stage = 'teslim_edildi', delivered_at = ? WHERE id = ?", [uts_simdi(), $so]);
+uts_siparis_asama_degisti($so, 'hazirlandi', 'teslim_edildi');
+$stv = row("SELECT * FROM uts_bildirimler WHERE order_id = ? AND tur = 'tuketiciye_verme'", [$so]);
+q("UPDATE uts_bildirimler SET durum = 'gonderiliyor', planlanan = ? WHERE id = ?", [uts_simdi(), (int) $stv['id']]);
+uts_siparis_asama_degisti($so, 'teslim_edildi', 'hazirlandi');
+q("UPDATE uts_bildirimler SET durum = 'hata', deneme = 99 WHERE id = ?", [(int) $stv['id']]);
+uts_kuyrugu_isle();
+$sti = row("SELECT * FROM uts_bildirimler WHERE order_id = ? AND tur = 'tuketiciden_iade'", [$so]);
+ok($sti['durum'] === 'hata' && (int) $sti['deneme'] === 99 && str_contains((string) $sti['son_hata'], '#' . $stv['id']), 'bağlı satış hatalıysa iade hata listesine düşer');
+
+// (7) Teslimden sonra SGK girildi
+setting_set('uts_ortam', 'deneme');
+$su2 = uts_stoga_okut($kk('08690000000071', 'SG1'), 'cerceve');
+$so2 = insert('orders', ['first_name' => 'S', 'last_name' => 'G']);
+uts_siparise_okut($so2, $kk('08690000000071', 'SG1'));
+q("UPDATE orders SET order_stage = 'teslim_edildi', delivered_at = ? WHERE id = ?", [uts_simdi(), $so2]);
+uts_siparis_asama_degisti($so2, 'hazirlandi', 'teslim_edildi');
+q("UPDATE orders SET sgk_erecete = 'ERX1' WHERE id = ?", [$so2]);
+uts_siparis_sgk_guncellendi($so2);
+esit('iptal', scalar("SELECT durum FROM uts_bildirimler WHERE order_id = ? AND tur = 'tuketiciye_verme'", [$so2]), 'gönderilmemiş ücretli satış bildirimi iptal');
+esit('sgk', uts_urun((int) $su2['id'])['durum'], 'ürün SGK çıkışına döndü');
+$su3 = uts_stoga_okut($kk('08690000000071', 'SG2'), 'cerceve');
+$so3 = insert('orders', ['first_name' => 'S', 'last_name' => 'H']);
+uts_siparise_okut($so3, $kk('08690000000071', 'SG2'));
+q("UPDATE orders SET order_stage = 'teslim_edildi', delivered_at = ? WHERE id = ?", [uts_simdi(), $so3]);
+uts_siparis_asama_degisti($so3, 'hazirlandi', 'teslim_edildi');
+uts_kuyrugu_isle();
+q("UPDATE orders SET sgk_amount = 300 WHERE id = ?", [$so3]);
+$m = uts_siparis_sgk_guncellendi($so3);
+ok((int) scalar("SELECT COUNT(*) FROM uts_bildirimler WHERE order_id = ? AND tur = 'tuketiciden_iade'", [$so3]) === 1 && str_contains(implode(' ', $m), 'iade'), 'gönderilmiş ücretli satış için iade sıraya girdi');
+esit([], uts_siparis_sgk_guncellendi($so3), 'ikinci çağrı bir şey yapmaz');
+
+// (9) Çift teslim isteği tek bildirim üretir (iki istek aynı sipariş satırını okumuş)
+$su4 = uts_stoga_okut($kk('08690000000071', 'CT1'), 'cerceve');
+$so4 = insert('orders', ['first_name' => 'C', 'last_name' => 'T']);
+uts_siparise_okut($so4, $kk('08690000000071', 'CT1'));
+q("UPDATE orders SET order_stage = 'teslim_edildi', delivered_at = ? WHERE id = ?", [uts_simdi(), $so4]);
+$eskiO = row('SELECT * FROM orders WHERE id = ?', [$so4]);
+uts_siparis_teslim($eskiO);
+uts_siparis_teslim($eskiO);
+esit(1, (int) scalar("SELECT COUNT(*) FROM uts_bildirimler WHERE order_id = ? AND tur = 'tuketiciye_verme'", [$so4]), 'çift teslim tek bildirim');
+
 echo "18) Özet ve rozet\n";
 $oz = uts_ozet();
-ok($oz['stokta'] > 0 && $oz['gelen'] >= 3, 'özet sayıları');
-ok(uts_menu_rozeti() >= 3, 'menü rozeti');
+ok($oz['stokta'] > 0 && $oz['gelen'] === (int) scalar("SELECT COUNT(*) FROM uts_urunler WHERE durum = 'gelen'") && $oz['gelen'] >= 1, 'özet sayıları');
+ok(uts_menu_rozeti() >= $oz['gelen'] + $oz['hata'], 'menü rozeti');
 
 bitir();

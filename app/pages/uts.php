@@ -21,7 +21,7 @@ if (is_post()) {
     $eylem = post('eylem');
     $don = 'uts.php?tab=' . rawurlencode(post('tab', $tab));
     $idler = array_map('intval', (array) ($_POST['id'] ?? []));
-    $sadeceYonetici = ['imha', 'iade', 'elle', 'iptal', 'deneme_kuyruga'];
+    $sadeceYonetici = ['imha', 'iade', 'elle', 'iptal', 'deneme_kuyruga', 'urun_duzenle'];
     if (in_array($eylem, $sadeceYonetici, true) && !is_super()) {
         flash('Bu işlem için yönetici yetkisi gerekir.', 'error');
         redirect($don);
@@ -41,11 +41,12 @@ if (is_post()) {
                 }
                 $n = uts_gelenleri_kabul_et($idler, (array) ($_POST['kat'] ?? []), post('cerceve_stok') === '1', post('kart_olustur') === '1');
                 audit('uts_kabul', 'uts', null, ['adet' => $n]);
-                uts_kuyrugu_isle(25);
+                uts_kuyrugu_isle(10, 20);
                 flash($n . ' ürün kabul edildi; ÜTS alma bildirimi gönderildi / sıraya alındı.');
                 break;
             case 'stok_okut':
-                $u = uts_stoga_okut((string) ($_POST['kod'] ?? ''), post('kategori', 'cerceve'), max(1, post_int('adet')), post('cerceve_stok') === '1');
+                // Çerçeve adedini artırmak stok sayısını değiştirir: yalnızca yönetici.
+                $u = uts_stoga_okut((string) ($_POST['kod'] ?? ''), post('kategori', 'cerceve'), max(1, post_int('adet')), is_super() && post('cerceve_stok') === '1');
                 audit('uts_stok', 'uts', (int) $u['id'], ['ürün' => uts_urun_etiketi($u)]);
                 flash('Stoğa kaydedildi: ' . uts_urun_etiketi($u) . ($u['frame_item_id'] ? ' — çerçeve kartına bağlandı.' : '.'));
                 $don = 'uts.php?tab=stok&son=' . (int) $u['id'];
@@ -63,16 +64,16 @@ if (is_post()) {
             case 'onayla':
                 $n = uts_bildirimleri_onayla($idler);
                 audit('uts_bildirim', 'uts', null, ['işlem' => 'onayla', 'adet' => $n]);
-                $o = uts_kuyrugu_isle(max(25, $n));
+                $o = uts_kuyrugu_isle(max(10, min(25, $n)), 20);
                 flash($n . ' bildirim onaylandı; ' . $o['gonderilen'] . ' tanesi ÜTS\'ye iletildi.' . ($o['durdu'] ? ' ' . $o['durdu'] : ''), $o['durdu'] ? 'warn' : 'ok');
                 break;
             case 'simdi_gonder':
-                $o = uts_kuyrugu_isle(50);
+                $o = uts_kuyrugu_isle(25, 25);
                 flash($o['gonderilen'] . ' bildirim iletildi' . ($o['hata'] ? ', ' . $o['hata'] . ' hata' : '') . '.' . ($o['durdu'] ? ' ' . $o['durdu'] : ''), $o['hata'] ? 'warn' : 'ok');
                 break;
             case 'tekrar':
                 flash(uts_bildirim_tekrar(post_int('bid')) ? 'Bildirim yeniden sıraya alındı.' : 'Bu bildirim yeniden denenemez.', 'info');
-                uts_kuyrugu_isle(10);
+                uts_kuyrugu_isle(5, 15);
                 break;
             case 'elle':
                 $ok = uts_bildirim_elle_tamam(post_int('bid'));
@@ -160,6 +161,7 @@ if (query_int('urun') > 0) {
         </section>
       </div>
       <aside class="split-side">
+        <?php if (is_super()): ?>
         <section class="card">
           <div class="card-head"><h2>Düzenle</h2></div>
           <form method="post" class="stack" style="gap:10px">
@@ -172,6 +174,7 @@ if (query_int('urun') > 0) {
             <button class="btn btn-sm btn-primary" style="align-self:flex-start">Kaydet</button>
           </form>
         </section>
+        <?php endif; ?>
       </aside>
     </div>
     <?php
@@ -305,8 +308,8 @@ page_header('ÜTS bildirimleri', 'Mal kabul, ücretli satış, iade ve imha bild
       <label class="field"><span>Karekod</span><input name="kod" required maxlength="200" value="<?= e($okutKod) ?>" data-barkod-alani placeholder="Okutun (Enter)" <?= $okutKod === '' ? 'autofocus' : '' ?>></label>
       <label class="field"><span>Ürün türü</span><select name="kategori"><?= select_options(uts_kategoriler(), 'cerceve') ?></select></label>
       <div class="form-actions" style="gap:8px;flex-wrap:wrap">
-        <label class="field" style="max-width:90px"><span>Adet (lot)</span><input type="number" name="adet" value="1" min="1" max="9999"></label>
-        <label class="check"><input type="checkbox" name="cerceve_stok" value="1"> Çerçeve adedini artır</label>
+        <label class="field" style="max-width:90px"><span>Adet (lot)</span><input type="number" name="adet" value="1" min="1" max="999"></label>
+        <?php if (is_super()): ?><label class="check"><input type="checkbox" name="cerceve_stok" value="1"> Çerçeve adedini artır</label><?php endif; ?>
         <button class="btn btn-primary"><?= icon('plus') ?> Kaydet</button>
       </div>
     </form>

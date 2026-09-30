@@ -142,6 +142,9 @@ function moduller_ayar_post(string $tab, string $action): bool
         setting_set('uts_yetki_hatasi', '');
         audit('settings_update', 'settings', null, ['bölüm' => 'ÜTS', 'ortam' => $ortam]);
         flash('ÜTS ayarları kaydedildi.');
+        if ($eskiOrtam !== $ortam && $eskiOrtam !== 'deneme' && $ortam !== 'deneme') {
+            flash(UTS_ORTAMLAR[$eskiOrtam] . ' → ' . UTS_ORTAMLAR[$ortam] . ': önceki ortama gönderilen bildirimler (mal kabul dahil) yeni ortamda YOKTUR. Test ortamında kabul edilen ürünleri canlıda yeniden kabul etmeniz gerekir.', 'warn');
+        }
         if ($eskiOrtam === 'deneme' && $ortam !== 'deneme') {
             flash('Gerçek ortama geçtiniz. Deneme modunda "iletildi" sayılan bildirimler ÜTS\'ye gitmedi; ÜTS › Bildirimler ekranından gönderebilirsiniz.', 'warn');
         }

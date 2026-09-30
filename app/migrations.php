@@ -1166,13 +1166,15 @@ function migrate_v22_moduller(): void
 
 function migrate_v23_uts(): void
 {
-    // Mağazadaki her ÜTS tekil ürünü (seri takipli: 1 satır = 1 ürün; lot takipli: 1 satır = aynı lot, adet).
+    // Mağazadaki her ÜTS tekil ürünü (seri takipli: 1 satır = 1 ürün; lot takipli: aynı lot birden çok satırda
+    // olabilir — her sevkiyat ve her sipariş parçası ayrı satır, adetli). Karekod alanları büyük/küçük harf ve
+    // aksan duyarlı (utf8mb4_bin): GS1 seri numaralarında "ab1" ile "AB1" farklı ürünlerdir.
     db()->exec("CREATE TABLE IF NOT EXISTS uts_urunler (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        anahtar VARCHAR(120) NOT NULL,
-        uno VARCHAR(23) NOT NULL,
-        lno VARCHAR(40) NULL,
-        sno VARCHAR(40) NULL,
+        anahtar VARCHAR(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+        uno VARCHAR(23) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+        lno VARCHAR(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
+        sno VARCHAR(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
         adet INT NOT NULL DEFAULT 1,
         kaynak VARCHAR(10) NOT NULL DEFAULT 'uts',
         skt DATE NULL,
@@ -1182,7 +1184,7 @@ function migrate_v23_uts(): void
         gonderen VARCHAR(200) NULL,
         gonderen_kurum VARCHAR(20) NULL,
         belge_no VARCHAR(40) NULL,
-        vbi CHAR(36) NULL,
+        vbi CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
         durum VARCHAR(14) NOT NULL DEFAULT 'stokta',
         frame_item_id INT UNSIGNED NULL,
         order_id INT UNSIGNED NULL,
@@ -1214,7 +1216,7 @@ function migrate_v23_uts(): void
         deneme TINYINT UNSIGNED NOT NULL DEFAULT 0,
         son_hata VARCHAR(500) NULL,
         yanit TEXT NULL,
-        tekil VARCHAR(80) NULL,
+        tekil VARCHAR(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL,
         planlanan DATETIME NOT NULL,
         gonderilme DATETIME NULL,
         created_by INT UNSIGNED NULL,

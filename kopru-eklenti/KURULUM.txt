@@ -1,0 +1,30 @@
+ÖNERİLEN: OptiFlow Masaüstü uygulaması Medula'yı kendi içinde açar ve reçeteyi
+eklenti, adres veya anahtar olmadan aktarır. Bu eklenti, masaüstü uygulamasına
+geçmemiş mağazalar için geçiş süresince desteklenir.
+
+4.10.0 İLE DEĞİŞEN: Köprü adresi artık mağaza numarası içerir (…&m=12 gibi).
+Eklentiyi daha önce kurduysanız, eklenti ayarlarındaki KÖPRÜ ADRESİNİ OptiFlow
+panelindeki "SGK reçete aktar" sayfasında yazan yeni adresle değiştirin.
+
+OPTIFLOW · MEDULA KÖPRÜSÜ (Chrome eklentisi)
+
+1. Bu klasörü mağaza bilgisayarına kopyalayın (örn. Masaüstü\optiflow-kopru).
+2. Chrome'da chrome://extensions adresini açın.
+3. Sağ üstteki "Geliştirici modu"nu açın.
+4. "Paketlenmemiş öğe yükle" → bu klasörü seçin.
+5. Eklenti simgesine tıklayın; OptiFlow panelindeki "SGK reçete aktar"
+   sayfasında yazan KÖPRÜ ADRESİ ve KÖPRÜ ANAHTARI bilgilerini girip kaydedin.
+
+Kullanım: Medula Optik'te reçeteyi açın, sağ altta beliren
+"Atölyeye aktar" düğmesine basın. Reçete, OptiFlow panelindeki
+"Köprüden gelenler" listesine düşer. Oradan "Aç" deyip hastayı
+eşleştirir, değerleri kontrol edip siparişe aktarırsınız.
+
+Neden eklenti gerekiyor: Medula Optik ekranında sferik/silendirik/aks
+değerleri kutuların (input/select) içinde durur; sayfayı kopyaladığınızda
+bu değerler metne girmez. Eklenti kutulardaki değerleri de doğru sırayla
+aktarır.
+
+Eklenti SGK kullanıcı adı/şifresi okumaz ve saklamaz, otomatik giriş yapmaz,
+arka planda kendiliğinden veri göndermez. Yalnızca siz düğmeye bastığınızda,
+o an ekranda görünen metni gönderir.

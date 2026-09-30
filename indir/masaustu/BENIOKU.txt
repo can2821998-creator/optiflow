@@ -1,0 +1,18 @@
+OPTIFLOW PRO — GÜNCELLEME KLASÖRÜ
+
+Bu klasör https://optiflow.com.tr/indir/masaustu/ adresinde yayında olmalı.
+Kurulu OptiFlow Pro uygulamaları 6 saatte bir ve "⋯ › Yardım › Güncellemeleri denetle"
+dendiğinde buradaki latest.yml dosyasına bakar.
+
+YENİ SÜRÜM YAYINLAMAK
+1. desktop/package.json içindeki "version" değerini artırın (ör. 5.1.0 → 5.1.1).
+2. Kurulum dosyasını üretin (desktop/RELEASE.md).
+3. desktop/release/ içindeki ÜÇ dosyayı bu klasöre yükleyin:
+     OptiFlow-Pro-Setup-<sürüm>.exe
+     OptiFlow-Pro-Setup-<sürüm>.exe.blockmap
+     latest.yml            ← EN SON yükleyin (önce exe tamamen yüklenmiş olmalı)
+4. Tarayıcıda https://optiflow.com.tr/indir/masaustu/latest.yml açılıp yeni sürüm
+   numarası görünmeli.
+
+Eski sürüm dosyalarını birkaç gün tutabilirsiniz; latest.yml hangisini gösteriyorsa o iner.
+Bu klasöre başka dosya koymayın.

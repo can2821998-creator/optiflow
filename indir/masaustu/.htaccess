@@ -1,0 +1,25 @@
+# OptiFlow Pro — otomatik güncelleme klasörü (4.11.0)
+# Buraya yalnızca release/ çıktısı konur: latest.yml, OptiFlow-Pro-Setup-<sürüm>.exe, .blockmap
+Options -Indexes
+
+# latest.yml asla önbelleğe alınmasın (yeni sürüm hemen görünsün)
+<IfModule mod_headers.c>
+  <FilesMatch "\.yml$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+</IfModule>
+<IfModule mod_mime.c>
+  AddType text/yaml .yml
+  AddType application/octet-stream .exe .blockmap
+</IfModule>
+
+# Bu klasörde betik çalışmaz
+<FilesMatch "\.(php[0-9]?|phtml|phar|cgi|pl|py|sh)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>

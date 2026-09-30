@@ -1,0 +1,48 @@
+/* OptiFlow · ÜTS karekod sayfası (4.7.0) */
+.uts-hide { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.uts-drop {
+  display: grid; place-items: center; gap: 8px; min-height: 170px; padding: 24px; text-align: center; cursor: pointer;
+  border: 1.5px dashed var(--line-strong, #cfc6b8); border-radius: var(--radius-md, 14px);
+  background: var(--surface-2); color: var(--ink-2); transition: border-color .2s, background .2s;
+}
+.uts-drop b { font-size: 17px; color: var(--ink); }
+.uts-drop span { color: var(--muted); font-size: 13px; }
+.uts-drop:hover, .uts-drop.is-over, .uts-drop:focus-within { border-color: var(--brand); background: var(--brand-tint, #eef4fb); }
+.uts-meta { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px 14px; margin: 18px 0 0; }
+.uts-meta dt { color: var(--muted); font: 700 12px/1.4 var(--sans); letter-spacing: .05em; text-transform: uppercase; }
+.uts-meta dd { margin: 0; font-weight: 650; overflow-wrap: anywhere; }
+.uts-warn { display: block; padding-left: 36px; list-style: disc; }
+.uts-warn::before { display: none; }
+.uts-warn li + li { margin-top: 4px; }
+.uts-stats { margin-top: 22px; }
+.uts-stats .stat span i { font-style: normal; font-weight: 700; color: var(--ink-2); }
+.uts-fs { border: 0; padding: 0; }
+.uts-fs .chip { padding: 7px 12px; }
+.uts-fs .chip em { font-style: normal; opacity: .7; font-size: 12px; }
+.uts-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.uts-grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.uts-grid4[hidden] { display: none; }
+.uts-out { display: grid; gap: 10px; padding: 14px; border-radius: var(--radius-md, 14px); background: var(--surface-2); border: 1px solid var(--line); }
+.uts-out > b { font-size: 15px; }
+.uts-out .btn-row .btn { flex: 1; }
+.uts-def { display: flex; gap: 8px; align-items: center; }
+.uts-def select { flex: 1; min-width: 0; font-size: 13px; }
+.uts-danger { border-color: var(--red); color: var(--red); }
+.uts-danger:not(:disabled):hover { background: var(--red-bg); }
+.uts-search { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; max-width: 320px; }
+.uts-search input { min-width: 0; width: 100%; }
+.uts-search .ic { flex: none; color: var(--muted); }
+.uts-table td { padding: 10px 10px; font-size: 13.5px; }
+.uts-mono { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+.uts-desc { min-width: 220px; max-width: 360px; }
+.uts-code { color: var(--muted); font-size: 11.5px; max-width: 260px; white-space: normal; overflow-wrap: anywhere; }
+.uts-bad td { background: var(--amber-bg); }
+#uts-app:not(.is-ready) .uts-drop { opacity: .6; }
+@media (max-width: 560px) {
+  .uts-grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .uts-meta { grid-template-columns: 90px minmax(0, 1fr); }
+}
+#uts-app [hidden] { display: none !important; }
+.uts-stats .stat span { display: block; }
+.uts-imha .hint { margin: 0 0 14px; }
+.uts-desc { min-width: 260px; }

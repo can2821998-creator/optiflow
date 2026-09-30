@@ -1,0 +1,75 @@
+OPTIFLOW — KURULUM NOTU (optiflow.com.tr)
+==========================================
+
+1) YÜKLEME
+   Zip'in içeriğini optiflow.com.tr'nin httpdocs (site kökü) klasörüne yükleyin — yani
+   optiflow.com.tr/index.php, /kayit.php şeklinde erişilmeli (alt klasör YOK).
+
+2) VERİTABANI
+   Plesk'ten bir MySQL veritabanı + kullanıcı açın. Bu TEK veritabanı hem uygulamanın kendi
+   mağaza kaydını (magazalar tablosu) hem de -sunucu izin veriyorsa- yeni mağazaların
+   veritabanlarını tutar. Paylaşımlı hostingde MySQL kullanıcısının yeni veritabanı açma
+   yetkisi genelde OLMAZ; bu normaldir, aşağıdaki "SAĞLAMA MODLARI" bölümüne bakın.
+
+3) config.php
+   Tarayıcıda optiflow.com.tr/kurulum.php'yi açıp veritabanı bilgilerini girin; config.php
+   otomatik oluşur. Sonra config.php'yi açıp:
+   - 'merkez_admin_password' alanına, merkez panele (aşağıda) girecek kendi şifrenizi yazın.
+   - 'admin_username' / 'admin_password' satırlarını SİLİN — bunlar eski tek-mağazalı kuruluma
+     özeldir; çok mağazalı sistemde her mağazanın yöneticisini kayıt formu kendi oluşturur.
+
+4) SAĞLAMA MODLARI (sistem hangisinin geçerli olduğunu kendi anlar)
+   OTOMATİK  — MySQL kullanıcınızın CREATE DATABASE yetkisi varsa (VPS/kök erişimli sunucu):
+               kayit.php'den gelen her başvuru anında aktif olur, hiçbir şey yapmanız gerekmez.
+   BEKLEMEDE — Paylaşımlı hosting/Plesk aboneliği gibi bu yetkinin olmadığı durumlarda: kayıt
+               formu bilgileri saklar ama veritabanı açmaz. Siz şunu yaparsınız:
+                 a) Plesk'te o mağaza için yeni bir veritabanı açın (Plesk otomatik bir
+                    kullanıcı da atar, tam yetkiyle).
+                 b) merkez-panel.php'de "Beklemede" satırındaki forma o veritabanının host/ad/
+                    kullanıcı/şifre bilgilerini girip "Etkinleştir" deyin.
+                 c) Sistem o veritabanında tabloları kurar, mağazanın ilk yöneticisini (kayıtta
+                    zaten saklanan bilgilerle) oluşturur, mağaza aktif olur.
+               optiflow.com.tr şu an bu moddadır (Plesk aboneliği, paylaşımlı hosting).
+
+5) MERKEZ PANEL
+   optiflow.com.tr/merkez-panel.php — 3. adımda belirlediğiniz şifreyle girilir. Tüm mağazaları,
+   planlarını, deneme sürelerini görür; beklemede olanları etkinleştirir, aktif olanları
+   dondurabilir/plan değiştirebilirsiniz.
+
+6) ANA SAYFA
+   optiflow.com.tr/ artık bir TANITIM sayfasıdır (index.php → app/karsilama.php): oturumu
+   olmayan her ziyaretçi bunu görür, "Ücretsiz deneyin" ve "Giriş yap" düğmeleri vardır.
+   Oturumu olan bir mağaza/kullanıcı aynı adrese girdiğinde normal iş paneli açılır — tanıtım
+   sayfası yalnızca hiç giriş yapılmamışken görünür.
+
+7) İLK TEST
+   Kendi e-postanızla kayit.php'den bir test mağazası oluşturun, "Beklemede" olarak düşecek
+   (bu hosting'de otomatik olmayacağı için), yukarıdaki 4b-4c adımlarıyla etkinleştirip uçtan
+   uca deneyin.
+
+8) PAZARLAMA AYARLARI (4.1.0)
+   app/pazarlama.php dosyasını açıp şunları doldurun: sirket_unvani, adres, telefon,
+   whatsapp (905XXXXXXXXX biçiminde), eposta, varsa instagram ve demo_video.
+   Fiyatları 'paketler' altındaki 'fiyat' alanlarına yazın (boşsa "Size özel fiyat için
+   bize yazın" görünür). Kurucu mağaza kampanyasını 'kampanya' => 'aktif' => true ile açın.
+   kurulum_destegi / veri_aktarim_destegi: ekibin gerçekten verebildiği sözleri açık tutun.
+   Boş bırakılan her alan sitede hiç görünmez.
+
+9) KVKK
+   optiflow.com.tr/kvkk.php genel bir taslaktır; yayına almadan önce bir hukukçuya
+   kontrol ettirin.
+
+10) MEDULA KÖPRÜSÜ
+   Eklenti artık "OptiFlow · Medula Köprüsü" adını taşır. Daha önce eski eklentiyi
+   yüklemiş mağazalar: chrome://extensions'ta eskisini kaldırıp kopru-eklenti klasörünü
+   yeniden yüklesin. Uzun vadede Chrome Web Store'a (liste dışı / unlisted) yüklemeniz,
+   "geliştirici modu" adımını ortadan kaldırır.
+
+BİLİNEN SINIRLAR
+   - Ödeme/faturalama entegrasyonu yok; deneme bitince yalnızca erişim kapanıyor.
+   - "Çerçeve Dene" (sanal deneme) özelliği bu mağazalar için otomatik algılamıyor; isteyen
+     mağaza Ayarlar'a kendi 'shop_try_url' adresini girer.
+   - Gerçek sunucuda uçtan uca test edilmedi (bu ortamda PHP çalıştırılamıyor); statik kod
+     kontrolü, birim testleri ve görsel önizlemeyle doğrulandı. 7. adımı mutlaka siz deneyin.
+   - VPS'e geçtiğinizde (root/CREATE DATABASE yetkisiyle): hiçbir kod değişikliği gerekmez,
+     sistem otomatik modu kendiliğinden kullanmaya başlar.

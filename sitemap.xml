@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Site haritası dizini: asıl liste sitemap.php tarafından her istekte güncel üretilir
+     (rehber yazıları yayınlandıkça kendiliğinden eklenir). Search Console'a sitemap.xml
+     gönderildiyse değiştirmeye gerek yoktur. -->
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://optiflow.com.tr/sitemap.php</loc>
+  </sitemap>
+</sitemapindex>

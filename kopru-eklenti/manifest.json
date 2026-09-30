@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "OptiFlow · Medula Köprüsü",
+  "version": "1.1.0",
+  "description": "Medula Optik ekranındaki reçeteyi tek tuşla OptiFlow paneline aktarır. SGK şifresi saklamaz, otomatik giriş yapmaz.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://gss.sgk.gov.tr/*"
+  ],
+  "options_page": "ayarlar.html",
+  "action": {
+    "default_title": "OptiFlow köprü ayarları",
+    "default_popup": "ayarlar.html",
+    "default_icon": {
+      "16": "ikon/icon-16.png",
+      "32": "ikon/icon-32.png"
+    }
+  },
+  "background": {
+    "service_worker": "arkaplan.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://gss.sgk.gov.tr/*"
+      ],
+      "js": [
+        "icerik.js"
+      ],
+      "css": [
+        "icerik.css"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "icons": {
+    "16": "ikon/icon-16.png",
+    "32": "ikon/icon-32.png",
+    "48": "ikon/icon-48.png",
+    "128": "ikon/icon-128.png"
+  }
+}

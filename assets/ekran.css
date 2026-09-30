@@ -1,0 +1,97 @@
+/* ==========================================================================
+   OPTIFLOW · ATÖLYE EKRANI (ekran.php)
+   Bilgisayarda ayrı sekme/pencere olarak açılır, ikinci monitörde de rahat okunur:
+   koyu zemin, büyük yazı. Boyutlar pencere genişliğine göre ölçeklenir. Yazı tipleri yereldir.
+   ========================================================================== */
+
+@font-face { font-family: "Fraunces"; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url("fonts/fraunces-latin-500-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Fraunces"; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url("fonts/fraunces-latin-ext-500-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Manrope"; font-style: normal; font-display: swap; font-weight: 200 800;
+  src: url("fonts/manrope-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Manrope"; font-style: normal; font-display: swap; font-weight: 200 800;
+  src: url("fonts/manrope-latin-ext-wght-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2C60-2C7F, U+A720-A7FF; }
+
+html { font-size: clamp(10px, 1.05vw, 30px); -webkit-text-size-adjust: 100%; }
+.ek {
+  --bg: #120c0a; --card: #1e1512; --card-2: #271b17; --line: #3b2c26;
+  --ink: #f6eee4; --ink-2: #d6c9bb; --muted: #a99c8e; --gold: #e3bd66;
+  --amber: #f0b44c; --blue: #7fb7ff; --violet: #c3a5ff; --green: #6fdc9a; --red: #ff8a97;
+  margin: 0; height: 100vh; overflow: hidden;
+  background: radial-gradient(90% 60% at 50% -10%, #2a1512 0%, rgba(42, 21, 18, 0) 60%) no-repeat, var(--bg);
+  color: var(--ink); font: 500 1rem/1.4 "Manrope", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.ek *, .ek *::before, .ek *::after { box-sizing: border-box; }
+.ek h2, .ek ul { margin: 0; padding: 0; list-style: none; }
+
+.ek-root { height: 100vh; display: grid; grid-template-rows: auto auto 1fr auto; gap: 1.1rem; padding: 1.5rem 2rem 1.1rem; }
+.ek-root.is-offline::after {
+  content: "Bağlantı yok — son bilgiler gösteriliyor"; position: fixed; left: 50%; bottom: 1rem; transform: translateX(-50%);
+  background: #5a1a22; color: #ffd6da; border: 1px solid #8f2a36; padding: .5rem 1.2rem; border-radius: 99px; font-weight: 700; font-size: 1.1rem; z-index: 5;
+}
+
+/* ---------- Üst ---------- */
+.ek-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; }
+.ek-brand b { display: block; font: 600 2.6rem/1.05 "Fraunces", Georgia, serif; letter-spacing: -.01em; }
+.ek-brand small { display: block; margin-top: .3rem; font-weight: 800; font-size: 1.05rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+.ek-side { display: flex; align-items: flex-end; gap: 2rem; }
+.ek-tools { display: flex; gap: .6rem; padding-bottom: .4rem; }
+.ek-btn { font: 700 1rem/1 "Manrope", sans-serif; color: var(--ink-2); background: transparent; border: 1px solid var(--line); border-radius: 99px; padding: .55rem 1.1rem; cursor: pointer; }
+.ek-btn:hover { background: var(--card-2); color: var(--ink); }
+.ek-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.ek-clock { text-align: right; }
+.gizli-ad .ek-who b { display: none; }
+.ek-oturum { position: fixed; left: 50%; bottom: 1rem; transform: translateX(-50%); z-index: 6; background: #3a2a10; color: #ffe2b0; border: 1px solid #6b4a1c; border-radius: 99px; padding: .6rem 1.4rem; font-weight: 700; font-size: 1.15rem; }
+.ek-oturum a { color: #fff; text-decoration: underline; }
+.ek-clock b { display: block; font: 800 3.6rem/1 "Manrope", sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.ek-clock span { display: block; margin-top: .25rem; font-size: 1.3rem; color: var(--ink-2); font-weight: 600; }
+.ek-warn { background: #3a2a10; color: #ffd69a; border: 1px solid #6b4a1c; border-radius: .8rem; padding: .6rem 1.1rem; font-weight: 700; font-size: 1.2rem; }
+
+/* ---------- Özet kutuları ---------- */
+.ek-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; }
+.ek-stat { background: var(--card); border: 1px solid var(--line); border-radius: 1.1rem; padding: .75rem 1.3rem .85rem; }
+.ek-stat b { display: block; font: 800 3rem/1 "Manrope", sans-serif; font-variant-numeric: tabular-nums; }
+.ek-stat span { display: block; margin-top: .35rem; font-size: 1.15rem; font-weight: 700; color: var(--ink-2); }
+.ek-stat.warn b { color: var(--amber); }
+.ek-stat.bad { border-color: #8f2a36; background: #2b1418; }
+.ek-stat.bad b { color: var(--red); }
+.ek-stat.good b { color: var(--green); }
+
+/* ---------- Sütunlar ---------- */
+.ek-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; min-height: 0; }
+.ek-col { --c: var(--amber); display: flex; flex-direction: column; min-height: 0; background: var(--card); border: 1px solid var(--line); border-top: .35rem solid var(--c); border-radius: 1.1rem; padding: 1rem 1.1rem .8rem; }
+.ek-amber { --c: var(--amber); } .ek-blue { --c: var(--blue); } .ek-violet { --c: var(--violet); } .ek-green { --c: var(--green); }
+.ek-col-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .6rem; }
+.ek-col-head h2 { font: 800 1.55rem/1.15 "Manrope", sans-serif; color: var(--c); letter-spacing: -.005em; }
+.ek-count { min-width: 2.6rem; padding: .1rem .7rem; border-radius: 99px; background: var(--card-2); border: 1px solid var(--line); text-align: center; font: 800 1.6rem/1.35 "Manrope", sans-serif; font-variant-numeric: tabular-nums; }
+.ek-rows { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.ek-row { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .9rem; padding: .55rem 0; border-top: 1px solid var(--line); }
+.ek-row:first-child { border-top: 0; }
+.ek-no { font: 800 1.45rem/1.1 "Manrope", sans-serif; font-variant-numeric: tabular-nums; color: var(--ink); }
+.ek-who { min-width: 0; display: flex; flex-direction: column; gap: .12rem; }
+.ek-who b { font-weight: 700; font-size: 1.3rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ek-meta { display: flex; align-items: center; gap: .55rem; min-width: 0; }
+.ek-meta small { flex: 1 1 auto; min-width: 0; font-size: 1.02rem; color: var(--muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ek-due { flex: none; padding: .1rem .6rem; border-radius: 99px; font-weight: 800; font-size: .98rem; line-height: 1.35; white-space: nowrap; background: var(--card-2); border: 1px solid var(--line); color: var(--ink-2); }
+.ek-due.late { background: #4a1820; border-color: #8f2a36; color: #ffc2c9; }
+.ek-due.today { background: #4a3410; border-color: #8a6420; color: #ffdf9c; }
+.ek-due.soon { background: #3a2e12; border-color: #6b5420; color: #f3d88f; }
+.ek-empty { color: var(--muted); font-size: 1.2rem; font-weight: 600; padding: 1rem 0; }
+.ek-more { color: var(--muted); font-weight: 800; font-size: 1.15rem; padding: .6rem 0 0; border-top: 1px dashed var(--line); margin-top: auto; }
+
+/* ---------- Alt ---------- */
+.ek-foot { display: flex; justify-content: space-between; gap: 2rem; color: var(--muted); font-size: 1.1rem; font-weight: 600; }
+
+/* ---------- Dar / dikey pencere ---------- */
+@media (max-aspect-ratio: 1/1) {
+  html { font-size: clamp(10px, 1.9vw, 30px); }
+  .ek-stats { grid-template-columns: repeat(3, 1fr); }
+  .ek-cols { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .ek * { animation: none !important; transition: none !important; } }

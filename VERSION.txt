@@ -1,0 +1,242 @@
+OPTIFLOW
+Release: 4.12.0 (2026-09-30)
+Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.12.0 (merkezden açılan yeni modüller)
+  - YENİ: Özellik anahtarları (app/ozellik.php). Merkez panel › mağaza detayı › "Özellikler"
+    kartından ya da toplu işlemlerden mağaza bazında açılır/kapatılır (magazalar.ozellikler,
+    kendiliğinden eklenir). VARSAYILAN KAPALI. Kapalı özellik menüde görünmez; sayfası açılmaz.
+  - WhatsApp otomasyonu (app/whatsapp.php, mesajlar.php): mesaj kuyruğu; "Tek tık" (WhatsApp
+    uygulaması) ya da "Otomatik" (WhatsApp Business Platform / Meta Cloud API, onaylı şablonlar).
+    Olaylar: gözlük hazır, teslim alınmadı, ödeme linki, yenileme, SGK hakkı, kontakt lens,
+    Google yorum isteği. Müşteri kartında mesaj izni (kaynak + tarih + işlem geçmişi); tanıtım
+    niteliğindeki mesajlar yalnızca izinli müşteriye gider. Gönderim saatleri ayarlanabilir.
+  - Kontakt lens takibi (app/lens.php): müşteri kartında lens satışı, bitiş tarihi, Hatırlatmalar ›
+    Kontakt lens sekmesi.
+  - PayTR ödeme linki (app/odeme.php, odeme-bildirim.php): Bakiye takibinden tek kullanımlık link;
+    PayTR bildirimi HMAC ile doğrulanır, tahsilat kendiliğinden yazılır; aynı bildirim ikinci kez
+    yazılmaz; TEST modunda tahsilat yazılmaz.
+  - Cam siparişi (app/tedarik.php, cam-siparis.php): eksik camlar tedarikçiye fişle (yazdır /
+    WhatsApp / e-posta); gönderilince "Depoya sipariş verildi"; gelince fiş kendiliğinden tamamlanır.
+    Tedarikçi kartına e-posta alanı.
+  - Satın alma önerisi (stok-oneri.php): kritik çerçeveler (90 günlük satış hızıyla) + fişe
+    girmemiş eksik camlar, tedarikçi bazında.
+  - e-Arşiv / e-Fatura HAZIRLIK (app/fatura.php, faturalar.php, fatura.php): siparişten taslak
+    (SGK payı ayrı taslak), TCKN/VKN algoritma kontrolü, KDV dağılımı, UBL-TR 1.2 XML önizleme,
+    entegratör sürücü arayüzü (EFaturaSurucu). GİB'e gönderim sonraki sürümde.
+  - SGK: hak tarihi artık son SGK'lı reçetenin gerçek tarihinden; sgk-mutabakat.php (aylık özet,
+    Medula listesiyle karşılaştırma — masaüstünde "Listeyi kontrol et"); aktarımlarda e-reçete no
+    saklanır (sgk_incoming.erecete, orders.sgk_erecete).
+  - Masaüstü (OptiFlow Pro 5.2.0): barkod/karekod okuyucu modu (barkod.php), çevrimdışı salt okunur
+    kopya (masaustu.php?action=ozet), Medula liste kontrolü (action=recete_kontrol).
+  - Zamanlanmış görev: cron.php?anahtar=… (merkez panelde gösterilir). Görevler ayrıca personel
+    sayfaları açıkken yanıt sonrası 5 dakikada bir kendiliğinden çalışır.
+  - Güvenlik: entegrasyon anahtarları (PayTR, WhatsApp) storage/.gizli-anahtar ile ŞİFRELİ saklanır.
+    storage/ klasörünü YEDEKLEYİN; .gizli-anahtar kaybolursa bu anahtarlar yeniden girilmelidir.
+  - Düzeltme: bazı silme onayları (push-admin, bağış, hatırlatma) CSP yüzünden hiç sorulmuyordu.
+  - Veritabanı: şema 22 (yeni tablolar: wa_mesajlar, lens_takip, odeme_linkleri, cam_siparisleri,
+    faturalar, fatura_satirlari; yeni sütunlar). İlk girişte kendiliğinden kurulur, veri silinmez.
+
+DEĞİŞİKLİK NOTLARI — 4.11.0 (OptiFlow Lite / Pro paketleri)
+  - YENİ: Mağaza paketi — OptiFlow Lite (web) / OptiFlow Pro (masaüstü uygulaması).
+    Merkez panel › mağaza detayı › "Paket" kartından ya da toplu işlemlerden atanır
+    (magazalar.surum, kendiliğinden eklenir). VARSAYILAN LİTE: mevcut mağazalar da Lite
+    başlar; Pro olması gerekenleri merkez panelden Pro yapın.
+  - Pro özellikler (app/paket.php): SGK/Medula reçete aktarımı ve ÜTS karekod.
+    Kural: Pro paket (sunucuda, her istekte merkezden taze okunur) VE OptiFlow Pro uygulaması.
+    Pro paketli mağaza tarayıcıdan girerse "OptiFlow Pro uygulamasını açın" görür.
+  - Lite: ÜTS menüde sade, kilitli görünür; tıklanınca pro.php tanıtım sayfası açılır.
+    SGK sayfasında elle yapıştırıp çözümleme Lite'ta da çalışır; Medula aktarımı kilitli kartla tanıtılır.
+  - masaustu.php: 'durum' paketi ve açık Pro özellikleri döner; 'aktar' Lite'ta 403 pro_gerekli.
+  - Chrome eklentisi köprüsü: yalnızca Pro mağazalarda (geçiş dönemi), Lite'ta 403.
+  - Masaüstü uygulamasında tanıtım (ana) sayfası gösterilmez; doğrudan mağaza girişi açılır.
+
+DEĞİŞİKLİK NOTLARI — 4.10.0 (OptiFlow Masaüstü desteği + iki kritik düzeltme)
+  - KRİTİK DÜZELTME: Personel girişi mağaza oturumunu siliyordu (attempt_login $_SESSION'ı
+    tamamen yeniden yazıyordu). Girişten sonraki sayfa tanıtım sayfasına / mağaza girişine
+    düşüyordu. Artık mağaza bağlamı girişte korunur (app/auth.php).
+  - KRİTİK DÜZELTME: Chrome eklentisi köprüsü çok mağazalı yapıda çalışmıyordu (eklenti çerez
+    taşımadığı için istek mağaza girişine yönleniyordu). Köprü adresi artık mağaza numarasını
+    taşır: sgk-aktar.php?action=kopru&m=<ID>. MAĞAZALAR EKLENTİ AYARINDAKİ ADRESİ BİR KEZ
+    GÜNCELLEMELİ (SGK reçete aktar sayfasındaki yeni adres). Eski adres anlaşılır bir hata verir.
+    Bilinmeyen/kapalı mağaza ile yanlış anahtar aynı yanıtı alır (mağaza numarası yoklanamaz).
+  - YENİ: masaustu.php — OptiFlow Masaüstü uygulamasının köprü API'si (oturum + CSRF ile;
+    anahtar ve CORS yok; destek oturumunda aktarım kapalı; hesap değiştiyse 409).
+  - YENİ: sgk-aktar.php?gelen=<ID> — aktarılan reçeteyi doğrudan önizlemede açar
+    (yalnızca kullanıcının kendi kaydı).
+  - Masaüstünde (kullanıcı aracısı "OptiFlowDesktop/x.y"): SGK sayfasında eklenti kurulumu
+    yerine "Medula'yı aç / Reçeteyi aktar" kartı; PWA kurulum istemi ve servis çalışanı yok.
+    is_optiflow_desktop() yalnızca görünüm içindir, yetki kararı değildir.
+  - Düzeltme: "Köprüden gelenler" silme onayı CSP yüzünden hiç sorulmuyordu (satır içi
+    onsubmit engelleniyordu); artık data-confirm kullanılıyor.
+  - Veritabanı şeması DEĞİŞMEDİ. sgk_incoming.kaynak alanına 'masaustu' değeri yazılabilir.
+
+DEĞİŞİKLİK NOTLARI — 4.9.0 (SEO güncellemesi: Rehber bölümü + hız + erişilebilirlik)
+  - YENİ: Rehber (blog) bölümü — rehber.php (liste) ve rehber.php?y=<adres> (yazı).
+    Article + BreadcrumbList yapılandırılmış verisi, canonical, Open Graph, okuma süresi,
+    "Diğer rehberler" iç bağlantıları ve deneme çağrısı kutusu. Veritabanı KULLANMAZ:
+    yazılar JSON dosyasıdır (paketle gelenler app/rehber-hazir/, panelden eklenenler
+    storage/rehber/). Yazı HTML'i beyaz listeyle temizlenir (script/stil/olay öznitelikleri atılır).
+  - İlk yazı yayında: "Gözlükçü Programı Seçerken Dikkat Edilecek 9 Şey".
+  - Merkez panel › "Rehber · SEO" sekmesi: yazı ekle/düzenle, yayına al/kaldır, sil (SİL onaylı),
+    işlem günlüğüne yazılır. SEO panosundaki taslaklar buraya yapıştırılarak yayınlanır.
+  - Dinamik site haritası: sitemap.php (ana sayfa, rehber, yayındaki tüm yazılar, KVKK).
+    sitemap.xml artık sitemap.php'yi gösteren site haritası dizinidir → Search Console'da
+    bir şey değiştirmeye gerek yok; yeni yazılar kendiliğinden eklenir.
+  - Ana sayfa menüsüne ve alt bilgisine "Rehber" bağlantısı.
+  - PageSpeed düzeltmeleri: assets/ga4.js artık "defer" (oluşturmayı engellemiyor);
+    .htaccess'e statik dosyalar için tarayıcı önbelleği (yazı tipi 1 yıl, CSS/JS/görsel 1 ay).
+  - Erişilebilirlik: başlık sırası düzeltildi (H1→H4 ve H2→H4/H5 atlamaları kaldırıldı);
+    kırmızı düğmelerde beyaz yazı kontrastı 3,4:1 → 4,7:1 (--pop #ff4433 → #db2f20).
+  - seo-veri.php: hata ipuçları netleştirildi (API kapalıyken yanlış "kullanıcı ekleyin"
+    uyarısı çıkmıyor; PageSpeed kota hatasında 'psi_api_key' önerisi). config.sample.php'ye
+    'psi_api_key' eklendi.
+
+DEĞİŞİKLİK NOTLARI — 4.8.0 (SEO veri köprüsü)
+  - YENİ: seo-veri.php — günlük SEO görevinin okuduğu salt-okunur JSON uç noktası.
+    Google Search Console (son 28 gün sorgu/sıra/tıklama/gösterim, önceki 28 günle
+    sıra karşılaştırması, sayfalar, günlük seri, cihaz) + PageSpeed Insights (mobil).
+  - config.php'de 'seo_token' yoksa kapalıdır; yanlış anahtarla 403 döner.
+  - Google hizmet hesabı anahtarı storage/gsc-anahtar.json (web'e kapalı klasör).
+  - Veritabanına ve hasta/mağaza verisine DOKUNMAZ. Başarılı sonuç 3 saat önbelleklenir
+    (storage/seo/son.json).
+  - Ana sayfa <title> 76 → 61 karaktere indirildi (Google'da kesilmesin; ana kelime başta):
+    "Gözlükçü Programı OptiFlow | Medula Köprüsü ve SGK Katkı Payı".
+
+DEĞİŞİKLİK NOTLARI — 4.7.0 (ÜTS karekod modülü)
+  - YENİ SAYFA: uts-karekod.php (menü: Atölye › ÜTS karekod). Eskiden ayrı çalışan
+    "UTS Karekod Etiket Hazırlayıcı" OptiFlow paneline taşındı.
+    * ÜTS stok / bildirim listesini (XLS, XLSX, CSV, XML) okur; Medula'ya okutulabilir
+      karekodları üretip A4 etiket PDF'i hazırlar. Karekod içeriğinin biçimi
+      DEĞİŞMEDİ (sahada doğrulanmış biçim korunur).
+    * Cam / çerçeve / lens / kontak lens / solüsyon ayrımı, cam grubu sıralaması,
+      SKT filtresi (geçmiş / 30 / 90 gün / SKT yok), GTIN-seri-lot arama.
+    * Etiket düzeni: klasik 4×10 + mağazanın etiket sihirbazındaki yapışkanlı/kesme
+      A4 düzenleri + özel sütun×satır; "baştan atla" (yarım kullanılmış kâğıt).
+    * SKT geçmiş ürünler için ÜTS toplu imha/bertaraf bildirim dosyası (.xls).
+    * Dosya sunucuya GÖNDERİLMEZ: tüm işlem tarayıcıda yapılır. CSP'ye uygun
+      (satır içi JavaScript yok; kod assets/uts-karekod.js içinde).
+  - Eski araçta düzeltilen hatalar:
+    * Excel'de sayı olarak duran GTIN'ler "8,68E+12" gibi bilimsel gösterime düşüp
+      bozuk karekod üretiyordu → hücreler ham değerle okunuyor.
+    * Tarih hücreleri Excel biçimine göre (ör. 6/18/26) okunamıyor, SKT "yok",
+      üretim tarihi boş kalıyordu → Excel seri tarihi + YYYY-AA-GG, GG.AA.YYYY,
+      GG.AA.YY biçimleri okunuyor.
+    * 4×10 düzeninde alttaki Medula kod satırı etiketin dışına (alttaki etikete)
+      taşıyordu → yerleşim etiket boyutuna göre hesaplanıyor, uzun metin sığdırılıyor.
+    * PDF'te ğ/ş/ı/İ harfleri bozuk çıkıyordu → okunaklı karşılıklarına çevriliyor.
+    * İmha dosyasında formda girilen "Gerçek işlem tarihi" dosyaya yazılmıyordu → yazılıyor
+      (ÜTS biçimi YYYY-AA-GG); ileri tarih engellendi. Lot ürünlerde adet listeden alınıyor.
+    * Başlık satırı ilk satırda değilse dosya okunamıyordu → ilk 20 satırda aranıyor.
+    * Seri/lot/eşsiz kimliği olmayan satırlar sessizce atlanıyordu → uyarı olarak gösteriliyor;
+      GTIN kontrol hanesi hatalı ve tekrarlanan karekodlar da uyarılıyor.
+    * CSV/XLSX dışa aktarımında Excel formül enjeksiyonuna karşı koruma.
+    * Lot takipli ürünlerde isteğe bağlı "adet kadar etiket".
+
+DEĞİŞİKLİK NOTLARI — 4.6.0 (Merkez panel — derin kontrol)
+  - PERSONEL YÖNETİMİ: Mağaza detayında, mağazanın kendi veritabanındaki personel
+    kullanıcıları listelenir; her biri için şifre sıfırlama ve aktif/pasif yapma.
+    Son aktif süper yetkiliyi pasife alma engellenir (kilitlenmeyi önler).
+  - MAĞAZA PANELİNE GİR (destek/impersonate): Aktif bir mağazanın paneline, o
+    mağazanın süper yetkilisi olarak girip destek verebilirsiniz. Merkez yetkisi
+    korunur; üstte uyarı çubuğuyla merkeze/oturuma dönülür. (Salt-okunur değildir.)
+  - TOPLU İŞLEMLER: Listede mağazaları işaretleyip topluca dondur / aktifleştir /
+    +30 gün uzat / planı ücretli-deneme yap.
+  - ELLE MAĞAZA OLUŞTURMA: "+ Yeni mağaza" ile paneli üzerinden mağaza açma
+    (sunucu izin veriyorsa anında aktif, yoksa beklemede).
+  - SAĞLIK TARAMASI: Tüm mağazaların veritabanı erişilebilirliği + sipariş/müşteri/
+    kullanıcı sayıları tek ekranda.
+  - İŞLEM GÜNLÜĞÜ (audit): Panelde yapılan her işlem (giriş, etkinleştirme, plan,
+    silme, şifre sıfırlama, impersonate, toplu…) IP ve zamanla kaydedilir; ayrı
+    "İşlem günlüğü" sekmesinde görünür.
+  - Tümü CSP-güvenli (satır içi JavaScript yok; toplu seçim HTML5 form= özelliğiyle).
+  - magazalar tablosuna 'notlar'/'guncelleme', ayrıca 'merkez_islem_log' tablosu
+    otomatik eklenir.
+
+DEĞİŞİKLİK NOTLARI — 4.5.0 (Gelişmiş Merkez Yönetim Paneli)
+  - merkez-panel.php baştan yazıldı; artık tam bir yönetim panosu:
+    * KPI panosu: toplam / aktif / beklemede / donduruldu / ücretli / denemede /
+      7 günde bitiyor / denemesi dolmuş (tıklanınca filtreler).
+    * Arama (ad, e-posta, veritabanı, kullanıcı) + durum/plan filtresi + sıralama.
+    * Mağaza DETAY sayfası (?magaza=ID):
+        - Canlı durum: mağazanın kendi veritabanına anlık bağlanıp sipariş,
+          müşteri, kullanıcı sayısı, veritabanı boyutu ve son personel girişi.
+        - Plan ve deneme yönetimi + tek tıkla +15/+30/+90 gün uzatma.
+        - Dondur / aktifleştir, ad-e-posta düzenleme, serbest not alanı.
+        - Veritabanı bağlantısını güncelleme (kaydetmeden önce bağlanarak doğrular).
+        - Mağaza giriş şifresini sıfırlama.
+        - Tehlikeli bölge: kaydı kalıcı silme (kutuya "SİL" yazma onayıyla;
+          mağazanın KENDİ veritabanını SİLMEZ, yalnızca merkez kaydını siler).
+    * CSV dışa aktarma (Excel-Türkçe uyumlu; şifre alanları hariç).
+    * Tümü CSP-güvenli: satır içi JavaScript yok (genişleyen bölümler <details>).
+  - magazalar tablosuna 'notlar' ve 'guncelleme' kolonları eklendi (otomatik).
+
+DEĞİŞİKLİK NOTLARI — 4.4.0 (Ana sayfa görsel yükseltme + kayma düzeltmeleri)
+  - Orta şeritteki ikonların kayması giderildi (alt-yazı kuralı ikon kutusunu
+    da eziyordu; kural yalnızca metne daraltıldı).
+  - Yazı tipi preload + metrik-eşleşmiş yedek yüz → font yüklenince oluşan
+    sıçrama (CLS) neredeyse sıfırlandı; çapa bağlantıları artık başlık altına
+    kaymıyor (scroll-padding).
+  - Görsel yükseltme (yalnızca CSS): kaydırınca beliren bölümler, hero doku,
+    kart derinliği/hover, erişilebilir odak halkası.
+
+DEĞİŞİKLİK NOTLARI — 4.3.0 (Google Analytics 4)
+  - GA4 ölçümlemesi eklendi (ölçüm kimliği: app/pazarlama.php içindeki 'ga4_id').
+    Kimlik boşsa hiçbir sayfaya kod eklenmez.
+  - CSP-dostu kurulum: gtag.js başlatma kodu harici assets/ga4.js dosyasındadır;
+    satır içi JavaScript ve 'unsafe-inline' KULLANILMAZ. CSP yalnızca Google
+    ölçümleme alan adlarına açıldı (googletagmanager.com, google-analytics.com).
+  - GA4 YALNIZCA giriş öncesi genel sayfalara eklendi: ana sayfa (karşılama),
+    kayıt, teşekkürler, mağaza girişi, kullanıcı girişi, "Siparişim nerede?" ve
+    KVKK sayfası. Panel (hasta/reçete verisi) ve token içeren durum.php sayfasına
+    KVKK gereği EKLENMEDİ.
+
+DEĞİŞİKLİK NOTLARI — 4.2.0 (GÜVENLİK)
+  - Merkez panel girişine kaba kuvvet freni eklendi (IP bazlı, 15 dakikada 8
+    hatalı deneme → geçici kilit). Eskiden merkez şifresine sınırsız deneme
+    yapılabiliyordu; bu, tüm mağazaları yöneten tek şifredir.
+  - Merkez şifresi artık HASH olarak saklanabilir: config.php'ye
+    'merkez_admin_password_hash' (password_hash çıktısı) ekleyin; düz metin
+    'merkez_admin_password' hâlâ çalışır ama önerilmez. Girişte oturum kimliği
+    yenilenir (session fixation koruması).
+  - "Siparişim nerede?" genel sorgusuna IP bazlı fren eklendi (15 dakikada 25
+    deneme). Eski oturum-bazlı sınır çerez atılarak aşılabiliyordu.
+  - Kök dizine savunma amaçlı .htaccess eklendi: config.php, *.bak, *.log,
+    *.sql ve nokta dosyaları web'den okunamaz; dizin listeleme kapalı.
+
+DEĞİŞİKLİK NOTLARI — 4.1.0
+  - Karşılama (tanıtım) sayfası baştan yazıldı: Medula köprüsü ve SGK katkı
+    payı öne çıkarıldı; daha önce hiç anlatılmayan modüller (hatırlatmalar,
+    "Siparişim nerede?", aile kartı, teklif, kâr raporu, gün sonu kasa, bakiye
+    takibi, tedarikçi karnesi, stok/etiket, personel primi, atölye ekranı,
+    başarılar, gözlük bağışı) üç grupta tanıtılıyor. Yeni bölümler: köken
+    hikâyesi, fiyatlar, Güven ve KVKK, genişletilmiş SSS (FAQ şeması ile),
+    mobilde yapışkan "Ücretsiz deneyin / WhatsApp" çubuğu.
+  - YENİ: app/pazarlama.php — telefon, WhatsApp, e-posta, adres, şirket unvanı,
+    fiyatlar ve kampanya BURADAN yönetilir. Boş alanlar sitede görünmez.
+  - YENİ: kvkk.php — KVKK aydınlatma metni (taslak; hukukçuya kontrol ettirin).
+    Kayıt formuna aydınlatma metni bağlantısı eklendi.
+  - YENİ: assets/og-optiflow.png — WhatsApp/sosyal medya paylaşım görseli.
+  - Teşekkür sayfası: "beklemede" başvurularda kişisel kurulum mesajı ve
+    (ayarlıysa) WhatsApp düğmesi.
+  - Marka temizliği: tüm "Poyraz Optik" izleri kaldırıldı (çevrimdışı sayfa,
+    servis çalışanı, bildirim başlığı, CSS/JS başlıkları, eklenti).
+  - Medula köprüsü eklentisi OptiFlow adına taşındı (ad, açıklama, renkler,
+    simgeler; sürüm 1.1.0). Mağazalarda eski eklenti KALDIRILIP bu klasör
+    yeniden yüklenmeli (ayarlar tekrar girilir).
+  - KVKK: app/sgk.php içindeki örnek ekran açıklamasında yer alan gerçek hasta
+    bilgileri (T.C. kimlik no, ad-soyad, doktor adı) kurgusal verilerle değiştirildi.
+  - Oturum çerezi adı "optiflow" oldu: güncellemeden sonra tüm kullanıcılar
+    BİR KEZ yeniden giriş yapar (beklenen davranış).
+
+DEĞİŞİKLİK NOTLARI — 4.0.0
+  - Marka kimliği yenilendi: yeni "O içinde göz" monogramı (logo/simge).
+    Güncellenen yerler: uygulama menüsü (sol üst logo), giriş ekranı, ana sayfa
+    (karşılama/tanıtım sayfası), kayıt sonrası teşekkür sayfası, favicon,
+    PWA uygulama ikonları (icon-192.png, icon-512.png, icon-maskable-512.png).
+  - Sürüm numarası 3.43.0 → 4.0.0 yükseltildi; bu sayede tarayıcılar CSS/JS
+    dosyalarını önbellekten değil güncel haliyle yükler (cache-busting).
+
+ÖNCEKİ SÜRÜMLER
+  3.43.0 — çok mağazalı (multi-tenant) altyapı, mağaza kaydı/girişi, merkez
+           panel, SGK katkı payı otomasyonu, OptiFlow karşılama sayfası.

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bağlantı yok · OptiFlow</title>
+<meta name="theme-color" content="#0a2038">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<style>
+  :root{--paper:#faf8f4;--ink:#1a1723;--ink-2:#45414f;--muted:#6b6673;--brand:#15395e;--brand-deep:#0a2038;--accent:#e79a1b;--line:#e7e1d8;--surface:#fff}
+  *{box-sizing:border-box}
+  [hidden]{display:none !important}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;
+    background:var(--paper);color:var(--ink);
+    font:560 15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  main{width:min(420px,100%);text-align:center}
+  .mark{width:84px;height:84px;margin:0 auto 22px;display:grid;place-items:center;border-radius:26px;
+    background:linear-gradient(135deg,#1c4d78,#0a2038);box-shadow:0 20px 44px -22px rgba(10,32,56,.6)}
+  .mark svg{width:52px;height:52px}
+  h1{margin:0 0 10px;font-size:25px;font-weight:750;letter-spacing:-.015em}
+  p{margin:0 0 8px;color:var(--ink-2);line-height:1.6}
+  .hint{color:var(--muted);font-size:13.5px;margin-top:18px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:22px;
+    min-height:48px;padding:12px 26px;border:0;border-radius:999px;cursor:pointer;
+    background:linear-gradient(180deg,#1c4d78,#0a2038);color:#fff;
+    font:650 14.5px system-ui,Arial,sans-serif;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 12px 26px -14px rgba(10,32,56,.8)}
+  .btn:active{transform:translateY(1px)}
+  .rule{width:64px;height:2px;margin:20px auto 0;border-radius:2px;
+    background:linear-gradient(90deg,var(--accent),rgba(231,154,27,0))}
+  .card{margin-top:24px;padding:16px 18px;border:1px solid var(--line);border-radius:18px;
+    background:var(--surface);text-align:left;font-size:13.5px;color:var(--ink-2)}
+  .card b{display:block;margin-bottom:6px;color:var(--ink);font-size:13px;letter-spacing:.05em;text-transform:uppercase}
+  @media (prefers-color-scheme: dark){
+    body{background:#0a151f;color:#eaf1f7}
+    p{color:#a8bac9}.card{background:#0e202f;border-color:#1c3347;color:#a8bac9}.card b{color:#eaf1f7}
+    .board button{background:#0e202f;border-color:#1c3347}
+  }
+  .btn.ghost{background:transparent;color:var(--brand-deep);box-shadow:none;border:1.5px solid var(--line);margin-top:14px}
+  @media (prefers-color-scheme: dark){ .btn.ghost{color:#eaf1f7;border-color:#1c3347} }
+  .game{margin-top:20px}
+  .game-head{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:8px;padding:0 2px}
+  .board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .board button{aspect-ratio:1;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);
+    font-size:26px;display:grid;place-items:center;cursor:pointer;transition:transform .25s,background .2s;padding:0}
+  .board button:disabled{cursor:default}
+  .board button.flip{transform:rotateY(0);background:var(--accent-soft, #fbeacb)}
+  .board button.matched{opacity:.35;transform:scale(.92)}
+  .game-msg{margin-top:10px;font-size:13.5px;color:var(--brand-ink);min-height:1.4em;font-weight:700}
+</style>
+</head>
+<body>
+<main>
+  <div class="mark">
+    <svg viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-linecap="round" aria-hidden="true">
+      <circle cx="17.5" cy="25" r="8.5" stroke-width="2.4"/>
+      <circle cx="30.5" cy="25" r="8.5" stroke-width="2.4" stroke="#e3bd66"/>
+      <path d="M22.3 22.4c1.1-.9 2.3-.9 3.4 0" stroke-width="2.4"/>
+    </svg>
+  </div>
+  <h1>Bağlantı yok</h1>
+  <p>Atölye verileri canlı sunucudan geliyor, bu yüzden internet olmadan gösterilemiyor.</p>
+  <span class="rule"></span>
+  <button class="btn" onclick="location.reload()">Yeniden dene</button>
+  <div class="card">
+    <b>Ne yapmalı</b>
+    Wi-Fi veya mobil veriyi kontrol edin. Bağlantı gelince bu ekran kendiliğinden kapanır ve kaldığınız yerden devam edersiniz.
+  </div>
+  <button class="btn ghost" id="playBtn" type="button">🎮 Bağlantı gelene kadar oyna</button>
+  <div class="game" id="game" hidden>
+    <div class="game-head"><span id="gameMoves">0 hamle</span><span id="gameBest"></span></div>
+    <div class="board" id="board" aria-label="Hafıza eşleştirme oyunu"></div>
+    <p class="game-msg" id="gameMsg" aria-live="polite"></p>
+  </div>
+  <p class="hint">OptiFlow</p>
+</main>
+<script>
+  addEventListener('online', () => location.reload());
+  setInterval(() => { if (navigator.onLine) location.reload(); }, 5000);
+
+  // Basit hafıza eşleştirme oyunu — sadece bağlantı yokken oyalanmak için.
+  (function () {
+    var playBtn = document.getElementById('playBtn');
+    var game = document.getElementById('game');
+    var board = document.getElementById('board');
+    var movesEl = document.getElementById('gameMoves');
+    var bestEl = document.getElementById('gameBest');
+    var msgEl = document.getElementById('gameMsg');
+    var EMOJI = ['🕶️', '👓', '🔍', '✨', '💎', '🌟', '🧿', '🔧'];
+    var moves = 0, opened = [], lock = false, matched = 0;
+    var bestKey = 'optiflow_offline_best';
+
+    function shuffle(arr) {
+      for (var i = arr.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      }
+      return arr;
+    }
+
+    function best() {
+      try { return localStorage.getItem(bestKey); } catch (e) { return null; }
+    }
+    function setBest(v) {
+      try { localStorage.setItem(bestKey, String(v)); } catch (e) {}
+    }
+
+    function start() {
+      var cards = shuffle(EMOJI.concat(EMOJI));
+      moves = 0; opened = []; lock = false; matched = 0;
+      movesEl.textContent = '0 hamle';
+      var b = best();
+      bestEl.textContent = b ? ('En iyi: ' + b + ' hamle') : '';
+      msgEl.textContent = '';
+      board.innerHTML = '';
+      cards.forEach(function (emoji) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.setAttribute('aria-label', 'Kart');
+        btn.dataset.val = emoji;
+        btn.addEventListener('click', function () { flip(btn); });
+        board.appendChild(btn);
+      });
+    }
+
+    function flip(btn) {
+      if (lock || btn.classList.contains('flip') || btn.classList.contains('matched')) return;
+      btn.textContent = btn.dataset.val;
+      btn.classList.add('flip');
+      opened.push(btn);
+      if (opened.length === 2) {
+        moves++;
+        movesEl.textContent = moves + ' hamle';
+        lock = true;
+        var a = opened[0], c = opened[1];
+        if (a.dataset.val === c.dataset.val) {
+          a.classList.add('matched'); c.classList.add('matched');
+          matched += 2;
+          opened = []; lock = false;
+          if (matched === EMOJI.length * 2) {
+            var b = best();
+            if (!b || moves < parseInt(b, 10)) { setBest(moves); msgEl.textContent = '🎉 Yeni rekor! ' + moves + ' hamlede bitirdiniz.'; }
+            else { msgEl.textContent = '🎉 Bitti! ' + moves + ' hamlede tamamladınız.'; }
+          }
+        } else {
+          setTimeout(function () {
+            a.textContent = ''; c.textContent = '';
+            a.classList.remove('flip'); c.classList.remove('flip');
+            opened = []; lock = false;
+          }, 650);
+        }
+      }
+    }
+
+    playBtn.addEventListener('click', function () {
+      playBtn.hidden = true;
+      game.hidden = false;
+      start();
+    });
+  })();
+</script>
+</body>
+</html>

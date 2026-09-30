@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><title>OptiFlow · Medula köprüsü ayarları</title>
+<style>
+  body{margin:0;padding:20px;width:360px;background:#fafafa;color:#14131f;
+    font:14px/1.5 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  h1{margin:0 0 4px;font-size:17px}
+  p{margin:0 0 16px;color:#6b6673;font-size:12.5px;line-height:1.5}
+  label{display:block;margin-bottom:12px;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#6b6673}
+  input{width:100%;box-sizing:border-box;margin-top:5px;padding:10px 12px;border:1px solid #d5cdc0;border-radius:10px;
+    font:13px ui-monospace,Menlo,Consolas,monospace;background:#fff;color:#1a1723}
+  input:focus{outline:0;border-color:#3346ff;box-shadow:0 0 0 3px rgba(51,70,255,.2)}
+  button{width:100%;min-height:44px;border:0;border-radius:999px;cursor:pointer;
+    background:linear-gradient(180deg,#4a5aff,#1c2ecc);color:#fff;font:700 14px system-ui}
+  .ok{margin-top:12px;padding:10px 12px;border-radius:10px;background:#eceffe;color:#1c2ecc;font-weight:700;font-size:12.5px}
+  .not{margin-top:14px;padding:10px 12px;border-radius:10px;background:#f1f1f6;color:#45414f;font-size:12px;line-height:1.5}
+</style></head>
+<body>
+  <h1>OptiFlow · Medula köprüsü</h1>
+  <p>Bu iki bilgiyi OptiFlow panelinizdeki <b>SGK reçete aktar</b> sayfasından kopyalayın.</p>
+  <label>Köprü adresi<input id="adres" placeholder="https://siteniz.com/sgk-aktar.php?action=kopru"></label>
+  <label>Köprü anahtarı<input id="anahtar" placeholder="40 karakterlik anahtar"></label>
+  <button id="kaydet">Kaydet</button>
+  <div class="ok" id="bilgi" hidden>Kaydedildi ✓</div>
+  <div class="not">Eklenti yalnızca <b>gss.sgk.gov.tr</b> sayfalarında çalışır ve sadece siz
+    "Atölyeye aktar" düğmesine bastığınızda, o anda ekranda görünen metni gönderir.
+    SGK kullanıcı adınızı veya şifrenizi okumaz, saklamaz.</div>
+  <script src="ayarlar.js"></script>
+</body></html>

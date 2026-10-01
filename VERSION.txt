@@ -1,6 +1,24 @@
 OPTIFLOW
-Release: 4.14.0 (2026-10-01)
+Release: 4.15.0 (2026-10-01)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.15.0 (hatalı cam kaydı, SGK hak kontrolü)
+  - YENİ özellik anahtarları "cam_hata" ve "sgk_hak" (merkez panelden, varsayılan kapalı).
+  - Hatalı cam / yeniden yapım (app/cam-hata.php, cam-hatalari.php, sipariş kartı): sebep (laboratuvar,
+    ölçü, montaj, kırılma, uyum, diğer), göz, sorumlu, maliyet. Seçilen camlar Depo · Stok'ta yeniden
+    "Eksik" olur (cam siparişi akışı aynen işler). Laboratuvar hatasında tedarikçiden iade alacağı;
+    "alındı" denince tedarikçi carisine "İade / alacak" kaydı (borç azalır), geri alınabilir. Sipariş
+    kârlılığından yeniden yapım maliyeti (iade düşülmüş) çıkar. Rapor: dönem, sebep, tedarikçi, personel,
+    bekleyen iadeler. Tedarikçi karnesinde "Lab hatası" sütunu. Hatalı cam kaydı olan sipariş silinemez.
+  - SGK hak kontrolü (app/sgk-hak.php, sgk-hak.php, sipariş kartı, müşteri kartı): son SGK'lı alım +
+    yaşa göre süre (varsayılan yetişkin 24 ay, 14 yaş altı 12 ay; ayarlanabilir). Medula / e-Devlet hak
+    ekranı OptiFlow Pro 5.2.0'daki mevcut "Aktar" düğmesiyle (sunucu ekranı tanır) ya da yapıştırarak okunur:
+    son alım, hak var/yok ifadesi, sonraki hak tarihi; başka optikteki alımlar da hesaba girer.
+    Reçete ekranları hak ekranı sanılmaz (etiket sayımı, işaretli diyoptri, e-reçete no kontrolü).
+    SGK aktarımında hak yoksa uyarı. T.C. kimlik no saklanmaz.
+  - Masaüstü uygulamasında değişiklik YOK: OptiFlow Pro 5.2.0 ile çalışır.
+  - Veritabanı: şema 25 (cam_hatalari, sgk_hak_sorgulari). Yalnızca ekleme.
+  - Testler: tests/hata-hak (70 + 26 kontrol).
 
 DEĞİŞİKLİK NOTLARI — 4.14.0 (alış faturası ve senet takibi)
   - YENİ özellik anahtarı "tedarik_finans" (merkez panelden, varsayılan kapalı). Ekranlar yalnızca yöneticiye.

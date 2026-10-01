@@ -37,6 +37,8 @@ foreach (array(
     'app/uts.php'             => array('uts_kuyrugu_isle', 'ÜTS bildirimleri (4.13.0)'),
     'app/alis.php'            => array('alis_ubl_coz', 'alış faturası e-Fatura (4.14.0)'),
     'app/senet.php'           => array('vadesi_acik_faturalar', 'senetler ve ödeme takvimi (4.14.0)'),
+    'app/cam-hata.php'        => array('cam_hata_ekle', 'hatalı cam kaydı (4.15.0)'),
+    'app/sgk-hak.php'         => array('sgk_hak_durumu', 'SGK hak kontrolü (4.15.0)'),
     'app/pages/uts.php'       => array('ÜTS bildirimleri', 'ÜTS ekranı (4.13.0)'),
     'assets/app.css'          => array('.pick-list', 'yeni seçim listesi biçimi'),
     'kopru-eklenti/icerik.js' => array('kutuSayilirMi', 'yeni köprü betiği'),

@@ -1,0 +1,25 @@
+# Gizli / mağazaya özel — ASLA commit'lenmez
+config.php
+storage/.gizli-anahtar
+storage/gsc-anahtar.json
+storage/*
+!storage/.gitkeep
+!storage/.htaccess
+!storage/logs/
+storage/logs/*
+!storage/logs/.gitkeep
+.env
+
+# Büyük derleme çıktıları — GitHub Releases'e konur
+*.exe
+*.msi
+*.zip
+*.bundle
+*.mbox
+desktop/dist/
+desktop/out/
+node_modules/
+
+# Sistem
+.DS_Store
+Thumbs.db

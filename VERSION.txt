@@ -1,6 +1,20 @@
 OPTIFLOW
-Release: 4.15.0 (2026-10-01)
+Release: 4.15.1 (2026-10-01)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.15.1 (düzeltmeler; OptiFlow Pro 5.3.0 ile)
+  - KRİTİK DÜZELTME: Faturalar (e-Arşiv/e-Fatura) sayfaları 4.14.0'dan beri ölümcül hatayla
+    açılmıyordu: senet.php ile fatura.php aynı adlı tutar_yaziyla() fonksiyonunu tanımlıyordu.
+    Fatura tarafındaki fonksiyon fatura_tutar_yaziyla() oldu (senet metni değişmedi).
+  - DÜZELTME (CSP): satır içi betikler tarayıcıda hiç çalışmıyordu → assets/ dosyalarına taşındı:
+    yeni sipariş (işlem türüne göre alanlar, ücretsiz tamirde tutar), teslimat ve tedarikçi
+    faturasında maliyet toplamı, müşteri durum sayfası (sipariş no kopyala, kendini tazeleme).
+  - DÜZELTME (ÜTS karekodu): okuyucunun gönderdiği GS1 alan ayırıcısı (Ctrl+] / Ctrl+Ü) artık
+    korunuyor; parti ve seri numarası doğru bölünüyor (assets/barkod.js, barkod.php sonuç adresi).
+  - OptiFlow Pro 5.3.0: Medula araç çubuğunda "Hak sorgula" (SGK hak / cam-çerçeve geçmişi ekranını
+    okuyup SGK hak kontrolünü açar; "sgk_hak" özelliği + Pro gerekir).
+  - Doğrulama: göçler v23–v25 MariaDB'de çalıştırıldı (şema 22 → 25 sorunsuz).
+  - Veritabanı şeması DEĞİŞMEDİ (25).
 
 DEĞİŞİKLİK NOTLARI — 4.15.0 (hatalı cam kaydı, SGK hak kontrolü)
   - YENİ özellik anahtarları "cam_hata" ve "sgk_hak" (merkez panelden, varsayılan kapalı).

@@ -73,6 +73,7 @@ function render(s: ShellState): void {
   ($('ileri') as HTMLButtonElement).disabled = !s.medula.canGoForward;
   $('host').textContent = s.medula.host ?? '';
   $('listeKontrol').hidden = !s.account?.features?.sgk_mutabakat;
+  $('hakSorgula').hidden = !(s.account?.features?.sgk_hak && s.account?.transferAllowed);
   $('barkodChip').hidden = !s.account?.features?.barkod;
 
   // Prescription-detection badge (signals only, no content)

@@ -1,4 +1,4 @@
-OPTIFLOW 4.15.0 — HOSTING GÜNCELLEMESİ (mevcut kurulumun üzerine)
+OPTIFLOW 4.15.1 — HOSTING GÜNCELLEMESİ (mevcut kurulumun üzerine)
 
 1. Bu zip'i sitenin ana klasörüne (httpdocs) yükleyin ve "Buraya çıkar" deyin, üzerine yazılsın.
    config.php ve storage/ içindekiler zip'te YOK; sizdekiler olduğu gibi kalır.
@@ -8,10 +8,12 @@ OPTIFLOW 4.15.0 — HOSTING GÜNCELLEMESİ (mevcut kurulumun üzerine)
    ile 10 dakikada bir çalışacak şekilde ekleyin (WhatsApp otomatik gönderim, ödeme linkleri, ÜTS kuyruğu, senet vade uyarısı).
 5. YEDEK: storage/ klasörünü yedeklerinize ekleyin. storage/.gizli-anahtar dosyası PayTR ve WhatsApp
    anahtarlarını çözer; kaybolursa bu anahtarları Ayarlar'dan yeniden girmeniz gerekir.
-6. Masaüstü güncellemesi (OptiFlow Pro 5.2.0), indir/masaustu/ klasörüne SIRAYLA:
-     a) OptiFlow-Pro-Setup-5.2.0.exe   (parçaları KURULUMU-BIRLESTIR.bat ile birleştirip)
+6. Masaüstü güncellemesi (OptiFlow Pro 5.3.0), indir/masaustu/ klasörüne SIRAYLA:
+     a) OptiFlow-Pro-Setup-5.3.0.exe   (parçaları KURULUMU-BIRLESTIR.bat ile birleştirip)
      b) latest.yml                      (EN SON — exe yüklenmeden yüklemeyin)
    .blockmap bu zip'le zaten yerine gelir.
-7. Kontrol: siteniz/indir/masaustu/latest.yml "version: 5.2.0" göstermeli; uygulamada
+7. Kontrol: siteniz/indir/masaustu/latest.yml "version: 5.3.0" göstermeli; uygulamada
    Menü › "Güncellemeleri denetle".
+Not: 4.15.1, 4.14'ten beri açılmayan Faturalar sayfalarını ve CSP'nin engellediği betikleri düzeltir;
+4.12 / 4.13 / 4.14 / 4.15 kurulu olmayan sitelere de doğrudan yüklenebilir (birikimlidir).
 Ayrıntılı rehber: YENILIKLER-4.15 (hatalı cam, SGK hak), YENILIKLER-4.14 (alış faturası, senet), YENILIKLER-4.13 (ÜTS) ve YENILIKLER-4.12.

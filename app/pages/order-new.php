@@ -258,39 +258,5 @@ page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipari�
     <button class="btn btn-primary" name="next" value="rx" data-show-for="gozluk"><?= icon('glasses') ?> Kaydet ve reçete ekle</button>
   </div>
 </form>
-<script>
-(function () {
-  var form = document.querySelector('.form-layout');
-  if (!form) return;
-  function apply() {
-    var checked = form.querySelector('input[name="transaction_type"]:checked');
-    var type = checked ? checked.value : 'gozluk';
-    form.querySelectorAll('.chip').forEach(function (chip) {
-      var radio = chip.querySelector('input[name="transaction_type"]');
-      if (radio) chip.classList.toggle('active', radio.checked);
-    });
-    form.querySelectorAll('[data-show-for]').forEach(function (el) {
-      var types = el.getAttribute('data-show-for').split(',');
-      el.hidden = types.indexOf(type) === -1;
-    });
-    var amountField = form.querySelector('[data-amount-field]');
-    var freeToggle = form.querySelector('[data-free-toggle]');
-    var amountReq = form.querySelector('[data-amount-required]');
-    var isFree = type === 'tamir' && freeToggle && freeToggle.checked;
-    if (amountField) {
-      amountField.disabled = isFree;
-      amountField.required = !isFree;
-      if (isFree) amountField.value = '0';
-    }
-    if (amountReq) amountReq.hidden = isFree;
-  }
-  form.querySelectorAll('input[name="transaction_type"]').forEach(function (r) { r.addEventListener('change', apply); });
-  form.querySelectorAll('.chip').forEach(function (chip) {
-    chip.addEventListener('click', function () { setTimeout(apply, 0); });
-  });
-  var freeToggle = form.querySelector('[data-free-toggle]');
-  if (freeToggle) freeToggle.addEventListener('change', apply);
-  apply();
-})();
-</script>
+<?php /* 4.15.1: işlem türü alanları assets/moduller.js içinde (CSP) */ ?>
 <?php page_end();

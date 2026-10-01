@@ -67,19 +67,6 @@ page_header(
       </section>
     <?php endforeach; ?>
   </div>
-  <script>
-  document.querySelectorAll('[data-delivery-form]').forEach(function (form) {
-    var total = form.querySelector('[data-cost-total]');
-    function recalc() {
-      var sum = 0;
-      form.querySelectorAll('[data-cost-input]').forEach(function (inp) {
-        var v = parseFloat((inp.value || '0').replace(/\./g, '').replace(',', '.'));
-        if (!isNaN(v)) sum += v;
-      });
-      total.textContent = sum.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
-    }
-    form.querySelectorAll('[data-cost-input]').forEach(function (inp) { inp.addEventListener('input', recalc); });
-  });
-  </script>
+  <?php /* 4.15.1: maliyet toplamı assets/moduller.js içinde (CSP: satır içi betik yok) */ ?>
 <?php endif; ?>
 <?php page_end();

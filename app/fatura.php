@@ -441,7 +441,7 @@ function fatura_ubl_xml(array $f, array $satirlar): string
     if (!empty($f['notlar'])) {
         $cbc('Note', (string) $f['notlar']);
     }
-    $cbc('Note', 'Yalnız: ' . tutar_yaziyla((float) $f['genel_toplam']));
+    $cbc('Note', 'Yalnız: ' . fatura_tutar_yaziyla((float) $f['genel_toplam']));
     $cbc('DocumentCurrencyCode', 'TRY');
     $cbc('LineCountNumeric', (string) count($satirlar));
 
@@ -620,8 +620,8 @@ function ubl_vergi_alt(XMLWriter $x, callable $cbc, callable $tutar, float $matr
     $x->endElement();
 }
 
-/** "1.234,56" → "BİNİKİYÜZOTUZDÖRTTÜRKLİRASIELLİALTIKURUŞ" biçiminde okunuş (fatura notu). */
-function tutar_yaziyla(float $tutar): string
+/** Fatura notu için okunuş (büyük harf). 4.15.1: senet.php'deki tutar_yaziyla() ile çakışmasın diye ayrı ad. */
+function fatura_tutar_yaziyla(float $tutar): string
 {
     $tl = (int) floor(round($tutar, 2));
     $kr = (int) round(($tutar - $tl) * 100);
@@ -629,14 +629,14 @@ function tutar_yaziyla(float $tutar): string
         $tl++;
         $kr = 0;
     }
-    $metin = ($tl > 0 ? sayi_yaziyla($tl) : 'SIFIR') . ' TÜRK LİRASI';
+    $metin = ($tl > 0 ? fatura_sayi_yaziyla($tl) : 'SIFIR') . ' TÜRK LİRASI';
     if ($kr > 0) {
-        $metin .= ' ' . sayi_yaziyla($kr) . ' KURUŞ';
+        $metin .= ' ' . fatura_sayi_yaziyla($kr) . ' KURUŞ';
     }
     return $metin;
 }
 
-function sayi_yaziyla(int $n): string
+function fatura_sayi_yaziyla(int $n): string
 {
     $birler = ['', 'BİR', 'İKİ', 'ÜÇ', 'DÖRT', 'BEŞ', 'ALTI', 'YEDİ', 'SEKİZ', 'DOKUZ'];
     $onlar = ['', 'ON', 'YİRMİ', 'OTUZ', 'KIRK', 'ELLİ', 'ALTMIŞ', 'YETMİŞ', 'SEKSEN', 'DOKSAN'];

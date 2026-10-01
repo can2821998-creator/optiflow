@@ -187,7 +187,7 @@ page_start('Fatura', 'faturalar');
         <?php if ((float) $f['iskonto_toplam'] > 0): ?><li><span>İskonto</span><b>− <?= e(money($f['iskonto_toplam'])) ?></b></li><?php endif; ?>
         <?php foreach ($dagilim as $oran => $dd): ?><li><span>KDV %<?= e($oran) ?> (matrah <?= e(money($dd['matrah'])) ?>)</span><b><?= e(money($dd['kdv'])) ?></b></li><?php endforeach; ?>
         <li><span><b>Ödenecek tutar</b></span><b style="font-size:1.15em"><?= e(money($f['genel_toplam'])) ?></b></li>
-        <li><span class="muted mini"><?= e(tutar_yaziyla((float) $f['genel_toplam'])) ?></span></li>
+        <li><span class="muted mini"><?= e(fatura_tutar_yaziyla((float) $f['genel_toplam'])) ?></span></li>
       </ul>
     </section>
 

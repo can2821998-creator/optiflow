@@ -104,3 +104,16 @@ describe('OfflineStore', () => {
     expect(fs.existsSync(f)).toBe(false);
   });
 });
+
+import { chooseTextFrame } from '../../src/main/bridge/frame-selection';
+describe('Hak sorgula frame choice (5.3.0)', () => {
+  const p = (textLength: number, looksLikeLogin = false, detectedPrescription = false) => ({ detectedPrescription, score: 0, extractedFieldCount: 0, looksLikeLogin, textLength });
+  it('picks the frame with the most text, ignoring login frames', () => {
+    const c = chooseTextFrame([{ frame: 'menu', probe: p(120), isTop: true }, { frame: 'hak', probe: p(900), isTop: false }, { frame: 'giris', probe: p(5000, true), isTop: false }]);
+    expect(c).toMatchObject({ kind: 'ok', frame: 'hak' });
+  });
+  it('login only → login; nearly empty → not-found', () => {
+    expect(chooseTextFrame([{ frame: 'g', probe: p(300, true), isTop: true }]).kind).toBe('login');
+    expect(chooseTextFrame([{ frame: 'x', probe: p(10), isTop: true }]).kind).toBe('not-found');
+  });
+});

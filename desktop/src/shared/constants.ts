@@ -77,6 +77,7 @@ export const SHELL_COMMANDS = [
   'menu',
   'liste-kontrol',
   'cevrimdisi-ac',
+  'hak-sorgula',
 ] as const;
 
 /** 4.12.0 — offline copy: refreshed at most this often while online, discarded after MAX_AGE. */

@@ -10,6 +10,8 @@ export const MSG = {
   aktarimBasarisiz: "OptiFlow'a aktarım başarısız oldu. Tekrar deneyebilirsiniz.",
   oturumDoldu: "Oturum süreniz dolmuş. OptiFlow'a yeniden giriş yapın.",
   medulaOturumBitti: "Medula oturumu sona ermiş. Medula'ya yeniden giriş yapın.",
+  hakEkraniYok: "Ekranda okunacak bilgi bulunamadı. Medula'da hak sorgulama / cam-çerçeve geçmişi ekranını açın.",
+  hakGonderildi: 'Medula ekranı okundu; SGK hak kontrolü OptiFlow’da açılıyor.',
   medulaAcikDegil: "Önce Medula'yı açın ve reçete detayına gelin.",
   medulaDisiAdres: 'Bu sayfa Medula dışında olduğu için okunmaz.',
   internetYok: 'İnternet bağlantısı yok. Bağlantınızı kontrol edin.',

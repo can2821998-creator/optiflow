@@ -6,6 +6,10 @@
 > kapalıdır** (yalnızca HTTPS + sha512). Sertifika alınınca `electron-builder.yml` içinde
 > `forceCodeSigning` ve `verifyUpdateCodeSignature` tekrar `true` yapılır.
 >
+> **5.3.0 (4.15.1 sunucu):** Medula araç çubuğunda "Hak sorgula" — reçete olmayan SGK hak /
+> cam-çerçeve geçmişi ekranını okuyup aynı aktarım uç noktasına gönderir; sunucu ekranı tanıyıp
+> sgk-hak.php'yi açar. "Reçeteyi aktar" reçete dışı ekranları yine reddeder.
+>
 > **5.2.0 (4.12.0 sunucu):** barkod okuyucu modu, çevrimdışı salt okunur kopya, Medula "Listeyi kontrol et",
 > imzalı derleme hattı. Sunucu 4.12.0'dan eski ise yeni düğmeler görünmez (özellik haritası gelmez); uygulama
 > eski sunucuyla da çalışır.

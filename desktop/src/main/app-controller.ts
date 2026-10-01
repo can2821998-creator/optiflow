@@ -374,6 +374,58 @@ export class DesktopApp {
     void w.loadURL(this.offlineUrl);
   }
 
+  /* ---------------------------------------------------- SGK hak (5.3.0) */
+
+  /**
+   * "Hak sorgula": sends the visible Medula screen (hak sorgu / cam-çerçeve geçmişi) through the
+   * same authenticated transfer endpoint; the server recognises the screen and opens sgk-hak.php.
+   * Explicit user action only; Pro + 'sgk_hak' feature required (server re-checks).
+   */
+  private async runHakSorgu(): Promise<void> {
+    if (this.busy) return;
+    if (!this.medula || !this.medulaView) {
+      this.patch({ notice: { kind: 'warn', text: MSG.medulaAcikDegil } });
+      return;
+    }
+    this.busy = true;
+    try {
+      const st = await this.api.status();
+      if (!st.ok) {
+        this.patch({ notice: { kind: 'error', text: st.error.message } });
+        if (st.error.code === 'session-expired') this.transferFailed('session-expired', st.error.message);
+        return;
+      }
+      const account = st.value.account;
+      this.patch({ account });
+      if (account.supportMode) return void this.patch({ notice: { kind: 'warn', text: MSG.destekModu } });
+      if (!account.transferAllowed) return void this.patch({ notice: { kind: 'warn', text: MSG.proGerekli } });
+      if (!account.features.sgk_hak) return void this.patch({ notice: { kind: 'warn', text: 'SGK hak kontrolü bu mağazada açık değil.' } });
+
+      const out = await this.medula.extractScreen();
+      if (out.kind !== 'ok') {
+        const text = out.kind === 'login' ? MSG.medulaOturumBitti : out.kind === 'not-medula' ? MSG.medulaDisiAdres : MSG.hakEkraniYok;
+        log.info('bridge.hak.failed', { reason: out.kind });
+        return void this.patch({ notice: { kind: 'warn', text } });
+      }
+      const payload = buildPayload(out.extraction.text, out.extraction.title || 'Medula hak sorgu');
+      if (!payload) return void this.patch({ notice: { kind: 'warn', text: MSG.hakEkraniYok } });
+      let r = await this.api.transfer(payload, st.value.csrf, account, app.getVersion());
+      if (!r.ok && r.error.code === 'account-changed') {
+        const st2 = await this.api.status();
+        if (st2.ok) r = await this.api.transfer(payload, st2.value.csrf, st2.value.account, app.getVersion());
+      }
+      if (!r.ok) {
+        log.warn('bridge.hak.send-failed', { code: r.error.code });
+        return void this.patch({ notice: { kind: 'error', text: r.error.message } });
+      }
+      log.info('bridge.hak.ok', { incomingId: r.value.incomingId });
+      this.patch({ notice: { kind: 'info', text: MSG.hakGonderildi } });
+      this.openIncoming(r.value.incomingId); // sgk-aktar.php?gelen=… → server redirects to sgk-hak.php
+    } finally {
+      this.busy = false;
+    }
+  }
+
   /* ------------------------------------------------------ Medula list check */
 
   /** "Listeyi kontrol et": which prescriptions on the Medula list are not in OptiFlow yet. */
@@ -732,6 +784,8 @@ export class DesktopApp {
         return this.runListCheck();
       case 'cevrimdisi-ac':
         return this.openOfflineWindow();
+      case 'hak-sorgula':
+        return this.runHakSorgu();
     }
   }
 

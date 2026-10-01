@@ -16,7 +16,7 @@ import { redactUrl } from '../../shared/redact';
 import type { DesktopConfig, MedulaExtraction, MedulaProbe } from '../../shared/types';
 import { parseMedulaReply, type MedulaReply } from '../ipc-validation';
 import { log } from '../logging';
-import { chooseFrame, summarizeProbes, type FrameProbe } from './frame-selection';
+import { chooseFrame, chooseTextFrame, summarizeProbes, type FrameProbe } from './frame-selection';
 import { isMedulaExtractOrigin, isMedulaExtractUrl, isMedulaUrl } from './origin-policy';
 
 interface Pending {
@@ -131,6 +131,24 @@ export class MedulaController {
     if (!x.detectedPrescription) return { kind: 'not-found' };
     x.url = this.wc.getURL();
     log.info('bridge.extract.ok', { fields: x.extractedFieldCount, chars: x.text.length, frame: redactUrl(x.frameUrl) });
+    return { kind: 'ok', extraction: x };
+  }
+
+  /**
+   * 5.3.0 — "Hak sorgula": reads the visible Medula screen even when it is not a prescription
+   * (SGK hak / cam-çerçeve geçmişi). Explicit user action only; same frame/origin checks as extract().
+   */
+  async extractScreen(): Promise<ExtractOutcome> {
+    if (!this.topUrlAllowed()) return { kind: 'not-medula' };
+    const probes = await this.probeFrames();
+    const choice = chooseTextFrame(probes);
+    log.info('bridge.screen.probe', { frames: probes.length, choice: choice.kind });
+    if (choice.kind !== 'ok') return choice;
+    const reply = await this.ask(choice.frame, 'extract');
+    if (!reply || !reply.ok || reply.kind !== 'extract') return { kind: 'failed' };
+    const x = reply.extraction;
+    if (!isMedulaExtractUrl(x.frameUrl ?? choice.frame.url, this.cfg)) return { kind: 'failed' };
+    x.url = this.wc.getURL();
     return { kind: 'ok', extraction: x };
   }
 

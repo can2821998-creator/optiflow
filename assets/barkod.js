@@ -51,9 +51,31 @@
       .catch(function () { bildir('Bağlantı hatası', true); });
   }
 
+  /* GS1 alan ayırıcısı (GS, ASCII 29). Okuyucular klavye modunda bunu çoğunlukla Ctrl+] olarak
+     gönderir (Türkçe Q klavyede aynı fiziksel tuş: Ctrl+Ü). Yakalanmazsa ÜTS karekodundaki
+     parti / seri numarası doğru bölünemez. Yalnızca hızlı okuyucu dizisinin İÇİNDE işlenir;
+     tek başına basılan Ctrl+] / Ctrl+Ü'ye dokunulmaz. */
+  function gsMi(e) {
+    if (e.key === '\u001d' || e.key === 'GroupSeparator' || e.keyCode === 29) return true;
+    return e.ctrlKey && !e.altKey && !e.metaKey && (e.code === 'BracketRight' || e.key === ']');
+  }
+
   document.addEventListener('keydown', function (e) {
-    if (e.ctrlKey || e.altKey || e.metaKey) return;
     var simdi = Date.now();
+    if (gsMi(e) && tampon && simdi - son <= HIZ_MS * 3) {
+      e.preventDefault();
+      tampon += '\u001d';
+      son = simdi;
+      var el = document.activeElement;
+      if (yaziAlani(el) && typeof el.setRangeText === 'function') {
+        try {
+          el.setRangeText('\u001d', el.selectionStart, el.selectionEnd, 'end');
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+        } catch (x) { /* number/email gibi alanlar seçim desteklemez */ }
+      }
+      return;
+    }
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
     var alan = yaziAlani(document.activeElement);
     if (e.key === 'Enter') {
       var kod = tampon;

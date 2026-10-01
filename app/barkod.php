@@ -125,10 +125,11 @@ function barkod_coz(string $ham): array
             if ($f) {
                 return ['tur' => 'cerceve', 'hedef' => 'cerceve.php?duzenle=' . (int) $f['id'], 'etiket' => trim($f['brand'] . ' ' . $f['model']), 'ayrinti' => $g];
             }
-            return ['tur' => 'uts', 'hedef' => 'barkod.php?kod=' . rawurlencode($duz), 'etiket' => 'ÜTS ürünü ' . $g['gtin'], 'ayrinti' => $g];
+            // 4.15.1: GS ayırıcısı adreste KORUNUR; silinirse sonuç sayfası parti/seriyi yanlış böler.
+            return ['tur' => 'uts', 'hedef' => 'barkod.php?kod=' . rawurlencode($kod), 'etiket' => 'ÜTS ürünü ' . $g['gtin'], 'ayrinti' => $g];
         }
     }
-    return ['tur' => 'bilinmiyor', 'hedef' => 'barkod.php?kod=' . rawurlencode($duz), 'etiket' => 'Kayıt bulunamadı', 'ayrinti' => []];
+    return ['tur' => 'bilinmiyor', 'hedef' => 'barkod.php?kod=' . rawurlencode($kod), 'etiket' => 'Kayıt bulunamadı', 'ayrinti' => []];
 }
 
 /* ---------------- Çevrimdışı kopya ---------------- */

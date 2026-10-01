@@ -29,6 +29,7 @@ const ROUTES: Record<string, string> = {
   '/Optik_Firma2_Web/login.faces': path.join(FIX, 'giris.html'),
   '/Optik_Firma2_Web/index.faces': path.join(FIX, 'liste.html'),
   '/Optik/Liste.aspx': path.join(FIX, 'liste.html'),
+  '/Optik/HakSorgu.aspx': path.join(FIX, 'hak-sorgu.html'),
   '/Optik/Cerceveli.aspx': path.join(SITE, 'cerceveli.html'),
   '/Optik/ReceteDetay.aspx': path.join(FIX, 'recete-uzak.html'),
   '/menu.html': path.join(FIX, 'menu-cercevesi.html'),
@@ -93,7 +94,7 @@ app.whenReady().then(async () => {
     process.env.E2E_LITE_SQL === '1'
       ? require('node:child_process').execFileSync('mysql', ['-uof', `-p${process.env.E2E_DB_PW || ''}`, '-N', '-B', process.env.E2E_DB || 'optiflow2', '-e', q], { encoding: 'utf8' }).trim()
       : '';
-  merkezSql(`UPDATE magazalar SET ozellikler='["sgk_mutabakat","cevrimdisi","barkod"]' WHERE email='${process.env.E2E_EMAIL}'`);
+  merkezSql(`UPDATE magazalar SET ozellikler='["sgk_mutabakat","cevrimdisi","barkod","sgk_hak"]' WHERE email='${process.env.E2E_EMAIL}'`);
   const tenantDb = merkezSql(`SELECT db_name FROM magazalar WHERE email='${process.env.E2E_EMAIL}'`);
   const tenantSql = (q: string) =>
     tenantDb ? require('node:child_process').execFileSync('mysql', ['-uof', `-p${process.env.E2E_DB_PW || ''}`, '-N', '-B', tenantDb, '-e', q], { encoding: 'utf8' }).trim() : '';
@@ -186,6 +187,15 @@ app.whenReady().then(async () => {
       check('toolbar reports how many are missing', /Listede 2 reçete: \d tanesi|Listedeki 2 reçetenin/.test(A.state.notice?.text ?? ''), A.state.notice?.text);
       const acildi = await waitFor(() => /sgk-mutabakat\.php\?kontrol=1/.test(owc.getURL()) && !owc.isLoading(), 10000);
       check('OptiFlow opens the reconciliation with the missing numbers', acildi && (await js<string>(owc, 'document.body.innerText')).includes('9Z8Y7X'), owc.getURL());
+      console.log('Hak sorgula (5.3.0)');
+      await loadAndWait(mwc, 'https://gss.sgk.gov.tr/Optik/HakSorgu.aspx');
+      await A.runTransfer();
+      check('"Reçeteyi aktar" still refuses a non-prescription screen', A.state.transfer.message === MSG.receteYok, A.state.transfer.message);
+      await A.runHakSorgu();
+      const hakAcildi = await waitFor(() => /sgk-hak\.php/.test(owc.getURL()) && !owc.isLoading(), 10000);
+      check('"Hak sorgula" sends the hak screen; OptiFlow opens the SGK hak check', hakAcildi, owc.getURL());
+      check('hak page shows the next entitlement date read from Medula', (await js<string>(owc, 'document.body.innerText')).includes('15.03.2027'));
+      await loadAndWait(mwc, 'https://gss.sgk.gov.tr/Optik/Liste.aspx');
       await loadAndWait(owc, `${BASE}/sgk-aktar.php`); // back where the transfer tests expect it
       A.command('goster-medula');
     }
@@ -363,6 +373,22 @@ app.whenReady().then(async () => {
       owc.sendInputEvent({ type: 'keyUp', keyCode: 'Enter' });
       check('scanning a frame barcode opens the frame card', await waitFor(() => /cerceve\.php\?duzenle=\d+/.test(owc.getURL()), 8000), owc.getURL());
       tenantSql("DELETE FROM frame_items WHERE barcode = '8690000000017'");
+
+      // ÜTS karekodu: okuyucu GS ayırıcısını Ctrl+] olarak gönderir → parti ve seri ayrı okunmalı (5.3.0 / 4.15.1)
+      await loadAndWait(owc, `${BASE}/index.php`);
+      await js(owc, 'document.activeElement && document.activeElement.blur && document.activeElement.blur()');
+      const tus = (k: string, mods: Array<'control'> = []) => {
+        owc.sendInputEvent({ type: 'keyDown', keyCode: k, modifiers: mods });
+        if (!mods.length) owc.sendInputEvent({ type: 'char', keyCode: k });
+        owc.sendInputEvent({ type: 'keyUp', keyCode: k, modifiers: mods });
+      };
+      for (const ch of '01086999999999991727123110LOT7') tus(ch);
+      tus(']', ['control']);
+      for (const ch of '21SER9') tus(ch);
+      tus('Enter');
+      const gsOk = await waitFor(() => /barkod\.php\?kod=/.test(owc.getURL()) && !owc.isLoading(), 8000);
+      const gsText = gsOk ? await js<string>(owc, 'document.body.innerText') : '';
+      check('ÜTS karekod with GS: lot and serial read separately', gsOk && /Parti \/ lot\s*LOT7\b/i.test(gsText) && /Seri no\s*SER9\b/i.test(gsText), owc.getURL() + ' | ' + gsText.slice(Math.max(0, gsText.indexOf('GTIN') - 20), gsText.indexOf('GTIN') + 300));
 
       await loadAndWait(owc, `${BASE}/index.php`);
       {

@@ -30,6 +30,22 @@ export function chooseFrame<F>(probes: FrameProbe<F>[]): FrameChoice<F> {
   return { kind: 'not-found' };
 }
 
+/**
+ * 5.3.0 — "Hak sorgula": the SGK entitlement / purchase-history screen is NOT a prescription,
+ * so the prescription detector rejects it. Pick the frame with the most visible text instead
+ * (login screens excluded). The server decides what the screen is.
+ */
+export function chooseTextFrame<F>(probes: FrameProbe<F>[], minChars = 40): FrameChoice<F> {
+  const usable = probes.filter((p) => !p.probe.looksLikeLogin && p.probe.textLength >= minChars);
+  if (usable.length > 0) {
+    usable.sort((a, b) => b.probe.textLength - a.probe.textLength || Number(b.isTop) - Number(a.isTop));
+    const best = usable[0]!;
+    return { kind: 'ok', frame: best.frame, probe: best.probe };
+  }
+  if (probes.some((p) => p.probe.looksLikeLogin)) return { kind: 'login' };
+  return { kind: 'not-found' };
+}
+
 /** Aggregate for the toolbar badge. */
 export function summarizeProbes<F>(probes: FrameProbe<F>[]): MedulaProbe | undefined {
   const c = chooseFrame(probes);

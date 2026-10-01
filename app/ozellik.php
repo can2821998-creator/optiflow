@@ -54,6 +54,11 @@ function ozellik_tanimlari(): array
             'kisa'     => 'Aktarılan reçeteler, SGK siparişleri ve Medula listesinde henüz aktarılmamış reçeteler.',
             'masaustu' => false,
         ],
+        'tedarik_finans' => [
+            'ad'       => 'Alış faturası ve senet takibi',
+            'kisa'     => 'Tedarikçi e-Fatura XML\'ini yükleyince stok, maliyet ve cari kendiliğinden işlenir; verilen senetler ve vade takvimi.',
+            'masaustu' => false,
+        ],
         'uts_bildirim' => [
             'ad'       => 'ÜTS bildirimleri',
             'kisa'     => 'Mal kabul (alma), ücretli satışta tüketiciye verme, iade, imha ve tedarikçiye iade bildirimleri; karekodla satış. SGK\'lı satışlarda bildirim Medula\'ya bırakılır.',

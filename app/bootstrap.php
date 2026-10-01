@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.13.0';
+const APP_VERSION = '4.14.0';
 const APP_ROOT = __DIR__ . '/..';
 
 /**
@@ -113,7 +113,9 @@ require __DIR__ . '/odeme.php';
 require __DIR__ . '/tedarik.php';
 require __DIR__ . '/sgk-mutabakat.php';
 require __DIR__ . '/barkod.php';
-require __DIR__ . '/uts.php';      // 4.13.0 ÜTS bildirimleri   // 4.12.0 merkezden aç/kapat özellikler
+require __DIR__ . '/uts.php';      // 4.13.0 ÜTS bildirimleri
+require __DIR__ . '/alis.php';     // 4.14.0 alış faturası (e-Fatura XML)
+require __DIR__ . '/senet.php';    // 4.14.0 tedarikçi senetleri, ödeme takvimi   // 4.12.0 merkezden aç/kapat özellikler
 require __DIR__ . '/karsilama.php';
 
 set_exception_handler('handle_fatal');

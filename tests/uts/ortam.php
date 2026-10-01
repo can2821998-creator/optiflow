@@ -21,6 +21,9 @@ function audit(string $a, string $e = '', ?int $id = null, array $d = []): void 
 function ozellik_acik(string $k): bool { return true; }
 function ozellik_acik_arka_plan(string $k): bool { return true; }
 function order_track_url(int $id): string { return ''; }
+function payment_methods(): array { return ['nakit' => 'Nakit', 'kart' => 'Kredi kartı', 'havale' => 'Havale / EFT', 'diger' => 'Diğer']; }
+$GLOBALS['__push'] = [];
+function push_send(array $m, array $ids = [], ?int $haric = null): array { $GLOBALS['__push'][] = [$m, $ids]; return ['sent' => count($ids), 'failed' => 0, 'detail' => [], 'reason' => '']; }
 
 require dirname(__DIR__, 2) . '/app/helpers.php';
 
@@ -56,7 +59,24 @@ function sema_kur(PDO $p): void
     $p->exec("CREATE TABLE app_settings (setting_key TEXT PRIMARY KEY, setting_value TEXT)");
     $p->exec("CREATE TABLE orders (id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT DEFAULT '', last_name TEXT DEFAULT '', order_stage TEXT DEFAULT 'siparis_verildi',
         frame_item_id INTEGER NULL, frame_info TEXT NULL, sgk_erecete TEXT NULL, sgk_amount REAL NOT NULL DEFAULT 0, delivered_at TEXT NULL)");
-    $p->exec("CREATE TABLE suppliers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, uts_kurum_no TEXT NULL, is_active INTEGER DEFAULT 1)");
+    $p->exec("CREATE TABLE suppliers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, contact_name TEXT NULL, phone TEXT NULL, address TEXT NULL, tax_no TEXT NULL, note TEXT NULL,
+        uts_kurum_no TEXT NULL, email TEXT NULL, is_active INTEGER DEFAULT 1, created_at TEXT, updated_at TEXT)");
+    $p->exec("CREATE TABLE user_accounts (id INTEGER PRIMARY KEY AUTOINCREMENT, full_name TEXT, role TEXT, is_active INTEGER DEFAULT 1)");
+    $p->exec("INSERT INTO user_accounts (full_name, role) VALUES ('Patron', 'super_yetkili'), ('Personel', 'personel')");
+    $p->exec("CREATE TABLE supplier_invoices (id INTEGER PRIMARY KEY AUTOINCREMENT, supplier_id INTEGER NOT NULL, invoice_no TEXT NOT NULL, invoice_date TEXT NOT NULL,
+        amount REAL NOT NULL, note TEXT NULL, created_by INTEGER NULL, created_at TEXT, due_date TEXT NULL, ettn TEXT NULL, kaynak TEXT NOT NULL DEFAULT 'elle',
+        ara_toplam REAL NULL, kdv_toplam REAL NULL, xml TEXT NULL)");
+    $p->exec("CREATE TABLE supplier_payments (id INTEGER PRIMARY KEY AUTOINCREMENT, supplier_id INTEGER NOT NULL, amount REAL NOT NULL, method TEXT NOT NULL DEFAULT 'havale',
+        note TEXT NULL, created_by INTEGER NULL, created_at TEXT)");
+    $p->exec("CREATE TABLE supplier_deliveries (id INTEGER PRIMARY KEY AUTOINCREMENT, supplier_id INTEGER NOT NULL, invoice_id INTEGER NULL)");
+    $p->exec("CREATE TABLE supplier_invoice_lines (id INTEGER PRIMARY KEY AUTOINCREMENT, invoice_id INTEGER NOT NULL, sira INTEGER NOT NULL, ad TEXT NOT NULL, kod TEXT NULL,
+        gtin TEXT NULL, miktar REAL NOT NULL DEFAULT 1, birim TEXT NULL, birim_fiyat REAL NOT NULL DEFAULT 0, kdv_orani REAL NOT NULL DEFAULT 0, tutar REAL NOT NULL DEFAULT 0,
+        kdv_tutar REAL NOT NULL DEFAULT 0, frame_item_id INTEGER NULL, stok_adet INTEGER NOT NULL DEFAULT 0)");
+    $p->exec("CREATE TABLE urun_eslesmeleri (id INTEGER PRIMARY KEY AUTOINCREMENT, supplier_id INTEGER NOT NULL, kod TEXT NOT NULL, frame_item_id INTEGER NOT NULL, created_at TEXT,
+        UNIQUE (supplier_id, kod))");
+    $p->exec("CREATE TABLE tedarikci_senetleri (id INTEGER PRIMARY KEY AUTOINCREMENT, supplier_id INTEGER NOT NULL, invoice_id INTEGER NULL, payment_id INTEGER NULL,
+        senet_no TEXT NULL, tutar REAL NOT NULL, duzenleme TEXT NOT NULL, vade TEXT NOT NULL, duzenleme_yeri TEXT NULL, odeme_yeri TEXT NULL,
+        durum TEXT NOT NULL DEFAULT 'bekliyor', odeme_tarihi TEXT NULL, odeme_yontemi TEXT NULL, notlar TEXT NULL, created_by INTEGER NULL, created_at TEXT, updated_at TEXT)");
     $p->exec("CREATE TABLE frame_items (id INTEGER PRIMARY KEY AUTOINCREMENT, brand TEXT NOT NULL, model TEXT NULL, color TEXT NULL, size TEXT NULL,
         barcode TEXT NULL UNIQUE, qty INTEGER NOT NULL DEFAULT 0, min_qty INTEGER NOT NULL DEFAULT 1, cost REAL NULL, price REAL NULL, supplier_id INTEGER NULL,
         shelf TEXT NULL, note TEXT NULL, is_active INTEGER NOT NULL DEFAULT 1, created_by INTEGER NULL, created_at TEXT, updated_at TEXT)");
@@ -77,6 +97,8 @@ require dirname(__DIR__, 2) . '/app/entegrasyon.php';
 require dirname(__DIR__, 2) . '/app/frames.php';
 require dirname(__DIR__, 2) . '/app/barkod.php';
 require dirname(__DIR__, 2) . '/app/uts.php';
+require dirname(__DIR__, 2) . '/app/alis.php';
+require dirname(__DIR__, 2) . '/app/senet.php';
 
 /* ---------- Küçük test çatısı ---------- */
 $GLOBALS['__gecen'] = 0;

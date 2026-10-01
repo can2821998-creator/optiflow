@@ -165,6 +165,12 @@ function page_start(string $title, string $active = '', array $opts = []): void
             ['logs', 'logs.php', 'İşlem geçmişi', 'history', 0],
             ['settings', 'settings.php', 'Ayarlar', 'settings', 0],
         ];
+        if (function_exists('ozellik_acik') && ozellik_acik('tedarik_finans')) {   // 4.14.0
+            array_splice($nav['Yönetim'], 1, 0, [
+                ['alis-faturasi', 'alis-faturasi.php', 'Alış faturası yükle', 'download', 0],
+                ['senetler', 'senetler.php', 'Senetler · ödeme takvimi', 'receipt', function_exists('senet_rozet') ? senet_rozet() : 0],
+            ]);
+        }
     }
     $shop = setting('shop_name', 'OptiFlow');
     if (function_exists('gorev_belki_calistir')) {

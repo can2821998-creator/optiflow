@@ -284,7 +284,7 @@ if ($type === 'order') {
         $ledger[] = ['date' => $inv['invoice_date'], 'sort' => $inv['invoice_date'] . ' 00:00:01', 'amount' => (float) $inv['amount'], 'label' => 'Fatura ' . $inv['invoice_no'], 'note' => $inv['note']];
     }
     foreach ($payments as $p) {
-        $ledger[] = ['date' => substr($p['created_at'], 0, 10), 'sort' => $p['created_at'], 'amount' => -(float) $p['amount'], 'label' => 'Ödeme · ' . (payment_methods()[$p['method']] ?? $p['method']), 'note' => $p['note']];
+        $ledger[] = ['date' => substr($p['created_at'], 0, 10), 'sort' => $p['created_at'], 'amount' => -(float) $p['amount'], 'label' => 'Ödeme · ' . (tedarik_odeme_yontemleri()[$p['method']] ?? $p['method']), 'note' => $p['note']];
     }
     usort($ledger, static fn($a, $b) => $a['sort'] <=> $b['sort']);
     $balance = 0.0;

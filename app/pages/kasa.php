@@ -13,7 +13,8 @@ function kasa_expected_cash(array $range, string $date): float
 {
     $cashIn = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE method = 'nakit' AND created_at >= ? AND created_at < ?", $range);
     $cashRevenue = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM revenues WHERE method = 'nakit' AND revenue_date = ?", [$date]);
-    $cashOutSupplier = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM supplier_payments WHERE method = 'nakit' AND created_at >= ? AND created_at < ?", $range);
+    $cashOutSupplier = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM supplier_payments WHERE method = 'nakit' AND created_at >= ? AND created_at < ?", $range)
+        + (table_var_mi('tedarikci_senetleri') ? (float) scalar("SELECT COALESCE(SUM(tutar), 0) FROM tedarikci_senetleri WHERE durum = 'odendi' AND odeme_yontemi = 'nakit' AND odeme_tarihi = ?", [$date]) : 0.0);   // 4.14.0 nakit ödenen senetler
     $cashOutExpense = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE method = 'nakit' AND expense_date = ?", [$date]);
     return $cashIn + $cashRevenue - $cashOutSupplier - $cashOutExpense;
 }
@@ -119,7 +120,8 @@ $totalExpenses = (float) array_sum(array_column($expenses, 'amount'));
 $revenues = rows('SELECT r.*, u.full_name AS by_name FROM revenues r LEFT JOIN user_accounts u ON u.id = r.created_by WHERE r.revenue_date = ? ORDER BY r.created_at DESC', [$date]);
 $totalRevenues = (float) array_sum(array_column($revenues, 'amount'));
 
-$cashOutSupplier = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM supplier_payments WHERE method = 'nakit' AND created_at >= ? AND created_at < ?", $range);
+$cashOutSupplier = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM supplier_payments WHERE method = 'nakit' AND created_at >= ? AND created_at < ?", $range)
+        + (table_var_mi('tedarikci_senetleri') ? (float) scalar("SELECT COALESCE(SUM(tutar), 0) FROM tedarikci_senetleri WHERE durum = 'odendi' AND odeme_yontemi = 'nakit' AND odeme_tarihi = ?", [$date]) : 0.0);   // 4.14.0 nakit ödenen senetler
 $cashOutExpense = (float) array_sum(array_map(static fn($e) => $e['method'] === 'nakit' ? (float) $e['amount'] : 0, $expenses));
 $cashRevenue = (float) array_sum(array_map(static fn($r) => $r['method'] === 'nakit' ? (float) $r['amount'] : 0, $revenues));
 $cashIn = (float) (array_column($byMethod, 'total', 'method')['nakit'] ?? 0);

@@ -20,7 +20,7 @@ declare(strict_types=1);
 const GOREV_ARALIK_SN = 300;
 
 /** Arka plan görevi gerektiren özellikler (biri açıksa görevler çalışır). */
-const GOREV_OZELLIKLERI = ['whatsapp', 'odeme_linki', 'uts_bildirim'];
+const GOREV_OZELLIKLERI = ['whatsapp', 'odeme_linki', 'uts_bildirim', 'tedarik_finans'];
 
 /** Mesaj gönderimi için izinli saat aralığı (gece 21:00 – 09:00 arası otomatik mesaj gitmez). */
 function gorev_mesaj_saati_mi(): bool
@@ -63,6 +63,13 @@ function gorev_magaza_calistir(): array
             $ozet['link_kapatilan'] = odeme_suresi_dolanlari_kapat();
         } catch (Throwable $e) {
             app_log('gorev odeme: ' . $e->getMessage());
+        }
+    }
+    if (function_exists('senet_uyari_gorev') && ozellik_acik_arka_plan('tedarik_finans') && gorev_mesaj_saati_mi()) {
+        try {
+            senet_uyari_gorev();
+        } catch (Throwable $e) {
+            app_log('gorev senet: ' . $e->getMessage());
         }
     }
     if (function_exists('uts_gorev') && ozellik_acik_arka_plan('uts_bildirim')) {

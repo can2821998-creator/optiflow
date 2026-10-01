@@ -29,12 +29,24 @@ function select_options(array $options, ?string $selected, bool $assoc = true): 
 }
 function require_login(): array { return current_user(); }
 function ozellik_gereksin(string $k): void {}
+function asset(string $p): string { return 'assets/' . $p; }
 
 $senaryo = $argv[1] ?? '';
 $istek = json_decode($argv[2] ?? '{}', true) ?: [];
 $_GET = $istek['get'] ?? [];
 $_POST = $istek['post'] ?? [];
 $_SERVER['REQUEST_METHOD'] = $_POST ? 'POST' : 'GET';
+if (isset($istek['dosyalar'])) {   // [[ad, yol], …] → $_FILES['dosya'] (çoklu)
+    $_FILES['dosya'] = ['name' => [], 'tmp_name' => [], 'error' => [], 'size' => [], 'type' => []];
+    foreach ($istek['dosyalar'] as [$ad, $yol]) {
+        $_FILES['dosya']['name'][] = $ad; $_FILES['dosya']['tmp_name'][] = $yol; $_FILES['dosya']['error'][] = UPLOAD_ERR_OK;
+        $_FILES['dosya']['size'][] = filesize($yol); $_FILES['dosya']['type'][] = 'text/xml';
+    }
+}
+// Oturum dosya tabanlı olmadığı için testler arası taşınacak oturum verisi
+$oturumDosya = APP_ROOT . '/oturum.json';
+if (is_file($oturumDosya)) { $_SESSION = json_decode((string) file_get_contents($oturumDosya), true) ?: []; unset($_SESSION['flash']); }
+register_shutdown_function(static function () use ($oturumDosya): void { $k = $_SESSION; unset($k['flash']); file_put_contents($oturumDosya, json_encode($k)); });
 $_SERVER['REQUEST_URI'] = '/uts.php';
 if (isset($istek['tasiyici'])) {
     require __DIR__ . '/sahte-uts.php';
@@ -73,6 +85,12 @@ switch ($senaryo) {
         } else {
             moduller_ayar_goster('uts');
         }
+        break;
+    case 'alis':
+        require $kaynak(dirname(__DIR__, 2) . '/app/pages/alis-faturasi.php');
+        break;
+    case 'senet':
+        require $kaynak(dirname(__DIR__, 2) . '/app/pages/senetler.php');
         break;
     case 'okut':
         try {

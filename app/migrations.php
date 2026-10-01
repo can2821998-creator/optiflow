@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 23;
+const SCHEMA_VERSION = 24;
 
 function run_migrations(): void
 {
@@ -54,6 +54,7 @@ function run_migrations(): void
         if ($current < 21) { migrate_v21_frames_stock(); set_schema_version(21); }
         if ($current < 22) { migrate_v22_moduller(); set_schema_version(22); }
         if ($current < 23) { migrate_v23_uts(); set_schema_version(23); }
+        if ($current < 24) { migrate_v24_alis_senet(); set_schema_version(24); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1233,4 +1234,78 @@ function migrate_v23_uts(): void
         q('INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES (?, ?)', [$k, $v]);
     }
     setting('__reload__');
+}
+
+
+/* ------------------------------------------------------------------ */
+/*  v24 (4.14.0) — Alış faturası (e-Fatura XML), kalemler, ürün kodu     */
+/*  eşleme hafızası, tedarikçiye verilen senetler.                       */
+/*  Yalnızca YENİ tablo/sütun ekler; mevcut veriye dokunmaz.            */
+/* ------------------------------------------------------------------ */
+
+function migrate_v24_alis_senet(): void
+{
+    add_column('supplier_invoices', 'due_date', 'DATE NULL');
+    add_column('supplier_invoices', 'ettn', 'CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL');
+    add_column('supplier_invoices', 'kaynak', "VARCHAR(8) NOT NULL DEFAULT 'elle'");
+    add_column('supplier_invoices', 'ara_toplam', 'DECIMAL(14,2) NULL');
+    add_column('supplier_invoices', 'kdv_toplam', 'DECIMAL(14,2) NULL');
+    add_column('supplier_invoices', 'xml', 'MEDIUMTEXT NULL');
+    add_index('supplier_invoices', 'idx_supplier_invoices_ettn', 'ettn');
+    add_index('supplier_invoices', 'idx_supplier_invoices_due', 'due_date');
+
+    // e-Fatura kalemleri (yalnızca XML'den gelen faturalarda)
+    db()->exec("CREATE TABLE IF NOT EXISTS supplier_invoice_lines (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        invoice_id INT UNSIGNED NOT NULL,
+        sira SMALLINT UNSIGNED NOT NULL,
+        ad VARCHAR(255) NOT NULL,
+        kod VARCHAR(80) NULL,
+        gtin VARCHAR(20) NULL,
+        miktar DECIMAL(12,3) NOT NULL DEFAULT 1,
+        birim VARCHAR(8) NULL,
+        birim_fiyat DECIMAL(14,4) NOT NULL DEFAULT 0,
+        kdv_orani DECIMAL(5,2) NOT NULL DEFAULT 0,
+        tutar DECIMAL(14,2) NOT NULL DEFAULT 0,
+        kdv_tutar DECIMAL(14,2) NOT NULL DEFAULT 0,
+        frame_item_id INT UNSIGNED NULL,
+        stok_adet INT NOT NULL DEFAULT 0,
+        KEY idx_sil_fatura (invoice_id, sira),
+        KEY idx_sil_cerceve (frame_item_id)
+    ) " . t_opts());
+
+    // Tedarikçinin ürün kodu → çerçeve kartı (bir kez eşlenince sonraki faturalarda kendiliğinden)
+    db()->exec("CREATE TABLE IF NOT EXISTS urun_eslesmeleri (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        supplier_id INT UNSIGNED NOT NULL,
+        kod VARCHAR(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+        frame_item_id INT UNSIGNED NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_urun_eslesme (supplier_id, kod)
+    ) " . t_opts());
+
+    // Tedarikçiye verilen senetler (bono). Senet verilince cari "senet" ödemesiyle kapanır (payment_id),
+    // borç senete geçer; vadede ödenince durum 'odendi' olur.
+    db()->exec("CREATE TABLE IF NOT EXISTS tedarikci_senetleri (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        supplier_id INT UNSIGNED NOT NULL,
+        invoice_id INT UNSIGNED NULL,
+        payment_id INT UNSIGNED NULL,
+        senet_no VARCHAR(40) NULL,
+        tutar DECIMAL(14,2) NOT NULL,
+        duzenleme DATE NOT NULL,
+        vade DATE NOT NULL,
+        duzenleme_yeri VARCHAR(80) NULL,
+        odeme_yeri VARCHAR(80) NULL,
+        durum VARCHAR(10) NOT NULL DEFAULT 'bekliyor',
+        odeme_tarihi DATE NULL,
+        odeme_yontemi VARCHAR(12) NULL,
+        notlar VARCHAR(255) NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        KEY idx_senet_vade (durum, vade),
+        KEY idx_senet_tedarikci (supplier_id),
+        KEY idx_senet_odeme (payment_id)
+    ) " . t_opts());
 }

@@ -155,4 +155,17 @@ ok(!sgk_hak_metni_mi("Hasta Adı: HAKKI DEMİR\nSferik -1.00 Silendirik -0.50 Ak
 $c7 = sgk_hak_coz("Cam ve Çerçeve Bilgisi\nCam ve Çerçeve Sorgulama Tarihi: " . date('d.m.Y') . "\n15.03.2025 ÇERÇEVE teslim\n");
 esit('2025-03-15', $c7['son_alim'], '"Sorgulama Tarihi" satırı alım sayılmaz');
 
+// 2. tur: eski "sonraki hak" ve eski "var" hükmü yeni alımı ezmez
+$m6 = insert('customers', ['first_name' => 'Iki', 'last_name' => 'Sorgu', 'birth_year' => 1980]);
+insert('sgk_hak_sorgulari', ['customer_id' => $m6, 'kaynak' => 'yapistir', 'son_alim' => date('Y-m-d', strtotime('-30 months')), 'sonraki_hak' => date('Y-m-d', strtotime('-6 months')), 'hak' => 'belirsiz', 'created_at' => date('Y-m-d H:i:s', strtotime('-18 months'))]);
+insert('sgk_hak_sorgulari', ['customer_id' => $m6, 'kaynak' => 'yapistir', 'son_alim' => date('Y-m-d', strtotime('-2 months')), 'hak' => 'belirsiz', 'created_at' => date('Y-m-d H:i:s', strtotime('-1 month'))]);
+$d6 = sgk_hak_durumu($m6);
+ok($d6['durum'] === 'yok' && $d6['hak_tarihi'] > date('Y-m-d'), 'eski sonraki-hak tarihi yeni alımı ezmez');
+$m7 = insert('customers', ['first_name' => 'Var', 'last_name' => 'Sonra', 'birth_year' => 1980]);
+insert('sgk_hak_sorgulari', ['customer_id' => $m7, 'kaynak' => 'masaustu', 'hak' => 'var', 'created_at' => date('Y-m-d H:i:s', strtotime('-20 days'))]);
+sgk_hak_elle($m7, null, date('Y-m-d', strtotime('-1 day')), 'belirsiz');
+esit('yok', sgk_hak_durumu($m7)['durum'], 'elle girilen yeni alım eski "var" hükmünü geçersiz kılar');
+ok(!sgk_hak_metni_mi("Hasta: HAKKI VAROL\nReçete Tarihi 01.10.2026\nSağ 1.50 0.75 90"), '"Hakkı Varol" adı hak ifadesi sayılmaz');
+ok(sgk_hak_metni_mi("Hak sorgulama\nHastanın gözlük hakkı bulunmamaktadır."), '"hakkı bulunmamaktadır" tanınır');
+
 bitir();

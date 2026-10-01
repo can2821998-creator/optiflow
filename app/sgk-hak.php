@@ -84,7 +84,8 @@ function sgk_hak_durumu(int $musteriId, int $haricSiparis = 0): array
         $kaynak = 'medula';
     }
     $hak = $son ? sgk_hak_ay_ekle($son, $ay) : null;
-    if ($medSonrakiRow && !$sorgudanSonraSatis($medSonrakiRow)) {
+    // Medula'nın "sonraki hak" tarihi, bilinen son alımdan sonraysa ve sorgudan sonra satış yoksa geçerlidir.
+    if ($medSonrakiRow && !$sorgudanSonraSatis($medSonrakiRow) && (!$son || (string) $medSonrakiRow['sonraki_hak'] > $son)) {
         $hak = (string) $medSonrakiRow['sonraki_hak'];   // Medula'nın bildirdiği tarih önceliklidir
         $kaynak = 'medula';
     }
@@ -94,7 +95,8 @@ function sgk_hak_durumu(int $musteriId, int $haricSiparis = 0): array
     }
     // Son 30 gündeki açık "hak var / yok" ifadesi (ondan sonra OptiFlow'da SGK'lı satış yoksa) geçerlidir.
     $acik = false;
-    if ($medHakRow && !$sorgudanSonraSatis($medHakRow)) {
+    // Hükümden sonra bir alım (OptiFlow satışı, başka Medula sorgusu ya da elle girilen tarih) varsa hüküm eskimiştir.
+    if ($medHakRow && !$sorgudanSonraSatis($medHakRow) && (!$son || $son <= substr((string) $medHakRow['created_at'], 0, 10))) {
         $sonuc['durum'] = (string) $medHakRow['hak'];
         $sonuc['kaynak'] = 'medula';
         $acik = true;
@@ -122,7 +124,7 @@ function sgk_hak_metni_mi(string $metin): bool
 {
     $u = mb_strtoupper(str_replace(['i', 'ı'], ['İ', 'I'], $metin), 'UTF-8');
     // Not: "HAKKI" tek başına aranmaz (yaygın ad: Hakkı); yalnızca hak ifadesi kalıpları.
-    $hak = preg_match_all('/HAK\s*(SORGU|DURUM|TAR[İI]H|SAH[İI]B)|HAKKI\s*(VAR|YOK|BULUN|MEVCUT|DOL)|ÇERÇEVE\s*B[İI]LG[İI]S[İI]|CAM\s*VE\s*ÇERÇEVE\s*B[İI]LG|SON\s*ALIM|ÖNCEK[İI]\s*(ALIM|TESL[İI]M)|TESL[İI]M\s*GEÇM[İI]Ş/u', $u);
+    $hak = preg_match_all('/HAK\s*(SORGU|DURUM|TAR[İI]H|SAH[İI]B)|HAKKI\s*((VAR(DIR)?|YOK(TUR)?|MEVCUT)\b|BULUN|DOLMA|DOLDU|DOLMU)|ÇERÇEVE\s*B[İI]LG[İI]S[İI]|CAM\s*VE\s*ÇERÇEVE\s*B[İI]LG|SON\s*ALIM|ÖNCEK[İI]\s*(ALIM|TESL[İI]M)|TESL[İI]M\s*GEÇM[İI]Ş/u', $u);
     $recete = preg_match_all('/\bSPH\b|SFER[İI]K|S[İI]L[İI]ND[İI]R[İI]K|S[İI]LEND[İI]R[İI]K|\bAKS\b|\bCYL\b|\bADD\b|E-?REÇETE\s*NO/u', $u);
     if ($hak < 1 || $hak < $recete) {
         return false;

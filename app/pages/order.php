@@ -325,16 +325,29 @@ if (is_post()) {
                 ]);
                 audit('cam_hata', 'order', $id, ['sebep' => cam_hata_nedenleri()[post('neden')] ?? post('neden'), 'maliyet' => $maliyet, 'kayıt' => $hid]);
                 flash('Hatalı cam kaydedildi.' . (!empty($_POST['camlar']) ? ' Seçilen camlar Depo · Stok\'ta "Eksik" olarak yeniden sipariş listesine düştü.' : ''));
-            } elseif (is_super() && $action === 'cam_hata_alacak') {
-                $tutar = post('tutar') === '' ? null : parse_money(post('tutar'));
-                cam_hata_alacak_kapat(post_int('hata_id'), post('durum'), $tutar);
-                flash(post('durum') === 'alindi' ? 'İade alındı; tedarikçi carisine alacak olarak işlendi.' : 'İade reddedildi olarak işaretlendi.');
-            } elseif (is_super() && $action === 'cam_hata_alacak_geri') {
-                cam_hata_alacak_geri_al(post_int('hata_id'));
-                flash('İade yeniden "bekleniyor" durumuna alındı.', 'info');
-            } elseif (is_super() && $action === 'cam_hata_sil') {
-                cam_hata_sil(post_int('hata_id'));
-                flash('Kayıt silindi.', 'info');
+            } elseif (is_super() && in_array($action, ['cam_hata_alacak', 'cam_hata_alacak_geri', 'cam_hata_sil'], true)) {
+                $hk = row('SELECT id FROM cam_hatalari WHERE id = ? AND order_id = ?', [post_int('hata_id'), $id]);
+                if (!$hk) {
+                    throw new DomainException('Kayıt bu siparişe ait değil.');
+                }
+                if ($action === 'cam_hata_alacak') {
+                    $tutar = null;
+                    if (post('durum') === 'alindi' && post('tutar') !== '') {
+                        $tutar = parse_money(post('tutar'));
+                        if ($tutar === null || $tutar <= 0) {
+                            throw new DomainException('İade tutarı geçersiz. Örnek: 650,00');
+                        }
+                    }
+                    cam_hata_alacak_kapat((int) $hk['id'], post('durum'), $tutar);
+                    flash(post('durum') === 'alindi' ? 'İade alındı; tedarikçi carisine alacak olarak işlendi.' : 'İade reddedildi olarak işaretlendi.');
+                } elseif ($action === 'cam_hata_alacak_geri') {
+                    cam_hata_alacak_geri_al((int) $hk['id']);
+                    flash('İade yeniden "bekleniyor" durumuna alındı.', 'info');
+                } else {
+                    cam_hata_sil((int) $hk['id']);
+                    flash('Kayıt silindi.', 'info');
+                }
+                audit('cam_hata', 'order', $id, ['işlem' => $action === 'cam_hata_alacak' ? 'iade ' . post('durum') : ($action === 'cam_hata_sil' ? 'kayıt silindi' : 'iade geri alındı'), 'kayıt' => (int) $hk['id'], 'tutar' => $tutar ?? null]);
             }
         } catch (DomainException $e) {
             flash($e->getMessage(), 'error');
@@ -384,6 +397,11 @@ if (is_post()) {
             audit('rx_delete', 'order', $id, ['reçete' => $rx['id'], 'tarih' => $rx['prescription_date'], 'sağ' => rx_line($rx, 'right'), 'sol' => rx_line($rx, 'left')]);
             flash('Reçete silindi.', 'info');
         }
+        redirect($self);
+    }
+
+    if ($action === 'delete_order' && is_super() && table_var_mi('cam_hatalari') && (int) scalar('SELECT COUNT(*) FROM cam_hatalari WHERE order_id = ?', [$id]) > 0) {
+        flash('Bu siparişte hatalı cam kaydı var (laboratuvar iadesi cariye bağlı olabilir). Önce "Hatalı cam" kayıtlarını silin.', 'error');
         redirect($self);
     }
 

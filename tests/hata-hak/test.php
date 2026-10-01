@@ -124,4 +124,35 @@ hata_bekle(fn() => sgk_hak_elle($m2, null, date('Y-m-d', strtotime('+1 day')), '
 $e = sgk_hak_elle($m2, $sip3, '2026-01-10', 'belirsiz');
 esit('2026-01-10', scalar('SELECT son_alim FROM sgk_hak_sorgulari WHERE id = ?', [$e]), 'elle tarih kaydedildi');
 
+echo "6) İnceleme bulguları (regresyon)\n";
+// (4) yeniden yapımda delivery_id temizlenir
+$cD = insert('prescription_lens_items', ['prescription_id' => $rx, 'lens_no' => 3, 'eye' => 'R', 'delivery_id' => 7, 'stock_status' => 'stokta_var']);
+cam_hata_ekle($sip, ['neden' => 'kirilma', 'camlar' => [$cD]]);
+esit(null, scalar('SELECT delivery_id FROM prescription_lens_items WHERE id = ?', [$cD]), 'yeniden yapılan camın eski teslimat bağı kalktı');
+// (1) 13 ay önceki Medula sorgusu hâlâ geçerli
+$m3 = insert('customers', ['first_name' => 'Uzun', 'last_name' => 'Süre', 'birth_year' => 1970]);
+insert('orders', ['first_name' => 'U', 'last_name' => 'S', 'customer_id' => $m3, 'order_stage' => 'teslim_edildi', 'sgk_amount' => 100, 'delivered_at' => date('Y-m-d H:i:s', strtotime('-30 months'))]);
+insert('sgk_hak_sorgulari', ['customer_id' => $m3, 'kaynak' => 'yapistir', 'son_alim' => date('Y-m-d', strtotime('-14 months')), 'hak' => 'belirsiz', 'created_at' => date('Y-m-d H:i:s', strtotime('-13 months'))]);
+$d3 = sgk_hak_durumu($m3);
+ok($d3['durum'] === 'yok' && $d3['kaynak'] === 'medula', '13 ay önceki Medula sorgusundaki başka optik alımı hâlâ sayılır');
+// (2) Medula "var" dedikten sonra OptiFlow'da SGK'lı satış yapıldı
+$m4 = insert('customers', ['first_name' => 'Yeni', 'last_name' => 'Satis', 'birth_year' => 1990]);
+insert('sgk_hak_sorgulari', ['customer_id' => $m4, 'kaynak' => 'masaustu', 'hak' => 'var', 'created_at' => date('Y-m-d H:i:s', strtotime('-20 days'))]);
+esit('var', sgk_hak_durumu($m4)['durum'], 'Medula "var" (satıştan önce)');
+insert('orders', ['first_name' => 'Y', 'last_name' => 'S', 'customer_id' => $m4, 'order_stage' => 'teslim_edildi', 'sgk_amount' => 100, 'delivered_at' => date('Y-m-d H:i:s', strtotime('-5 days'))]);
+$d4 = sgk_hak_durumu($m4);
+ok($d4['durum'] === 'yok' && $d4['kaynak'] === 'optiflow', 'sorgudan sonraki SGK satışı "var" hükmünü geçersiz kılar');
+// (3) yalnız "sonraki hak tarihi" okunan ekran
+$m5 = insert('customers', ['first_name' => 'Sadece', 'last_name' => 'Tarih', 'birth_year' => 1985]);
+sgk_hak_kaydet(sgk_hak_coz("HAK SORGULAMA\nBir sonraki hak tarihi: 15.03.2027\n"), 'yapistir', $m5, null);
+$d5 = sgk_hak_durumu($m5);
+ok($d5['hak_tarihi'] === '2027-03-15' && $d5['durum'] === 'yok', 'alım tarihi olmadan sonraki hak tarihi kullanılır');
+// (6) "Hakkı" adı ve Silendirik yazımı
+$rc = "E-Reçete No: 3K8F2A1\nHasta: HAKKI YILMAZ\nReçete Tarihi: 25.09.2026\nSağ: -1.50 -0.75 90\nSol: -1.25";
+ok(!sgk_hak_metni_mi($rc), '"Hakkı" adlı hastanın reçetesi hak ekranı sanılmaz');
+ok(!sgk_hak_metni_mi("Hasta Adı: HAKKI DEMİR\nSferik -1.00 Silendirik -0.50 Aks 90\nTeslim tarihi 01.10.2026"), 'Silendirik yazımı reçete sayılır');
+// (7) "Sorgulama Tarihi" alım sayılmaz
+$c7 = sgk_hak_coz("Cam ve Çerçeve Bilgisi\nCam ve Çerçeve Sorgulama Tarihi: " . date('d.m.Y') . "\n15.03.2025 ÇERÇEVE teslim\n");
+esit('2025-03-15', $c7['son_alim'], '"Sorgulama Tarihi" satırı alım sayılmaz');
+
 bitir();

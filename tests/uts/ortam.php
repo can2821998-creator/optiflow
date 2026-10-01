@@ -64,7 +64,7 @@ function sema_kur(PDO $p): void
     $p->exec("CREATE TABLE prescription_records (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NULL)");
     $p->exec("CREATE TABLE prescription_lens_items (id INTEGER PRIMARY KEY AUTOINCREMENT, prescription_id INTEGER NOT NULL, lens_no INTEGER NOT NULL DEFAULT 1, lens_label TEXT NOT NULL DEFAULT '',
         stock_status TEXT NOT NULL DEFAULT 'stokta_var', eye TEXT NOT NULL DEFAULT 'R', lens_type TEXT NOT NULL DEFAULT '', item_group TEXT NOT NULL DEFAULT 'uzak', supplier_id INTEGER NULL,
-        unit_cost REAL NULL, ordered_at TEXT NULL, arrived_at TEXT NULL, cam_siparis_id INTEGER NULL)");
+        unit_cost REAL NULL, ordered_at TEXT NULL, arrived_at TEXT NULL, cam_siparis_id INTEGER NULL, delivery_id INTEGER NULL)");
     $p->exec("CREATE TABLE cam_hatalari (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NOT NULL, supplier_id INTEGER NULL, neden TEXT NOT NULL, goz TEXT NOT NULL DEFAULT 'cift',
         sorumlu_id INTEGER NULL, maliyet REAL NOT NULL DEFAULT 0, yeniden_yapim INTEGER NOT NULL DEFAULT 1, alacak_durum TEXT NOT NULL DEFAULT 'yok', alacak_tutar REAL NULL,
         alacak_payment_id INTEGER NULL, aciklama TEXT NULL, created_by INTEGER NULL, created_at TEXT, updated_at TEXT)");

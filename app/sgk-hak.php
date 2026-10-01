@@ -52,6 +52,7 @@ function sgk_hak_durumu(int $musteriId, int $haricSiparis = 0): array
         $sonuc['mesaj'] = 'Müşteri seçilmemiş.';
         return $sonuc;
     }
+    // 1) OptiFlow: son SGK'lı sipariş (bu sipariş hariç)
     $sip = row(
         "SELECT id, COALESCE(delivered_at, created_at) AS tarih FROM orders
           WHERE customer_id = ? AND id <> ? AND order_stage <> 'iptal'
@@ -59,39 +60,53 @@ function sgk_hak_durumu(int $musteriId, int $haricSiparis = 0): array
           ORDER BY COALESCE(delivered_at, created_at) DESC LIMIT 1",
         [$musteriId, $haricSiparis]
     );
-    $son = $sip ? substr((string) $sip['tarih'], 0, 10) : null;
-    $kaynak = $son ? 'optiflow' : '';
+    $optSon = $sip ? substr((string) $sip['tarih'], 0, 10) : null;
+    $optZaman = $sip ? (string) $sip['tarih'] : '';
     $sonuc['siparis_id'] = $sip ? (int) $sip['id'] : null;
 
-    // Medula / e-Devlet sorgusu (son 1 yıl içindeki en yeni): daha yeni alım tarihi ya da açık hak ifadesi varsa o esas alınır.
-    $med = table_var_mi('sgk_hak_sorgulari')
-        ? row('SELECT * FROM sgk_hak_sorgulari WHERE customer_id = ? AND created_at >= ? ORDER BY id DESC LIMIT 1', [$musteriId, date('Y-m-d H:i:s', strtotime('-365 days'))])
-        : null;
-    if ($med) {
-        $sonuc['medula'] = $med;
-        if ($med['son_alim'] && (!$son || $med['son_alim'] > $son)) {
-            $son = (string) $med['son_alim'];
-            $kaynak = 'medula';
-        } elseif ($med['son_alim'] && $son && $med['son_alim'] === $son) {
-            $kaynak = 'medula';
-        }
+    // 2) Medula / e-Devlet sorguları (süre sınırı yok: hak süresi yıllarca sürebilir)
+    $medSonRow = null;
+    $medSonrakiRow = null;
+    $medHakRow = null;
+    if (table_var_mi('sgk_hak_sorgulari')) {
+        $medSonRow = row('SELECT * FROM sgk_hak_sorgulari WHERE customer_id = ? AND son_alim IS NOT NULL ORDER BY son_alim DESC, id DESC LIMIT 1', [$musteriId]);
+        $medSonrakiRow = row('SELECT * FROM sgk_hak_sorgulari WHERE customer_id = ? AND sonraki_hak IS NOT NULL ORDER BY id DESC LIMIT 1', [$musteriId]);
+        $medHakRow = row("SELECT * FROM sgk_hak_sorgulari WHERE customer_id = ? AND hak IN ('var','yok') AND created_at >= ? ORDER BY id DESC LIMIT 1", [$musteriId, date('Y-m-d H:i:s', strtotime('-30 days'))]);
+        $sonuc['medula'] = row('SELECT * FROM sgk_hak_sorgulari WHERE customer_id = ? ORDER BY id DESC LIMIT 1', [$musteriId]);
     }
-    if ($son) {
-        $hak = sgk_hak_ay_ekle($son, $ay);
-        if ($med && $med['sonraki_hak'] && $kaynak === 'medula') {
-            $hak = (string) $med['sonraki_hak'];   // Medula'nın bildirdiği tarih önceliklidir
-        }
+    // Sorgudan SONRA OptiFlow'da SGK'lı satış yapıldıysa o sorgunun hükmü artık geçersizdir.
+    $sorgudanSonraSatis = static fn(?array $q): bool => $q !== null && $optZaman !== '' && $optZaman > (string) $q['created_at'];
+
+    $son = $optSon;
+    $kaynak = $optSon ? 'optiflow' : '';
+    if ($medSonRow && (!$son || $medSonRow['son_alim'] >= $son)) {
+        $son = (string) $medSonRow['son_alim'];
+        $kaynak = 'medula';
+    }
+    $hak = $son ? sgk_hak_ay_ekle($son, $ay) : null;
+    if ($medSonrakiRow && !$sorgudanSonraSatis($medSonrakiRow)) {
+        $hak = (string) $medSonrakiRow['sonraki_hak'];   // Medula'nın bildirdiği tarih önceliklidir
+        $kaynak = 'medula';
+    }
+    if ($hak) {
         $kalan = (int) floor((strtotime($hak) - strtotime(date('Y-m-d'))) / 86400);
         $sonuc = array_merge($sonuc, ['son' => $son, 'kaynak' => $kaynak, 'hak_tarihi' => $hak, 'kalan_gun' => $kalan, 'durum' => $kalan > 0 ? 'yok' : 'var']);
     }
-    // Medula ekranı açıkça "hak var / yok" diyorsa ve sorgu son 30 gündeyse o geçerlidir.
-    if ($med && in_array($med['hak'], ['var', 'yok'], true) && strtotime((string) $med['created_at']) >= strtotime('-30 days')) {
-        $sonuc['durum'] = $med['hak'];
+    // Son 30 gündeki açık "hak var / yok" ifadesi (ondan sonra OptiFlow'da SGK'lı satış yoksa) geçerlidir.
+    $acik = false;
+    if ($medHakRow && !$sorgudanSonraSatis($medHakRow)) {
+        $sonuc['durum'] = (string) $medHakRow['hak'];
         $sonuc['kaynak'] = 'medula';
+        $acik = true;
+    }
+    if ($acik) {
+        $sonuc['mesaj'] = 'Medula\'ya göre (' . date_tr(substr((string) $medHakRow['created_at'], 0, 10)) . ') SGK gözlük hakkı ' . ($sonuc['durum'] === 'var' ? 'VAR' : 'YOK')
+            . ($sonuc['durum'] === 'yok' && $sonuc['hak_tarihi'] ? '; hak tarihi ' . date_tr($sonuc['hak_tarihi']) : '') . '.';
+        return $sonuc;
     }
     $sonuc['mesaj'] = match ($sonuc['durum']) {
         'var'   => 'SGK gözlük hakkı var' . ($son ? ' (son alım ' . date_tr($son) . ')' : '') . '.',
-        'yok'   => 'SGK hakkı ' . ($sonuc['hak_tarihi'] ? date_tr($sonuc['hak_tarihi']) . ' tarihinde dolar' . ($sonuc['kalan_gun'] !== null && $sonuc['kalan_gun'] > 0 ? ' (' . $sonuc['kalan_gun'] . ' gün)' : '') : 'henüz dolmadı') . '. Numara 0,50 D ve üzeri değiştiyse doktor raporuyla erken yenilenebilir.',
+        'yok'   => 'SGK hakkı ' . date_tr((string) $sonuc['hak_tarihi']) . ' tarihinde dolar' . ($sonuc['kalan_gun'] > 0 ? ' (' . $sonuc['kalan_gun'] . ' gün)' : '') . '. Numara 0,50 D ve üzeri değiştiyse doktor raporuyla erken yenilenebilir.',
         default => 'OptiFlow\'da bu müşterinin SGK\'lı alımı yok; başka optikte kullanmış olabilir. Medula\'dan doğrulayın.',
     };
     if ($sonuc['kaynak'] === 'optiflow') {
@@ -106,9 +121,21 @@ function sgk_hak_durumu(int $musteriId, int $haricSiparis = 0): array
 function sgk_hak_metni_mi(string $metin): bool
 {
     $u = mb_strtoupper(str_replace(['i', 'ı'], ['İ', 'I'], $metin), 'UTF-8');
-    $hak = preg_match_all('/HAK\s*(SORGU|DURUM|TAR[İI]H|SAH[İI]B)|HAKKI\s|ÇERÇEVE\s*B[İI]LG[İI]S[İI]|CAM\s*VE\s*ÇERÇEVE|SON\s*ALIM|ÖNCEK[İI]\s*(ALIM|TESL[İI]M)|TESL[İI]M\s*GEÇM[İI]Ş/u', $u);
-    $recete = preg_match_all('/\bSPH\b|SFER[İI]K|S[İI]L[İI]ND[İI]R[İI]K|\bAKS\b|\bCYL\b|\bADD\b/u', $u);
-    return $hak >= 1 && $hak >= $recete;
+    // Not: "HAKKI" tek başına aranmaz (yaygın ad: Hakkı); yalnızca hak ifadesi kalıpları.
+    $hak = preg_match_all('/HAK\s*(SORGU|DURUM|TAR[İI]H|SAH[İI]B)|HAKKI\s*(VAR|YOK|BULUN|MEVCUT|DOL)|ÇERÇEVE\s*B[İI]LG[İI]S[İI]|CAM\s*VE\s*ÇERÇEVE\s*B[İI]LG|SON\s*ALIM|ÖNCEK[İI]\s*(ALIM|TESL[İI]M)|TESL[İI]M\s*GEÇM[İI]Ş/u', $u);
+    $recete = preg_match_all('/\bSPH\b|SFER[İI]K|S[İI]L[İI]ND[İI]R[İI]K|S[İI]LEND[İI]R[İI]K|\bAKS\b|\bCYL\b|\bADD\b|E-?REÇETE\s*NO/u', $u);
+    if ($hak < 1 || $hak < $recete) {
+        return false;
+    }
+    // İşaretli diyoptri değerleri (-1.50, +2,00) ya da e-reçete no varsa bu bir reçete ekranıdır.
+    // (Tarihler işaretsiz olduğu için karışmaz.)
+    if (preg_match_all('/(?<![\d.,])[+-]\s?\d{1,2}[.,]\d{2}\b/u', $metin) >= 2) {
+        return false;
+    }
+    if (function_exists('sgk_parse') && trim((string) (sgk_parse($metin)['erecete'] ?? '')) !== '') {
+        return false;
+    }
+    return true;
 }
 
 /** Metindeki tarihleri 'Y-m-d' olarak döner (geçersizler atılır). */
@@ -164,7 +191,7 @@ function sgk_hak_coz(string $metin): array
             continue;
         }
         // Alım satırı: malzeme anahtar kelimesi olmalı; doğum / sorgu / rapor geçerlilik satırları sayılmaz.
-        if (preg_match('/DOĞUM|DOGUM|SORGU\s*TAR|RAPOR\s*GEÇERL|GEÇERL[İI]L[İI]K|BASKI\s*TAR/u', $u)) {
+        if (preg_match('/DOĞUM|DOGUM|SORGU\w*\s*TAR|RAPOR\s*GEÇERL|GEÇERL[İI]L[İI]K|BASKI\s*TAR|YAZDIRMA/u', $u)) {
             continue;
         }
         if (!preg_match('/ÇERÇEVE|CERCEVE|\bCAM|GÖZLÜK|GOZLUK|LENS|TESL[İI]M|UZAK|YAKIN|REÇETE|RECETE|PROV[İI]ZYON/u', $u)) {

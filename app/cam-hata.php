@@ -109,7 +109,7 @@ function cam_hata_ekle(int $siparisId, array $v): int
         ]);
         // Yeniden yapılacak camlar depo listesine "Eksik" olarak döner (cam siparişi fişine yeniden girebilir).
         foreach ($camlar as $cid) {
-            q("UPDATE prescription_lens_items SET stock_status = 'stokta_yok', ordered_at = NULL, arrived_at = NULL, cam_siparis_id = NULL WHERE id = ?", [$cid]);
+            q("UPDATE prescription_lens_items SET stock_status = 'stokta_yok', ordered_at = NULL, arrived_at = NULL, cam_siparis_id = NULL, delivery_id = NULL WHERE id = ?", [$cid]);
         }
         return $id;
     });

@@ -54,6 +54,16 @@ function ozellik_tanimlari(): array
             'kisa'     => 'Aktarılan reçeteler, SGK siparişleri ve Medula listesinde henüz aktarılmamış reçeteler.',
             'masaustu' => false,
         ],
+        'cam_hata' => [
+            'ad'       => 'Hatalı cam / yeniden yapım kaydı',
+            'kisa'     => 'Yeniden yapılan camların sebebi, maliyeti, laboratuvardan iade alacağı ve aylık rapor; tedarikçi karnesinde hata oranı.',
+            'masaustu' => false,
+        ],
+        'sgk_hak' => [
+            'ad'       => 'SGK hak kontrolü',
+            'kisa'     => 'Müşterinin SGK gözlük hak tarihi siparişte görünür; Medula / e-Devlet hak ekranı OptiFlow Pro\'da "Aktar" ile ya da yapıştırarak doğrulanır.',
+            'masaustu' => false,
+        ],
         'tedarik_finans' => [
             'ad'       => 'Alış faturası ve senet takibi',
             'kisa'     => 'Tedarikçi e-Fatura XML\'ini yükleyince stok, maliyet ve cari kendiliğinden işlenir; verilen senetler ve vade takvimi.',

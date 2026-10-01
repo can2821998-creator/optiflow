@@ -385,6 +385,12 @@ function ozellik_menusu_ekle(array &$nav): void
         $ekle($a, 'stock', ['cam-siparis', 'cam-siparis.php', 'Cam siparişleri', 'truck',
             $sayi("SELECT COUNT(*) FROM cam_siparisleri WHERE durum = 'taslak'")]);
     }
+    if (ozellik_acik('cam_hata') && function_exists('cam_hata_rozet')) {   // 4.15.0
+        $ekle($a, 'stock', ['cam-hatalari', 'cam-hatalari.php', 'Hatalı camlar', 'glasses', is_super() ? cam_hata_rozet() : 0]);
+    }
+    if (ozellik_acik('sgk_hak')) {
+        $ekle($a, 'sgk', ['sgk-hak', 'sgk-hak.php', 'SGK hak kontrolü', 'download', 0]);
+    }
     if (ozellik_acik('uts_bildirim') && function_exists('uts_menu_rozeti')) {
         $ekle($a, 'stock', ['uts-bildirim', 'uts.php', 'ÜTS bildirimleri', 'barcode', uts_menu_rozeti()]);
     }

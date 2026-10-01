@@ -963,6 +963,8 @@ function audit_actions(): array
         'cam_fis_gonder'     => 'Cam siparişini tedarikçiye gönderdi',
         'sgk_liste_kontrol'  => 'Medula listesini kontrol etti',
         'alis_fatura'        => 'e-Fatura (alış) içe aktardı',
+        'cam_hata'           => 'Hatalı cam kaydetti',
+        'sgk_hak'            => 'SGK hak bilgisini kaydetti',
         'senet_ver'          => 'Tedarikçiye senet verdi',
         'senet_ode'          => 'Senedi ödendi işaretledi',
         'senet_iptal'        => 'Senedi iptal etti',

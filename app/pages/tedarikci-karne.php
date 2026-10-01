@@ -110,6 +110,7 @@ $satirlar = rows(
     $bas ? [$bas . ' 00:00:00'] : []
 );
 $karne = karne_hesapla($satirlar);
+$labHata = ozellik_acik('cam_hata') ? cam_hata_lab_sayilari($bas) : null;   // 4.15.0
 
 $tedarikciler = rows(
     'SELECT s.id, s.name, COALESCE(si.invoiced, 0) - COALESCE(sp.paid, 0) AS balance FROM suppliers s ' . SUPPLIER_BALANCE_JOIN
@@ -187,6 +188,7 @@ page_header('Tedarikçi karnesi', $toplamCam . ' cam · ' . $secenekler[$donem],
       <thead><tr>
         <th>Tedarikçi</th><th class="num">Cam</th><th class="num">Ort. bekleme</th><th class="num hide-sm">%90 sürede</th>
         <th class="num hide-sm">En uzun</th><th class="num">Sözü aşan</th><th>Durum</th>
+        <?php if ($labHata !== null): ?><th class="num" title="Dönemde laboratuvar hatası nedeniyle yeniden yapılan cam / gelen cam">Lab hatası</th><?php endif; ?>
         <th class="num hide-md">Harcama</th><th class="num hide-md">Açık borç</th>
       </tr></thead>
       <tbody>
@@ -203,6 +205,9 @@ page_header('Tedarikçi karnesi', $toplamCam . ' cam · ' . $secenekler[$donem],
           <?php else: ?>
             <td class="num muted">—</td><td class="num muted">—</td><td class="num hide-sm muted">—</td><td class="num hide-sm muted">—</td><td class="num muted">—</td>
             <td><span class="badge sm tone-gray">Cam gelmedi</span></td>
+          <?php endif; ?>
+          <?php if ($labHata !== null): $lh = $labHata[(int) $t['id']] ?? 0; $camN = $t['k'] ? (int) $t['k']['cam'] : 0; ?>
+            <td class="num <?= $lh > 0 ? 'text-danger' : 'muted' ?>"><?= $lh > 0 ? $lh . ($camN > 0 ? ' · %' . e(number_format($lh / $camN * 100, 1, ',', '.')) : '') : '—' ?></td>
           <?php endif; ?>
           <td class="num hide-md"><?= $t['harcama'] > 0 ? e(money($t['harcama'])) : '—' ?></td>
           <td class="num hide-md"><?= $t['borc'] > 0.009 ? e(money($t['borc'])) : '—' ?></td>

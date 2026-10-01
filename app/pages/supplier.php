@@ -208,6 +208,10 @@ if (is_post()) {
     }
 
     if ($action === 'delete_payment' && is_super()) {
+        if (cam_hata_odeme_bagli_mi(post_int('row_id'))) {
+            flash('Bu kayıt bir hatalı cam iadesine ait. Siparişin "Hatalı cam" bölümünden geri alın.', 'error');
+            redirect($self);
+        }
         if ($bagli = senet_odeme_bagli_mi(post_int('row_id'))) {
             flash('Bu kayıt ' . ($bagli['senet_no'] ? $bagli['senet_no'] . ' numaralı ' : '') . 'senede ait. Senetler bölümünden senedi iptal edin.', 'error');
             redirect($self);

@@ -311,6 +311,62 @@ if (is_post()) {
         redirect($self . '#uts');
     }
 
+    // 4.15.0 — Hatalı cam / yeniden yapım
+    if (str_starts_with($action, 'cam_hata_') && ozellik_acik('cam_hata')) {
+        try {
+            if ($action === 'cam_hata_ekle') {
+                $maliyet = post('maliyet') === '' ? 0.0 : parse_money(post('maliyet'));
+                if ($maliyet === null || $maliyet < 0) {
+                    throw new DomainException('Maliyet geçersiz. Örnek: 450,00');
+                }
+                $hid = cam_hata_ekle($id, [
+                    'neden' => post('neden'), 'goz' => post('goz'), 'maliyet' => $maliyet, 'supplier_id' => post_int('supplier_id'),
+                    'sorumlu_id' => post_int('sorumlu_id'), 'aciklama' => post('aciklama'), 'camlar' => (array) ($_POST['camlar'] ?? []), 'alacak' => post('alacak') === '1',
+                ]);
+                audit('cam_hata', 'order', $id, ['sebep' => cam_hata_nedenleri()[post('neden')] ?? post('neden'), 'maliyet' => $maliyet, 'kayıt' => $hid]);
+                flash('Hatalı cam kaydedildi.' . (!empty($_POST['camlar']) ? ' Seçilen camlar Depo · Stok\'ta "Eksik" olarak yeniden sipariş listesine düştü.' : ''));
+            } elseif (is_super() && $action === 'cam_hata_alacak') {
+                $tutar = post('tutar') === '' ? null : parse_money(post('tutar'));
+                cam_hata_alacak_kapat(post_int('hata_id'), post('durum'), $tutar);
+                flash(post('durum') === 'alindi' ? 'İade alındı; tedarikçi carisine alacak olarak işlendi.' : 'İade reddedildi olarak işaretlendi.');
+            } elseif (is_super() && $action === 'cam_hata_alacak_geri') {
+                cam_hata_alacak_geri_al(post_int('hata_id'));
+                flash('İade yeniden "bekleniyor" durumuna alındı.', 'info');
+            } elseif (is_super() && $action === 'cam_hata_sil') {
+                cam_hata_sil(post_int('hata_id'));
+                flash('Kayıt silindi.', 'info');
+            }
+        } catch (DomainException $e) {
+            flash($e->getMessage(), 'error');
+        }
+        redirect($self . '#cam-hata');
+    }
+
+    // 4.15.0 — SGK hak doğrulaması (Medula / e-Devlet ekranı yapıştırma ya da elle tarih)
+    if (in_array($action, ['sgk_hak_yapistir', 'sgk_hak_elle'], true) && ozellik_acik('sgk_hak')) {
+        try {
+            if (!(int) $order['customer_id']) {
+                throw new DomainException('Siparişe müşteri bağlı değil.');
+            }
+            if ($action === 'sgk_hak_yapistir') {
+                $metin = mb_substr((string) ($_POST['metin'] ?? ''), 0, 100000);
+                $c = sgk_hak_coz($metin);
+                if (!$c['son_alim'] && $c['hak'] === 'belirsiz') {
+                    throw new DomainException('Yapıştırılan metinde alım tarihi ya da hak ifadesi bulunamadı. Son alım tarihini elle yazabilirsiniz.');
+                }
+                sgk_hak_kaydet($c, 'yapistir', (int) $order['customer_id'], $id);
+                flash('Medula bilgisi kaydedildi' . ($c['son_alim'] ? ': son alım ' . date_tr($c['son_alim']) : '') . ($c['hak'] !== 'belirsiz' ? ' · hak ' . ($c['hak'] === 'var' ? 'var' : 'yok') : '') . '.');
+            } else {
+                sgk_hak_elle((int) $order['customer_id'], $id, post('son_alim'), 'belirsiz');
+                flash('Son alım tarihi kaydedildi.');
+            }
+            audit('sgk_hak', 'order', $id, ['kaynak' => $action === 'sgk_hak_elle' ? 'elle' : 'yapıştırma']);
+        } catch (DomainException $e) {
+            flash($e->getMessage(), 'error');
+        }
+        redirect($self . '#sgk-hak');
+    }
+
     if ($action === 'delete_payment' && is_super()) {
         $p = row('SELECT * FROM payments WHERE id = ? AND order_id = ?', [post_int('payment_id'), $id]);
         if ($p) {
@@ -374,7 +430,8 @@ foreach (rows('SELECT i.* FROM prescription_lens_items i JOIN prescription_recor
 }
 $frameCost = $order['frame_product_id'] ? (float) (scalar('SELECT avg_cost FROM frame_products WHERE id = ?', [$order['frame_product_id']]) ?? 0) : 0.0;
 $hasFrameCost = $order['frame_product_id'] && $frameCost > 0;
-$estProfit = (float) $order['total_amount'] - $lensCostKnown - $frameCost;
+$remakeCost = ozellik_acik('cam_hata') ? cam_hata_siparis_maliyeti((int) $id) : 0.0;   // 4.15.0 yeniden yapım (iade düşülmüş)
+$estProfit = (float) $order['total_amount'] - $lensCostKnown - $frameCost - $remakeCost;
 $otherOrders = rows('SELECT id, order_stage, created_at, total_amount FROM orders WHERE customer_id = ? AND id <> ? ORDER BY created_at DESC LIMIT 5', [$order['customer_id'], $id]);
 $history = is_super() ? rows("SELECT * FROM audit_log WHERE entity = 'order' AND entity_id = ? ORDER BY id DESC LIMIT 12", [$id]) : [];
 $staff = $order['order_stage'] === 'atolyede' ? assignable_staff() : [];
@@ -717,6 +774,9 @@ page_start($name . ' ' . order_no($id), 'orders');
       </div>
     </section>
 
+    <?php if (ozellik_acik('sgk_hak') && (int) $order['customer_id'] && $order['transaction_type'] !== 'tamir') { require dirname(__DIR__) . '/partials/sgk-hak-karti.php'; } ?>
+    <?php if (ozellik_acik('cam_hata') && $order['transaction_type'] === 'gozluk') { require dirname(__DIR__) . '/partials/cam-hata-karti.php'; } ?>
+
     <?php $takipUrl = order_track_url($id); if ($takipUrl !== ''): ?>
       <section class="card track-share">
         <div class="card-head"><h2><?= icon('glasses') ?> Müşteri takip bağlantısı</h2></div>
@@ -808,6 +868,7 @@ page_start($name . ' ' . order_no($id), 'orders');
         <div><small>Satış</small><b><?= money($order['total_amount']) ?></b></div>
         <div><small>Cam maliyeti<?= $lensCostMissing ? ' *' : '' ?></small><b><?= $lensCostKnown > 0 ? money($lensCostKnown) : '—' ?></b></div>
         <div><small>Çerçeve maliyeti</small><b><?= $hasFrameCost ? money($frameCost) : '—' ?></b></div>
+        <?php if ($remakeCost > 0.009): ?><div><small>Yeniden yapım</small><b><?= money($remakeCost) ?></b></div><?php endif; ?>
       </div>
       <div class="profit-total <?= $estProfit >= 0 ? 'tone-green' : 'tone-red' ?>">
         <span>Tahmini kâr</span><b><?= money($estProfit) ?></b>

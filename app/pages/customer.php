@@ -167,6 +167,9 @@ page_start($name, 'customers');
   </div>
 </section>
 
+<?php if (ozellik_acik('sgk_hak')): $hd = sgk_hak_durumu((int) $id); [$hdAd, $hdTon] = sgk_hak_etiketi($hd); ?>
+  <div class="alert alert-<?= $hd['durum'] === 'var' ? 'ok' : ($hd['durum'] === 'yok' ? 'warn' : 'info') ?>"><b><?= e($hdAd) ?>.</b> <?= e($hd['mesaj']) ?> <a class="link" href="sgk-hak.php">Medula'dan doğrula</a></div>
+<?php endif; ?>
 <?php if (can_see_amounts() && $orders): ?>
 <section class="stats three">
   <div class="stat"><small>Toplam alışveriş</small><b><?= money($sum['total']) ?></b></div>

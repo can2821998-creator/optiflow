@@ -58,7 +58,19 @@ function sema_kur(PDO $p): void
 {
     $p->exec("CREATE TABLE app_settings (setting_key TEXT PRIMARY KEY, setting_value TEXT)");
     $p->exec("CREATE TABLE orders (id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT DEFAULT '', last_name TEXT DEFAULT '', order_stage TEXT DEFAULT 'siparis_verildi',
-        frame_item_id INTEGER NULL, frame_info TEXT NULL, sgk_erecete TEXT NULL, sgk_amount REAL NOT NULL DEFAULT 0, delivered_at TEXT NULL)");
+        frame_item_id INTEGER NULL, frame_info TEXT NULL, sgk_erecete TEXT NULL, sgk_amount REAL NOT NULL DEFAULT 0, delivered_at TEXT NULL,
+        customer_id INTEGER NULL, transaction_type TEXT DEFAULT 'gozluk', lens_type TEXT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP)");
+    $p->exec("CREATE TABLE customers (id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT NOT NULL, last_name TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '', birth_year INTEGER NULL)");
+    $p->exec("CREATE TABLE prescription_records (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NULL)");
+    $p->exec("CREATE TABLE prescription_lens_items (id INTEGER PRIMARY KEY AUTOINCREMENT, prescription_id INTEGER NOT NULL, lens_no INTEGER NOT NULL DEFAULT 1, lens_label TEXT NOT NULL DEFAULT '',
+        stock_status TEXT NOT NULL DEFAULT 'stokta_var', eye TEXT NOT NULL DEFAULT 'R', lens_type TEXT NOT NULL DEFAULT '', item_group TEXT NOT NULL DEFAULT 'uzak', supplier_id INTEGER NULL,
+        unit_cost REAL NULL, ordered_at TEXT NULL, arrived_at TEXT NULL, cam_siparis_id INTEGER NULL)");
+    $p->exec("CREATE TABLE cam_hatalari (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NOT NULL, supplier_id INTEGER NULL, neden TEXT NOT NULL, goz TEXT NOT NULL DEFAULT 'cift',
+        sorumlu_id INTEGER NULL, maliyet REAL NOT NULL DEFAULT 0, yeniden_yapim INTEGER NOT NULL DEFAULT 1, alacak_durum TEXT NOT NULL DEFAULT 'yok', alacak_tutar REAL NULL,
+        alacak_payment_id INTEGER NULL, aciklama TEXT NULL, created_by INTEGER NULL, created_at TEXT, updated_at TEXT)");
+    $p->exec("CREATE TABLE sgk_hak_sorgulari (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER NULL, order_id INTEGER NULL, gelen_id INTEGER NULL, kaynak TEXT NOT NULL DEFAULT 'yapistir',
+        ad TEXT NULL, son_alim TEXT NULL, sonraki_hak TEXT NULL, hak TEXT NOT NULL DEFAULT 'belirsiz', satirlar TEXT NULL, created_by INTEGER NULL, created_at TEXT)");
+    $p->exec("CREATE TABLE sgk_incoming (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, kaynak TEXT, raw_text TEXT, parsed TEXT, used_at TEXT NULL, created_at TEXT)");
     $p->exec("CREATE TABLE suppliers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, contact_name TEXT NULL, phone TEXT NULL, address TEXT NULL, tax_no TEXT NULL, note TEXT NULL,
         uts_kurum_no TEXT NULL, email TEXT NULL, is_active INTEGER DEFAULT 1, created_at TEXT, updated_at TEXT)");
     $p->exec("CREATE TABLE user_accounts (id INTEGER PRIMARY KEY AUTOINCREMENT, full_name TEXT, role TEXT, is_active INTEGER DEFAULT 1)");
@@ -101,6 +113,9 @@ require dirname(__DIR__, 2) . '/app/barkod.php';
 require dirname(__DIR__, 2) . '/app/uts.php';
 require dirname(__DIR__, 2) . '/app/alis.php';
 require dirname(__DIR__, 2) . '/app/senet.php';
+require dirname(__DIR__, 2) . '/app/sgk.php';
+require dirname(__DIR__, 2) . '/app/cam-hata.php';
+require dirname(__DIR__, 2) . '/app/sgk-hak.php';
 
 /* ---------- Küçük test çatısı ---------- */
 $GLOBALS['__gecen'] = 0;

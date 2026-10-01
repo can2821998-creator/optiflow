@@ -30,6 +30,8 @@ function select_options(array $options, ?string $selected, bool $assoc = true): 
 function require_login(): array { return current_user(); }
 function ozellik_gereksin(string $k): void {}
 function asset(string $p): string { return 'assets/' . $p; }
+function stock_badge(string $k): string { return '<span class="badge">' . e($k) . '</span>'; }
+function stage_label(?string $k): string { return (string) $k; }
 
 $senaryo = $argv[1] ?? '';
 $istek = json_decode($argv[2] ?? '{}', true) ?: [];
@@ -91,6 +93,23 @@ switch ($senaryo) {
         break;
     case 'senet':
         require $kaynak(dirname(__DIR__, 2) . '/app/pages/senetler.php');
+        break;
+    case 'camhata':
+        require $kaynak(dirname(__DIR__, 2) . '/app/pages/cam-hatalari.php');
+        break;
+    case 'sgkhak':
+        require $kaynak(dirname(__DIR__, 2) . '/app/pages/sgk-hak.php');
+        break;
+    case 'kart_cam':
+    case 'kart_hak':
+        $id = (int) ($istek['id'] ?? 1);
+        $order = row("SELECT o.* FROM orders o WHERE id = ?", [$id]);
+        require dirname(__DIR__, 2) . '/app/partials/' . ($senaryo === 'kart_cam' ? 'cam-hata-karti.php' : 'sgk-hak-karti.php');
+        break;
+    case 'fn':
+        // Küçük işlem çağrıları (sayfa akışını hazırlamak için)
+        $f = (string) $istek['f'];
+        echo json_encode(call_user_func_array($f, $istek['a'] ?? []), JSON_UNESCAPED_UNICODE);
         break;
     case 'okut':
         try {

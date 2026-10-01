@@ -109,6 +109,10 @@ if (!is_post() && query_int('gelen') > 0) {
         flash('Aktarılan kayıt bulunamadı.', 'error');
         redirect('sgk-aktar.php');
     }
+    // 4.15.0: Aktarılan ekran bir hak sorgu / cam-çerçeve geçmişi ekranıysa hak kontrolü sayfasına gider.
+    if (ozellik_acik('sgk_hak') && sgk_hak_metni_mi($hamMetin)) {
+        redirect('sgk-hak.php?gelen=' . $gelenId);
+    }
     $cozum = sgk_parse($hamMetin);
     $eslesenler = sgk_musteri_bul((string) $cozum['ad'], (string) $cozum['soyad']);
 }
@@ -310,6 +314,13 @@ if (is_post()) {
 
         if ($sonuc['sgk']['uyari']) {
             flash($sonuc['sgk']['uyari'], 'warn');
+        }
+        if (ozellik_acik('sgk_hak')) {   // 4.15.0
+            $oSip = row('SELECT customer_id FROM orders WHERE id = ?', [(int) $sonuc['order']]);
+            $hd = $oSip ? sgk_hak_durumu((int) $oSip['customer_id'], (int) $sonuc['order']) : null;
+            if ($hd && $hd['durum'] !== 'var') {
+                flash('SGK hakkı: ' . $hd['mesaj'], $hd['durum'] === 'yok' ? 'warn' : 'info');
+            }
         }
         $sgkMesaj = $sonuc['sgk']['tutar'] > 0 ? ' SGK katkısı tahmini ' . money($sonuc['sgk']['tutar']) . ' olarak işlendi.' : '';
         $not = $sonuc['yeni_musteri'] ? 'Yeni müşteri ve sipariş açıldı. ' : ($sonuc['yeni_siparis'] ? 'Yeni sipariş açıldı. ' : '');

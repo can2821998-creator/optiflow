@@ -28,7 +28,7 @@ const ALIS_EN_FAZLA_BELGE = 40;
 /** Tedarikçi ödeme yöntemleri: müşteri yöntemleri + senet (yalnızca tedarikçi tarafında). */
 function tedarik_odeme_yontemleri(): array
 {
-    return payment_methods() + ['senet' => 'Senet'];
+    return payment_methods() + ['senet' => 'Senet', 'iade' => 'İade / alacak (hatalı cam)'];
 }
 
 /* ---------------- Dosya okuma ---------------- */

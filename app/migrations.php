@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 24;
+const SCHEMA_VERSION = 25;
 
 function run_migrations(): void
 {
@@ -55,6 +55,7 @@ function run_migrations(): void
         if ($current < 22) { migrate_v22_moduller(); set_schema_version(22); }
         if ($current < 23) { migrate_v23_uts(); set_schema_version(23); }
         if ($current < 24) { migrate_v24_alis_senet(); set_schema_version(24); }
+        if ($current < 25) { migrate_v25_cam_hata_sgk_hak(); set_schema_version(25); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1316,4 +1317,57 @@ function migrate_v24_alis_senet(): void
         KEY idx_senet_tedarikci (supplier_id),
         KEY idx_senet_odeme (payment_id)
     ) " . t_opts());
+}
+
+
+/* ------------------------------------------------------------------ */
+/*  v25 (4.15.0) — Hatalı cam / yeniden yapım kayıtları; SGK hak         */
+/*  sorgu sonuçları (Medula / e-Devlet ekranından okunan).               */
+/*  Yalnızca YENİ tablo ekler; mevcut veriye dokunmaz.                   */
+/* ------------------------------------------------------------------ */
+
+function migrate_v25_cam_hata_sgk_hak(): void
+{
+    db()->exec("CREATE TABLE IF NOT EXISTS cam_hatalari (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        order_id INT UNSIGNED NOT NULL,
+        supplier_id INT UNSIGNED NULL,
+        neden VARCHAR(14) NOT NULL,
+        goz VARCHAR(4) NOT NULL DEFAULT 'cift',
+        sorumlu_id INT UNSIGNED NULL,
+        maliyet DECIMAL(12,2) NOT NULL DEFAULT 0,
+        yeniden_yapim TINYINT(1) NOT NULL DEFAULT 1,
+        alacak_durum VARCHAR(10) NOT NULL DEFAULT 'yok',
+        alacak_tutar DECIMAL(12,2) NULL,
+        alacak_payment_id INT UNSIGNED NULL,
+        aciklama VARCHAR(500) NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        KEY idx_cam_hata_siparis (order_id),
+        KEY idx_cam_hata_tarih (created_at, neden),
+        KEY idx_cam_hata_tedarikci (supplier_id, alacak_durum)
+    ) " . t_opts());
+
+    db()->exec("CREATE TABLE IF NOT EXISTS sgk_hak_sorgulari (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        customer_id INT UNSIGNED NULL,
+        order_id INT UNSIGNED NULL,
+        gelen_id INT UNSIGNED NULL,
+        kaynak VARCHAR(10) NOT NULL DEFAULT 'yapistir',
+        ad VARCHAR(120) NULL,
+        son_alim DATE NULL,
+        sonraki_hak DATE NULL,
+        hak VARCHAR(10) NOT NULL DEFAULT 'belirsiz',
+        satirlar TEXT NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_hak_musteri (customer_id, created_at),
+        KEY idx_hak_siparis (order_id)
+    ) " . t_opts());
+
+    foreach (['sgk_hak_ay' => '24', 'sgk_hak_cocuk_ay' => '12', 'sgk_hak_cocuk_yas' => '14'] as $k => $v) {
+        q('INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES (?, ?)', [$k, $v]);
+    }
+    setting('__reload__');
 }

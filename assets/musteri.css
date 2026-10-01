@@ -418,3 +418,10 @@
   .tk-help { background: #1a1310; }
   .tk-ic.ok { background: #15291d; color: #7fd6a1; }
 }
+
+/* 4.16.0 garanti sayfası: talep listesi */
+.tk-talepler{list-style:none;margin:6px 0 0;padding:0}
+.tk-talepler li{display:flex;flex-direction:column;gap:2px;padding:10px 0;border-top:1px solid var(--line)}
+.tk-talepler li:first-child{border-top:0}
+.tk-talepler span,.tk-talepler small{color:var(--muted);font-size:14px}
+

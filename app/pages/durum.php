@@ -371,7 +371,7 @@ $tonSinifi     = 'tk-tone-' . $ton;
     <h1>Sipariş bulunamadı</h1>
     <p>Bu bağlantı geçersiz ya da süresi dolmuş olabilir. Sipariş numaranızla ve telefonunuzun son 4 haneyle siparişinizi kolayca bulabilirsiniz.</p>
     <div class="tk-stack">
-      <a class="tk-btn" href="siparisim-nerede.php">Siparişimi bul</a>
+      <a class="tk-btn" href="<?= e(musteri_link('siparisim-nerede.php')) ?>">Siparişimi bul</a>
       <?php if ($telUrl !== ''): ?>
         <a class="tk-btn is-ghost" href="<?= e($telUrl) ?>">Mağazayı ara</a>
       <?php endif; ?>

@@ -74,7 +74,7 @@ if (is_post()) {
             if ($eslesti && $order['order_stage'] !== 'iptal') {
                 $token = order_public_token((int) $order['id']);
                 if ($token !== '') {
-                    redirect('durum.php?k=' . $token);
+                    redirect(musteri_link('durum.php', ['k' => $token]));
                 }
             }
             // Kasıtlı olarak belirsiz mesaj: numara mı telefon mu yanlış, söylenmez.

@@ -88,10 +88,32 @@ function barkod_coz(string $ham): array
     $duz = str_replace(GS1_AYIRICI, '', $kod);
 
     // Sipariş durum bağlantısı (sipariş fişindeki karekod)
-    if (preg_match('~durum\.php\?k=([A-Za-z0-9]{8,24})~', $duz, $m)) {
+    if (preg_match('~durum\.php\?(?:m=\d+&)?k=([A-Za-z0-9]{8,24})~', $duz, $m)) {
         $o = row('SELECT id FROM orders WHERE public_token = ?', [$m[1]]);
         if ($o) {
             return ['tur' => 'siparis', 'hedef' => 'order.php?id=' . (int) $o['id'], 'etiket' => order_no((int) $o['id']), 'ayrinti' => []];
+        }
+    }
+    // 4.16.0 — Garanti kartı karekodu → garanti kaydı
+    if (preg_match('~garanti\.php\?(?:m=\d+&)?k=([A-Za-z0-9]{10,24})~', $duz, $m) && function_exists('garanti_bul_token')) {
+        try {
+            $g = garanti_bul_token($m[1]);
+        } catch (Throwable) {
+            $g = null;
+        }
+        if ($g) {
+            return ['tur' => 'garanti', 'hedef' => 'garantiler.php?id=' . (int) $g['id'], 'etiket' => garanti_no((int) $g['id']) . ' · ' . $g['urun'], 'ayrinti' => []];
+        }
+    }
+    // Garanti no: G00012
+    if (preg_match('/^G0*(\d{1,9})$/i', $duz, $m) && function_exists('garanti_bul')) {
+        try {
+            $g = garanti_bul((int) $m[1]);
+        } catch (Throwable) {
+            $g = null;
+        }
+        if ($g) {
+            return ['tur' => 'garanti', 'hedef' => 'garantiler.php?id=' . (int) $g['id'], 'etiket' => garanti_no((int) $g['id']) . ' · ' . $g['urun'], 'ayrinti' => []];
         }
     }
     // Sipariş no: #00123 / 00123

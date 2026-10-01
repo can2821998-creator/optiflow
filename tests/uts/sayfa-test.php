@@ -106,6 +106,35 @@ switch ($senaryo) {
         $order = row("SELECT o.* FROM orders o WHERE id = ?", [$id]);
         require dirname(__DIR__, 2) . '/app/partials/' . ($senaryo === 'kart_cam' ? 'cam-hata-karti.php' : 'sgk-hak-karti.php');
         break;
+    case 'garantiler':
+        require_once dirname(__DIR__, 2) . '/app/qr.php';
+        require $kaynak(dirname(__DIR__, 2) . '/app/pages/garantiler.php');
+        break;
+    case 'garanti_genel':
+        if (($_GET['k'] ?? '') === '__TOKEN__') {
+            $_GET['k'] = (string) scalar('SELECT token FROM garantiler WHERE id = 1');
+        }
+        require $kaynak(dirname(__DIR__, 2) . '/app/pages/garanti.php');
+        break;
+    case 'kart_garanti':
+        $id = (int) ($istek['id'] ?? 1);
+        $order = row("SELECT o.* FROM orders o WHERE id = ?", [$id]);
+        require dirname(__DIR__, 2) . '/app/partials/garanti-karti.php';
+        break;
+    case 'garanti_belge':
+    case 'garanti_talep_formu':
+        require_once dirname(__DIR__, 2) . '/app/qr.php';
+        if (!function_exists('brand_mark')) { function brand_mark(): string { return '<svg></svg>'; } }
+        $shop = setting('shop_name', 'OptiFlow');
+        if ($senaryo === 'garanti_belge') {
+            $gBelge = [garanti_bul((int) ($istek['id'] ?? 1))];
+            require dirname(__DIR__, 2) . '/app/partials/garanti-belgesi.php';
+        } else {
+            $t = row('SELECT * FROM garanti_talepleri WHERE id = ?', [(int) ($istek['id'] ?? 1)]);
+            $g = garanti_bul((int) $t['garanti_id']);
+            require dirname(__DIR__, 2) . '/app/partials/garanti-talep-formu.php';
+        }
+        break;
     case 'fn':
         // Küçük işlem çağrıları (sayfa akışını hazırlamak için)
         $f = (string) $istek['f'];

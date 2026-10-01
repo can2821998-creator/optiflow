@@ -21,6 +21,8 @@ function audit(string $a, string $e = '', ?int $id = null, array $d = []): void 
 function ozellik_acik(string $k): bool { return true; }
 function ozellik_acik_arka_plan(string $k): bool { return true; }
 function order_track_url(int $id): string { return ''; }
+function musteri_link(string $s, array $p = []): string { return $s . '?' . http_build_query(['m' => 7] + $p); }
+function musteri_url(string $s, array $p = []): string { return 'https://test.local/' . musteri_link($s, $p); }
 function payment_methods(): array { return ['nakit' => 'Nakit', 'kart' => 'Kredi kartı', 'havale' => 'Havale / EFT', 'diger' => 'Diğer']; }
 $GLOBALS['__push'] = [];
 function push_send(array $m, array $ids = [], ?int $haric = null): array { $GLOBALS['__push'][] = [$m, $ids]; return ['sent' => count($ids), 'failed' => 0, 'detail' => [], 'reason' => '']; }
@@ -59,7 +61,7 @@ function sema_kur(PDO $p): void
     $p->exec("CREATE TABLE app_settings (setting_key TEXT PRIMARY KEY, setting_value TEXT)");
     $p->exec("CREATE TABLE orders (id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT DEFAULT '', last_name TEXT DEFAULT '', order_stage TEXT DEFAULT 'siparis_verildi',
         frame_item_id INTEGER NULL, frame_info TEXT NULL, sgk_erecete TEXT NULL, sgk_amount REAL NOT NULL DEFAULT 0, delivered_at TEXT NULL,
-        customer_id INTEGER NULL, transaction_type TEXT DEFAULT 'gozluk', lens_type TEXT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP)");
+        customer_id INTEGER NULL, transaction_type TEXT DEFAULT 'gozluk', lens_type TEXT NULL, public_token TEXT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP)");
     $p->exec("CREATE TABLE customers (id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT NOT NULL, last_name TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '', birth_year INTEGER NULL)");
     $p->exec("CREATE TABLE prescription_records (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NULL)");
     $p->exec("CREATE TABLE prescription_lens_items (id INTEGER PRIMARY KEY AUTOINCREMENT, prescription_id INTEGER NOT NULL, lens_no INTEGER NOT NULL DEFAULT 1, lens_label TEXT NOT NULL DEFAULT '',
@@ -70,6 +72,13 @@ function sema_kur(PDO $p): void
         alacak_payment_id INTEGER NULL, aciklama TEXT NULL, created_by INTEGER NULL, created_at TEXT, updated_at TEXT)");
     $p->exec("CREATE TABLE sgk_hak_sorgulari (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER NULL, order_id INTEGER NULL, gelen_id INTEGER NULL, kaynak TEXT NOT NULL DEFAULT 'yapistir',
         ad TEXT NULL, son_alim TEXT NULL, sonraki_hak TEXT NULL, hak TEXT NOT NULL DEFAULT 'belirsiz', satirlar TEXT NULL, created_by INTEGER NULL, created_at TEXT)");
+    // migrate_v26_garanti ile aynı sütunlar
+    $p->exec("CREATE TABLE garantiler (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NULL, customer_id INTEGER NULL, kalem TEXT NOT NULL DEFAULT 'cerceve',
+        urun TEXT NOT NULL, seri_no TEXT NULL, supplier_id INTEGER NULL, baslangic TEXT NOT NULL, bitis TEXT NOT NULL, kapsam TEXT NULL, token TEXT NOT NULL UNIQUE,
+        durum TEXT NOT NULL DEFAULT 'aktif', created_by INTEGER NULL, created_at TEXT, updated_at TEXT)");
+    $p->exec("CREATE TABLE garanti_talepleri (id INTEGER PRIMARY KEY AUTOINCREMENT, garanti_id INTEGER NOT NULL, sikayet TEXT NOT NULL, durum TEXT NOT NULL DEFAULT 'acik',
+        supplier_id INTEGER NULL, gonderim TEXT NULL, sonuc_tur TEXT NULL, sonuc TEXT NULL, maliyet REAL NOT NULL DEFAULT 0, kapanis TEXT NULL,
+        created_by INTEGER NULL, created_at TEXT, updated_at TEXT)");
     $p->exec("CREATE TABLE sgk_incoming (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, kaynak TEXT, raw_text TEXT, parsed TEXT, used_at TEXT NULL, created_at TEXT)");
     $p->exec("CREATE TABLE suppliers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, contact_name TEXT NULL, phone TEXT NULL, address TEXT NULL, tax_no TEXT NULL, note TEXT NULL,
         uts_kurum_no TEXT NULL, email TEXT NULL, is_active INTEGER DEFAULT 1, created_at TEXT, updated_at TEXT)");
@@ -116,6 +125,7 @@ require dirname(__DIR__, 2) . '/app/senet.php';
 require dirname(__DIR__, 2) . '/app/sgk.php';
 require dirname(__DIR__, 2) . '/app/cam-hata.php';
 require dirname(__DIR__, 2) . '/app/sgk-hak.php';
+require dirname(__DIR__, 2) . '/app/garanti.php';
 
 /* ---------- Küçük test çatısı ---------- */
 $GLOBALS['__gecen'] = 0;

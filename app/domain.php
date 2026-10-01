@@ -964,6 +964,7 @@ function audit_actions(): array
         'sgk_liste_kontrol'  => 'Medula listesini kontrol etti',
         'alis_fatura'        => 'e-Fatura (alış) içe aktardı',
         'cam_hata'           => 'Hatalı cam kaydetti',
+        'garanti'            => 'Garanti kaydı işlemi',
         'sgk_hak'            => 'SGK hak bilgisini kaydetti',
         'senet_ver'          => 'Tedarikçiye senet verdi',
         'senet_ode'          => 'Senedi ödendi işaretledi',
@@ -1138,11 +1139,32 @@ function order_track_url(int $orderId): string
     if ($t === '') {
         return '';
     }
+    return musteri_url('durum.php', ['k' => $t]);
+}
+
+/**
+ * 4.16.0 — Müşteriye verilen (oturumsuz) sayfaların mağazası. Müşterinin telefonunda mağaza
+ * oturumu yoktur; mağaza adresteki &m= ile seçilir (bootstrap.php › $musteriSayfasi). Anahtar (k)
+ * tahmin edilemez olduğu için m yalnızca hangi veritabanına bakılacağını söyler.
+ */
+function musteri_magaza_id(): int
+{
+    return (int) ($GLOBALS['__musteri_magaza']['id'] ?? (function_exists('tenant_oturum') ? (tenant_oturum()['id'] ?? 0) : 0));
+}
+
+/** Müşteri sayfasının göreli adresi (aynı sunucuda sayfadan sayfaya bağlantı). */
+function musteri_link(string $sayfa, array $p = []): string
+{
+    $m = musteri_magaza_id();
+    $p = ($m ? ['m' => $m] : []) + $p;
+    return $sayfa . ($p ? '?' . http_build_query($p) : '');
+}
+
+/** Müşteri sayfasının tam adresi (fiş, karekod, mesaj). Kök adres bilinmiyorsa ''. */
+function musteri_url(string $sayfa, array $p = []): string
+{
     $kok = app_base_url();
-    if ($kok === '') {
-        return '';
-    }
-    return rtrim($kok, '/') . '/durum.php?k=' . $t;
+    return $kok === '' ? '' : rtrim($kok, '/') . '/' . musteri_link($sayfa, $p);
 }
 
 /** Müşteriye gösterilecek dört aşamalı sadeleştirilmiş durum. */

@@ -96,6 +96,10 @@ tr{page-break-inside:avoid}
 .track-qr-txt b{display:block;font:800 12.5px Manrope,Arial,sans-serif;color:#214b70;margin-bottom:2px}
 .track-qr-txt p{margin:0;font-size:10.5px;line-height:1.4;color:#3b454d}
 .track-qr-txt small{display:block;margin-top:4px;font:600 9.5px Manrope;letter-spacing:.04em;color:#6a7177;word-break:break-all}
+/* 4.16.0 garanti kartı */
+.garanti-kalem .track-qr-txt p+p{margin-top:3px}
+.garanti-kalem .track-qr-txt p b{display:inline;font:inherit;font-weight:700;color:#171d23;margin:0}
+.garanti-kosul{margin:0 0 6px;padding-left:18px;font-size:10.5px;line-height:1.45;color:#3b454d}
 
 /* --- Bakım kartı karekodu (teslim fişi) --- */
 .care-qr{display:flex;align-items:center;gap:12px;margin-top:10px;padding:8px 12px;border:1.2px solid #e6d9bd;border-left:5px solid #a8690c;border-radius:10px;page-break-inside:avoid}

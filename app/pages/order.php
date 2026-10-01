@@ -62,6 +62,17 @@ if (is_post()) {
                 'atolyede'      => 'atolyede',
                 default         => 'guncellendi',
             });
+            // 4.16.0 — teslimde garanti kaydı (Garantiler › Ayarlar › "Teslimde otomatik aç")
+            if ($stage === 'teslim_edildi' && ozellik_acik('garanti') && setting('garanti_otomatik', '1') === '1') {
+                try {
+                    $garantiYeni = garanti_siparisten_olustur($id);
+                    if ($garantiYeni) {
+                        flash(count($garantiYeni) . ' kalem için garanti kaydı açıldı; garanti kartını siparişin "Garanti" bölümünden yazdırın.', 'info');
+                    }
+                } catch (Throwable $e) {
+                    app_log('garanti teslim ' . $id . ': ' . $e->getMessage());
+                }
+            }
             flash('Durum “' . stage_label($stage) . '” olarak güncellendi — işlemi yapan: ' . $actorName . '.');
             if ($stage === 'teslim_edildi' && (float) $order['balance'] > 0.009 && can_see_amounts()) {
                 flash('Dikkat: teslim edilen siparişte ' . money($order['balance']) . ' kalan bakiye var.', 'warn');
@@ -355,6 +366,35 @@ if (is_post()) {
         redirect($self . '#cam-hata');
     }
 
+    // 4.16.0 — Garanti kaydı (siparişten)
+    if (in_array($action, ['garanti_olustur', 'garanti_ekle'], true) && ozellik_acik('garanti')) {
+        try {
+            if ($action === 'garanti_olustur') {
+                $gIdler = garanti_siparisten_olustur($id);
+                if (!$gIdler) {
+                    throw new DomainException('Bu siparişte garanti açılacak kalem kalmadı.');
+                }
+                audit('garanti', 'order', $id, ['işlem' => 'garanti açıldı', 'kalem' => count($gIdler)]);
+                flash(count($gIdler) . ' kalem için garanti kaydı açıldı.');
+            } else {
+                $gId = garanti_ekle([
+                    'order_id'    => $id,
+                    'kalem'       => post('kalem'),
+                    'urun'        => post('urun'),
+                    'seri_no'     => post('seri_no'),
+                    'supplier_id' => post_int('supplier_id'),
+                    'baslangic'   => post('baslangic'),
+                    'ay'          => post_int('ay'),
+                ]);
+                audit('garanti', 'order', $id, ['işlem' => 'garanti açıldı', 'garanti' => garanti_no($gId)]);
+                flash('Garanti kaydı açıldı: ' . garanti_no($gId) . '.');
+            }
+        } catch (DomainException $e) {
+            flash($e->getMessage(), 'error');
+        }
+        redirect($self . '#garanti');
+    }
+
     // 4.15.0 — SGK hak doğrulaması (Medula / e-Devlet ekranı yapıştırma ya da elle tarih)
     if (in_array($action, ['sgk_hak_yapistir', 'sgk_hak_elle'], true) && ozellik_acik('sgk_hak')) {
         try {
@@ -402,6 +442,11 @@ if (is_post()) {
 
     if ($action === 'delete_order' && is_super() && table_var_mi('cam_hatalari') && (int) scalar('SELECT COUNT(*) FROM cam_hatalari WHERE order_id = ?', [$id]) > 0) {
         flash('Bu siparişte hatalı cam kaydı var (laboratuvar iadesi cariye bağlı olabilir). Önce "Hatalı cam" kayıtlarını silin.', 'error');
+        redirect($self);
+    }
+
+    if ($action === 'delete_order' && is_super() && table_var_mi('garantiler') && (int) scalar('SELECT COUNT(*) FROM garantiler WHERE order_id = ?', [$id]) > 0) {
+        flash('Bu siparişin garanti kaydı var. Önce Garantiler ekranından garanti kaydını silin.', 'error');
         redirect($self);
     }
 
@@ -794,6 +839,7 @@ page_start($name . ' ' . order_no($id), 'orders');
 
     <?php if (ozellik_acik('sgk_hak') && (int) $order['customer_id'] && $order['transaction_type'] !== 'tamir') { require dirname(__DIR__) . '/partials/sgk-hak-karti.php'; } ?>
     <?php if (ozellik_acik('cam_hata') && $order['transaction_type'] === 'gozluk') { require dirname(__DIR__) . '/partials/cam-hata-karti.php'; } ?>
+    <?php if (ozellik_acik('garanti') && $order['order_stage'] !== 'iptal' && $order['transaction_type'] !== 'tamir') { require dirname(__DIR__) . '/partials/garanti-karti.php'; } ?>
 
     <?php $takipUrl = order_track_url($id); if ($takipUrl !== ''): ?>
       <section class="card track-share">

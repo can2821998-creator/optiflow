@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.15.1';
+const APP_VERSION = '4.16.0';
 const APP_ROOT = __DIR__ . '/..';
 
 /**
@@ -117,7 +117,8 @@ require __DIR__ . '/uts.php';      // 4.13.0 ÜTS bildirimleri
 require __DIR__ . '/alis.php';     // 4.14.0 alış faturası (e-Fatura XML)
 require __DIR__ . '/senet.php';    // 4.14.0 tedarikçi senetleri, ödeme takvimi
 require __DIR__ . '/cam-hata.php'; // 4.15.0 hatalı cam / yeniden yapım
-require __DIR__ . '/sgk-hak.php';  // 4.15.0 SGK hak kontrolü   // 4.12.0 merkezden aç/kapat özellikler
+require __DIR__ . '/sgk-hak.php';  // 4.15.0 SGK hak kontrolü
+require __DIR__ . '/garanti.php';  // 4.16.0 garanti kaydı ve garanti kartı
 require __DIR__ . '/karsilama.php';
 
 set_exception_handler('handle_fatal');
@@ -151,6 +152,14 @@ $kopruUcNoktasi = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'sgk-ak
  */
 $sunucuUcNoktasi = in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['cron.php', 'odeme-bildirim.php'], true);
 
+/*
+ * 4.16.0 — Müşteriye verilen sayfalar (fiş / garanti kartı karekodu): müşterinin mağaza oturumu
+ * yoktur. Adreste m=<mağaza no> varsa o mağazanın veritabanı oturum AÇMADAN seçilir; kayıt yalnızca
+ * tahmin edilemez anahtarla (k) bulunur. m yoksa eski davranış (personel oturumu) sürer.
+ */
+$musteriSayfasi = in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['durum.php', 'bakim.php', 'siparisim-nerede.php', 'garanti.php'], true)
+    && ctype_digit((string) ($_GET['m'] ?? '')) && (int) $_GET['m'] > 0;
+
 /* 4.10.0 — OptiFlow Masaüstü JSON uç noktası: hata durumunda HTML/yönlendirme yerine JSON. */
 $masaustuApi = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'masaustu.php';
 if ($masaustuApi) {
@@ -163,6 +172,13 @@ if ($merkezSayfasi || $sunucuUcNoktasi) {
     kopru_tenant_bagla();   // 4.10.0 eklenti: mağaza, köprü adresindeki &m= ile seçilir (oturumsuz)
     db();
     run_migrations();
+} elseif ($musteriSayfasi) {
+    $GLOBALS['__musteri_magaza'] = magaza_baglan_id((int) $_GET['m']);
+    if (!$GLOBALS['__musteri_magaza']) {
+        http_response_code(404);
+        render_error_page('Sayfa bulunamadı', 'Bağlantı geçersiz ya da mağaza hesabı şu anda kapalı. Lütfen mağazayla iletişime geçin.');
+    }
+    db();   // göç YAPILMAZ: şeması eski mağazada yeni tablo yoksa sayfa "bulunamadı" der
 } elseif ($masaustuApi && !tenant_oturum()) {
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');

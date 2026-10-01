@@ -44,6 +44,7 @@ Tek oturum varsa doğrudan `main`.
 php tests/uts/uts-test.php && bash tests/uts/sayfa-test.sh
 php tests/alis/alis-test.php && bash tests/alis/sayfa-test.sh
 php tests/hata-hak/test.php && bash tests/hata-hak/sayfa-test.sh
+php tests/garanti/test.php && bash tests/garanti/sayfa-test.sh
 ```
 Masaüstü (desktop/ içinde, Node 22): `npm ci && npm run typecheck && npm test`
 (sunucu entegrasyon: `tests/server/*.mjs`, uçtan uca: `tests/e2e/` — yerel test sunucusu ister, bkz. desktop/BUILD.md).

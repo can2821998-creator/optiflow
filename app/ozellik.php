@@ -59,6 +59,11 @@ function ozellik_tanimlari(): array
             'kisa'     => 'Yeniden yapılan camların sebebi, maliyeti, laboratuvardan iade alacağı ve aylık rapor; tedarikçi karnesinde hata oranı.',
             'masaustu' => false,
         ],
+        'garanti' => [
+            'ad'       => 'Garanti kaydı ve garanti kartı',
+            'kisa'     => 'Teslimde kalem bazında garanti; karekodlu garanti kartı (müşteri telefonundan kalan süreyi görür), garanti talepleri, tamir geçmişi ve tedarikçiye gönderim.',
+            'masaustu' => false,
+        ],
         'sgk_hak' => [
             'ad'       => 'SGK hak kontrolü',
             'kisa'     => 'Müşterinin SGK gözlük hak tarihi siparişte görünür; Medula / e-Devlet hak ekranı OptiFlow Pro\'da "Aktar" ile ya da yapıştırarak doğrulanır.',

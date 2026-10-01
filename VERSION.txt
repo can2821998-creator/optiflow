@@ -1,6 +1,27 @@
 OPTIFLOW
-Release: 4.15.1 (2026-10-01)
+Release: 4.16.0 (2026-10-01)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.16.0 (garanti kaydı ve garanti kartı; OptiFlow Pro 5.3.0 ile)
+  - YENİ özellik anahtarı "garanti" (merkez panelden, varsayılan kapalı).
+  - Garanti kaydı (app/garanti.php, garantiler.php, sipariş kartı): gözlükte çerçeve + cam, güneş
+    gözlüğünde tek kalem; süreler kalem bazında (varsayılan 24 ay). "Teslimde otomatik aç" ayarı açıkken
+    sipariş teslim edilince garanti kendiliğinden açılır; başlangıç = teslim tarihi. Seri no, tedarikçi,
+    kapsam notu, bitiş düzenlenebilir; iptal / silme. Garantisi olan sipariş silinemez.
+  - Garanti kartı (Yazdır): her kalem için karekod, garanti no (G00012), süre, koşullar (ayarlanabilir),
+    imza alanları. Müşteri karekodu okutunca garanti.php'de kalan süreyi ve talep durumunu görür
+    (soyadın tamamı, telefon, fiyat, maliyet gösterilmez). Personel Barkod okut ile karekodu ya da
+    "G00012"yi okutunca garanti kaydı açılır.
+  - Garanti talepleri = tamir geçmişi: şikâyet → tedarikçiye gönderildi → tamamlandı (tamir / değişim /
+    iade) ya da kapsam dışı. Tedarikçiye yazdırılabilir form (müşteri bilgisi yok) ve WhatsApp metni.
+    Tamamlanan talepte geçen gün garanti süresine eklenir (ayar). Müşterinin tamir siparişleri listelenir.
+    Liste: geçerli, 30 günde bitecek, açık talep, tedarikçide; ad / telefon / seri no / G no / #sipariş ile arama.
+  - DÜZELTME: Müşteriye verilen karekod sayfaları (sipariş takibi durum.php, bakım kartı, "Siparişim nerede",
+    yeni garanti.php) çok mağazalı yapıda müşterinin telefonunda mağaza girişine yönlendiriyordu. Adreslere
+    mağaza numarası (m=) eklendi; bu sayfalar artık oturum açmadan doğru mağazanın verisini gösterir.
+    Kayıt yine yalnızca tahmin edilemez anahtarla bulunur. ÖNCE BASILMIŞ fişlerdeki karekodlarda m= yoktur;
+    onlar yalnızca mağazada (personel oturumuyla) açılır.
+  - Veritabanı şeması 25 → 26 (yalnızca yeni tablolar: garantiler, garanti_talepleri).
 
 DEĞİŞİKLİK NOTLARI — 4.15.1 (düzeltmeler; OptiFlow Pro 5.3.0 ile)
   - KRİTİK DÜZELTME: Faturalar (e-Arşiv/e-Fatura) sayfaları 4.14.0'dan beri ölümcül hatayla

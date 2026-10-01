@@ -34,6 +34,7 @@ function icon(string $name, string $class = 'ic'): string
         'home'     => '<path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9.7V20h13V9.7"/><path d="M9.8 20v-5.5h4.4V20"/>',
         'grid'     => '<rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/>',
         'truck'    => '<path d="M2.5 7.5h11v9h-11z"/><path d="M13.5 11h4l3 3v2.5h-7z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/>',
+        'shield'   => '<path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
         'lock'     => '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
     ];
     return '<svg class="' . e($class) . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . ($paths[$name] ?? '') . '</svg>';
@@ -387,6 +388,9 @@ function ozellik_menusu_ekle(array &$nav): void
     }
     if (ozellik_acik('cam_hata') && function_exists('cam_hata_rozet')) {   // 4.15.0
         $ekle($a, 'stock', ['cam-hatalari', 'cam-hatalari.php', 'Hatalı camlar', 'glasses', is_super() ? cam_hata_rozet() : 0]);
+    }
+    if (ozellik_acik('garanti') && function_exists('garanti_rozet')) {   // 4.16.0
+        $ekle($a, 'customers', ['garantiler', 'garantiler.php', 'Garantiler', 'shield', garanti_rozet()]);
     }
     if (ozellik_acik('sgk_hak')) {
         $ekle($a, 'sgk', ['sgk-hak', 'sgk-hak.php', 'SGK hak kontrolü', 'download', 0]);

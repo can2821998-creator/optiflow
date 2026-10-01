@@ -72,6 +72,7 @@ jobs:
           php tests/uts/uts-test.php && bash tests/uts/sayfa-test.sh
           php tests/alis/alis-test.php && bash tests/alis/sayfa-test.sh
           php tests/hata-hak/test.php && bash tests/hata-hak/sayfa-test.sh
+          php tests/garanti/test.php && bash tests/garanti/sayfa-test.sh
 
   masaustu:
     needs: surumler

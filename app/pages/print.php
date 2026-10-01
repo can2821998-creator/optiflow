@@ -116,8 +116,7 @@ if ($type === 'order') {
        Yalnızca teslim edilmiş siparişlerde ve bakım sayfası yüklüyse basılır. */
     $bakimUrl = '';
     if ($isDelivered && !$isCancelled && is_file(APP_ROOT . '/bakim.php') && is_file(APP_ROOT . '/app/pages/bakim.php')) {
-        $bakimKok = app_base_url();
-        $bakimUrl = $bakimKok !== '' ? rtrim($bakimKok, '/') . '/bakim.php' : '';
+        $bakimUrl = musteri_url('bakim.php');
     }
     if ($bakimUrl !== ''):
     ?>
@@ -155,6 +154,20 @@ if ($type === 'order') {
     <?php endif; ?>
     <div class="foot"><span class="foot-mark"><?= brand_mark() ?></span><span><?= e($shop) ?></span><span class="foot-note">Bu fiş işlem takibi içindir, fatura yerine geçmez.</span></div>
     <?php
+} elseif ($type === 'garanti' && ozellik_acik('garanti')) {   // 4.16.0 garanti kartı (siparişin tüm garantileri ya da tek garanti)
+    $gIdler = query_int('order')
+        ? array_column(rows("SELECT id FROM garantiler WHERE order_id = ? AND durum = 'aktif' ORDER BY id", [query_int('order')]), 'id')
+        : [query_int('id')];
+    $gBelge = array_values(array_filter(array_map(static fn($gi): ?array => garanti_bul((int) $gi), $gIdler)));
+    if (!$gBelge) { render_error_page('Garanti bulunamadı', ''); }
+    $title = 'Garanti kartı ' . garanti_no((int) $gBelge[0]['id']);
+    require dirname(__DIR__) . '/partials/garanti-belgesi.php';
+} elseif ($type === 'garanti_talep' && ozellik_acik('garanti')) {   // 4.16.0 tedarikçiye garanti talebi
+    $t = row('SELECT * FROM garanti_talepleri WHERE id = ?', [query_int('id')]);
+    $g = $t ? garanti_bul((int) $t['garanti_id']) : null;
+    if (!$g) { render_error_page('Garanti talebi bulunamadı', ''); }
+    $title = 'Garanti talebi ' . garanti_no((int) $g['id']) . '-' . (int) $t['id'];
+    require dirname(__DIR__) . '/partials/garanti-talep-formu.php';
 } elseif ($type === 'payment') {
     $p = row('SELECT p.*, o.id AS order_id, o.transaction_type, c.first_name, c.last_name, c.phone, u.full_name AS by_name
               FROM payments p JOIN orders o ON o.id = p.order_id JOIN customers c ON c.id = o.customer_id

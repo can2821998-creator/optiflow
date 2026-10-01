@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 25;
+const SCHEMA_VERSION = 26;
 
 function run_migrations(): void
 {
@@ -56,6 +56,7 @@ function run_migrations(): void
         if ($current < 23) { migrate_v23_uts(); set_schema_version(23); }
         if ($current < 24) { migrate_v24_alis_senet(); set_schema_version(24); }
         if ($current < 25) { migrate_v25_cam_hata_sgk_hak(); set_schema_version(25); }
+        if ($current < 26) { migrate_v26_garanti(); set_schema_version(26); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1367,6 +1368,60 @@ function migrate_v25_cam_hata_sgk_hak(): void
     ) " . t_opts());
 
     foreach (['sgk_hak_ay' => '24', 'sgk_hak_cocuk_ay' => '12', 'sgk_hak_cocuk_yas' => '14'] as $k => $v) {
+        q('INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES (?, ?)', [$k, $v]);
+    }
+    setting('__reload__');
+}
+
+
+/* ------------------------------------------------------------------ */
+/*  v26 (4.16.0) — Garanti kayıtları ve garanti talepleri (tamir        */
+/*  geçmişi, tedarikçiye gönderim). Yalnızca YENİ tablo ekler.          */
+/* ------------------------------------------------------------------ */
+
+function migrate_v26_garanti(): void
+{
+    db()->exec("CREATE TABLE IF NOT EXISTS garantiler (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        order_id INT UNSIGNED NULL,
+        customer_id INT UNSIGNED NULL,
+        kalem VARCHAR(10) NOT NULL DEFAULT 'cerceve',
+        urun VARCHAR(160) NOT NULL,
+        seri_no VARCHAR(80) NULL,
+        supplier_id INT UNSIGNED NULL,
+        baslangic DATE NOT NULL,
+        bitis DATE NOT NULL,
+        kapsam VARCHAR(500) NULL,
+        token VARCHAR(24) NOT NULL,
+        durum VARCHAR(8) NOT NULL DEFAULT 'aktif',
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_garanti_token (token),
+        KEY idx_garanti_siparis (order_id),
+        KEY idx_garanti_musteri (customer_id),
+        KEY idx_garanti_bitis (durum, bitis)
+    ) " . t_opts());
+
+    db()->exec("CREATE TABLE IF NOT EXISTS garanti_talepleri (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        garanti_id INT UNSIGNED NOT NULL,
+        sikayet VARCHAR(500) NOT NULL,
+        durum VARCHAR(12) NOT NULL DEFAULT 'acik',
+        supplier_id INT UNSIGNED NULL,
+        gonderim DATE NULL,
+        sonuc_tur VARCHAR(10) NULL,
+        sonuc VARCHAR(500) NULL,
+        maliyet DECIMAL(12,2) NOT NULL DEFAULT 0,
+        kapanis DATETIME NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        KEY idx_gtalep_garanti (garanti_id),
+        KEY idx_gtalep_durum (durum, supplier_id)
+    ) " . t_opts());
+
+    foreach (['garanti_cerceve_ay' => '24', 'garanti_cam_ay' => '24', 'garanti_gunes_ay' => '24', 'garanti_diger_ay' => '24', 'garanti_otomatik' => '1'] as $k => $v) {
         q('INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES (?, ?)', [$k, $v]);
     }
     setting('__reload__');

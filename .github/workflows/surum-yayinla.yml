@@ -1,19 +1,31 @@
 # OptiFlow — sürüm yayınla
 #
-# Depoya "v<sunucu>-pro<masaüstü>" biçiminde bir etiket gönderilince (ör. v4.15.1-pro5.3.0):
+# main'e sürüm değişikliği (VERSION.txt / APP_VERSION / desktop/package.json) gönderilince
+# ya da Actions › "Sürüm yayınla" › Run workflow ile elle başlatılınca,
+# etiket v<sunucu>-pro<masaüstü> sürümlerden türetilir (ör. v4.15.1-pro5.3.0); o etiketle
+# Release zaten varsa hiçbir şey yapılmaz. Ardından:
 #   1. Sunucu testleri (PHP) ve masaüstü testleri (Node) çalışır,
 #   2. Windows'ta OptiFlow Pro kurulumu derlenir (IMZA_TURU sırrı varsa İMZALI),
 #   3. Hosting güncelleme zip'i hazırlanır (config.php / storage içeriği YOK),
 #   4. Hepsi GitHub › Releases'ta o etiketle yayınlanır:
 #        OptiFlow-Pro-Setup-<sürüm>.exe, .blockmap, latest.yml, optiflow-<sürüm>-hosting.zip
 #
-# Etiketteki sürümler app/bootstrap.php (APP_VERSION) ve desktop/package.json ile birebir
-# aynı olmalıdır; değilse yayın durur.
+# Etiketi Actions oluşturur (bu yüzden oturumdan etiket göndermek gerekmez).
 name: Sürüm yayınla
 
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+    paths:
+      - VERSION.txt
+      - app/bootstrap.php
+      - desktop/package.json
+      - .github/workflows/surum-yayinla.yml
+  workflow_dispatch:
+
+concurrency:
+  group: surum-yayinla
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -24,24 +36,30 @@ jobs:
     outputs:
       sunucu: ${{ steps.oku.outputs.sunucu }}
       masaustu: ${{ steps.oku.outputs.masaustu }}
+      etiket: ${{ steps.oku.outputs.etiket }}
+      yeni: ${{ steps.oku.outputs.yeni }}
     steps:
       - uses: actions/checkout@v4
       - id: oku
-        name: Etiket ve sürümleri karşılaştır
+        name: Sürümleri oku, Release var mı bak
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="${GITHUB_REF_NAME}"
-          if [[ ! "$TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)-pro([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-            echo "::error::Etiket biçimi v<sunucu>-pro<masaüstü> olmalı (ör. v4.15.1-pro5.3.0): $TAG"; exit 1
+          S=$(grep -oP "const APP_VERSION = '\K[0-9.]+" app/bootstrap.php)
+          M=$(node -p "require('./desktop/package.json').version")
+          [ -n "$S" ] && [ -n "$M" ] || { echo "::error::Sürümler okunamadı"; exit 1; }
+          head -n 5 VERSION.txt | grep -q "$S" || echo "::warning::VERSION.txt başında $S geçmiyor"
+          TAG="v${S}-pro${M}"
+          echo "sunucu=$S" >> "$GITHUB_OUTPUT"; echo "masaustu=$M" >> "$GITHUB_OUTPUT"; echo "etiket=$TAG" >> "$GITHUB_OUTPUT"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG zaten var; yayın atlanıyor."; echo "yeni=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "yeni=1" >> "$GITHUB_OUTPUT"
           fi
-          S="${BASH_REMATCH[1]}"; M="${BASH_REMATCH[2]}"
-          KS=$(grep -oP "const APP_VERSION = '\K[0-9.]+" app/bootstrap.php)
-          KM=$(node -p "require('./desktop/package.json').version")
-          [ "$S" = "$KS" ] || { echo "::error::Etiket sunucu $S ama APP_VERSION $KS"; exit 1; }
-          [ "$M" = "$KM" ] || { echo "::error::Etiket masaüstü $M ama desktop/package.json $KM"; exit 1; }
-          echo "sunucu=$S" >> "$GITHUB_OUTPUT"; echo "masaustu=$M" >> "$GITHUB_OUTPUT"
 
   sunucu-test:
     needs: surumler
+    if: needs.surumler.outputs.yeni == '1'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,6 +75,7 @@ jobs:
 
   masaustu:
     needs: surumler
+    if: needs.surumler.outputs.yeni == '1'
     runs-on: windows-latest
     defaults:
       run:
@@ -129,7 +148,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" \
+          gh release create "${{ needs.surumler.outputs.etiket }}" --target "$GITHUB_SHA" \
             --title "OptiFlow ${{ needs.surumler.outputs.sunucu }} · OptiFlow Pro ${{ needs.surumler.outputs.masaustu }}" \
             --notes-file notlar.md \
             masaustu/*.exe masaustu/*.blockmap masaustu/latest.yml optiflow-*-hosting.zip

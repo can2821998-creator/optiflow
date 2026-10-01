@@ -7,10 +7,10 @@ devamlılık yalnızca bu depo üzerinden sağlanır (zip / mbox / bundle taşı
 - **"gitten çek"** → `git fetch origin main && git rebase origin/main` (ya da `git pull`), `DURUM.md`'yi oku,
   kullanıcıya son durumu 3–5 satırda özetle.
 - **"gite yükle"** → testleri çalıştır, `DURUM.md` (+ sürüm değiştiyse `VERSION.txt`) güncelle, commit, `git push`.
-  Sürüm değiştiyse (APP_VERSION ve/veya desktop/package.json) etiketi de gönder:
-  `git tag v<sunucu>-pro<masaüstü> && git push origin v<sunucu>-pro<masaüstü>`
-  → `.github/workflows/surum-yayinla.yml` testleri çalıştırıp exe + blockmap + latest.yml + hosting zip'i
-  **GitHub Releases**'a koyar. Bitince Actions sonucunu kontrol edip kullanıcıya Release bağlantısını ver.
+  Sürüm değiştiyse (APP_VERSION ve/veya desktop/package.json) ayrıca bir şey yapma: main'e push
+  `.github/workflows/surum-yayinla.yml`'yi tetikler; o `v<sunucu>-pro<masaüstü>` etiketini kendisi oluşturur,
+  testleri çalıştırıp exe + blockmap + latest.yml + hosting zip'i **GitHub Releases**'a koyar
+  (o etiketle Release varsa atlar). Etiketi oturumdan gönderme (git proxy 403 verir). Bitince Actions sonucunu kontrol edip kullanıcıya Release bağlantısını ver.
 - Kullanıcıya teslim edilen her şey git'te olmalı: kaynak, belgeler (`docs/`), kurulum dosyaları (Releases).
   Sohbette dosya verilse bile kalıcı kopyası depoda/Release'te bulunur.
 
@@ -53,7 +53,7 @@ Masaüstü (desktop/ içinde, Node 22): `npm ci && npm run typecheck && npm test
 ## Kurallar
 - CSP `script-src 'self'`: satır içi `<script>` / `onclick=` yazma; JS `assets/*.js` içinde.
 - Gizli bilgi commit'leme: `config.php`, `storage/.gizli-anahtar`, token'lar. (`.gitignore`'da.)
-- Exe / hosting zip / blockmap / latest.yml git'e girmez → etiketle GitHub Releases'a (Actions üretir;
-  bu oturum türü Release'i doğrudan oluşturamaz).
+- Exe / hosting zip / blockmap / latest.yml git'e girmez → GitHub Releases'a (main'e sürüm push'unda
+  Actions üretir; bu oturum türü Release'i/etiketi doğrudan oluşturamaz).
 - T.C. kimlik no saklanmaz (KVKK).
 - Kullanıcıyla Türkçe konuş.

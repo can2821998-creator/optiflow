@@ -13,8 +13,8 @@
 - CSP'nin engellediği satır içi betikler (yeni sipariş, teslimat/tedarikçi toplamı, durum sayfası) taşındı.
 - ÜTS karekodunda GS ayırıcısı korunuyor (barkod.js + barkod.php). Pro 5.3.0: "Hak sorgula" düğmesi.
 - Göçler v23–v25 MariaDB'de denendi: sorunsuz.
-- Sürüm yayını GitHub Actions'a bağlandı: `v<sunucu>-pro<masaüstü>` etiketi → Releases (exe, blockmap,
-  latest.yml, hosting zip). Kullanıcı komutları "gitten çek" / "gite yükle" CLAUDE.md'de.
+- Sürüm yayını GitHub Actions'a bağlandı: main'e sürüm değişikliği push'lanınca `v<sunucu>-pro<masaüstü>`
+  etiketiyle Releases'a exe, blockmap, latest.yml ve hosting zip konur (etiketi Actions oluşturur). Kullanıcı komutları "gitten çek" / "gite yükle" CLAUDE.md'de.
 
 ## Önceki: masaüstü kaynağının eklenmesi
 - `desktop/` (OptiFlow Pro 5.2.0 kaynağı, birim + sunucu + E2E testleri) depoya eklendi.

@@ -1,6 +1,30 @@
 OPTIFLOW
-Release: 4.13.0 (2026-09-30)
+Release: 4.14.0 (2026-10-01)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.14.0 (alış faturası ve senet takibi)
+  - YENİ özellik anahtarı "tedarik_finans" (merkez panelden, varsayılan kapalı). Ekranlar yalnızca yöneticiye.
+  - Alış faturası yükle (app/alis.php, alis-faturasi.php): e-Fatura / e-Arşiv UBL-TR XML ya da XML'li ZIP.
+    Tedarikçi VKN/TCKN ile tanınır (yoksa XML'deki unvanla açılır; pasifse yeniden aktif olur). Mükerrer:
+    ETTN (benzersiz dizin) ya da tedarikçi + fatura no. Kalemler çerçeve kartına GTIN/barkod → tedarikçi
+    ürün kodu hafızası (urun_eslesmeleri) → elle seçim / yeni kart ile eşlenir; seçilenler stoğa girer,
+    kart maliyeti KDV dahil birim fiyatla güncellenir. Cariye ödenecek tutar ve vade yazılır. Dövizli ve
+    iade faturaları otomatik işlenmez. Özgün XML supplier_invoice_xml'de (BLOB) saklanır.
+    Güvenlik: DOCTYPE'lı XML reddedilir (XXE / varlık genişletme), ZIP'te gerçekten okunan bayt sınırı,
+    yükleme önizlemesi oturuma bağlı geçici dosyada (24 saat).
+  - Senetler (app/senet.php, senetler.php): tedarikçiye verilen senet cariyi kapatır (yöntem "senet"),
+    borç senete geçer; ödendi / geri al / iptal (iptalde borç cariye döner). Nakit ödenen senet gün sonu
+    kasasında görünür. Bono yazdırma (zorunlu unsurlar, tutar yazıyla).
+  - Ödeme takvimi: gecikmiş / 7 gün / bu ay / sonra; senetler + vadesi açık faturalar (faturaya bağlı
+    senetler önce kendi faturasından, kalan ödemeler en eski faturadan başlayarak düşülür).
+  - Vade uyarısı: gecikmiş ya da 3 gün içinde vadesi gelen senet için menü rozeti ve günde bir kez
+    yöneticilere telefon bildirimi.
+  - Tedarikçi kartı: kağıt faturada vade ve "senetle kapatıldı"; senet listesi ve "Senet ver"; ödenmemiş
+    senet ve toplam borç; senede bağlı cari kaydı / fatura silinemez; e-faturanın silinmesi stoğu geri alır.
+  - ÜTS mal kabulü: aynı belgenin aynı ürünü e-faturayla stoğa girdiyse çerçeve adedi ikinci kez eklenmez.
+  - Veritabanı: şema 24 (supplier_invoices: due_date, ettn, kaynak, ara_toplam, kdv_toplam;
+    supplier_invoice_xml, supplier_invoice_lines, urun_eslesmeleri, tedarikci_senetleri). Yalnızca ekleme.
+  - Testler: tests/alis (104 + 27 kontrol, örnek UBL-TR faturası). Hosting paketine dahil değildir.
 
 DEĞİŞİKLİK NOTLARI — 4.13.0 (ÜTS bildirimleri)
   - YENİ özellik anahtarı "uts_bildirim" (merkez panelden mağaza bazında açılır, varsayılan kapalı).

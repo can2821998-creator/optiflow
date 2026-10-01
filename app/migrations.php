@@ -1259,8 +1259,8 @@ function migrate_v24_alis_senet(): void
     // Faturanın özgün XML'i ayrı tabloda: fatura listeleri büyük belgeyi hiç okumaz.
     db()->exec("CREATE TABLE IF NOT EXISTS supplier_invoice_xml (
         invoice_id INT UNSIGNED NOT NULL PRIMARY KEY,
-        xml MEDIUMTEXT NOT NULL
-    ) " . t_opts());
+        xml MEDIUMBLOB NOT NULL
+    ) " . t_opts());   // BLOB: windows-1254 / UTF-16 belgeler de baytı baytına saklanır
 
     // e-Fatura kalemleri (yalnızca XML'den gelen faturalarda)
     db()->exec("CREATE TABLE IF NOT EXISTS supplier_invoice_lines (

@@ -1283,7 +1283,8 @@ function uts_gelenleri_kabul_et(array $idler, array $kategoriler, bool $cerceveS
             q("UPDATE uts_urunler SET kategori = ?, durum = ?, updated_at = ? WHERE id = ?", [$kat, $zatenStokta ? 'stokta' : 'alma_bekliyor', uts_simdi(), $id]);
             if (!$zatenStokta) {
                 // Aynı belge (fatura) e-Fatura içe aktarmayla stoğa girdiyse adet ikinci kez artırılmaz.
-                $faturaylaGirdi = function_exists('alis_faturadan_stoga_girdi') && alis_faturadan_stoga_girdi((string) ($u['belge_no'] ?? ''));
+                $kart = $u['frame_item_id'] ? (int) $u['frame_item_id'] : (int) (uts_cerceve_bul((string) $u['uno'])['id'] ?? 0);
+                $faturaylaGirdi = function_exists('alis_faturadan_stoga_girdi') && alis_faturadan_stoga_girdi((string) ($u['belge_no'] ?? ''), $kart ?: null, (string) $u['uno']);
                 uts_cerceve_bagla($id, $cerceveStokArtir && !$faturaylaGirdi, $kartOlustur);
             }
             $govde = ['VBI' => (string) $u['vbi']];

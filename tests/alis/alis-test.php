@@ -245,6 +245,17 @@ $ug = insert('uts_urunler', ['anahtar' => 'S|08690000009999|CS1', 'uno' => '0869
 uts_gelenleri_kabul_et([$ug], [], true, true);
 esit(1, (int) scalar('SELECT qty FROM frame_items WHERE id = ?', [$gk]), 'ÜTS kabulü aynı belgenin stoğunu ikinci kez eklemedi');
 esit($gk, (int) uts_urun($ug)['frame_item_id'], 'ÜTS ürünü karta yine de bağlandı');
+// Kısmi stok: aynı faturada stoğa işlenmemiş başka ürün ÜTS kabulünde stoğa girer
+$gk2 = insert('frame_items', ['brand' => 'Yeni', 'model' => 'Model', 'barcode' => '8690000008888', 'qty' => 0, 'created_at' => uts_simdi(), 'updated_at' => uts_simdi()]);
+$ug2 = insert('uts_urunler', ['anahtar' => 'S|08690000008888|CS2', 'uno' => '08690000008888', 'sno' => 'CS2', 'adet' => 1, 'kaynak' => 'uts', 'kategori' => 'cerceve', 'belge_no' => 'CIFT1', 'vbi' => uts_uuid4(), 'durum' => 'gelen', 'created_at' => uts_simdi(), 'updated_at' => uts_simdi()]);
+uts_gelenleri_kabul_et([$ug2], [], true, true);
+esit(1, (int) scalar('SELECT qty FROM frame_items WHERE id = ?', [$gk2]), 'faturada stoklanmamış ürün ÜTS kabulünde stoğa girdi');
+// Senet faturadan büyük: fazlası diğer faturayı kapatır
+$t4 = insert('suppliers', ['name' => 'Büyük Senet', 'created_at' => uts_simdi(), 'updated_at' => uts_simdi()]);
+$fa = insert('supplier_invoices', ['supplier_id' => $t4, 'invoice_no' => 'A', 'invoice_date' => '2026-09-01', 'amount' => 1000, 'due_date' => date('Y-m-d', strtotime('+3 days')), 'created_at' => uts_simdi()]);
+insert('supplier_invoices', ['supplier_id' => $t4, 'invoice_no' => 'B', 'invoice_date' => '2026-09-02', 'amount' => 500, 'due_date' => date('Y-m-d', strtotime('+3 days')), 'created_at' => uts_simdi()]);
+senet_ver($t4, 1500, date('Y-m-d', strtotime('+30 days')), 'BS', null, $fa);
+esit([], array_values(array_filter(vadesi_acik_faturalar(), fn($i) => (int) $i['supplier_id'] === $t4)), 'faturadan büyük senetin fazlası diğer faturayı kapattı');
 // XML ayrı tabloda
 ok((int) scalar('SELECT COUNT(*) FROM supplier_invoice_xml') >= 1, 'özgün XML ayrı tabloda saklandı');
 

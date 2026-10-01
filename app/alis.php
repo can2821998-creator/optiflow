@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 const ALIS_DOSYA_SINIRI = 8_000_000;        // tek XML
 const ALIS_ZIP_SINIRI = 25_000_000;         // yüklenen ZIP
-const ALIS_ZIP_ACIK_SINIRI = 60_000_000;    // ZIP içindeki XML'lerin toplam açılmış boyutu
+const ALIS_ZIP_ACIK_SINIRI = 20_000_000;    // ZIP içindeki XML'lerin toplam açılmış boyutu (128 MB bellek sınırında güvenli)
 const ALIS_EN_FAZLA_BELGE = 40;
 
 /** Tedarikçi ödeme yöntemleri: müşteri yöntemleri + senet (yalnızca tedarikçi tarafında). */
@@ -580,13 +580,28 @@ function table_var_mi(string $tablo): bool
 }
 
 /** Bu belge numaralı bir alış faturası çerçeve stoğuna adet işledi mi? (ÜTS kabulünde çift stok girişini önler) */
-function alis_faturadan_stoga_girdi(?string $faturaNo): bool
+function alis_faturadan_stoga_girdi(?string $faturaNo, ?int $frameId, string $uno): bool
 {
     $faturaNo = trim((string) $faturaNo);
     if ($faturaNo === '' || !table_var_mi('supplier_invoice_lines')) {
         return false;
     }
-    return (int) scalar('SELECT COUNT(*) FROM supplier_invoice_lines l JOIN supplier_invoices i ON i.id = l.invoice_id WHERE i.invoice_no = ? AND l.stok_adet > 0', [$faturaNo]) > 0;
+    // Yalnızca AYNI ürünü kapsayan, stoğa işlenmiş fatura satırı: aynı kart ya da aynı GTIN.
+    $kosul = [];
+    $p = [$faturaNo];
+    if ($frameId) {
+        $kosul[] = 'l.frame_item_id = ?';
+        $p[] = $frameId;
+    }
+    $gtinler = alis_barkod_adaylari($uno);
+    if ($gtinler) {
+        $kosul[] = 'l.gtin IN (' . in_placeholders($gtinler) . ')';
+        $p = array_merge($p, $gtinler);
+    }
+    if (!$kosul) {
+        return false;
+    }
+    return (int) scalar('SELECT COUNT(*) FROM supplier_invoice_lines l JOIN supplier_invoices i ON i.id = l.invoice_id WHERE i.invoice_no = ? AND l.stok_adet > 0 AND (' . implode(' OR ', $kosul) . ')', $p) > 0;
 }
 
 /** ÜTS'de bu faturanın (belge no) kabul bekleyen ürünleri. */

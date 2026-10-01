@@ -202,11 +202,13 @@ function odeme_takvimi(): array
 function vadesi_acik_faturalar(): array
 {
     // 1) Bir faturaya bağlı verilmiş senetler (iptal edilmemiş) önce kendi faturasından düşülür.
+    //    Senet faturadan büyükse fazlası genel ödeme havuzunda kalır (yalnızca düşülen kısım havuzdan çıkar).
     $bagli = [];
     $bagliOdeme = [];
-    foreach (rows("SELECT invoice_id, payment_id, tutar, supplier_id FROM tedarikci_senetleri WHERE invoice_id IS NOT NULL AND durum <> 'iptal'") as $s) {
-        $bagli[(int) $s['invoice_id']] = ($bagli[(int) $s['invoice_id']] ?? 0.0) + (float) $s['tutar'];
-        $bagliOdeme[(int) $s['supplier_id']] = ($bagliOdeme[(int) $s['supplier_id']] ?? 0.0) + (float) $s['tutar'];
+    foreach (rows("SELECT t.invoice_id, t.supplier_id, SUM(t.tutar) AS tutar, MAX(i.amount) AS fatura FROM tedarikci_senetleri t JOIN supplier_invoices i ON i.id = t.invoice_id WHERE t.invoice_id IS NOT NULL AND t.durum <> 'iptal' GROUP BY t.invoice_id, t.supplier_id") as $s) {
+        $dus = min((float) $s['tutar'], max(0.0, (float) $s['fatura']));
+        $bagli[(int) $s['invoice_id']] = $dus;
+        $bagliOdeme[(int) $s['supplier_id']] = ($bagliOdeme[(int) $s['supplier_id']] ?? 0.0) + $dus;
     }
     // 2) Kalan ödemeler (bağlı senet kapamaları hariç) faturalara en eskiden başlayarak dağıtılır.
     $odenen = [];

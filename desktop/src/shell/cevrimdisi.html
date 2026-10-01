@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OptiFlow · Çevrimdışı kopya</title>
+<link rel="stylesheet" href="cevrimdisi.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>Çevrimdışı kopya</h1>
+    <p id="bilgi">Yükleniyor…</p>
+  </div>
+  <input id="ara" type="search" placeholder="Ad, telefon ya da sipariş no" aria-label="Ara" autofocus>
+</header>
+<p class="uyari">İnternet bağlantısı yokken yalnızca görüntüleme içindir; değişiklik yapılamaz. Bağlantı gelince OptiFlow'a dönün.</p>
+<main>
+  <table>
+    <thead><tr><th>Sipariş</th><th>Müşteri</th><th>Telefon</th><th>Durum</th><th>Teslim sözü</th><th>Cam / çerçeve</th><th>Kalan</th></tr></thead>
+    <tbody id="liste"></tbody>
+  </table>
+  <p id="bos" hidden>Kayıt bulunamadı.</p>
+</main>
+<script src="cevrimdisi.js"></script>
+</body>
+</html>

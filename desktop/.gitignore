@@ -1,0 +1,6 @@
+node_modules/
+dist/
+dist-e2e/
+release/
+e2e-result.json
+*.log

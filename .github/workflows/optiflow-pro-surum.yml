@@ -1,0 +1,61 @@
+# OptiFlow Pro (Windows) — imzalı sürüm derlemesi.
+# Elle çalıştırılır: Actions › "OptiFlow Pro sürümü" › Run workflow.
+# Gereken depo sırları (Settings › Secrets and variables › Actions) — hangisi kullanılıyorsa:
+#   Ortak:  IMZA_TURU (pfx | azure), IMZA_YAYINCI (sertifikadaki CN, birebir)
+#   pfx:    CSC_LINK (base64 .pfx), CSC_KEY_PASSWORD
+#   azure:  AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET,
+#           AZURE_IMZA_ENDPOINT, AZURE_IMZA_HESAP, AZURE_IMZA_PROFIL
+# Çıktı: exe + blockmap + latest.yml "artifact" olarak indirilir ve hosting'de
+# indir/masaustu klasörüne yüklenir (latest.yml EN SON).
+name: OptiFlow Pro sürümü
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: İmzalı derle
+        run: node scripts/imzali-derle.mjs
+        env:
+          IMZA_TURU: ${{ secrets.IMZA_TURU }}
+          IMZA_YAYINCI: ${{ secrets.IMZA_YAYINCI }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_IMZA_ENDPOINT: ${{ secrets.AZURE_IMZA_ENDPOINT }}
+          AZURE_IMZA_HESAP: ${{ secrets.AZURE_IMZA_HESAP }}
+          AZURE_IMZA_PROFIL: ${{ secrets.AZURE_IMZA_PROFIL }}
+      - name: İmzayı doğrula
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem release/OptiFlow-Pro-Setup-*.exe | Select-Object -First 1
+          $sig = Get-AuthenticodeSignature $exe.FullName
+          Write-Host "Durum: $($sig.Status) · Yayıncı: $($sig.SignerCertificate.Subject)"
+          if ($sig.Status -ne 'Valid') { throw "İmza geçerli değil: $($sig.StatusMessage)" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: optiflow-pro-kurulum
+          path: |
+            desktop/release/OptiFlow-Pro-Setup-*.exe
+            desktop/release/OptiFlow-Pro-Setup-*.exe.blockmap
+            desktop/release/latest.yml
+          if-no-files-found: error

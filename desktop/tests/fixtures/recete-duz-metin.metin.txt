@@ -1,0 +1,11 @@
+T.C. Kimlik No	12345678901
+Hasta Adı Soyadı	FATMA NUR KAYA
+E-Reçete No	4K5L6M
+Gözlük Türü	Uzak	Bilinmeyen Yeni Alan	XYZ
+
+SAĞ CAM
++/-	Sferik	+/-	Silendirik	Aks
+-	3,75	+	0,00	0
+SOL CAM
++/-	Sferik	+/-	Silendirik	Aks
+-	4,00	-	0,25	170

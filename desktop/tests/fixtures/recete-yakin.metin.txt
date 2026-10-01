@@ -1,0 +1,20 @@
+T.C. Kimlik No	12345678901	E-Reçete No	9Z8Y7X
+Adı	İSMAİL ŞÜKRÜ	Soyadı	ÇAĞLAYANGÖZ
+Reçete Tarihi	01.09.2026	Tesis Adı	DENEME TIP MERKEZİ
+Doktor Adı	ZEYNEP ÖRNEKOĞLU	Hasta Tercihi	Ayrı Uzak Yakın
+UZAK GÖZLÜK
+
+SAĞ CAM
+Cam	+/-	Sferik	+/-	Silendirik	Aks
+«evet»	«+»	«0,00»	«-»	«1,25»	«5»
+SOL CAM
+Cam	+/-	Sferik	+/-	Silendirik	Aks
+«evet»	«-»	«0,25»	«+»	«»	«»
+YAKIN GÖZLÜK
+
+SAĞ CAM
+Cam	+/-	Sferik	+/-	Silendirik	Aks
+«evet»	«+»	«2,50»	«-»	«1,25»	«5»
+SOL CAM
+Cam	+/-	Sferik	+/-	Silendirik	Aks
+«evet»	«+»	«2,25»	«+»	«»	«» «Yakın için ayrı gözlük.»

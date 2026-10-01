@@ -1,0 +1,11 @@
+{
+  "appEnv": "production",
+  "optiflowBaseUrl": "https://optiflow.com.tr",
+  "medulaHomeUrl": "https://gss.sgk.gov.tr/Optik_Firma2_Web/login.faces",
+  "medulaAllowedHosts": ["gss.sgk.gov.tr"],
+  "medulaExtractHosts": ["gss.sgk.gov.tr"],
+  "updateUrl": "https://optiflow.com.tr/indir/masaustu",
+  "updateChannel": "latest",
+  "logLevel": "info",
+  "allowInsecureLocalhost": false
+}

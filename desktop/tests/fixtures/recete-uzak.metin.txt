@@ -1,0 +1,22 @@
+MEDULA OPTİK · Reçete İşlemleri
+
+HASTA BİLGİLERİ
+T.C. Kimlik No	«12345678901»	E-Reçete No	«1A2B3C»
+Adı	AYŞE	Soyadı	YILMAZ
+Yaş	47	Cinsiyet	Kadın
+
+REÇETE BİLGİLERİ
+Reçete Tarihi	16/09/2026	Protokol No	«12345»
+Tesis Adı	ÖRNEK DEVLET HASTANESİ	Doktor Adı	MEHMET DEMİR
+Reçete Teşhis	Miyopi	Hasta Tercihi	«Tek Odak»
+UZAK GÖZLÜK
+
+SAĞ CAM
+Cam	+/-	Sferik	+/-	Silendirik	Aks
+«1»	«-»	«1,50»	«-»	«0,75»	«90»
+
+SOL CAM
+Cam	+/-	Sferik	+/-	Silendirik	Aks
+«1»	«+»	«2,00»	«+»	«0,50»	«180»
+
+PD	«62»	Rapor No	«778899»	Rapor Tarihi	«15.09.2026»

@@ -1,0 +1,74 @@
+# OptiFlow Desktop — Windows packaging (electron-builder).
+# Build:   npm run dist:win         (unsigned local build, for testing)
+# Release: npm run release:win      (signed; see RELEASE.md)
+#
+# SECRETS: none in this file. Code signing comes from the CI environment:
+#   CSC_LINK (base64 .pfx or path) + CSC_KEY_PASSWORD, or Azure Trusted Signing via env.
+appId: tr.com.optiflow.desktop
+productName: OptiFlow Pro
+copyright: Copyright © 2026 OptiFlow
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**/*
+  - assets/icons/**/*
+  - package.json
+  - "!**/*.map"
+  - "!dist-e2e/**"
+  - "!tests/**"
+  - "!src/**"
+
+asar: true
+electronLanguages: [tr, en-US]
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.png
+  executableName: OptiFlow
+  signAndEditExecutable: true
+  # GEÇİCİ (sertifika alınana kadar, ürün sahibinin kararıyla 25.09.2026):
+  #   - imzasız kurulum üretilebilir,
+  #   - otomatik güncelleme Authenticode imzasını DOĞRULAMAZ; yalnızca HTTPS + latest.yml'deki
+  #     sha512 özetiyle doğrulanır. Güncelleme klasörüne yazabilen biri kötü sürüm koyabilir.
+  # SERTİFİKA ALININCA: ikisini de true yapın ve publisherName'i sertifikanın CN'si yapın.
+  forceCodeSigning: false
+  verifyUpdateCodeSignature: false
+  signtoolOptions:
+    # MUST equal the code-signing certificate's subject CN exactly (update this when the cert is bought).
+    publisherName:
+      - "OptiFlow"
+    signingHashAlgorithms: [sha256]
+    rfc3161TimeStampServer: http://timestamp.digicert.com
+  requestedExecutionLevel: asInvoker # no administrator rights
+
+nsis:
+  oneClick: false
+  perMachine: false # per-user install under %LOCALAPPDATA%\Programs — no UAC prompt
+  allowElevation: true # lets IT choose "all users" if they want
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: OptiFlow Pro
+  uninstallDisplayName: OptiFlow Pro
+  deleteAppDataOnUninstall: false # keeps logs/sessions unless the user removes %APPDATA%\OptiFlow
+  artifactName: OptiFlow-Pro-Setup-${version}.${ext}
+  language: "1055" # Turkish
+  installerLanguages: [tr_TR]
+
+# Auto-update feed. The runtime URL comes from config/<env>.json (updateUrl);
+# this block tells electron-builder where to upload latest.yml + installer on release.
+# Güncelleme dosyaları OptiFlow hosting'inde (config/production.json → updateUrl ile aynı adres).
+# Her sürümde release/ içindeki latest.yml + OptiFlow-Pro-Setup-<sürüm>.exe (+ .blockmap)
+# bu klasöre yüklenir. Ayrıntı: RELEASE.md.
+publish:
+  - provider: generic
+    url: https://optiflow.com.tr/indir/masaustu
+    channel: latest
+
+extraMetadata:
+  main: dist/main/main.js

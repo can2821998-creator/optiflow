@@ -1,0 +1,11 @@
+{
+  "appEnv": "staging",
+  "optiflowBaseUrl": "https://test.optiflow.com.tr",
+  "medulaHomeUrl": "https://gss.sgk.gov.tr/Optik_Firma2_Web/login.faces",
+  "medulaAllowedHosts": ["gss.sgk.gov.tr"],
+  "medulaExtractHosts": ["gss.sgk.gov.tr"],
+  "updateUrl": "",
+  "updateChannel": "beta",
+  "logLevel": "debug",
+  "allowInsecureLocalhost": false
+}

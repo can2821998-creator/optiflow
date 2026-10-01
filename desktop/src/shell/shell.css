@@ -1,0 +1,99 @@
+/* OptiFlow Desktop shell — same identity as the web app (navy + brass, Manrope). */
+@font-face { font-family: "Manrope"; src: url("fonts/manrope-latin-wght-normal.woff2") format("woff2"); font-weight: 200 800; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Manrope"; src: url("fonts/manrope-latin-ext-wght-normal.woff2") format("woff2"); font-weight: 200 800; font-display: swap; unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+
+:root {
+  --navy: #0a2038; --navy-2: #122f4d; --line: rgba(233,240,246,.14);
+  --on: #e9f0f6; --muted: #9fb3c6; --brass: #c9a13a; --brass-hi: #e3bd66; --brass-ink: #2a1d02;
+  --ok: #5fd08f; --warn: #f2c14e; --bad: #ff7b6b;
+  --paper: #faf8f4; --ink: #1a1723;
+  --bar: 52px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; height: 100%; }
+body { font: 500 13px/1.3 "Manrope", "Segoe UI", system-ui, sans-serif; background: var(--paper); color: var(--ink); overflow: hidden; user-select: none; }
+
+/* The toolbar is the window's title bar (titleBarOverlay): draggable, with room for the
+   native min/max/close buttons on the right (Window Controls Overlay env variables). */
+.bar { height: var(--bar); display: flex; align-items: center; gap: 8px; padding: 0 10px 0 14px;
+  padding-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw) + 10px);
+  -webkit-app-region: drag;
+  background: linear-gradient(180deg, var(--navy-2), var(--navy)); color: var(--on);
+  border-bottom: 1px solid #000; box-shadow: inset 0 -1px 0 var(--line); }
+.brand { display: flex; align-items: center; gap: 8px; margin-right: 6px; letter-spacing: .01em; }
+.brand .mark { width: 24px; height: 24px; color: var(--brass-hi); }
+.brand b { font-weight: 800; font-size: 14px; }
+.pro-chip { padding: 2px 6px; border-radius: 5px; background: linear-gradient(180deg, var(--brass-hi), var(--brass)); color: var(--brass-ink); font-weight: 800; font-size: 10px; letter-spacing: .08em; }
+.bar button, .bar .status, .bar .who, .bar .host { -webkit-app-region: no-drag; }
+.pro-chip.lite { background: rgba(233,240,246,.14); color: var(--muted); }
+.btn.gold.kilitli { background: rgba(233,240,246,.1); color: var(--on); box-shadow: inset 0 0 0 1px rgba(227,189,102,.45); }
+
+.seg { display: flex; padding: 3px; gap: 2px; background: rgba(0,0,0,.28); border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); }
+.seg button { border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 700; padding: 6px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+.seg button:hover { color: var(--on); }
+.seg button[aria-pressed="true"] { background: var(--on); color: var(--navy); }
+.seg.split button { background: rgba(233,240,246,.12); color: var(--on); }
+
+.ico { width: 32px; height: 32px; display: inline-grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: var(--on); cursor: pointer; }
+.ico:hover:not(:disabled) { background: rgba(233,240,246,.1); }
+.ico:disabled { opacity: .35; cursor: default; }
+.ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.ico svg circle { fill: currentColor; stroke: none; }
+#duzen[aria-pressed="true"] { background: rgba(227,189,102,.18); color: var(--brass-hi); }
+
+.medula-nav { display: flex; align-items: center; gap: 2px; padding-left: 8px; margin-left: 2px; border-left: 1px solid var(--line); }
+.host { color: var(--muted); font-size: 12px; margin-left: 6px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.spacer { flex: 1; }
+
+.status { display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 42vw; }
+.status .msg { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--on); }
+.status .msg.hata { color: #ffd2cb; }
+.status .msg.basarili { color: #cdf4dd; }
+.status .msg.bilgi { color: var(--muted); }
+.rx { flex: none; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 3px 7px; border-radius: 99px; }
+.rx.on { background: rgba(95,208,143,.16); color: var(--ok); }
+.rx.off { background: rgba(159,179,198,.14); color: var(--muted); }
+.rx.login { background: rgba(242,193,78,.16); color: var(--warn); }
+.link { border: 0; background: none; color: var(--brass-hi); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; padding: 0; }
+
+.btn { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px; border-radius: 9px; border: 0; font: inherit; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.btn.gold { background: linear-gradient(180deg, var(--brass-hi), var(--brass)); color: var(--brass-ink); box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 6px 16px -8px rgba(227,189,102,.8); }
+.btn.gold:hover:not(:disabled) { filter: brightness(1.06); }
+.btn.gold.hazir { outline: 2px solid rgba(95,208,143,.7); outline-offset: 2px; }
+.btn:disabled { opacity: .55; cursor: progress; }
+.btn.ghost { background: rgba(233,240,246,.08); color: var(--on); box-shadow: inset 0 0 0 1px var(--line); }
+.btn.ghost:hover { background: rgba(233,240,246,.14); }
+.btn.small { height: 28px; padding: 0 10px; font-size: 12px; }
+
+.who { font-size: 12px; color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-left: 8px; border-left: 1px solid var(--line); }
+.who b { color: var(--on); font-weight: 700; }
+.who.destek { color: var(--warn); }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px rgba(95,208,143,.15); flex: none; }
+.dot.off { background: var(--bad); box-shadow: 0 0 0 3px rgba(255,123,107,.18); }
+
+.stage { position: absolute; inset: var(--bar) 0 0 0; display: grid; place-items: center; background: var(--paper); }
+.splash { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; text-align: center;
+  background: radial-gradient(1200px 600px at 50% 35%, #1b3f63 0%, #0a2038 55%, #050f1c 100%); color: var(--on); }
+.splash-mark { width: 64px; height: 64px; color: var(--brass-hi); }
+.splash h1 { margin: 6px 0 0; font-size: 30px; font-weight: 800; letter-spacing: -.01em; }
+.splash h1 span { color: var(--brass-hi); }
+.splash p { margin: 0; color: var(--muted); font-size: 14px; }
+.splash-bar { width: 180px; height: 3px; margin-top: 14px; border-radius: 3px; background: rgba(233,240,246,.12); overflow: hidden; }
+.splash-bar i { display: block; width: 40%; height: 100%; background: var(--brass-hi); border-radius: 3px; animation: splash-kay 1.2s ease-in-out infinite; }
+@keyframes splash-kay { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+@media (prefers-reduced-motion: reduce) { .splash-bar i { animation: none; width: 100%; opacity: .5; } }
+.panel { max-width: 520px; padding: 28px 30px; text-align: center; }
+.panel h1 { font-size: 22px; margin: 0 0 8px; color: #122f4d; letter-spacing: -.01em; }
+.panel p { color: #5b5763; font-size: 14px; line-height: 1.55; margin: 0 0 18px; user-select: text; }
+.panel .fine { font-size: 12px; margin-top: 18px; }
+.panel.quiet p { color: #8a8591; }
+.ver { position: absolute; right: 12px; bottom: 8px; font-size: 11px; color: #8a8591; }
+
+@media (max-width: 1180px) { .who, .host { display: none; } .status { max-width: 30vw; } }
+@media (prefers-reduced-motion: no-preference) { .btn, .seg button, .ico { transition: background-color .15s, color .15s, filter .15s; } }
+
+/* 4.12.0 */
+.chip-barkod { font: 700 11px/1 inherit; letter-spacing: .04em; padding: 5px 8px; border-radius: 99px; background: rgba(255, 255, 255, .12); color: #e9f0f6; white-space: nowrap; -webkit-app-region: no-drag; }
+#offlineBtn { margin-left: 8px; }

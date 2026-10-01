@@ -19,7 +19,10 @@ Tek oturum varsa doğrudan `main`.
 
 ## Yapı
 - Depo kökü = sunucu (PHP, hosting'e yüklenen kod): `app/`, `assets/`, kökteki `*.php`.
-- `desktop/` = OptiFlow Pro (Electron) masaüstü kaynağı. **Henüz eklenmedi** (bkz. DURUM.md).
+- `desktop/` = OptiFlow Pro (Electron + TypeScript) masaüstü kaynağı. Güvenlik: `desktop/SECURITY.md`,
+  sürüm/imzalama: `desktop/RELEASE.md`. Exe derlemesi: `desktop/` içinde `npm ci && npm run dist:win`
+  (imzalı: `npm run dist:win:imzali`, GitHub: `.github/workflows/optiflow-pro-surum.yml`).
+- `docs/` = kullanıcıya verilen rehberler ve raporlar.
 - `tests/` = testler (hosting paketine girmez).
 - Göçler: `app/migrations.php` (`SCHEMA_VERSION`); sürüm: `app/bootstrap.php` `APP_VERSION` + `VERSION.txt`.
 - Özellik anahtarları: `app/ozellik.php` (yeni özellikler varsayılan kapalı, merkez panelden açılır).
@@ -30,6 +33,9 @@ php tests/uts/uts-test.php && bash tests/uts/sayfa-test.sh
 php tests/alis/alis-test.php && bash tests/alis/sayfa-test.sh
 php tests/hata-hak/test.php && bash tests/hata-hak/sayfa-test.sh
 ```
+Masaüstü (desktop/ içinde, Node 22): `npm ci && npm run typecheck && npm test`
+(sunucu entegrasyon: `tests/server/*.mjs`, uçtan uca: `tests/e2e/` — yerel test sunucusu ister, bkz. desktop/BUILD.md).
+
 `tests/uts/ortam.php` ortak SQLite düzeneğidir: yeni modüllerde SQL taşınabilir yazılır
 (`NOW()`/`INTERVAL` yok, zaman PHP'de). Göçler MySQL'e özeldir, testte çalışmaz.
 

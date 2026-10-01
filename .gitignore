@@ -23,3 +23,8 @@ node_modules/
 # Sistem
 .DS_Store
 Thumbs.db
+
+# Sürüm dosyaları Releases'ta (Actions üretir)
+indir/masaustu/*.blockmap
+indir/masaustu/latest.yml
+indir/masaustu/*.exe

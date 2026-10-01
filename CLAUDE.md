@@ -3,6 +3,17 @@
 Bu depo OptiFlow'un **tek doğru kaynağıdır**. Kullanıcı birden fazla oturum ve bilgisayarda çalışır;
 devamlılık yalnızca bu depo üzerinden sağlanır (zip / mbox / bundle taşınmaz).
 
+## Kullanıcının komutları (01.10.2026 kararı: "her şey git'te olsun")
+- **"gitten çek"** → `git fetch origin main && git rebase origin/main` (ya da `git pull`), `DURUM.md`'yi oku,
+  kullanıcıya son durumu 3–5 satırda özetle.
+- **"gite yükle"** → testleri çalıştır, `DURUM.md` (+ sürüm değiştiyse `VERSION.txt`) güncelle, commit, `git push`.
+  Sürüm değiştiyse (APP_VERSION ve/veya desktop/package.json) etiketi de gönder:
+  `git tag v<sunucu>-pro<masaüstü> && git push origin v<sunucu>-pro<masaüstü>`
+  → `.github/workflows/surum-yayinla.yml` testleri çalıştırıp exe + blockmap + latest.yml + hosting zip'i
+  **GitHub Releases**'a koyar. Bitince Actions sonucunu kontrol edip kullanıcıya Release bağlantısını ver.
+- Kullanıcıya teslim edilen her şey git'te olmalı: kaynak, belgeler (`docs/`), kurulum dosyaları (Releases).
+  Sohbette dosya verilse bile kalıcı kopyası depoda/Release'te bulunur.
+
 ## Her oturumun başında
 1. `git pull` (bulut oturumunda sığ klondaysa `git fetch origin main && git rebase origin/main`).
 2. **`DURUM.md`'yi oku** ve "Sıradaki iş"ten devam et. Kullanıcı başka bir şey isterse onu yap.
@@ -42,6 +53,7 @@ Masaüstü (desktop/ içinde, Node 22): `npm ci && npm run typecheck && npm test
 ## Kurallar
 - CSP `script-src 'self'`: satır içi `<script>` / `onclick=` yazma; JS `assets/*.js` içinde.
 - Gizli bilgi commit'leme: `config.php`, `storage/.gizli-anahtar`, token'lar. (`.gitignore`'da.)
-- Exe / hosting zip / büyük dosya git'e girmez → GitHub Releases.
+- Exe / hosting zip / blockmap / latest.yml git'e girmez → etiketle GitHub Releases'a (Actions üretir;
+  bu oturum türü Release'i doğrudan oluşturamaz).
 - T.C. kimlik no saklanmaz (KVKK).
 - Kullanıcıyla Türkçe konuş.

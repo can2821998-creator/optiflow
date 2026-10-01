@@ -1,0 +1,135 @@
+# OptiFlow — sürüm yayınla
+#
+# Depoya "v<sunucu>-pro<masaüstü>" biçiminde bir etiket gönderilince (ör. v4.15.1-pro5.3.0):
+#   1. Sunucu testleri (PHP) ve masaüstü testleri (Node) çalışır,
+#   2. Windows'ta OptiFlow Pro kurulumu derlenir (IMZA_TURU sırrı varsa İMZALI),
+#   3. Hosting güncelleme zip'i hazırlanır (config.php / storage içeriği YOK),
+#   4. Hepsi GitHub › Releases'ta o etiketle yayınlanır:
+#        OptiFlow-Pro-Setup-<sürüm>.exe, .blockmap, latest.yml, optiflow-<sürüm>-hosting.zip
+#
+# Etiketteki sürümler app/bootstrap.php (APP_VERSION) ve desktop/package.json ile birebir
+# aynı olmalıdır; değilse yayın durur.
+name: Sürüm yayınla
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  surumler:
+    runs-on: ubuntu-latest
+    outputs:
+      sunucu: ${{ steps.oku.outputs.sunucu }}
+      masaustu: ${{ steps.oku.outputs.masaustu }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: oku
+        name: Etiket ve sürümleri karşılaştır
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ ! "$TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)-pro([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "::error::Etiket biçimi v<sunucu>-pro<masaüstü> olmalı (ör. v4.15.1-pro5.3.0): $TAG"; exit 1
+          fi
+          S="${BASH_REMATCH[1]}"; M="${BASH_REMATCH[2]}"
+          KS=$(grep -oP "const APP_VERSION = '\K[0-9.]+" app/bootstrap.php)
+          KM=$(node -p "require('./desktop/package.json').version")
+          [ "$S" = "$KS" ] || { echo "::error::Etiket sunucu $S ama APP_VERSION $KS"; exit 1; }
+          [ "$M" = "$KM" ] || { echo "::error::Etiket masaüstü $M ama desktop/package.json $KM"; exit 1; }
+          echo "sunucu=$S" >> "$GITHUB_OUTPUT"; echo "masaustu=$M" >> "$GITHUB_OUTPUT"
+
+  sunucu-test:
+    needs: surumler
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_sqlite, sqlite3, zip, mbstring, sodium, curl
+      - name: Sunucu testleri
+        run: |
+          php tests/uts/uts-test.php && bash tests/uts/sayfa-test.sh
+          php tests/alis/alis-test.php && bash tests/alis/sayfa-test.sh
+          php tests/hata-hak/test.php && bash tests/hata-hak/sayfa-test.sh
+
+  masaustu:
+    needs: surumler
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    env:
+      IMZA_TURU: ${{ secrets.IMZA_TURU }}
+      IMZA_YAYINCI: ${{ secrets.IMZA_YAYINCI }}
+      CSC_LINK: ${{ secrets.CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_IMZA_ENDPOINT: ${{ secrets.AZURE_IMZA_ENDPOINT }}
+      AZURE_IMZA_HESAP: ${{ secrets.AZURE_IMZA_HESAP }}
+      AZURE_IMZA_PROFIL: ${{ secrets.AZURE_IMZA_PROFIL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Derle (imzasız — sertifika sırrı yok)
+        if: env.IMZA_TURU == ''
+        run: npm run dist:win
+      - name: Derle (imzalı)
+        if: env.IMZA_TURU != ''
+        run: node scripts/imzali-derle.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: masaustu
+          path: |
+            desktop/release/OptiFlow-Pro-Setup-*.exe
+            desktop/release/OptiFlow-Pro-Setup-*.exe.blockmap
+            desktop/release/latest.yml
+          if-no-files-found: error
+
+  yayin:
+    needs: [surumler, sunucu-test, masaustu]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: masaustu
+          path: masaustu
+      - name: Hosting zip'i hazırla
+        run: |
+          S="${{ needs.surumler.outputs.sunucu }}"
+          mkdir paket
+          git archive HEAD | tar -x -C paket
+          cd paket
+          rm -rf desktop tests docs .github .gitignore ./*.md
+          rm -f indir/masaustu/*.blockmap indir/masaustu/latest.yml
+          cp ../masaustu/*.blockmap indir/masaustu/        # blockmap, bu derlemenin exe'siyle eşleşmeli
+          test ! -e config.php
+          zip -qr -X "../optiflow-${S}-hosting.zip" .
+      - name: Sürüm notu
+        run: |
+          awk 'NR>3 && /^DEĞİŞİKLİK NOTLARI/{n++} n==1' VERSION.txt > notlar.md
+          cat >> notlar.md <<'EOF'
+
+          **Kurulum:** `optiflow-*-hosting.zip` hosting ana klasörüne yüklenip üzerine çıkarılır.
+          Exe `indir/masaustu/` klasörüne yüklenir; `latest.yml` EN SON yüklenir (exe ve latest.yml aynı sürümden olmalı).
+          EOF
+      - name: Release oluştur
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "OptiFlow ${{ needs.surumler.outputs.sunucu }} · OptiFlow Pro ${{ needs.surumler.outputs.masaustu }}" \
+            --notes-file notlar.md \
+            masaustu/*.exe masaustu/*.blockmap masaustu/latest.yml optiflow-*-hosting.zip

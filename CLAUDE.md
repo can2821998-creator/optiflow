@@ -10,7 +10,8 @@ devamlılık yalnızca bu depo üzerinden sağlanır (zip / mbox / bundle taşı
   Sürüm değiştiyse (APP_VERSION ve/veya desktop/package.json) ayrıca bir şey yapma: main'e push
   `.github/workflows/surum-yayinla.yml`'yi tetikler; o `v<sunucu>-pro<masaüstü>` etiketini kendisi oluşturur,
   testleri çalıştırıp exe + blockmap + latest.yml + hosting zip'i **GitHub Releases**'a koyar
-  (o etiketle Release varsa atlar). Etiketi oturumdan gönderme (git proxy 403 verir). Bitince Actions sonucunu kontrol edip kullanıcıya Release bağlantısını ver.
+  (o etiketle Release varsa atlar). Etiketi oturumdan gönderme (git proxy 403 verir).
+  Elle başlatmak gerekirse: `curl -X POST -H 'Content-Type: application/json' https://api.github.com/repos/can2821998-creator/optiflow/actions/workflows/surum-yayinla.yml/dispatches -d '{"ref":"main"}'` Bitince Actions sonucunu kontrol edip kullanıcıya Release bağlantısını ver.
 - Kullanıcıya teslim edilen her şey git'te olmalı: kaynak, belgeler (`docs/`), kurulum dosyaları (Releases).
   Sohbette dosya verilse bile kalıcı kopyası depoda/Release'te bulunur.
 

@@ -101,8 +101,9 @@ if ($anahtar !== '') {
         redirect('alis-faturasi.php');
     }
     $cerceveler = [];
-    foreach (rows('SELECT id, brand, model, color, size, barcode, qty FROM frame_items WHERE is_active = 1 ORDER BY brand, model, color LIMIT 2000') as $c) {
-        $cerceveler[(int) $c['id']] = frame_item_label($c) . ($c['barcode'] ? ' · ' . $c['barcode'] : '') . ' (' . (int) $c['qty'] . ')';
+    $kartEtiketi = static fn(array $c): string => frame_item_label($c) . ($c['barcode'] ? ' · ' . $c['barcode'] : '') . ' (' . (int) $c['qty'] . ')' . ((int) $c['is_active'] === 1 ? '' : ' — pasif');
+    foreach (rows('SELECT id, brand, model, color, size, barcode, qty, is_active FROM frame_items WHERE is_active = 1 ORDER BY brand, model, color') as $c) {
+        $cerceveler[(int) $c['id']] = $kartEtiketi($c);
     }
     page_start('Alış faturası önizleme', 'alis-faturasi');
     page_header('Alış faturası önizleme', count($belgeler) . ' belge · kalemleri kontrol edip fatura fatura kaydedin.', '', '', 'Tedarik');
@@ -145,9 +146,11 @@ if ($anahtar !== '') {
                 <div class="grid cols-3">
                   <label class="field"><span>Tedarikçi</span>
                     <select name="tedarikci" required>
-                      <?php if (!$ted): ?><option value="yeni" selected>+ Yeni tedarikçi: <?= e($f['satici']['unvan']) ?></option><?php endif; ?>
+                      <?php if (!$ted): ?><option value="yeni" selected>+ Yeni tedarikçi: <?= e($f['satici']['unvan']) ?></option>
+                      <?php elseif ((int) $ted['is_active'] !== 1): ?><option value="<?= (int) $ted['id'] ?>" selected><?= e($ted['name']) ?> — pasif (VKN eşleşti)</option><?php endif; ?>
                       <?php foreach ($tedarikciler as $t): ?><option value="<?= (int) $t['id'] ?>" <?= $ted && (int) $ted['id'] === (int) $t['id'] ? 'selected' : '' ?>><?= e($t['name']) ?></option><?php endforeach; ?>
-                    </select></label>
+                    </select>
+                    <?php if ($ted): ?><small class="muted">VKN <?= e($f['satici']['vkn']) ?> ile eşleşti<?= (int) $ted['is_active'] !== 1 ? '; tedarikçi pasif, kaydedince aktif olur' : '' ?>.</small><?php endif; ?></label>
                   <label class="field"><span>Vade</span><input type="date" name="vade" value="<?= e($f['vade']) ?>"></label>
                 </div>
                 <?php if ($f['kalemler']): ?>
@@ -156,6 +159,12 @@ if ($anahtar !== '') {
                     <tbody>
                     <?php foreach ($f['kalemler'] as $k):
                         $oneri = alis_kalem_onerisi($ted ? (int) $ted['id'] : null, $k);
+                        if ($oneri['frame_item_id'] !== null && !isset($cerceveler[$oneri['frame_item_id']])) {
+                            $oc = row('SELECT id, brand, model, color, size, barcode, qty, is_active FROM frame_items WHERE id = ?', [$oneri['frame_item_id']]);
+                            if ($oc) {
+                                $cerceveler = [(int) $oc['id'] => $kartEtiketi($oc)] + $cerceveler;   // pasif kart da listede (kaydedince aktif olur)
+                            }
+                        }
                         $adet = alis_stok_adedi($k);
                         $varsayilanStok = $oneri['frame_item_id'] !== null && $adet > 0; ?>
                       <tr>

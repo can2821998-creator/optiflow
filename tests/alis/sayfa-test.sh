@@ -28,6 +28,12 @@ calis "senet de kaydedildi" '"durum":"bekliyor"' sql '{"sql":"SELECT durum, tuta
 calis "önizleme: kayıtlı" "Kayıtlı" alis "{\"get\":{\"onizle\":\"$A\"}}"
 calis "ikinci kayıt engeli" "zaten kayıtlı" alis "{\"post\":{\"eylem\":\"kaydet\",\"anahtar\":\"$A\",\"belge\":\"0\",\"tedarikci\":\"2\"}}"
 calis "stok girdi" '"qty":8' sql '{"sql":"SELECT qty FROM frame_items WHERE id = 1"}'
+calis "tedarikçiyi pasife al" "" sql '{"sql":"UPDATE suppliers SET is_active = 0 WHERE id = 2"}'
+sed -e 's/OPT2026000000123/OPT2026000000999/' -e 's/3F2504E0-4F89-41D3-9A0C-0305E82C3301/3F2504E0-4F89-41D3-9A0C-0305E82C3999/' "$ORNEK" > "$UTS_TEST_ROOT/ikinci.xml"
+calis "ikinci XML yükle" "" alis "{\"post\":{\"eylem\":\"yukle\"},\"dosyalar\":[[\"ikinci.xml\",\"$UTS_TEST_ROOT/ikinci.xml\"]]}"
+B=$(anahtar)
+calis "pasif tedarikçi önizlemede seçili" "pasif (VKN eşleşti)" alis "{\"get\":{\"onizle\":\"$B\"}}"
+calis "kayıtlı kod hafızadan" "Önceki eşlemeden" alis "{\"get\":{\"onizle\":\"$B\"}}"
 calis "bitir" "" alis "{\"post\":{\"eylem\":\"bitir\",\"anahtar\":\"$A\"}}"
 calis "süresi dolan önizleme" "süresi doldu" alis "{\"get\":{\"onizle\":\"$A\"}}"
 calis "son yüklenenler" "OPT2026000000123" alis

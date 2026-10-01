@@ -200,4 +200,52 @@ $_SESSION = [];
 esit(null, alis_gecici_oku($a), 'başka oturum okuyamaz');
 esit(null, alis_gecici_oku('../../etc/passwd'), 'anahtar biçimi denetlenir');
 
+echo "13) İnceleme bulguları (regresyon)\n";
+// (1) DOCTYPE 4000 bayttan sonra da yakalanır; billion laughs genişlemez
+$bl = '<?xml version="1.0"?><!--' . str_repeat('x', 5000) . '--><!DOCTYPE lol [<!ENTITY a "aaaaaaaaaa"><!ENTITY b "&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;"><!ENTITY c "&b;&b;&b;&b;&b;&b;&b;&b;&b;&b;">]><Invoice><ID>&c;</ID></Invoice>';
+hata_bekle(fn() => alis_ubl_coz($bl), 'yorumdan sonra gelen DOCTYPE / varlık genişletme reddedilir');
+// Windows-1254 kodlu dosya geçici saklamadan sonra bozulmaz
+$cp = str_replace('<?xml version="1.0"?>', '<?xml version="1.0" encoding="windows-1254"?>', $ubl(['unvan' => 'Gözlük Şirketi']));
+$cp = mb_convert_encoding($cp, 'Windows-1254', 'UTF-8');
+$_SESSION = [];
+$an = alis_gecici_kaydet([['ad' => 'w.xml', 'xml' => $cp]]);
+esit('Gözlük Şirketi', alis_ubl_coz(alis_gecici_oku($an)[0]['xml'])['satici']['unvan'], 'windows-1254 dosya Türkçe karakterleriyle okunur');
+// Sıfır miktar stoğa 1 olarak girmez
+$sifir = alis_ubl_coz($ubl(['satirlar' => [['ad' => 'Bedelsiz', 'miktar' => '0', 'tutar' => '0', 'kdv' => '0']]]));
+esit(0, alis_stok_adedi($sifir['kalemler'][0]), 'sıfır miktar stoğa işlenmez');
+esit(0.0, alis_birim_maliyet($sifir['kalemler'][0]), 'sıfır miktarda maliyet 0');
+// Geçersiz tarihler
+hata_bekle(fn() => alis_ubl_coz($ubl(['tarih' => '2026-02-31'])), 'geçersiz fatura tarihi', 'tarih');
+hata_bekle(fn() => alis_kaydet(alis_ubl_coz($ubl(['no' => 'TRH1'])), ['id' => $t2], [], '2026-02-30', ''), 'geçersiz vade', 'Vade');
+// (5) Faturaya bağlı senet o faturadan düşer
+$t3 = insert('suppliers', ['name' => 'FIFO A.Ş.', 'created_at' => uts_simdi(), 'updated_at' => uts_simdi()]);
+insert('supplier_invoices', ['supplier_id' => $t3, 'invoice_no' => 'ESKI', 'invoice_date' => '2026-01-01', 'amount' => 1000, 'created_at' => uts_simdi()]);
+$yeniF = insert('supplier_invoices', ['supplier_id' => $t3, 'invoice_no' => 'YENI', 'invoice_date' => date('Y-m-d'), 'amount' => 1000, 'due_date' => date('Y-m-d', strtotime('+5 days')), 'created_at' => uts_simdi()]);
+senet_ver($t3, 1000, date('Y-m-d', strtotime('+30 days')), 'F-1', null, $yeniF);
+esit([], array_values(array_filter(vadesi_acik_faturalar(), fn($i) => (int) $i['supplier_id'] === $t3)), 'senetle kapatılan fatura takvimde ayrıca görünmez');
+// (7) Eşzamanlı kayıt: benzersiz ETTN
+$yarisF = alis_ubl_coz($ubl(['no' => 'YARIS1']));
+insert('supplier_invoices', ['supplier_id' => $t2, 'invoice_no' => 'BASKA-NO', 'invoice_date' => '2026-09-30', 'amount' => 1, 'ettn' => $yarisF['ettn'], 'created_at' => uts_simdi()]);
+$cift = false;
+try { insert('supplier_invoices', ['supplier_id' => $t2, 'invoice_no' => 'BASKA-NO-2', 'invoice_date' => '2026-09-30', 'amount' => 1, 'ettn' => $yarisF['ettn'], 'created_at' => uts_simdi()]); } catch (PDOException $e) { $cift = true; }
+ok($cift, 'aynı ETTN veritabanı düzeyinde (benzersiz dizin) engellenir');
+hata_bekle(fn() => alis_kaydet($yarisF, ['id' => $t2], [], '', ''), 'aynı ETTN ile kayıt reddedilir', 'zaten kayıtlı');
+// Pasif tedarikçiye gelen fatura onu yeniden aktif eder
+$pasif = insert('suppliers', ['name' => 'Pasif Ltd', 'tax_no' => '7777777777', 'is_active' => 0, 'created_at' => uts_simdi(), 'updated_at' => uts_simdi()]);
+esit($pasif, (int) alis_tedarikci_bul('7777777777')['id'], 'pasif tedarikçi VKN ile bulunur');
+alis_kaydet(alis_ubl_coz($ubl(['no' => 'PSF1', 'vkn' => '7777777777'])), ['id' => $pasif], [], '', '');
+esit(1, (int) scalar('SELECT is_active FROM suppliers WHERE id = ?', [$pasif]), 'fatura kaydedilince tedarikçi aktif oldu');
+// (4) e-Faturayla stoğa giren ürün ÜTS kabulünde ikinci kez eklenmez
+setting_set('uts_ortam', 'deneme');
+$gk = insert('frame_items', ['brand' => 'Çift', 'model' => 'Stok', 'barcode' => '8690000009999', 'qty' => 0, 'created_at' => uts_simdi(), 'updated_at' => uts_simdi()]);
+$cs = alis_ubl_coz($ubl(['no' => 'CIFT1', 'satirlar' => [['ad' => 'Çift Stok', 'miktar' => '1', 'tutar' => '100', 'kdv' => '10', 'gtin' => '08690000009999']]]));
+alis_kaydet($cs, ['id' => $t2], [1 => ['islem' => 'stok', 'frame_item_id' => $gk]], '', '');
+esit(1, (int) scalar('SELECT qty FROM frame_items WHERE id = ?', [$gk]), 'fatura ile 1 adet girdi');
+$ug = insert('uts_urunler', ['anahtar' => 'S|08690000009999|CS1', 'uno' => '08690000009999', 'sno' => 'CS1', 'adet' => 1, 'kaynak' => 'uts', 'kategori' => 'cerceve', 'belge_no' => 'CIFT1', 'vbi' => uts_uuid4(), 'durum' => 'gelen', 'created_at' => uts_simdi(), 'updated_at' => uts_simdi()]);
+uts_gelenleri_kabul_et([$ug], [], true, true);
+esit(1, (int) scalar('SELECT qty FROM frame_items WHERE id = ?', [$gk]), 'ÜTS kabulü aynı belgenin stoğunu ikinci kez eklemedi');
+esit($gk, (int) uts_urun($ug)['frame_item_id'], 'ÜTS ürünü karta yine de bağlandı');
+// XML ayrı tabloda
+ok((int) scalar('SELECT COUNT(*) FROM supplier_invoice_xml') >= 1, 'özgün XML ayrı tabloda saklandı');
+
 bitir();

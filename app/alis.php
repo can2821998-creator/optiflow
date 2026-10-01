@@ -66,13 +66,19 @@ function alis_dosyalari_oku(array $dosyalar): array
                 if (!$st || !preg_match('/\.xml$/i', (string) $st['name']) || str_ends_with((string) $st['name'], '/')) {
                     continue;
                 }
-                $toplam += (int) $st['size'];
-                if ((int) $st['size'] > ALIS_DOSYA_SINIRI || $toplam > ALIS_ZIP_ACIK_SINIRI) {
+                if ((int) $st['size'] > ALIS_DOSYA_SINIRI) {
                     $z->close();
                     throw new DomainException($ad . ': ZIP içindeki XML dosyaları çok büyük.');
                 }
+                // ZIP'in bildirdiği boyuta güvenilmez: gerçekten okunan bayt sayılır.
                 $icerik = $z->getFromIndex($i, ALIS_DOSYA_SINIRI + 1);
-                if (is_string($icerik) && strlen($icerik) <= ALIS_DOSYA_SINIRI) {
+                $okunan = is_string($icerik) ? strlen($icerik) : 0;
+                $toplam += $okunan;
+                if ($okunan > ALIS_DOSYA_SINIRI || $toplam > ALIS_ZIP_ACIK_SINIRI) {
+                    $z->close();
+                    throw new DomainException($ad . ': ZIP içindeki XML dosyaları çok büyük.');
+                }
+                if ($okunan > 0) {
                     $sonuc[] = ['ad' => $ad . ' › ' . mb_substr(basename((string) $st['name']), 0, 120), 'xml' => $icerik];
                 }
                 if (count($sonuc) >= ALIS_EN_FAZLA_BELGE) {
@@ -114,11 +120,15 @@ function alis_ubl_coz(string $xml): array
     }
     $eski = libxml_use_internal_errors(true);
     $dom = new DOMDocument();
-    $ok = $dom->loadXML($xml, LIBXML_NONET | LIBXML_NOCDATA | LIBXML_COMPACT | LIBXML_PARSEHUGE);
+    // LIBXML_PARSEHUGE bilerek YOK: libxml'in varlık genişletme (billion laughs) korumasını kapatır.
+    $ok = $dom->loadXML($xml, LIBXML_NONET | LIBXML_NOCDATA | LIBXML_COMPACT);
     libxml_clear_errors();
     libxml_use_internal_errors($eski);
     if (!$ok) {
         throw new DomainException('XML okunamadı (bozuk dosya).');
+    }
+    if ($dom->doctype !== null) {
+        throw new DomainException('XML içinde DOCTYPE bulunan dosyalar güvenlik nedeniyle okunmaz.');
     }
     $xp = new DOMXPath($dom);
     $faturalar = $xp->query("//*[local-name()='Invoice']");
@@ -141,7 +151,7 @@ function alis_ubl_coz(string $xml): array
         $v = trim($v);
         return is_numeric($v) ? round((float) $v, 4) : 0.0;
     };
-    $tarih = static fn(string $v): string => preg_match('/^\d{4}-\d{2}-\d{2}/', $v) ? substr($v, 0, 10) : '';
+    $tarih = static fn(string $v): string => preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $v, $m) && checkdate((int) $m[2], (int) $m[3], (int) $m[1]) ? substr($v, 0, 10) : '';
 
     // Satıcı
     $vkn = '';
@@ -205,7 +215,7 @@ function alis_ubl_coz(string $xml): array
             'gtin'        => strlen($gtin) >= 8 && strlen($gtin) <= 14 ? $gtin : '',
             'marka'       => mb_substr($marka, 0, 80),
             'model'       => mb_substr($model, 0, 80),
-            'miktar'      => $miktar > 0 ? $miktar : 1.0,
+            'miktar'      => $miktar,
             'birim'       => $birim,
             'birim_fiyat' => $sayi($ilk('Price/PriceAmount', $satir)),
             'kdv_orani'   => $kdvOran,
@@ -302,13 +312,13 @@ function alis_tedarikci_bul(string $vkn): ?array
 function alis_mukerrer(array $f, ?int $tedarikciId): ?array
 {
     if ($f['ettn'] !== '') {
-        $r = row('SELECT * FROM supplier_invoices WHERE ettn = ?', [$f['ettn']]);
+        $r = row('SELECT id, supplier_id, invoice_no, invoice_date, amount FROM supplier_invoices WHERE ettn = ?', [$f['ettn']]);
         if ($r) {
             return $r;
         }
     }
     if ($tedarikciId) {
-        return row('SELECT * FROM supplier_invoices WHERE supplier_id = ? AND invoice_no = ?', [$tedarikciId, $f['no']]);
+        return row('SELECT id, supplier_id, invoice_no, invoice_date, amount FROM supplier_invoices WHERE supplier_id = ? AND invoice_no = ?', [$tedarikciId, $f['no']]);
     }
     return null;
 }
@@ -356,8 +366,8 @@ function alis_stok_adedi(array $k): int
 /** KDV dahil birim maliyet. */
 function alis_birim_maliyet(array $k): float
 {
-    $m = max(0.001, (float) $k['miktar']);
-    return round(((float) $k['tutar'] + (float) $k['kdv_tutar']) / $m, 2);
+    $m = (float) $k['miktar'];
+    return $m > 0 ? round(((float) $k['tutar'] + (float) $k['kdv_tutar']) / $m, 2) : 0.0;
 }
 
 /* ---------------- Kaydetme ---------------- */
@@ -374,9 +384,23 @@ function alis_kaydet(array $f, array $tedarikci, array $kararlar, string $vade, 
     if ($e = alis_engeller($f)) {
         throw new DomainException(implode(' ', $e));
     }
-    if ($vade !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $vade)) {
+    if ($vade !== '' && !(preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $vade, $m) && checkdate((int) $m[2], (int) $m[3], (int) $m[1]))) {
         throw new DomainException('Vade tarihi geçersiz.');
     }
+    try {
+        return alis_kaydet_islem($f, $tedarikci, $kararlar, $vade, $xmlHam);
+    } catch (PDOException $e) {
+        // Eşzamanlı ikinci kayıt: benzersiz ETTN dizini yakalar.
+        if ($f['ettn'] !== '' && row('SELECT id FROM supplier_invoices WHERE ettn = ?', [$f['ettn']])) {
+            throw new DomainException('Bu fatura az önce kaydedildi (aynı ETTN).');
+        }
+        throw $e;
+    }
+}
+
+/** @internal alis_kaydet'in işlem gövdesi. */
+function alis_kaydet_islem(array $f, array $tedarikci, array $kararlar, string $vade, string $xmlHam): array
+{
     return transaction(static function () use ($f, $tedarikci, $kararlar, $vade, $xmlHam): array {
         if (!empty($tedarikci['yeni'])) {
             if ($f['satici']['unvan'] === '') {
@@ -396,6 +420,7 @@ function alis_kaydet(array $f, array $tedarikci, array $kararlar, string $vade, 
             if (!$sid || !row('SELECT id FROM suppliers WHERE id = ?', [$sid])) {
                 throw new DomainException('Tedarikçi seçin.');
             }
+            q('UPDATE suppliers SET is_active = 1 WHERE id = ? AND is_active <> 1', [$sid]);   // pasif tedarikçiye fatura geldi: yeniden aktif
         }
         if ($m = alis_mukerrer($f, $sid)) {
             throw new DomainException('Bu fatura zaten kayıtlı (' . $m['invoice_no'] . ', ' . date_tr((string) $m['invoice_date']) . ').');
@@ -414,8 +439,10 @@ function alis_kaydet(array $f, array $tedarikci, array $kararlar, string $vade, 
             'kaynak'       => 'xml',
             'ara_toplam'   => $f['ara_toplam'] ?: null,
             'kdv_toplam'   => $f['kdv_toplam'] ?: null,
-            'xml'          => strlen($xmlHam) <= ALIS_DOSYA_SINIRI ? $xmlHam : null,
         ]);
+        if ($xmlHam !== '' && strlen($xmlHam) <= ALIS_DOSYA_SINIRI) {
+            insert('supplier_invoice_xml', ['invoice_id' => $iid, 'xml' => $xmlHam]);
+        }
         $stok = 0;
         $kart = 0;
         foreach ($f['kalemler'] as $k) {
@@ -529,6 +556,9 @@ function alis_fatura_sil(int $invoiceId): void
             }
             q('DELETE FROM supplier_invoice_lines WHERE invoice_id = ?', [$invoiceId]);
         }
+        if (table_var_mi('supplier_invoice_xml')) {
+            q('DELETE FROM supplier_invoice_xml WHERE invoice_id = ?', [$invoiceId]);
+        }
         q('UPDATE supplier_deliveries SET invoice_id = NULL WHERE invoice_id = ?', [$invoiceId]);
         q('DELETE FROM supplier_invoices WHERE id = ?', [$invoiceId]);
     });
@@ -547,6 +577,16 @@ function table_var_mi(string $tablo): bool
         }
     }
     return $c[$tablo];
+}
+
+/** Bu belge numaralı bir alış faturası çerçeve stoğuna adet işledi mi? (ÜTS kabulünde çift stok girişini önler) */
+function alis_faturadan_stoga_girdi(?string $faturaNo): bool
+{
+    $faturaNo = trim((string) $faturaNo);
+    if ($faturaNo === '' || !table_var_mi('supplier_invoice_lines')) {
+        return false;
+    }
+    return (int) scalar('SELECT COUNT(*) FROM supplier_invoice_lines l JOIN supplier_invoices i ON i.id = l.invoice_id WHERE i.invoice_no = ? AND l.stok_adet > 0', [$faturaNo]) > 0;
 }
 
 /** ÜTS'de bu faturanın (belge no) kabul bekleyen ürünleri. */
@@ -575,7 +615,9 @@ function alis_gecici_kaydet(array $belgeler): string
     alis_gecici_temizle();
     $anahtar = bin2hex(random_bytes(16));
     $yol = alis_gecici_dizin() . '/' . $anahtar . '.json';
-    if (@file_put_contents($yol, (string) json_encode($belgeler, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE), LOCK_EX) === false) {
+    // XML baytları olduğu gibi korunur (windows-1254 / UTF-16 dosyalar bozulmasın): base64.
+    $kayit = array_map(static fn(array $b): array => ['ad' => mb_convert_encoding((string) $b['ad'], 'UTF-8', 'UTF-8'), 'xml64' => base64_encode((string) $b['xml'])], $belgeler);
+    if (@file_put_contents($yol, (string) json_encode($kayit, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE), LOCK_EX) === false) {
         throw new DomainException('Geçici dosya yazılamadı (storage/ klasörü yazılabilir olmalı).');
     }
     @chmod($yol, 0600);
@@ -594,7 +636,10 @@ function alis_gecici_oku(string $anahtar): ?array
         return null;
     }
     $v = json_decode((string) file_get_contents($yol), true);
-    return is_array($v) ? $v : null;
+    if (!is_array($v)) {
+        return null;
+    }
+    return array_map(static fn(array $b): array => ['ad' => (string) ($b['ad'] ?? ''), 'xml' => (string) base64_decode((string) ($b['xml64'] ?? ''), true)], $v);
 }
 
 function alis_gecici_sil(string $anahtar): void

@@ -1250,9 +1250,17 @@ function migrate_v24_alis_senet(): void
     add_column('supplier_invoices', 'kaynak', "VARCHAR(8) NOT NULL DEFAULT 'elle'");
     add_column('supplier_invoices', 'ara_toplam', 'DECIMAL(14,2) NULL');
     add_column('supplier_invoices', 'kdv_toplam', 'DECIMAL(14,2) NULL');
-    add_column('supplier_invoices', 'xml', 'MEDIUMTEXT NULL');
-    add_index('supplier_invoices', 'idx_supplier_invoices_ettn', 'ettn');
+    // ETTN benzersiz: aynı e-fatura eşzamanlı iki istekle de iki kez kaydedilemez (NULL'lar serbest).
+    if (!index_exists('supplier_invoices', 'uq_supplier_invoices_ettn')) {
+        db()->exec('ALTER TABLE supplier_invoices ADD UNIQUE INDEX uq_supplier_invoices_ettn (ettn)');
+    }
     add_index('supplier_invoices', 'idx_supplier_invoices_due', 'due_date');
+
+    // Faturanın özgün XML'i ayrı tabloda: fatura listeleri büyük belgeyi hiç okumaz.
+    db()->exec("CREATE TABLE IF NOT EXISTS supplier_invoice_xml (
+        invoice_id INT UNSIGNED NOT NULL PRIMARY KEY,
+        xml MEDIUMTEXT NOT NULL
+    ) " . t_opts());
 
     // e-Fatura kalemleri (yalnızca XML'den gelen faturalarda)
     db()->exec("CREATE TABLE IF NOT EXISTS supplier_invoice_lines (

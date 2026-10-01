@@ -201,15 +201,23 @@ function odeme_takvimi(): array
  */
 function vadesi_acik_faturalar(): array
 {
+    // 1) Bir faturaya bağlı verilmiş senetler (iptal edilmemiş) önce kendi faturasından düşülür.
+    $bagli = [];
+    $bagliOdeme = [];
+    foreach (rows("SELECT invoice_id, payment_id, tutar, supplier_id FROM tedarikci_senetleri WHERE invoice_id IS NOT NULL AND durum <> 'iptal'") as $s) {
+        $bagli[(int) $s['invoice_id']] = ($bagli[(int) $s['invoice_id']] ?? 0.0) + (float) $s['tutar'];
+        $bagliOdeme[(int) $s['supplier_id']] = ($bagliOdeme[(int) $s['supplier_id']] ?? 0.0) + (float) $s['tutar'];
+    }
+    // 2) Kalan ödemeler (bağlı senet kapamaları hariç) faturalara en eskiden başlayarak dağıtılır.
     $odenen = [];
     foreach (rows('SELECT supplier_id, COALESCE(SUM(amount), 0) AS t FROM supplier_payments GROUP BY supplier_id') as $r) {
-        $odenen[(int) $r['supplier_id']] = (float) $r['t'];
+        $odenen[(int) $r['supplier_id']] = (float) $r['t'] - ($bagliOdeme[(int) $r['supplier_id']] ?? 0.0);
     }
     $sonuc = [];
-    foreach (rows('SELECT i.*, s.name AS tedarikci FROM supplier_invoices i JOIN suppliers s ON s.id = i.supplier_id ORDER BY i.supplier_id, i.invoice_date, i.id') as $i) {
+    foreach (rows('SELECT i.id, i.supplier_id, i.invoice_no, i.invoice_date, i.amount, i.due_date, s.name AS tedarikci FROM supplier_invoices i JOIN suppliers s ON s.id = i.supplier_id ORDER BY i.supplier_id, i.invoice_date, i.id') as $i) {
         $sid = (int) $i['supplier_id'];
+        $tutar = max(0.0, (float) $i['amount'] - ($bagli[(int) $i['id']] ?? 0.0));
         $kalanOdeme = $odenen[$sid] ?? 0.0;
-        $tutar = (float) $i['amount'];
         $dusen = min($tutar, max(0.0, $kalanOdeme));
         $odenen[$sid] = $kalanOdeme - $dusen;
         $kalan = round($tutar - $dusen, 2);

@@ -242,7 +242,7 @@ page_header('ÜTS bildirimleri', 'Mal kabul, ücretli satış, iade ve imha bild
           </tbody>
         </table></div>
         <div class="stack" style="gap:6px;margin-top:12px">
-          <label class="check"><input type="checkbox" name="cerceve_stok" value="1" checked> Çerçeve / güneş gözlüğü adedini çerçeve stoğuna ekle <small class="muted">(bu ürünleri çerçeve stoğuna elle de girdiyseniz işareti kaldırın)</small></label>
+          <label class="check"><input type="checkbox" name="cerceve_stok" value="1" checked> Çerçeve / güneş gözlüğü adedini çerçeve stoğuna ekle <small class="muted">(bu ürünleri çerçeve stoğuna elle de girdiyseniz işareti kaldırın; e-Fatura'sı yüklenmiş belgelerde adet zaten girdiği için kendiliğinden atlanır)</small></label>
           <label class="check"><input type="checkbox" name="kart_olustur" value="1" checked> Çerçeve kartı yoksa ÜTS'deki marka/model adıyla oluştur <small class="muted">(fiyatı çerçeve stoğundan girin)</small></label>
           <div><button class="btn btn-primary"><?= icon('check') ?> Seçilenleri kabul et (ÜTS alma bildirimi)</button></div>
         </div>

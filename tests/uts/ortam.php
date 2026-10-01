@@ -65,7 +65,9 @@ function sema_kur(PDO $p): void
     $p->exec("INSERT INTO user_accounts (full_name, role) VALUES ('Patron', 'super_yetkili'), ('Personel', 'personel')");
     $p->exec("CREATE TABLE supplier_invoices (id INTEGER PRIMARY KEY AUTOINCREMENT, supplier_id INTEGER NOT NULL, invoice_no TEXT NOT NULL, invoice_date TEXT NOT NULL,
         amount REAL NOT NULL, note TEXT NULL, created_by INTEGER NULL, created_at TEXT, due_date TEXT NULL, ettn TEXT NULL, kaynak TEXT NOT NULL DEFAULT 'elle',
-        ara_toplam REAL NULL, kdv_toplam REAL NULL, xml TEXT NULL)");
+        ara_toplam REAL NULL, kdv_toplam REAL NULL)");
+    $p->exec("CREATE UNIQUE INDEX uq_supplier_invoices_ettn ON supplier_invoices (ettn)");
+    $p->exec("CREATE TABLE supplier_invoice_xml (invoice_id INTEGER PRIMARY KEY, xml TEXT NOT NULL)");
     $p->exec("CREATE TABLE supplier_payments (id INTEGER PRIMARY KEY AUTOINCREMENT, supplier_id INTEGER NOT NULL, amount REAL NOT NULL, method TEXT NOT NULL DEFAULT 'havale',
         note TEXT NULL, created_by INTEGER NULL, created_at TEXT)");
     $p->exec("CREATE TABLE supplier_deliveries (id INTEGER PRIMARY KEY AUTOINCREMENT, supplier_id INTEGER NOT NULL, invoice_id INTEGER NULL)");

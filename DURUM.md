@@ -1,22 +1,22 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 1 Ekim 2026 (4.16.0 / Pro 5.3.0)*
+*Son güncelleme: 3 Ekim 2026 (4.16.1 / Pro 5.3.0)*
 
 ## Sürüm
-- **Sunucu 4.16.0**, şema **26**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
-- Özellik anahtarları (hepsi varsayılan kapalı): `garanti` (yeni), `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`.
-- Testler: sunucu 548/548 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42);
-  sunucu entegrasyon (yerel MariaDB): api 46/46, modüller 76/76, garanti 37/37. Masaüstü birim/E2E bu oturumda
-  değişmedi (91/91, 61/61 — 5.3.0).
+- **Sunucu 4.16.1**, şema **27**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
+- **Canlı site (03.10 kontrolü): 4.12.0, şema 22, latest.yml 5.1.0** — 4.13–4.16 ve Pro 5.2/5.3 henüz YÜKLENMEDİ.
+  Kullanıcı girişin çalıştığını doğruladı (kontrol.php'deki poyraz2 bağlantı hatası girişleri etkilemiyor; ayrıca bakılmalı).
+- Özellik anahtarları (hepsi varsayılan kapalı): `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
+- Testler: sunucu 604/604 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42, sgk-fatura 37+19);
+  sunucu entegrasyon (yerel MariaDB): api 46/46, modüller 76/76, garanti 37/37, sgk-fatura 15/15.
+  Masaüstü birim/E2E değişmedi (91/91, 61/61).
 
-## Son oturumda yapılanlar (4.16.0)
-- Garanti kaydı ve garanti kartı (`app/garanti.php`, `garantiler.php`, `garanti.php`, sipariş kartı, yazdırma):
-  teslimde otomatik açılış, karekodlu kart, müşteri sayfası, talepler (tamir geçmişi), tedarikçi formu + WhatsApp.
-- DÜZELTME: müşteri karekod sayfaları (durum, bakım, siparişim-nerede) çok mağazalı yapıda müşteriyi mağaza
-  girişine atıyordu → adreslerde `m=` ile mağaza seçiliyor (bootstrap `$musteriSayfasi`, `musteri_url()`).
-- Yeni test: `tests/garanti/` + `desktop/tests/server/garanti-integration.mjs`; CI'ya eklendi.
-- Rehber: `docs/YENILIKLER-4.16.md`.
-- Sürüm yayını: main'e sürüm değişikliği push'lanınca Actions `v4.16.0-pro5.3.0` Release'ini üretir.
+## Son oturumda yapılanlar (4.16.1)
+- DÜZELTME (kullanıcı bildirdi): SGK payı sipariş başına ayrı faturaya konuyordu. Artık sipariş faturası yalnızca
+  hasta payı; SGK'ya ay sonunda TEK fatura + reçete dökümü (`sgk-fatura.php`, `fatura_sgk_donem_taslagi`, print `sgk_dokum`).
+  Aynı reçete iki kez faturalanmaz; eski sipariş bazlı SGK taslakları iptal edilir.
+- 4.16.0 (önceki oturum): garanti kaydı ve garanti kartı; müşteri karekod sayfaları oturumsuz (`m=`).
+- Yeni testler: `tests/sgk-fatura/`, `desktop/tests/server/sgk-fatura-integration.mjs`; CI'ya eklendi.
 
 ## Önceki: masaüstü kaynağının eklenmesi
 - `desktop/` (OptiFlow Pro 5.2.0 kaynağı, birim + sunucu + E2E testleri) depoya eklendi.
@@ -33,7 +33,9 @@
 2. Kullanıcıya sor: sıradaki modül (karar bekleyen: SGK dönem sonu paketi + kesinti defteri).
 
 ## Açık sorunlar / doğrulanmamış
-- Göçler v23–v26 yerel MariaDB'de çalıştı; canlı hosting MySQL'inde henüz değil.
+- Göçler v23–v27 yerel MariaDB'de çalıştı; canlı hosting MySQL'inde henüz değil (canlı şema 22).
+- SGK dönem faturasında dönem = teslim tarihi (delivered_at). Medula'nın fatura dönemi farklı kurala göre
+  çalışıyorsa (ör. Medula'da işlem tarihi) kullanıcıyla doğrula.
 - 4.16.0 öncesi basılmış fişlerdeki takip karekodlarında `m=` yok: müşteri telefonunda hâlâ mağaza girişine düşer
   (yeniden yazdırılan fiş düzelir).
 - ÜTS uç noktaları ve yanıt alanları (SNC, MSJ, BID) ÜTS test ortamında doğrulanmadı.

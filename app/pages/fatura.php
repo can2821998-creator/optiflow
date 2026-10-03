@@ -204,6 +204,12 @@ page_start('Fatura', 'faturalar');
           <form method="post" data-confirm="Taslak iptal edilsin mi?"><?= csrf_field() ?><input type="hidden" name="id" value="<?= $id ?>"><input type="hidden" name="eylem" value="iptal"><button class="btn btn-ghost danger">İptal et</button></form>
         <?php endif; ?>
       </div>
+      <?php if (!empty($f['sgk_donem'])): $dokumAdet = (int) scalar('SELECT COUNT(*) FROM fatura_sgk_siparisleri WHERE fatura_id = ?', [$id]); ?>
+        <p style="margin-top:10px"><b>SGK dönem faturası · <?= e(fatura_sgk_ay_adi((string) $f['sgk_donem'])) ?></b> · <?= $dokumAdet ?> reçete ·
+          <a class="link" href="print.php?type=sgk_dokum&amp;id=<?= $id ?>" target="_blank" rel="noopener"><?= icon('print') ?> Reçete dökümü</a> ·
+          <a class="link" href="sgk-fatura.php?ay=<?= e((string) $f['sgk_donem']) ?>">Dönem</a></p>
+        <p class="hint">Bu fatura iptal edilirse içindeki reçeteler yeniden dönem faturasına eklenebilir.</p>
+      <?php endif; ?>
       <p class="hint">Hazır işaretlenen fatura kilitlenir ve UBL-TR belgesi saklanır. Numara ve e-imza, entegratör bağlandığında gönderim sırasında verilir.</p>
     </section>
   </div>

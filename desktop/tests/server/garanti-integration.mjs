@@ -125,7 +125,7 @@ await merkez.form('merkez-panel.php', { action: 'ozellikler', id: String(iS.id),
 
 const a = await login(S);
 const b = await login(T);
-check('göç v26: şema 26 ve tablolar', sql(iS.db, "SELECT setting_value FROM app_settings WHERE setting_key = 'schema_version'") === '26'
+check('göç v26: şema ≥ 26 ve tablolar', Number(sql(iS.db, "SELECT setting_value FROM app_settings WHERE setting_key = 'schema_version'")) >= 26
   && sql(iS.db, "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name IN ('garantiler','garanti_talepleri')") === '2');
 check('varsayılan ayarlar (24 ay, otomatik)', sql(iS.db, "SELECT setting_value FROM app_settings WHERE setting_key = 'garanti_cerceve_ay'") === '24'
   && sql(iS.db, "SELECT setting_value FROM app_settings WHERE setting_key = 'garanti_otomatik'") === '1');

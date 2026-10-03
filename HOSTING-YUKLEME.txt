@@ -1,8 +1,8 @@
-OPTIFLOW 4.16.0 — HOSTING GÜNCELLEMESİ (mevcut kurulumun üzerine)
+OPTIFLOW 4.16.1 — HOSTING GÜNCELLEMESİ (mevcut kurulumun üzerine)
 
 1. Bu zip'i sitenin ana klasörüne (httpdocs) yükleyin ve "Buraya çıkar" deyin, üzerine yazılsın.
    config.php ve storage/ içindekiler zip'te YOK; sizdekiler olduğu gibi kalır.
-2. Siteye bir kez personel olarak giriş yapın: veritabanı kendiliğinden güncellenir (şema 26, veri silinmez).
+2. Siteye bir kez personel olarak giriş yapın: veritabanı kendiliğinden güncellenir (şema 27, veri silinmez).
 3. Merkez panel › mağaza › "Özellikler" kartından istediğiniz modülleri açın (varsayılan kapalı).
 4. Merkez panelin üstündeki "Zamanlanmış görev" adresini Plesk › Zamanlanmış Görevler › "URL getir"
    ile 10 dakikada bir çalışacak şekilde ekleyin (WhatsApp otomatik gönderim, ödeme linkleri, ÜTS kuyruğu, senet vade uyarısı).
@@ -15,7 +15,7 @@ OPTIFLOW 4.16.0 — HOSTING GÜNCELLEMESİ (mevcut kurulumun üzerine)
    .blockmap bu zip'le zaten yerine gelir.
 7. Kontrol: siteniz/indir/masaustu/latest.yml "version: 5.3.0" göstermeli; uygulamada
    Menü › "Güncellemeleri denetle".
-Not: 4.16.0 garanti kaydını ekler ve müşteri karekod sayfalarının (sipariş takibi, bakım kartı)
+Not: 4.16.1 SGK faturasını ay sonu tek faturaya çevirir; 4.16.0 garanti kaydını ekler ve müşteri karekod sayfalarının (sipariş takibi, bakım kartı)
 müşterinin telefonunda mağaza girişine düşmesini düzeltir. Birikimlidir: 4.12–4.15 kurulu olmayan
 sitelere de doğrudan yüklenebilir.
-Ayrıntılı rehber: YENILIKLER-4.16 (garanti), YENILIKLER-4.15 (hatalı cam, SGK hak), YENILIKLER-4.14 (alış faturası, senet), YENILIKLER-4.13 (ÜTS) ve YENILIKLER-4.12.
+Ayrıntılı rehber: YENILIKLER-4.16 (garanti, SGK ay sonu faturası), YENILIKLER-4.15 (hatalı cam, SGK hak), YENILIKLER-4.14 (alış faturası, senet), YENILIKLER-4.13 (ÜTS) ve YENILIKLER-4.12.

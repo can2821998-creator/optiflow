@@ -168,6 +168,12 @@ if ($type === 'order') {
     if (!$g) { render_error_page('Garanti talebi bulunamadı', ''); }
     $title = 'Garanti talebi ' . garanti_no((int) $g['id']) . '-' . (int) $t['id'];
     require dirname(__DIR__) . '/partials/garanti-talep-formu.php';
+} elseif ($type === 'sgk_dokum' && ozellik_acik('efatura') && can_see_amounts()) {   // 4.16.1 SGK dönem faturası reçete dökümü
+    require_once dirname(__DIR__) . '/fatura.php';
+    $f = row('SELECT * FROM faturalar WHERE id = ? AND sgk_donem IS NOT NULL', [query_int('id')]);
+    if (!$f) { render_error_page('SGK dönem faturası bulunamadı', ''); }
+    $title = 'SGK reçete dökümü ' . fatura_sgk_ay_adi((string) $f['sgk_donem']);
+    require dirname(__DIR__) . '/partials/sgk-dokum.php';
 } elseif ($type === 'payment') {
     $p = row('SELECT p.*, o.id AS order_id, o.transaction_type, c.first_name, c.last_name, c.phone, u.full_name AS by_name
               FROM payments p JOIN orders o ON o.id = p.order_id JOIN customers c ON c.id = o.customer_id

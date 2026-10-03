@@ -1,6 +1,24 @@
-# OptiFlow 4.16.0 — Garanti kaydı ve garanti kartı
+# OptiFlow 4.16 — Garanti kaydı, garanti kartı ve SGK ay sonu faturası
 
-*1 Ekim 2026 · sunucu 4.16.0 (şema 26) · masaüstü OptiFlow Pro 5.3.0 (değişmedi)*
+*3 Ekim 2026 · sunucu 4.16.1 (şema 27) · masaüstü OptiFlow Pro 5.3.0 (değişmedi)*
+
+## SGK ay sonu faturası (4.16.1)
+
+SGK'ya sipariş başına fatura kesilmez; ay içindeki reçeteler birikir, ay sonunda **tek fatura** kesilir.
+
+- **Sipariş faturası** (siparişteki "Fatura taslağı") artık yalnızca **hasta payını** içerir; SGK payı düşülür ve notta "ay sonu toplu SGK faturasına girer" yazar.
+- **Faturalar › SGK ay sonu faturası** (ya da SGK mutabakat › "Ay sonu faturası"):
+  1. Dönemi seçin (ör. Eylül 2026).
+  2. O ayın sonuna kadar **teslim edilmiş**, SGK payı olan ve henüz SGK faturasına girmemiş reçeteler listelenir. Önceki aydan kalanlar "önceki ay" diye işaretlidir; teslim edilmemişler listeye girmez.
+  3. İstemediklerinizin işaretini kaldırın. Medula'nın dönem fatura tutarı OptiFlow toplamından farklıysa "Medula dönem toplamı"na yazın.
+  4. **Seçilenlerle SGK faturası taslağı oluştur**: tek fatura (alıcı SGK, satır "Optik reçete bedeli · Eylül 2026 · N reçete") ve yazdırılabilir **reçete dökümü** (fatura eki: hasta, e-reçete no, teslim, SGK payı).
+- Aynı reçete iki kez faturalanamaz. Faturayı iptal ederseniz reçeteler yeniden seçilebilir.
+- Önceki sürümde sipariş başına açılmış SGK taslakları ekranın üstünde listelenir; "Hepsini iptal et" ile ya da dönem faturası oluşturulunca kendiliğinden iptal edilir. Hasta faturalarına dokunulmaz.
+- SGK alıcı bilgileri (unvan, VKN, vergi dairesi) Ayarlar › e-Fatura'da; mali müşavirinizle doğrulayın.
+
+---
+
+## Garanti kaydı ve garanti kartı (4.16.0)
 
 ## Açmak
 
@@ -51,7 +69,7 @@ Bunun nedeni çok mağazalı yapıda sayfanın hangi mağazaya ait olduğunu bil
 
 ## Kurulum
 
-GitHub Releases › `v4.16.0-pro5.3.0`:
-1. `optiflow-4.16.0-hosting.zip` dosyasını hosting ana klasörüne yükleyip üzerine çıkarın.
-2. Bir kez personel girişi yapın; şema 26'ya kendiliğinden güncellenir. Yalnızca yeni tablolar eklenir.
+GitHub Releases › en son `v4.16.x-pro5.3.0`:
+1. `optiflow-4.16.x-hosting.zip` dosyasını hosting ana klasörüne yükleyip üzerine çıkarın.
+2. Bir kez personel girişi yapın; şema 27'ye kendiliğinden güncellenir. Yalnızca yeni tablolar eklenir.
 3. Masaüstü değişmedi. 5.3.0 yüklüyse başka bir şey gerekmez.

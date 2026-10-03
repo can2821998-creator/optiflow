@@ -45,7 +45,7 @@ page_header('SGK mutabakat', 'Aktarılan reçeteler, SGK siparişleri ve Medula\
 <section class="stats">
   <div class="stat"><small>Aktarılan reçete</small><b><?= (int) $o['aktarim'] ?></b><span><?= (int) $o['kullanilmayan'] ?> tanesi siparişe dönüşmedi</span></div>
   <div class="stat"><small>SGK siparişi</small><b><?= (int) $o['siparis'] ?></b><span><?= $tutarGor ? e(money($o['sgk_toplam'])) . ' SGK payı' : '' ?></span></div>
-  <div class="stat tone-green"><small>Teslim edildi</small><b><?= (int) $o['teslim_edilen'] ?></b><span><?= $tutarGor ? e(money($o['teslim_sgk'])) . ' faturalanabilir' : 'faturalanabilir' ?></span></div>
+  <div class="stat tone-green"><small>Teslim edildi</small><b><?= (int) $o['teslim_edilen'] ?></b><span><?= $tutarGor ? e(money($o['teslim_sgk'])) . ' faturalanabilir' : 'faturalanabilir' ?><?php if ($tutarGor && ozellik_acik('efatura')): ?> · <a class="link" href="sgk-fatura.php?ay=<?= e($d['ay']) ?>">Ay sonu faturası</a><?php endif; ?></span></div>
   <div class="stat <?= $o['erecetesiz'] ? 'tone-amber' : '' ?>"><small>e-Reçete no eksik</small><b><?= (int) $o['erecetesiz'] ?></b><span>SGK siparişi</span></div>
 </section>
 

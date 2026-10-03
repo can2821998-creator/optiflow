@@ -18,8 +18,8 @@ if (is_post()) {
     try {
         if ($eylem === 'siparisten') {
             $no = (int) preg_replace('/\D/', '', post('siparis'));
-            $idler = fatura_siparisten_taslak($no, post('sgk_ayri') === '1');
-            flash(count($idler) . ' fatura taslağı oluşturuldu.');
+            $idler = fatura_siparisten_taslak($no, post('sgk_dus', post('sgk_ayri')) === '1');
+            flash('Hasta payı fatura taslağı oluşturuldu.');
             redirect('fatura.php?id=' . $idler[0]);
         }
         if ($eylem === 'bos') {
@@ -94,16 +94,21 @@ page_header('Faturalar', 'e-Arşiv / e-Fatura taslakları — GİB gönderimi en
       <form method="post" class="stack" style="gap:8px">
         <?= csrf_field() ?><input type="hidden" name="eylem" value="siparisten">
         <label class="field"><span>Sipariş no</span><input name="siparis" required placeholder="örn. 1245" inputmode="numeric"></label>
-        <label class="check"><input type="checkbox" name="sgk_ayri" value="1" checked> SGK katkı payını ayrı faturala</label>
+        <label class="check"><input type="checkbox" name="sgk_dus" value="1" checked> SGK katkı payını düş (yalnızca hasta payı)</label>
         <button class="btn btn-primary btn-sm">Taslak oluştur</button>
       </form>
       <form method="post" style="margin-top:10px"><?= csrf_field() ?><input type="hidden" name="eylem" value="bos"><button class="btn btn-sm btn-ghost">Boş taslak</button></form>
     </section>
     <section class="card">
+      <div class="card-head"><h2>SGK ay sonu faturası</h2></div>
+      <p class="muted small">Ay içindeki SGK'lı reçeteler biriktirilir, ay sonunda SGK'ya tek fatura kesilir (reçete dökümüyle).</p>
+      <a class="btn btn-primary btn-sm" href="sgk-fatura.php"><?= icon('receipt') ?> Dönem faturasını hazırla</a>
+    </section>
+    <section class="card">
       <div class="card-head"><h2>Bilgi</h2></div>
       <ul class="kv">
         <li><span>Gözlük, çerçeve ve numaralı cam/lens için varsayılan KDV <b>%<?= e((string) (float) fatura_varsayilan_kdv()) ?></b>; güneş gözlüğü satışında %20 önerilir. Oranları mali müşavirinizle doğrulayın.</span></li>
-        <li><span>SGK katkı payı ayrı taslakta SGK'ya düzenlenir; alıcı bilgilerini Ayarlar › e-Fatura'dan kontrol edin.</span></li>
+        <li><span>Sipariş faturası yalnızca hasta payını içerir. SGK payları ay sonunda tek faturada SGK'ya düzenlenir; alıcı bilgilerini Ayarlar › e-Fatura'dan kontrol edin.</span></li>
         <li><span>Müşterinin T.C. kimlik numarası bilinmiyorsa 11111111111 yazılabilir.</span></li>
       </ul>
     </section>

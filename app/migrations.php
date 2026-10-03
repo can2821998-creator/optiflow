@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 26;
+const SCHEMA_VERSION = 27;
 
 function run_migrations(): void
 {
@@ -57,6 +57,7 @@ function run_migrations(): void
         if ($current < 24) { migrate_v24_alis_senet(); set_schema_version(24); }
         if ($current < 25) { migrate_v25_cam_hata_sgk_hak(); set_schema_version(25); }
         if ($current < 26) { migrate_v26_garanti(); set_schema_version(26); }
+        if ($current < 27) { migrate_v27_sgk_donem_fatura(); set_schema_version(27); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1426,3 +1427,22 @@ function migrate_v26_garanti(): void
     }
     setting('__reload__');
 }
+
+
+/* ------------------------------------------------------------------ */
+/*  v27 (4.16.1) — SGK ay sonu toplu faturası: faturanın dönemi ve       */
+/*  faturaya giren siparişler (aynı sipariş iki kez faturalanmasın).     */
+/* ------------------------------------------------------------------ */
+
+function migrate_v27_sgk_donem_fatura(): void
+{
+    add_column('faturalar', 'sgk_donem', 'VARCHAR(7) NULL');   // faturalar v22'de açıldı
+    db()->exec("CREATE TABLE IF NOT EXISTS fatura_sgk_siparisleri (
+        fatura_id INT UNSIGNED NOT NULL,
+        order_id INT UNSIGNED NOT NULL,
+        tutar DECIMAL(12,2) NOT NULL DEFAULT 0,
+        PRIMARY KEY (fatura_id, order_id),
+        KEY idx_fss_siparis (order_id)
+    ) " . t_opts());
+}
+

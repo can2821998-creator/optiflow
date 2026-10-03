@@ -1,6 +1,21 @@
 OPTIFLOW
-Release: 4.16.0 (2026-10-01)
+Release: 4.16.1 (2026-10-03)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.16.1 (SGK faturası düzeltmesi; OptiFlow Pro 5.3.0 ile)
+  - DÜZELTME (e-Fatura hazırlığı): SGK katkı payı sipariş başına ayrı faturaya konuyordu (her reçeteye
+    ~150 TL'lik SGK faturası). Doğrusu: ay içindeki reçeteler birikir, ay sonunda SGK'ya TEK fatura kesilir.
+    • Sipariş faturası artık yalnızca HASTA PAYI içerir (SGK payı düşülür, notta yazar).
+    • YENİ Faturalar › "SGK ay sonu faturası" (sgk-fatura.php): dönemi seçin; o ayın sonuna kadar teslim
+      edilmiş ve henüz SGK faturasına girmemiş SGK'lı reçeteler listelenir (önceki aydan kalanlar işaretli).
+      Seçilenlerle tek SGK faturası taslağı (KDV oranına göre satır, "Eylül 2026 · N reçete") ve yazdırılabilir
+      REÇETE DÖKÜMÜ (hasta, e-reçete no, teslim, SGK payı) oluşur. İsteğe bağlı "Medula dönem toplamı"
+      girilirse fatura o tutarla kesilir, fark notta görünür.
+    • Aynı reçete iki SGK faturasına giremez; fatura iptal edilirse reçeteler yeniden seçilebilir.
+    • Eski usulde sipariş bazında açılmış SGK taslakları ekranda gösterilir; tek tuşla ya da dönem faturası
+      oluşturulunca kendiliğinden iptal edilir. Hasta faturalarına dokunulmaz.
+    • SGK mutabakat ekranından ilgili ayın faturasına bağlantı.
+  - Veritabanı şeması 26 → 27 (faturalar.sgk_donem, fatura_sgk_siparisleri).
 
 DEĞİŞİKLİK NOTLARI — 4.16.0 (garanti kaydı ve garanti kartı; OptiFlow Pro 5.3.0 ile)
   - YENİ özellik anahtarı "garanti" (merkez panelden, varsayılan kapalı).

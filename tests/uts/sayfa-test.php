@@ -57,6 +57,7 @@ if (isset($istek['tasiyici'])) {
 $kaynak = static function (string $yol): string {
     $k = (string) file_get_contents($yol);
     $k = preg_replace('~^require dirname\(__DIR__, 2\) \. \'/app/bootstrap\.php\';~m', '', $k, 1);
+    $k = preg_replace('~^require_once dirname\(__DIR__\) \. \'/fatura\.php\';~m', '', $k, 1);   // ortam.php fatura.php'yi zaten yükler
     $gecici = APP_ROOT . '/sayfa-' . md5($yol) . '.php';
     file_put_contents($gecici, $k);
     return $gecici;
@@ -134,6 +135,15 @@ switch ($senaryo) {
             $g = garanti_bul((int) $t['garanti_id']);
             require dirname(__DIR__, 2) . '/app/partials/garanti-talep-formu.php';
         }
+        break;
+    case 'sgk_fatura':
+        require $kaynak(dirname(__DIR__, 2) . '/app/pages/sgk-fatura.php');
+        break;
+    case 'sgk_dokum':
+        if (!function_exists('brand_mark')) { function brand_mark(): string { return '<svg></svg>'; } }
+        $shop = setting('shop_name', 'OptiFlow');
+        $f = row('SELECT * FROM faturalar WHERE id = ?', [(int) ($istek['id'] ?? 1)]);
+        require dirname(__DIR__, 2) . '/app/partials/sgk-dokum.php';
         break;
     case 'fn':
         // Küçük işlem çağrıları (sayfa akışını hazırlamak için)

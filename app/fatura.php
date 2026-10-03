@@ -6,7 +6,7 @@ declare(strict_types=1);
 
    Bu sürümde:
      • Fatura veri modeli (faturalar + fatura_satirlari), satıcı bilgileri,
-     • Siparişten fatura TASLAĞI (hasta payı ve istenirse SGK payı ayrı),
+     • Siparişten fatura TASLAĞI (hasta payı); SGK payı ay sonunda TEK toplu SGK faturası (4.16.1),
      • Kontroller (TCKN/VKN algoritması, zorunlu alanlar, tutar tutarlılığı),
      • UBL-TR 1.2 XML önizleme (Invoice-2, EARSIVFATURA / TEMELFATURA / TICARIFATURA),
      • Entegratör SÜRÜCÜ ARAYÜZÜ (EFaturaSurucu) — bu sürümde yalnızca "bağlı değil".
@@ -169,10 +169,12 @@ function fatura_siparis_aciklamasi(array $o): string
 }
 
 /**
- * Siparişten taslak(lar). $sgkAyri true ve siparişte SGK katkısı varsa SGK payı için ikinci taslak açılır.
- * Dönüş: oluşturulan fatura id'leri.
+ * Siparişten MÜŞTERİ (hasta payı) faturası taslağı.
+ * 4.16.1: SGK payı sipariş bazında faturalanmaz; ay sonunda tüm reçeteler TEK faturada SGK'ya
+ * kesilir (fatura_sgk_donem_taslagi). $sgkDus true ise SGK payı hasta faturasından düşülür.
+ * Dönüş: oluşturulan fatura id'leri (tek eleman).
  */
-function fatura_siparisten_taslak(int $siparisId, bool $sgkAyri = true): array
+function fatura_siparisten_taslak(int $siparisId, bool $sgkDus = true): array
 {
     $o = find_order($siparisId);
     if (!$o) {
@@ -187,43 +189,173 @@ function fatura_siparisten_taslak(int $siparisId, bool $sgkAyri = true): array
     }
     $toplam = round((float) $o['total_amount'], 2);
     $sgk = round((float) $o['sgk_amount'], 2);
-    $hasta = $sgkAyri ? round($toplam - $sgk, 2) : $toplam;
+    $hasta = $sgkDus ? round($toplam - $sgk, 2) : $toplam;
     if ($toplam <= 0) {
         throw new DomainException('Sipariş tutarı sıfır; faturalanacak tutar yok.');
+    }
+    if ($hasta <= 0.009) {
+        throw new DomainException('Hasta payı yok (tutarın tamamı SGK\'dan). SGK payı ay sonu toplu SGK faturasına girer.');
     }
     $kdv = ($o['transaction_type'] ?? '') === 'gunes_gozlugu' ? 20.0 : fatura_varsayilan_kdv();
     $aciklama = fatura_siparis_aciklamasi($o);
     // Müşterinin önceki faturasındaki alıcı bilgileri (adres, TCKN) yeniden kullanılır.
     $onceki = row("SELECT * FROM faturalar WHERE customer_id = ? AND alici_tip = 'kisi' ORDER BY id DESC LIMIT 1", [(int) $o['customer_id']]) ?: [];
-    $idler = [];
-    transaction(static function () use (&$idler, $o, $siparisId, $hasta, $sgk, $sgkAyri, $kdv, $aciklama, $onceki): void {
-        if ($hasta > 0.009) {
-            $idler[] = fatura_taslak_yaz([
-                'order_id'    => $siparisId,
-                'customer_id' => (int) $o['customer_id'],
-                'alici_tip'   => 'kisi',
-                'alici_ad'    => $o['c_first'],
-                'alici_soyad' => $o['c_last'],
-                'alici_telefon' => $o['c_phone'],
-                'alici_kimlik'  => $onceki['alici_kimlik'] ?? null,
-                'alici_adres'   => $onceki['alici_adres'] ?? null,
-                'alici_ilce'    => $onceki['alici_ilce'] ?? null,
-                'alici_il'      => $onceki['alici_il'] ?? null,
-                'alici_eposta'  => $onceki['alici_eposta'] ?? null,
-                'notlar'        => $sgkAyri && $sgk > 0.009 ? 'SGK katkı payı (' . money($sgk) . ') ayrıca SGK\'ya faturalanır.' : null,
-            ], [['ad' => $aciklama, 'miktar' => 1, 'kdv_dahil' => $hasta, 'kdv_orani' => $kdv]]);
+    $id = fatura_taslak_yaz([
+        'order_id'    => $siparisId,
+        'customer_id' => (int) $o['customer_id'],
+        'alici_tip'   => 'kisi',
+        'alici_ad'    => $o['c_first'],
+        'alici_soyad' => $o['c_last'],
+        'alici_telefon' => $o['c_phone'],
+        'alici_kimlik'  => $onceki['alici_kimlik'] ?? null,
+        'alici_adres'   => $onceki['alici_adres'] ?? null,
+        'alici_ilce'    => $onceki['alici_ilce'] ?? null,
+        'alici_il'      => $onceki['alici_il'] ?? null,
+        'alici_eposta'  => $onceki['alici_eposta'] ?? null,
+        'notlar'        => $sgkDus && $sgk > 0.009 ? 'SGK katkı payı (' . money($sgk) . ') ay sonu toplu SGK faturasına girer.' : null,
+    ], [['ad' => $aciklama, 'miktar' => 1, 'kdv_dahil' => $hasta, 'kdv_orani' => $kdv]]);
+    audit('fatura_taslak', 'order', $siparisId, ['taslak' => 1]);
+    return [$id];
+}
+
+/* ---------------- SGK ay sonu toplu faturası (4.16.1) ---------------- */
+
+/** 'YYYY-MM' doğrula; geçersizse geçen ay. */
+function fatura_sgk_ay(string $ay): string
+{
+    if (preg_match('/^(\d{4})-(\d{2})$/', $ay, $m) && (int) $m[2] >= 1 && (int) $m[2] <= 12 && (int) $m[1] >= 2000) {
+        return $ay;
+    }
+    return date('Y-m', strtotime('first day of last month'));
+}
+
+function fatura_sgk_ay_adi(string $ay): string
+{
+    $aylar = [1 => 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    return $aylar[(int) substr($ay, 5, 2)] . ' ' . substr($ay, 0, 4);
+}
+
+/** Eski usul (4.12–4.16.0) sipariş bazında açılmış, iptal edilmemiş SGK taslakları. */
+function fatura_sgk_eski_taslaklar(): array
+{
+    $vkn = fatura_sgk_alici()['alici_kimlik'];
+    return rows("SELECT id, order_id, genel_toplam, durum FROM faturalar
+                  WHERE order_id IS NOT NULL AND sgk_donem IS NULL AND alici_tip = 'kurum' AND alici_kimlik = ? AND durum IN ('taslak','hazir')
+                  ORDER BY id", [$vkn]);
+}
+
+/** Eski usul SGK taslaklarını iptal eder. Dönüş: iptal edilen adet. */
+function fatura_sgk_eski_taslaklari_iptal(): int
+{
+    $n = 0;
+    foreach (fatura_sgk_eski_taslaklar() as $f) {
+        $n += q("UPDATE faturalar SET durum = 'iptal', xml = NULL WHERE id = ? AND durum IN ('taslak','hazir')", [(int) $f['id']])->rowCount();
+    }
+    return $n;
+}
+
+/**
+ * Dönemin SGK faturasına girebilecek siparişler: SGK payı olan, TESLİM EDİLMİŞ, teslim tarihi
+ * dönemin sonundan önce olan ve henüz iptal edilmemiş bir SGK faturasına girmemiş siparişler.
+ * Önceki aylardan faturalanmamış kalanlar da gelir ('onceki' = 1).
+ */
+function fatura_sgk_donem_siparisleri(string $ay): array
+{
+    $ay = fatura_sgk_ay($ay);
+    $bas = $ay . '-01 00:00:00';
+    $son = date('Y-m-d', strtotime($ay . '-01 +1 month')) . ' 00:00:00';
+    $vkn = fatura_sgk_alici()['alici_kimlik'];
+    $r = rows(
+        "SELECT o.id, o.delivered_at, o.sgk_amount, o.sgk_erecete, o.transaction_type, c.first_name, c.last_name
+           FROM orders o LEFT JOIN customers c ON c.id = o.customer_id
+          WHERE o.order_stage = 'teslim_edildi' AND o.sgk_amount > 0 AND o.delivered_at < ?
+            AND NOT EXISTS (SELECT 1 FROM fatura_sgk_siparisleri x JOIN faturalar f ON f.id = x.fatura_id WHERE x.order_id = o.id AND f.durum <> 'iptal')
+            AND NOT EXISTS (SELECT 1 FROM faturalar f2 WHERE f2.order_id = o.id AND f2.sgk_donem IS NULL AND f2.alici_tip = 'kurum' AND f2.alici_kimlik = ? AND f2.durum = 'gonderildi')
+          ORDER BY o.delivered_at, o.id",
+        [$son, $vkn]
+    );
+    foreach ($r as &$o) {
+        $o['onceki'] = (string) $o['delivered_at'] < $bas ? 1 : 0;
+        $o['kdv'] = ($o['transaction_type'] ?? '') === 'gunes_gozlugu' ? 20.0 : fatura_varsayilan_kdv();
+    }
+    unset($o);
+    return $r;
+}
+
+/**
+ * Dönemin SGK faturası taslağı: seçilen siparişler TEK faturada, KDV oranına göre satır.
+ * $medulaToplam verilirse (Medula'nın dönem fatura tutarı) tek KDV oranlı dönemde satır tutarı odur.
+ * Dönüş: fatura id.
+ */
+function fatura_sgk_donem_taslagi(string $ay, array $siparisIdler, ?float $medulaToplam = null): int
+{
+    $ay = fatura_sgk_ay($ay);
+    $adaylar = array_column(fatura_sgk_donem_siparisleri($ay), null, 'id');
+    $secilen = [];
+    foreach (array_unique(array_map('intval', $siparisIdler)) as $sid) {
+        if (!isset($adaylar[$sid])) {
+            throw new DomainException('Sipariş ' . order_no($sid) . ' bu döneme eklenemez (teslim edilmemiş, SGK payı yok ya da başka SGK faturasında).');
         }
-        if ($sgkAyri && $sgk > 0.009) {
-            $idler[] = fatura_taslak_yaz(fatura_sgk_alici() + [
-                'order_id'    => $siparisId,
-                'customer_id' => (int) $o['customer_id'],
-                'profil'      => 'TEMELFATURA',
-                'notlar'      => 'Hasta: ' . $o['c_first'] . ' ' . $o['c_last'] . (!empty($o['sgk_erecete']) ? ' · e-Reçete: ' . $o['sgk_erecete'] : ''),
-            ], [['ad' => $aciklama . ' – SGK katkı payı', 'miktar' => 1, 'kdv_dahil' => $sgk, 'kdv_orani' => $kdv]]);
+        $secilen[] = $adaylar[$sid];
+    }
+    if (!$secilen) {
+        throw new DomainException('Faturaya girecek reçete seçin.');
+    }
+    $gruplar = [];
+    foreach ($secilen as $o) {
+        $k = (string) (float) $o['kdv'];
+        $gruplar[$k]['kdv'] = (float) $o['kdv'];
+        $gruplar[$k]['tutar'] = round(($gruplar[$k]['tutar'] ?? 0) + (float) $o['sgk_amount'], 2);
+        $gruplar[$k]['adet'] = ($gruplar[$k]['adet'] ?? 0) + 1;
+    }
+    $hesap = round(array_sum(array_column($gruplar, 'tutar')), 2);
+    if ($medulaToplam !== null) {
+        if (count($gruplar) > 1) {
+            throw new DomainException('Farklı KDV oranlı reçeteler var; Medula toplamını satırlarda elle düzeltin.');
         }
+        if ($medulaToplam <= 0) {
+            throw new DomainException('Medula toplamı 0\'dan büyük olmalı.');
+        }
+        $gruplar[array_key_first($gruplar)]['tutar'] = round($medulaToplam, 2);
+    }
+    $adi = fatura_sgk_ay_adi($ay);
+    $satirlar = [];
+    foreach ($gruplar as $g) {
+        $satirlar[] = ['ad' => 'Optik reçete bedeli (SGK katkı payı) · ' . $adi . ' · ' . $g['adet'] . ' reçete', 'miktar' => 1, 'kdv_dahil' => $g['tutar'], 'kdv_orani' => $g['kdv']];
+    }
+    $not = $adi . ' dönemi · ' . count($secilen) . ' reçete · reçete dökümü ektedir.';
+    if ($medulaToplam !== null && abs($medulaToplam - $hesap) > 0.009) {
+        $not .= ' (OptiFlow toplamı ' . money($hesap) . ', Medula toplamı esas alındı.)';
+    }
+    return transaction(static function () use ($ay, $secilen, $satirlar, $not): int {
+        $id = fatura_taslak_yaz(fatura_sgk_alici() + ['profil' => 'TEMELFATURA', 'notlar' => mb_substr($not, 0, 500)], $satirlar);
+        q('UPDATE faturalar SET sgk_donem = ? WHERE id = ?', [$ay, $id]);
+        $vkn = fatura_sgk_alici()['alici_kimlik'];
+        foreach ($secilen as $o) {
+            insert('fatura_sgk_siparisleri', ['fatura_id' => $id, 'order_id' => (int) $o['id'], 'tutar' => round((float) $o['sgk_amount'], 2)]);
+            // Eski usul (sipariş bazlı) SGK taslağı varsa iptal: aynı reçete iki faturada kalmasın.
+            q("UPDATE faturalar SET durum = 'iptal', xml = NULL WHERE order_id = ? AND sgk_donem IS NULL AND alici_tip = 'kurum' AND alici_kimlik = ? AND durum IN ('taslak','hazir')", [(int) $o['id'], $vkn]);
+        }
+        return $id;
     });
-    audit('fatura_taslak', 'order', $siparisId, ['taslak' => count($idler)]);
-    return $idler;
+}
+
+/** Faturaya giren reçeteler (döküm). */
+function fatura_sgk_dokum(int $faturaId): array
+{
+    return rows(
+        'SELECT x.order_id, x.tutar, o.delivered_at, o.sgk_erecete, c.first_name, c.last_name
+           FROM fatura_sgk_siparisleri x JOIN orders o ON o.id = x.order_id LEFT JOIN customers c ON c.id = o.customer_id
+          WHERE x.fatura_id = ? ORDER BY o.delivered_at, x.order_id',
+        [$faturaId]
+    );
+}
+
+/** Dönemin (iptal edilmemiş) SGK faturaları. */
+function fatura_sgk_donem_faturalari(string $ay): array
+{
+    return rows("SELECT f.*, (SELECT COUNT(*) FROM fatura_sgk_siparisleri x WHERE x.fatura_id = f.id) AS adet
+                   FROM faturalar f WHERE f.sgk_donem = ? AND f.durum <> 'iptal' ORDER BY f.id", [fatura_sgk_ay($ay)]);
 }
 
 /** Boş taslak (siparişsiz). */

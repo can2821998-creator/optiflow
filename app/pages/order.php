@@ -581,7 +581,7 @@ page_start($name . ' ' . order_no($id), 'orders');
       <?php if ($faturaVar): ?>
         <a class="btn" href="fatura.php?id=<?= $faturaVar ?>"><?= icon('receipt') ?> Fatura</a>
       <?php else: ?>
-        <form method="post" action="faturalar.php" style="display:inline"><?= csrf_field() ?><input type="hidden" name="eylem" value="siparisten"><input type="hidden" name="siparis" value="<?= $id ?>"><input type="hidden" name="sgk_ayri" value="1">
+        <form method="post" action="faturalar.php" style="display:inline"><?= csrf_field() ?><input type="hidden" name="eylem" value="siparisten"><input type="hidden" name="siparis" value="<?= $id ?>"><input type="hidden" name="sgk_dus" value="1">
           <button class="btn"><?= icon('receipt') ?> Fatura taslağı</button></form>
       <?php endif; ?>
     <?php endif; ?>

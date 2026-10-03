@@ -4,17 +4,55 @@
 
 ## SGK ay sonu faturası (4.16.1)
 
-SGK'ya sipariş başına fatura kesilmez; ay içindeki reçeteler birikir, ay sonunda **tek fatura** kesilir.
+SGK'ya sipariş başına fatura kesilmez. Ay içinde Medula'ya işlenen reçeteler birikir, ay sonunda **tek fatura** kesilir.
 
-- **Sipariş faturası** (siparişteki "Fatura taslağı") artık yalnızca **hasta payını** içerir; SGK payı düşülür ve notta "ay sonu toplu SGK faturasına girer" yazar.
-- **Faturalar › SGK ay sonu faturası** (ya da SGK mutabakat › "Ay sonu faturası"):
-  1. Dönemi seçin (ör. Eylül 2026).
-  2. O ayın sonuna kadar **teslim edilmiş**, SGK payı olan ve henüz SGK faturasına girmemiş reçeteler listelenir. Önceki aydan kalanlar "önceki ay" diye işaretlidir; teslim edilmemişler listeye girmez.
-  3. İstemediklerinizin işaretini kaldırın. Medula'nın dönem fatura tutarı OptiFlow toplamından farklıysa "Medula dönem toplamı"na yazın.
-  4. **Seçilenlerle SGK faturası taslağı oluştur**: tek fatura (alıcı SGK, satır "Optik reçete bedeli · Eylül 2026 · N reçete") ve yazdırılabilir **reçete dökümü** (fatura eki: hasta, e-reçete no, teslim, SGK payı).
-- Aynı reçete iki kez faturalanamaz. Faturayı iptal ederseniz reçeteler yeniden seçilebilir.
-- Önceki sürümde sipariş başına açılmış SGK taslakları ekranın üstünde listelenir; "Hepsini iptal et" ile ya da dönem faturası oluşturulunca kendiliğinden iptal edilir. Hasta faturalarına dokunulmaz.
-- SGK alıcı bilgileri (unvan, VKN, vergi dairesi) Ayarlar › e-Fatura'da; mali müşavirinizle doğrulayın.
+### 1. Reçeteyi Medula'ya işleyince işaretleyin
+
+- Siparişin sağdaki **SGK reçetesi** kartında "Medula'ya işlenmedi" yazar. İşlem tarihini seçip **Medula'ya işlendi**'ye basın.
+- Yanlış işaretlediyseniz "İşaretlenmedi olarak geri al" deyin.
+- Reçete, Medula'ya işlendiği ayın faturasına girer.
+- Faturası kesilmiş reçetenin işareti, fatura iptal edilmeden kaldırılamaz.
+
+### 2. Ay sonunda: Faturalar › SGK ay sonu faturası
+
+Aynı ekrana SGK mutabakat › "Ay sonu faturası" bağlantısından da gidilir.
+
+1. **Dönemi seçin.** Üstte faturalanacak reçete sayısı ve tutarı, yanında Medula'ya işlenmemiş SGK'lı siparişlerin sayısı görünür.
+2. **Medula dökümüyle karşılaştırın.** Medula'dan aldığınız PDF dökümü seçip **Karşılaştır**'a basın. Sonuçta şunlar çıkar:
+   - dökümdeki adet ile OptiFlow'da o ay işaretlenen adet ("tutuyor" ya da fark);
+   - Medula'da olup OptiFlow'da işaretlenmemiş reçeteler (tek tıkla siparişe gidip işaretlersiniz);
+   - OptiFlow'da işaretli olup dökümde olmayan reçeteler;
+   - e-reçete numarası girilmemiş siparişler.
+
+   PDF okunmazsa (taranmış ya da resim olabilir) Medula'daki listeyi kopyalayıp yapıştırın ya da adedi elle yazın. Döküm sunucuda saklanmaz.
+3. **Unuttuklarınızı işaretleyin.** "Medula'ya işlendi işaretlenmemiş" listesinden seçip toplu işaretleyebilirsiniz.
+4. **Faturayı oluşturun.** **Seçilenlerle SGK faturası taslağı oluştur**'a basın. Tek fatura (alıcı SGK, satırda "Optik reçete bedeli · Eylül 2026 · N reçete" yazar) ve yazdırılabilir **reçete dökümü** (fatura eki) oluşur.
+   - Medula'nın dönem tutarı farklıysa "Medula dönem toplamı" kutusuna yazın; fatura o tutarla kesilir.
+
+Aynı reçete iki kez faturalanamaz. Faturayı iptal ederseniz reçeteler yeniden seçilebilir.
+
+### Sipariş faturası
+
+Siparişteki "Fatura taslağı" artık yalnızca **hasta payını** içerir.
+Önceki sürümde sipariş başına açılmış SGK taslakları, dönem faturası oluşturulunca kendiliğinden iptal edilir.
+
+## GitHub'dan canlıya otomatik yükleme
+
+Bir kez ayar yapılınca her yeni sürüm hosting'e kendiliğinden yüklenir; zip indirip yüklemeniz gerekmez.
+
+1. **FTP kullanıcısını hazırlayın.** Plesk › optiflow.com.tr › **FTP Erişimi**'nde mevcut kullanıcıyı kullanın ya da yalnızca `httpdocs`'a erişen yeni bir kullanıcı açın.
+2. **Bilgileri GitHub'a girin.** GitHub › depo › **Settings › Secrets and variables › Actions › New repository secret** ile üç sır ekleyin:
+   - `FTP_SUNUCU` (ör. optiflow.com.tr)
+   - `FTP_KULLANICI`
+   - `FTP_SIFRE`
+
+   Site klasörü `httpdocs` değilse dördüncü sır olarak `FTP_KLASOR` ekleyin.
+3. **Bundan sonra her sürümde** sıra şöyle işler: testler, Release, ardından **Canlıya al** (FTPS ile yükleme).
+   - `config.php` ve `storage/` klasörüne dokunulmaz, hiçbir dosya silinmez.
+   - Masaüstü kurulumu yalnızca sürümü değiştiyse yüklenir; `latest.yml` en son yüklenir.
+4. İlk personel girişinde veritabanı kendiliğinden güncellenir.
+
+Elle tekrar yüklemek için: GitHub › Actions › **Canlıya al** › Run workflow.
 
 ---
 

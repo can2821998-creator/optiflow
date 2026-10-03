@@ -7,16 +7,19 @@
 - **Canlı site (03.10 kontrolü): 4.12.0, şema 22, latest.yml 5.1.0** — 4.13–4.16 ve Pro 5.2/5.3 henüz YÜKLENMEDİ.
   Kullanıcı girişin çalıştığını doğruladı (kontrol.php'deki poyraz2 bağlantı hatası girişleri etkilemiyor; ayrıca bakılmalı).
 - Özellik anahtarları (hepsi varsayılan kapalı): `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
-- Testler: sunucu 604/604 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42, sgk-fatura 37+19);
-  sunucu entegrasyon (yerel MariaDB): api 46/46, modüller 76/76, garanti 37/37, sgk-fatura 15/15.
+- Testler: sunucu 635/635 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42, sgk-fatura 57+30);
+  sunucu entegrasyon (yerel MariaDB): api 46/46, modüller 76/76, garanti 37/37, sgk-fatura 25/25.
   Masaüstü birim/E2E değişmedi (91/91, 61/61).
 
 ## Son oturumda yapılanlar (4.16.1)
-- DÜZELTME (kullanıcı bildirdi): SGK payı sipariş başına ayrı faturaya konuyordu. Artık sipariş faturası yalnızca
-  hasta payı; SGK'ya ay sonunda TEK fatura + reçete dökümü (`sgk-fatura.php`, `fatura_sgk_donem_taslagi`, print `sgk_dokum`).
-  Aynı reçete iki kez faturalanmaz; eski sipariş bazlı SGK taslakları iptal edilir.
-- 4.16.0 (önceki oturum): garanti kaydı ve garanti kartı; müşteri karekod sayfaları oturumsuz (`m=`).
-- Yeni testler: `tests/sgk-fatura/`, `desktop/tests/server/sgk-fatura-integration.mjs`; CI'ya eklendi.
+- DÜZELTME (kullanıcı bildirdi): SGK payı sipariş başına faturalanıyordu → sipariş faturası yalnızca hasta payı;
+  SGK'ya ay sonunda TEK fatura + reçete dökümü (`sgk-fatura.php`, `fatura_sgk_donem_taslagi`, print `sgk_dokum`).
+- Kullanıcı senaryosu: siparişte "Medula'ya işlendi/işlenmedi" düğmesi (`orders.medula_islendi_at`); dönem = Medula
+  işlem ayı. Ay sonu Medula PDF dökümü yüklenip adet + e-reçete numaraları karşılaştırılır (`app/pdf-metin.php`,
+  dış kütüphanesiz PDF okuyucu; Chromium/ReportLab PDF'leriyle denendi, GERÇEK Medula PDF'iyle denenmedi).
+- Canlıya otomatik yükleme: `.github/workflows/canliya-al.yml` (Release → FTPS, lftp; yerel FTPS sunucusunda denendi).
+  Kullanıcının GitHub'a FTP_SUNUCU / FTP_KULLANICI / FTP_SIFRE sırlarını girmesi gerekiyor (girilmezse atlar).
+- Yeni testler: `tests/sgk-fatura/` (57+30, örnek PDF), `desktop/tests/server/sgk-fatura-integration.mjs` (25).
 
 ## Önceki: masaüstü kaynağının eklenmesi
 - `desktop/` (OptiFlow Pro 5.2.0 kaynağı, birim + sunucu + E2E testleri) depoya eklendi.
@@ -30,12 +33,14 @@
 ## Sıradaki iş
 1. **T.C. no maskeleme (KVKK) — kullanıcı "bir süre ertele" dedi (01.10):** `app/sgk-hak.php` › `sgk_hak_coz` okunan satırları ham saklıyor;
    `sgk_hak_sorgulari.satirlar`'a 11 haneli numara girebiliyor. Kaydetmeden önce maskele + test ekle.
-2. Kullanıcıya sor: sıradaki modül (karar bekleyen: SGK dönem sonu paketi + kesinti defteri).
+2. Kullanıcı FTP sırlarını girince "Canlıya al" ilk çalıştırmasını izle; gerçek Medula PDF'iyle okuyucuyu doğrula.
+3. Kullanıcıya sor: sıradaki modül (karar bekleyen: SGK dönem sonu paketi + kesinti defteri).
 
 ## Açık sorunlar / doğrulanmamış
 - Göçler v23–v27 yerel MariaDB'de çalıştı; canlı hosting MySQL'inde henüz değil (canlı şema 22).
-- SGK dönem faturasında dönem = teslim tarihi (delivered_at). Medula'nın fatura dönemi farklı kurala göre
-  çalışıyorsa (ör. Medula'da işlem tarihi) kullanıcıyla doğrula.
+- Medula PDF dökümünün gerçek biçimi görülmedi: kullanıcıdan örnek (kişisel veriler karartılmış) PDF iste,
+  `tests/sgk-fatura/` altına sahte verili benzeriyle test ekle. e-Reçete no biçimi 7 karakter varsayılıyor.
+- Canlıya otomatik yükleme gerçek Plesk FTP'siyle henüz denenmedi (sırlar girilince ilk çalıştırmayı izle).
 - 4.16.0 öncesi basılmış fişlerdeki takip karekodlarında `m=` yok: müşteri telefonunda hâlâ mağaza girişine düşer
   (yeniden yazdırılan fiş düzelir).
 - ÜTS uç noktaları ve yanıt alanları (SNC, MSJ, BID) ÜTS test ortamında doğrulanmadı.

@@ -1,5 +1,8 @@
 OPTIFLOW 4.16.1 — HOSTING GÜNCELLEMESİ (mevcut kurulumun üzerine)
 
+OTOMATİK: GitHub'a FTP bilgileri girildiyse (docs/YENILIKLER-4.16.md › "GitHub'dan canlıya otomatik yükleme")
+bu adımlara gerek yok; her sürüm kendiliğinden yüklenir. Yalnızca 2. ve 3. adımı yapın.
+
 1. Bu zip'i sitenin ana klasörüne (httpdocs) yükleyin ve "Buraya çıkar" deyin, üzerine yazılsın.
    config.php ve storage/ içindekiler zip'te YOK; sizdekiler olduğu gibi kalır.
 2. Siteye bir kez personel olarak giriş yapın: veritabanı kendiliğinden güncellenir (şema 27, veri silinmez).

@@ -165,3 +165,58 @@ function sgk_metinden_numaralar(string $metin): array
     }
     return array_slice(array_keys($adaylar), 0, 1000);
 }
+
+/* ---------------- 4.16.1 — Reçete Medula'ya işlendi mi ---------------- */
+
+/** Siparişin SGK reçetesi var mı (SGK payı ya da e-reçete no)? */
+function sgk_siparis_sgkli_mi(array $o): bool
+{
+    return (float) ($o['sgk_amount'] ?? 0) > 0.009 || trim((string) ($o['sgk_erecete'] ?? '')) !== '';
+}
+
+/** Reçeteyi "Medula'ya işlendi" işaretler. $tarih boşsa şimdi. */
+function sgk_medula_isaretle(int $siparisId, ?string $tarih = null): void
+{
+    $o = row('SELECT id, order_stage, sgk_amount, sgk_erecete, medula_islendi_at FROM orders WHERE id = ?', [$siparisId]);
+    if (!$o) {
+        throw new DomainException('Sipariş bulunamadı.');
+    }
+    if ($o['order_stage'] === 'iptal') {
+        throw new DomainException('İptal edilmiş sipariş Medula\'ya işlendi olarak işaretlenemez.');
+    }
+    if (!sgk_siparis_sgkli_mi($o)) {
+        throw new DomainException('Bu siparişte SGK reçetesi yok (SGK payı ya da e-reçete no girilmemiş).');
+    }
+    $zaman = date('Y-m-d H:i:s');
+    if ($tarih !== null && $tarih !== '') {
+        if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $tarih, $p) || !checkdate((int) $p[2], (int) $p[3], (int) $p[1]) || $tarih > date('Y-m-d')) {
+            throw new DomainException('Medula işlem tarihi geçersiz (ileri tarih olamaz).');
+        }
+        $zaman = $tarih === date('Y-m-d') ? $zaman : $tarih . ' 12:00:00';
+    }
+    q('UPDATE orders SET medula_islendi_at = ?, medula_islendi_by = ? WHERE id = ?', [$zaman, (int) (current_user()['id'] ?? 0) ?: null, $siparisId]);
+}
+
+/** İşareti kaldırır. Reçete iptal edilmemiş bir SGK dönem faturasındaysa kaldırılamaz. */
+function sgk_medula_geri_al(int $siparisId): void
+{
+    $fatura = function_exists('table_var_mi') && !table_var_mi('fatura_sgk_siparisleri') ? null : row(
+        "SELECT f.id, f.sgk_donem FROM fatura_sgk_siparisleri x JOIN faturalar f ON f.id = x.fatura_id WHERE x.order_id = ? AND f.durum <> 'iptal' LIMIT 1",
+        [$siparisId]
+    );
+    if ($fatura) {
+        throw new DomainException('Bu reçete ' . $fatura['sgk_donem'] . ' SGK faturasında; önce o faturayı iptal edin.');
+    }
+    q('UPDATE orders SET medula_islendi_at = NULL, medula_islendi_by = NULL WHERE id = ?', [$siparisId]);
+}
+
+/** Medula'ya işlendi olarak işaretlenmemiş SGK'lı (iptal olmayan) siparişler. */
+function sgk_medula_bekleyenler(int $limit = 300): array
+{
+    return rows(
+        "SELECT o.id, o.created_at, o.order_stage, o.delivered_at, o.sgk_amount, o.sgk_erecete, c.first_name, c.last_name
+           FROM orders o LEFT JOIN customers c ON c.id = o.customer_id
+          WHERE o.order_stage <> 'iptal' AND o.medula_islendi_at IS NULL AND (o.sgk_amount > 0 OR (o.sgk_erecete IS NOT NULL AND o.sgk_erecete <> ''))
+          ORDER BY o.id DESC LIMIT " . max(1, min(1000, $limit))
+    );
+}

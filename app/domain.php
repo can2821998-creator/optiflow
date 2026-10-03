@@ -965,6 +965,7 @@ function audit_actions(): array
         'alis_fatura'        => 'e-Fatura (alış) içe aktardı',
         'cam_hata'           => 'Hatalı cam kaydetti',
         'garanti'            => 'Garanti kaydı işlemi',
+        'sgk_medula'         => 'Reçete Medula durumu',
         'sgk_hak'            => 'SGK hak bilgisini kaydetti',
         'senet_ver'          => 'Tedarikçiye senet verdi',
         'senet_ode'          => 'Senedi ödendi işaretledi',

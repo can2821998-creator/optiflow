@@ -255,9 +255,9 @@ function fatura_sgk_eski_taslaklari_iptal(): int
 }
 
 /**
- * Dönemin SGK faturasına girebilecek siparişler: SGK payı olan, TESLİM EDİLMİŞ, teslim tarihi
- * dönemin sonundan önce olan ve henüz iptal edilmemiş bir SGK faturasına girmemiş siparişler.
- * Önceki aylardan faturalanmamış kalanlar da gelir ('onceki' = 1).
+ * Dönemin SGK faturasına girebilecek siparişler: SGK payı olan, MEDULA'YA İŞLENDİ işaretli,
+ * işlem tarihi dönemin sonundan önce olan ve henüz iptal edilmemiş bir SGK faturasına girmemiş
+ * siparişler. Önceki aylardan faturalanmamış kalanlar da gelir ('onceki' = 1).
  */
 function fatura_sgk_donem_siparisleri(string $ay): array
 {
@@ -266,16 +266,16 @@ function fatura_sgk_donem_siparisleri(string $ay): array
     $son = date('Y-m-d', strtotime($ay . '-01 +1 month')) . ' 00:00:00';
     $vkn = fatura_sgk_alici()['alici_kimlik'];
     $r = rows(
-        "SELECT o.id, o.delivered_at, o.sgk_amount, o.sgk_erecete, o.transaction_type, c.first_name, c.last_name
+        "SELECT o.id, o.delivered_at, o.medula_islendi_at, o.sgk_amount, o.sgk_erecete, o.transaction_type, c.first_name, c.last_name
            FROM orders o LEFT JOIN customers c ON c.id = o.customer_id
-          WHERE o.order_stage = 'teslim_edildi' AND o.sgk_amount > 0 AND o.delivered_at < ?
+          WHERE o.order_stage <> 'iptal' AND o.sgk_amount > 0 AND o.medula_islendi_at IS NOT NULL AND o.medula_islendi_at < ?
             AND NOT EXISTS (SELECT 1 FROM fatura_sgk_siparisleri x JOIN faturalar f ON f.id = x.fatura_id WHERE x.order_id = o.id AND f.durum <> 'iptal')
             AND NOT EXISTS (SELECT 1 FROM faturalar f2 WHERE f2.order_id = o.id AND f2.sgk_donem IS NULL AND f2.alici_tip = 'kurum' AND f2.alici_kimlik = ? AND f2.durum = 'gonderildi')
-          ORDER BY o.delivered_at, o.id",
+          ORDER BY o.medula_islendi_at, o.id",
         [$son, $vkn]
     );
     foreach ($r as &$o) {
-        $o['onceki'] = (string) $o['delivered_at'] < $bas ? 1 : 0;
+        $o['onceki'] = (string) $o['medula_islendi_at'] < $bas ? 1 : 0;
         $o['kdv'] = ($o['transaction_type'] ?? '') === 'gunes_gozlugu' ? 20.0 : fatura_varsayilan_kdv();
     }
     unset($o);
@@ -344,11 +344,64 @@ function fatura_sgk_donem_taslagi(string $ay, array $siparisIdler, ?float $medul
 function fatura_sgk_dokum(int $faturaId): array
 {
     return rows(
-        'SELECT x.order_id, x.tutar, o.delivered_at, o.sgk_erecete, c.first_name, c.last_name
+        'SELECT x.order_id, x.tutar, o.delivered_at, o.medula_islendi_at, o.sgk_erecete, c.first_name, c.last_name
            FROM fatura_sgk_siparisleri x JOIN orders o ON o.id = x.order_id LEFT JOIN customers c ON c.id = o.customer_id
-          WHERE x.fatura_id = ? ORDER BY o.delivered_at, x.order_id',
+          WHERE x.fatura_id = ? ORDER BY o.medula_islendi_at, x.order_id',
         [$faturaId]
     );
+}
+
+/**
+ * Medula dökümüyle (PDF ya da yapıştırılan metin) karşılaştırma.
+ * $numaralar: dökümde bulunan e-reçete numaraları. Dönemin OptiFlow kümesi: o ay Medula'ya işlendi
+ * işaretlenen (iptal olmayan, SGK'lı) siparişler.
+ */
+function fatura_sgk_medula_karsilastir(string $ay, array $numaralar): array
+{
+    $ay = fatura_sgk_ay($ay);
+    $bas = $ay . '-01 00:00:00';
+    $son = date('Y-m-d', strtotime($ay . '-01 +1 month')) . ' 00:00:00';
+    $donem = rows(
+        "SELECT o.id, o.sgk_erecete, o.medula_islendi_at, c.first_name, c.last_name FROM orders o LEFT JOIN customers c ON c.id = o.customer_id
+          WHERE o.order_stage <> 'iptal' AND o.medula_islendi_at >= ? AND o.medula_islendi_at < ? AND (o.sgk_amount > 0 OR (o.sgk_erecete IS NOT NULL AND o.sgk_erecete <> ''))
+          ORDER BY o.medula_islendi_at, o.id",
+        [$bas, $son]
+    );
+    $pdf = array_fill_keys(array_map(static fn($n): string => strtoupper((string) $n), $numaralar), true);
+    $eslesen = [];
+    $optiflowdaFazla = [];
+    $numarasiz = [];
+    $donemNo = [];
+    foreach ($donem as $o) {
+        $no = strtoupper(trim((string) $o['sgk_erecete']));
+        if ($no === '') {
+            $numarasiz[] = $o;
+        } elseif (isset($pdf[$no])) {
+            $eslesen[$no] = $o;
+            $donemNo[$no] = true;
+        } else {
+            $optiflowdaFazla[] = $o;
+            $donemNo[$no] = true;
+        }
+    }
+    $pdfteFazla = [];
+    foreach (array_keys($pdf) as $no) {
+        if (!isset($donemNo[$no])) {
+            $pdfteFazla[$no] = row(
+                "SELECT o.id, o.medula_islendi_at, o.order_stage, c.first_name, c.last_name FROM orders o LEFT JOIN customers c ON c.id = o.customer_id
+                  WHERE UPPER(o.sgk_erecete) = ? AND o.order_stage <> 'iptal' ORDER BY o.id DESC LIMIT 1",
+                [$no]
+            );
+        }
+    }
+    return [
+        'pdf_adet'       => count($pdf),
+        'optiflow_adet'  => count($donem),
+        'eslesen'        => $eslesen,
+        'pdfte_fazla'    => $pdfteFazla,      // no => sipariş (başka ayda işaretli / işaretsiz) ya da null (OptiFlow'da yok)
+        'optiflowda_fazla' => $optiflowdaFazla,
+        'numarasiz'      => $numarasiz,
+    ];
 }
 
 /** Dönemin (iptal edilmemiş) SGK faturaları. */

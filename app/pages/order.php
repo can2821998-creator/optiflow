@@ -395,6 +395,24 @@ if (is_post()) {
         redirect($self . '#garanti');
     }
 
+    // 4.16.1 — Reçete Medula'ya işlendi / işlenmedi (SGK ay sonu faturası bu tarihe göre)
+    if (in_array($action, ['medula_islendi', 'medula_geri'], true) && (ozellik_acik('efatura') || ozellik_acik('sgk_mutabakat'))) {
+        try {
+            if ($action === 'medula_islendi') {
+                sgk_medula_isaretle($id, post('medula_tarih'));
+                audit('sgk_medula', 'order', $id, ['durum' => 'Medula\'ya işlendi', 'tarih' => post('medula_tarih') ?: date('Y-m-d')]);
+                flash('Reçete Medula\'ya işlendi olarak işaretlendi.');
+            } else {
+                sgk_medula_geri_al($id);
+                audit('sgk_medula', 'order', $id, ['durum' => 'işaret kaldırıldı']);
+                flash('Medula işareti kaldırıldı.');
+            }
+        } catch (DomainException $e) {
+            flash($e->getMessage(), 'error');
+        }
+        redirect($self . '#medula');
+    }
+
     // 4.15.0 — SGK hak doğrulaması (Medula / e-Devlet ekranı yapıştırma ya da elle tarih)
     if (in_array($action, ['sgk_hak_yapistir', 'sgk_hak_elle'], true) && ozellik_acik('sgk_hak')) {
         try {
@@ -835,6 +853,20 @@ page_start($name . ' ' . order_no($id), 'orders');
       <div class="btn-row" style="margin-top:12px">
         <a class="btn btn-sm btn-primary" href="sgk-aktar.php?order=<?= (int) $id ?>">Reçeteyi aktar</a>
       </div>
+      <?php if ((ozellik_acik('efatura') || ozellik_acik('sgk_mutabakat')) && $order['order_stage'] !== 'iptal' && sgk_siparis_sgkli_mi($order)): ?>
+        <div id="medula" class="stack" style="gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+          <?php if (!empty($order['medula_islendi_at'])): ?>
+            <div><span class="badge tone-green"><?= icon('check') ?> Medula'ya işlendi</span> <small class="muted"><?= e(date_tr((string) $order['medula_islendi_at'])) ?><?= $order['medula_islendi_by'] ? ' · ' . e(staff_name((int) $order['medula_islendi_by'])) : '' ?></small></div>
+            <form method="post" class="inline" data-confirm="Medula işareti kaldırılsın mı?"><?= csrf_field() ?><input type="hidden" name="order_id" value="<?= (int) $id ?>"><input type="hidden" name="action" value="medula_geri"><button class="linkish">İşaretlenmedi olarak geri al</button></form>
+          <?php else: ?>
+            <div><span class="badge tone-amber">Medula'ya işlenmedi</span></div>
+            <form method="post" class="btn-row" style="align-items:flex-end"><?= csrf_field() ?><input type="hidden" name="order_id" value="<?= (int) $id ?>"><input type="hidden" name="action" value="medula_islendi">
+              <label class="field" style="max-width:170px"><span>İşlem tarihi</span><input type="date" name="medula_tarih" value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d') ?>"></label>
+              <button class="btn btn-sm btn-primary"><?= icon('check') ?> Medula'ya işlendi</button></form>
+          <?php endif; ?>
+          <small class="muted">Ay sonu SGK faturasına, Medula'ya işlendiği ay girer.</small>
+        </div>
+      <?php endif; ?>
     </section>
 
     <?php if (ozellik_acik('sgk_hak') && (int) $order['customer_id'] && $order['transaction_type'] !== 'tamir') { require dirname(__DIR__) . '/partials/sgk-hak-karti.php'; } ?>

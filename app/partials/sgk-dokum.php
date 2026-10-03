@@ -15,10 +15,10 @@ $firma = fatura_firma();
 </table>
 
 <table class="lines">
-  <thead><tr><th>#</th><th>Teslim</th><th>Hasta</th><th>e-Reçete no</th><th>Sipariş</th><th class="num">SGK payı</th></tr></thead>
+  <thead><tr><th>#</th><th>Medula</th><th>Hasta</th><th>e-Reçete no</th><th>Sipariş</th><th class="num">SGK payı</th></tr></thead>
   <tbody>
     <?php foreach ($dokum as $i => $r): ?>
-      <tr><td><?= $i + 1 ?></td><td><?= e(date_tr((string) $r['delivered_at'])) ?></td><td><?= e(trim((string) $r['first_name'] . ' ' . (string) $r['last_name'])) ?></td><td><?= e((string) ($r['sgk_erecete'] ?: '—')) ?></td><td><?= e(order_no((int) $r['order_id'])) ?></td><td class="num"><?= e(money($r['tutar'])) ?></td></tr>
+      <tr><td><?= $i + 1 ?></td><td><?= e(date_tr((string) ($r['medula_islendi_at'] ?: $r['delivered_at']))) ?></td><td><?= e(trim((string) $r['first_name'] . ' ' . (string) $r['last_name'])) ?></td><td><?= e((string) ($r['sgk_erecete'] ?: '—')) ?></td><td><?= e(order_no((int) $r['order_id'])) ?></td><td class="num"><?= e(money($r['tutar'])) ?></td></tr>
     <?php endforeach; ?>
   </tbody>
   <tfoot><tr><th colspan="5">Toplam</th><th class="num"><?= e(money($dokumToplam)) ?></th></tr></tfoot>

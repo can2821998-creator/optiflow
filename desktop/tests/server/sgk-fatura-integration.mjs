@@ -122,10 +122,27 @@ const ids = [];
 for (const [ad, teslim] of [['Bir', '2026-09-05 10:00:00'], ['İki', '2026-09-28 16:00:00'], ['Üç', '2026-08-30 12:00:00'], ['Dört', '2026-10-02 09:00:00']]) {
   const r = await a.form('order-new.php', { first_name: ad, last_name: 'Sgkli', phone: '0533 000 00 0' + ids.length, birth_year: '', order_stage: 'siparis_verildi', transaction_type: 'gozluk', lens_type: '', promised_date: '', total_amount: '1.000,00', deposit: '0', deposit_method: 'nakit' });
   const id = Number(((r.headers.get('location') || '').match(/order\.php\?id=(\d+)/) || [])[1] || 0);
-  sql(db, `UPDATE orders SET sgk_amount = 150, order_stage = 'teslim_edildi', status = 'teslim_edildi', delivered_at = '${teslim}', sgk_erecete = 'ER${ids.length}' WHERE id = ${id}`);
+  sql(db, `UPDATE orders SET sgk_amount = 150, order_stage = 'teslim_edildi', status = 'teslim_edildi', delivered_at = '${teslim}', medula_islendi_at = '${teslim}', sgk_erecete = '${['1A2B3C4', '5D6E7F8', 'Q1W2E3R', 'Z9Y8X7W'][ids.length]}' WHERE id = ${id}`);
   ids.push(id);
 }
-check('dört SGK\'lı teslim edilmiş sipariş', ids.every((x) => x > 0));
+check('dört SGK\'lı, Medula\'ya işlenmiş sipariş', ids.every((x) => x > 0));
+check('göç v27: orders.medula_islendi_at', sql(db, "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'orders' AND column_name = 'medula_islendi_at'") === '1');
+let yeni = 0;
+{
+  const r = await a.form('order-new.php', { first_name: 'Beş', last_name: 'Sgkli', phone: '0533 000 00 09', birth_year: '', order_stage: 'siparis_verildi', transaction_type: 'gozluk', lens_type: '', promised_date: '', total_amount: '1.000,00', deposit: '0', deposit_method: 'nakit' });
+  yeni = Number(((r.headers.get('location') || '').match(/order\.php\?id=(\d+)/) || [])[1] || 0);
+  let op = await a.html(`order.php?id=${yeni}`);
+  check('SGK\'sız siparişte Medula düğmesi yok', !op.includes('name="action" value="medula_islendi"'));
+  sql(db, `UPDATE orders SET sgk_amount = 150, sgk_erecete = '9G8H7J6' WHERE id = ${yeni}`);
+  op = await a.html(`order.php?id=${yeni}`);
+  check('SGK\'lı siparişte "Medula\'ya işlenmedi" ve düğme', op.includes("Medula'ya işlenmedi") && op.includes('name="action" value="medula_islendi"'));
+  await a.form('order.php', { action: 'medula_islendi', order_id: String(yeni), medula_tarih: '2026-09-29' }, `order.php?id=${yeni}`);
+  check('düğme işlem tarihini yazar', sql(db, `SELECT medula_islendi_at FROM orders WHERE id = ${yeni}`) === '2026-09-29 12:00:00');
+  op = await a.html(`order.php?id=${yeni}`);
+  check('sipariş sayfasında "Medula\'ya işlendi"', op.includes("Medula'ya işlendi</span>") && op.includes('29.09.2026'));
+  await a.form('order.php', { action: 'medula_geri', order_id: String(yeni) }, `order.php?id=${yeni}`);
+  check('geri alınır', sql(db, `SELECT IFNULL(medula_islendi_at, 'yok') FROM orders WHERE id = ${yeni}`) === 'yok');
+}
 sql(db, `INSERT INTO faturalar (order_id, uuid, alici_tip, alici_unvan, alici_kimlik, durum, genel_toplam) VALUES (${ids[0]}, UUID(), 'kurum', 'SGK', '7750409379', 'taslak', 150)`);
 
 {
@@ -136,8 +153,21 @@ sql(db, `INSERT INTO faturalar (order_id, uuid, alici_tip, alici_unvan, alici_ki
   check('sipariş sayfasındaki düğme yeni parametreyle', op.includes('name="sgk_dus" value="1"'));
 }
 {
+  // Medula PDF dökümü (örnek: 1A2B3C4, 5D6E7F8, 9G8H7J6)
+  const fs = await import('node:fs');
+  const pdf = fs.readFileSync(new URL('../../../tests/sgk-fatura/ornek-medula-dokum.pdf', import.meta.url));
+  const csrf = await a.csrfFrom('sgk-fatura.php?ay=2026-09');
+  const fd = new FormData();
+  fd.append('csrf', csrf); fd.append('ay', '2026-09'); fd.append('eylem', 'dokum');
+  fd.append('dosya[]', new Blob([pdf], { type: 'application/pdf' }), 'medula-eylul.pdf');
+  const up = await a.req('sgk-fatura.php', { method: 'POST', body: fd });
+  check('PDF yüklendi', up.status === 303);
+  const pk = await a.html('sgk-fatura.php?ay=2026-09');
+  check('PDF okundu: 3 e-reçete', pk.includes('3 e-reçete numarası bulundu'));
+  check('dökümde olup OptiFlow\'da işaretsiz reçete gösterilir', pk.includes('9G8H7J6') && pk.includes(`order.php?id=${yeni}#medula`));
+  check('OptiFlow\'da işaretli, dökümde olmayan', pk.includes('Q1W2E3R'));
   const p = await a.html('sgk-fatura.php?ay=2026-09');
-  check('dönem ekranı: 3 reçete (biri önceki aydan), ekim girmez', p.includes('3 reçete, 1 önceki aydan') && p.includes('450,00') && !p.includes(`value="${ids[3]}"`));
+  check('dönem ekranı: Medula ayına göre 3 reçete (biri önceki aydan), ekim girmez', p.includes('3 reçete, 1 önceki aydan') && p.includes('450,00') && !p.includes(`value="${ids[3]}"`));
   check('eski usul taslak uyarısı', p.includes('Eski usulde sipariş bazında'));
   const r = await a.form('sgk-fatura.php', { ay: '2026-09', eylem: 'olustur', 'siparis[]': [ids[0], ids[1], ids[2]], medula_toplam: '' }, 'sgk-fatura.php?ay=2026-09');
   const fid = Number(((r.headers.get('location') || '').match(/fatura\.php\?id=(\d+)/) || [])[1] || 0);
@@ -147,7 +177,7 @@ sql(db, `INSERT INTO faturalar (order_id, uuid, alici_tip, alici_unvan, alici_ki
   const fp = await a.html(`fatura.php?id=${fid}`);
   check('fatura sayfasında dönem ve döküm bağlantısı', fp.includes('SGK dönem faturası · Eylül 2026') && fp.includes(`print.php?type=sgk_dokum&amp;id=${fid}`));
   const dk = await a.html(`print.php?type=sgk_dokum&id=${fid}`);
-  check('döküm: 3 reçete, e-reçete numaraları, toplam', dk.includes('REÇETE DÖKÜMÜ') && dk.includes('ER0') && dk.includes('ER2') && dk.includes('450,00'));
+  check('döküm: 3 reçete, e-reçete numaraları, toplam', dk.includes('REÇETE DÖKÜMÜ') && dk.includes('1A2B3C4') && dk.includes('Q1W2E3R') && dk.includes('450,00'));
   check('dönem tekrar açılınca liste boş', (await a.html('sgk-fatura.php?ay=2026-09')).includes('Faturalanacak reçete yok'));
   await a.form('fatura.php', { id: String(fid), eylem: 'iptal' }, `fatura.php?id=${fid}`);
   check('fatura iptal → reçeteler yeniden listede', (await a.html('sgk-fatura.php?ay=2026-09')).includes('3 reçete'));

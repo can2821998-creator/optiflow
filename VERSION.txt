@@ -15,7 +15,16 @@ DEĞİŞİKLİK NOTLARI — 4.16.1 (SGK faturası düzeltmesi; OptiFlow Pro 5.3.
     • Eski usulde sipariş bazında açılmış SGK taslakları ekranda gösterilir; tek tuşla ya da dönem faturası
       oluşturulunca kendiliğinden iptal edilir. Hasta faturalarına dokunulmaz.
     • SGK mutabakat ekranından ilgili ayın faturasına bağlantı.
-  - Veritabanı şeması 26 → 27 (faturalar.sgk_donem, fatura_sgk_siparisleri).
+  - YENİ: Siparişin SGK kartında "Medula'ya işlendi / işlenmedi" düğmesi (işlem tarihiyle; geri alınabilir).
+    Reçete, Medula'ya İŞLENDİĞİ AYIN SGK faturasına girer (teslim şartı yok). İşaretlenmemiş SGK'lı siparişler
+    dönem ekranında listelenir, toplu işaretlenebilir. Faturadaki reçetenin işareti fatura iptal edilmeden kaldırılamaz.
+  - YENİ: Ay sonu Medula dökümü (PDF) yükleme: PDF'teki e-reçete numaraları ve adet, OptiFlow'da o ay işaretlenen
+    reçetelerle karşılaştırılır (Medula'da olup işaretlenmemiş / işaretli olup Medula'da olmayan / numarasız).
+    PDF okunmazsa liste metni yapıştırılabilir ya da adet elle girilir. Döküm sunucuda saklanmaz.
+    PDF okuyucu (app/pdf-metin.php) dış kütüphane gerektirmez; taranmış (resim) PDF okunmaz.
+  - YENİ: GitHub'dan canlıya otomatik yükleme (.github/workflows/canliya-al.yml): sürüm yayınlanınca hosting'e
+    FTPS ile yüklenir (FTP bilgileri GitHub sırlarına bir kez girilir; girilmezse atlanır).
+  - Veritabanı şeması 26 → 27 (faturalar.sgk_donem, fatura_sgk_siparisleri, orders.medula_islendi_at/by).
 
 DEĞİŞİKLİK NOTLARI — 4.16.0 (garanti kaydı ve garanti kartı; OptiFlow Pro 5.3.0 ile)
   - YENİ özellik anahtarı "garanti" (merkez panelden, varsayılan kapalı).

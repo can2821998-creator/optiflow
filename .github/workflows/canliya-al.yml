@@ -1,0 +1,112 @@
+# OptiFlow — canlıya al (GitHub Release → hosting, FTP ile)
+#
+# "Sürüm yayınla" başarıyla bitince (ya da Actions › "Canlıya al" › Run workflow ile elle)
+# en son Release'teki hosting zip'ini hosting'e yükler. Masaüstü kurulumu yalnızca
+# sürümü hosting'dekinden farklıysa yüklenir; latest.yml EN SON yüklenir.
+#
+# Bir kez yapılacak ayar (GitHub › depo › Settings › Secrets and variables › Actions › Secrets):
+#   FTP_SUNUCU    ör. optiflow.com.tr (ya da Plesk'teki sunucu adı / IP)
+#   FTP_KULLANICI Plesk › Web siteleri › FTP erişimi'ndeki kullanıcı
+#   FTP_SIFRE     o kullanıcının şifresi
+#   FTP_KLASOR    (isteğe bağlı) site klasörü, varsayılan: httpdocs
+# Bağlantı her zaman FTPS (TLS) ile yapılır; şifre açık metin gitmez.
+# Bu sırlar yoksa iş hiçbir şey yüklemeden "atlandı" der.
+#
+# GÜVENLİK: config.php ve storage/ zip'te YOKTUR; hosting'deki dosyalar silinmez, yalnızca
+# yeni/güncel dosyalar üzerine yazılır. Veritabanı göçü ilk personel girişinde kendiliğinden yapılır.
+name: Canlıya al
+
+on:
+  workflow_run:
+    workflows: ['Sürüm yayınla']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canliya-al
+  cancel-in-progress: false
+
+jobs:
+  canli:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    env:
+      FTP_SUNUCU: ${{ secrets.FTP_SUNUCU }}
+      FTP_KULLANICI: ${{ secrets.FTP_KULLANICI }}
+      FTP_SIFRE: ${{ secrets.FTP_SIFRE }}
+      FTP_KLASOR: ${{ secrets.FTP_KLASOR }}
+      SITE: ${{ vars.SITE_ADRESI || 'https://optiflow.com.tr' }}
+      # Plesk'in FTP sertifikası çoğu zaman sunucu adına kendinden imzalıdır; bağlantı yine de
+      # TLS ile şifrelenir (ssl-force). Geçerli sertifikanız varsa Variables › FTP_SERTIFIKA_KONTROL = yes.
+      SERTIFIKA: ${{ vars.FTP_SERTIFIKA_KONTROL || 'no' }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - id: ayar
+        name: FTP ayarı var mı?
+        run: |
+          if [ -z "$FTP_SUNUCU" ] || [ -z "$FTP_KULLANICI" ] || [ -z "$FTP_SIFRE" ]; then
+            echo "::notice::FTP sırları tanımlı değil; canlıya yükleme atlandı (bkz. iş akışı başındaki açıklama)."
+            echo "var=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "var=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: En son Release'i indir
+        if: steps.ayar.outputs.var == '1'
+        run: |
+          TAG=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName -q .tagName)
+          echo "Release: $TAG"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          mkdir -p rel && cd rel
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY"
+          ls -la
+          unzip -q optiflow-*-hosting.zip -d ../paket
+          test ! -e ../paket/config.php
+          test ! -e ../paket/storage/.gizli-anahtar
+          rm -f ../paket/indir/masaustu/*.blockmap ../paket/indir/masaustu/latest.yml   # masaüstü dosyaları ayrı adımda
+
+      - name: lftp kur
+        if: steps.ayar.outputs.var == '1'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: Sunucu dosyalarını yükle
+        if: steps.ayar.outputs.var == '1'
+        run: |
+          KLASOR="${FTP_KLASOR:-httpdocs}"
+          lftp -u "$FTP_KULLANICI","$FTP_SIFRE" "$FTP_SUNUCU" -e "
+            set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $SERTIFIKA; set net:max-retries 3; set net:timeout 30;
+            mirror -R --parallel=4 --verbose=1 paket/ $KLASOR/;
+            quit"
+
+      - name: Masaüstü kurulumunu yükle (sürüm değiştiyse)
+        if: steps.ayar.outputs.var == '1'
+        run: |
+          KLASOR="${FTP_KLASOR:-httpdocs}"
+          YENI=$(grep -m1 '^version:' rel/latest.yml | awk '{print $2}')
+          ESKI=$(curl -fsSL "$SITE/indir/masaustu/latest.yml" 2>/dev/null | grep -m1 '^version:' | awk '{print $2}' || true)
+          echo "Hosting'deki masaüstü: ${ESKI:-yok} · Release: $YENI"
+          if [ "$YENI" = "$ESKI" ]; then
+            echo "Masaüstü sürümü aynı; exe yüklenmedi."
+            exit 0
+          fi
+          # Önce exe ve blockmap, EN SON latest.yml (uygulamalar yarım dosyayı görmesin)
+          lftp -u "$FTP_KULLANICI","$FTP_SIFRE" "$FTP_SUNUCU" -e "
+            set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $SERTIFIKA; set net:max-retries 3; set net:timeout 60;
+            cd $KLASOR/indir/masaustu;
+            put rel/$(ls rel | grep -m1 '\.exe$');
+            put rel/$(ls rel | grep -m1 '\.blockmap$');
+            put rel/latest.yml;
+            quit"
+
+      - name: Kontrol
+        if: steps.ayar.outputs.var == '1'
+        run: |
+          sleep 5
+          SURUM=$(curl -fsSL "$SITE/VERSION.txt" | grep -m1 '^Release:' || true)
+          echo "Canlıdaki: $SURUM"
+          BEKLENEN=$(echo "$TAG" | sed -E 's/^v([0-9.]+)-pro.*/\1/')
+          echo "$SURUM" | grep -q "Release: $BEKLENEN" || { echo "::error::Canlıdaki VERSION.txt $BEKLENEN göstermiyor"; exit 1; }
+          echo "::notice::Canlı site $BEKLENEN sürümünde. İlk personel girişinde veritabanı kendiliğinden güncellenir."

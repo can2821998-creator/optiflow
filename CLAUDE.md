@@ -12,6 +12,9 @@ devamlılık yalnızca bu depo üzerinden sağlanır (zip / mbox / bundle taşı
   testleri çalıştırıp exe + blockmap + latest.yml + hosting zip'i **GitHub Releases**'a koyar
   (o etiketle Release varsa atlar). Etiketi oturumdan gönderme (git proxy 403 verir).
   Elle başlatmak gerekirse: `curl -X POST -H 'Content-Type: application/json' https://api.github.com/repos/can2821998-creator/optiflow/actions/workflows/surum-yayinla.yml/dispatches -d '{"ref":"main"}'` Bitince Actions sonucunu kontrol edip kullanıcıya Release bağlantısını ver.
+- Canlıya alma: "Sürüm yayınla" başarılı olunca `.github/workflows/canliya-al.yml` en son Release'i FTPS ile hosting'e
+  yükler (sırlar: FTP_SUNUCU, FTP_KULLANICI, FTP_SIFRE, isteğe bağlı FTP_KLASOR; yoksa atlar). Yani main'e sürüm
+  push'u = canlıya çıkış. Bitince Actions'taki "Canlıya al" sonucunu da kontrol et.
 - Kullanıcıya teslim edilen her şey git'te olmalı: kaynak, belgeler (`docs/`), kurulum dosyaları (Releases).
   Sohbette dosya verilse bile kalıcı kopyası depoda/Release'te bulunur.
 

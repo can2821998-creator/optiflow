@@ -1430,13 +1430,19 @@ function migrate_v26_garanti(): void
 
 
 /* ------------------------------------------------------------------ */
-/*  v27 (4.16.1) — SGK ay sonu toplu faturası: faturanın dönemi ve       */
-/*  faturaya giren siparişler (aynı sipariş iki kez faturalanmasın).     */
+/*  v27 (4.16.1) — SGK ay sonu toplu faturası: faturanın dönemi, faturaya */
+/*  giren siparişler ve reçetenin Medula'ya işlendiği tarih.             */
 /* ------------------------------------------------------------------ */
 
 function migrate_v27_sgk_donem_fatura(): void
 {
     add_column('faturalar', 'sgk_donem', 'VARCHAR(7) NULL');   // faturalar v22'de açıldı
+    // Reçete Medula'ya işlendi mi (SGK dönem faturası bu tarihe göre ay belirler)
+    add_column('orders', 'medula_islendi_at', 'DATETIME NULL');
+    add_column('orders', 'medula_islendi_by', 'INT UNSIGNED NULL');
+    if (!index_exists('orders', 'idx_orders_medula')) {
+        db()->exec('ALTER TABLE `orders` ADD INDEX `idx_orders_medula` (`medula_islendi_at`)');
+    }
     db()->exec("CREATE TABLE IF NOT EXISTS fatura_sgk_siparisleri (
         fatura_id INT UNSIGNED NOT NULL,
         order_id INT UNSIGNED NOT NULL,

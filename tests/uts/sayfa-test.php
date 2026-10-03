@@ -57,7 +57,7 @@ if (isset($istek['tasiyici'])) {
 $kaynak = static function (string $yol): string {
     $k = (string) file_get_contents($yol);
     $k = preg_replace('~^require dirname\(__DIR__, 2\) \. \'/app/bootstrap\.php\';~m', '', $k, 1);
-    $k = preg_replace('~^require_once dirname\(__DIR__\) \. \'/fatura\.php\';~m', '', $k, 1);   // ortam.php fatura.php'yi zaten yükler
+    $k = preg_replace('~^require_once dirname\(__DIR__\) \. \'/[a-z-]+\.php\';~m', '', $k);   // ortam.php bu modülleri zaten yükler
     $gecici = APP_ROOT . '/sayfa-' . md5($yol) . '.php';
     file_put_contents($gecici, $k);
     return $gecici;

@@ -3,7 +3,7 @@
 *Son güncelleme: 3 Ekim 2026 (4.16.1 / Pro 5.3.0)*
 
 ## Sürüm
-- **Sunucu 4.16.1**, şema **27**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
+- **Sunucu 4.16.2**, şema **27**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
 - **Canlı site (04.10): 4.16.1, masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
   Canlı veritabanı göçü (22 → 27) ilk personel girişinde çalışır; sonucu kontrol edilmedi.
 - Özellik anahtarları (hepsi varsayılan kapalı): `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
@@ -11,7 +11,11 @@
   sunucu entegrasyon (yerel MariaDB): api 46/46, modüller 76/76, garanti 37/37, sgk-fatura 25/25.
   Masaüstü birim/E2E değişmedi (91/91, 61/61).
 
-## Son oturumda yapılanlar (4.16.1)
+## Son oturumda yapılanlar (4.16.2)
+- Tanıtım sayfası (`app/karsilama.php`) baştan tasarlandı: göz eşeli başlık, Pro penceresi, güncel modüller.
+  Masaüstü + telefon ekran görüntüsüyle kontrol edildi; yatay kaydırma yok.
+
+## Önceki oturum (4.16.1)
 - DÜZELTME (kullanıcı bildirdi): SGK payı sipariş başına faturalanıyordu → sipariş faturası yalnızca hasta payı;
   SGK'ya ay sonunda TEK fatura + reçete dökümü (`sgk-fatura.php`, `fatura_sgk_donem_taslagi`, print `sgk_dokum`).
 - Kullanıcı senaryosu: siparişte "Medula'ya işlendi/işlenmedi" düğmesi (`orders.medula_islendi_at`); dönem = Medula

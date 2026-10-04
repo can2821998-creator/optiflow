@@ -1,6 +1,15 @@
 OPTIFLOW
-Release: 4.16.1 (2026-10-03)
+Release: 4.16.2 (2026-10-04)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.16.2 (tanıtım sayfası yenilendi; OptiFlow Pro 5.3.0 ile)
+  - Ana sayfa (oturumsuz ziyaretçi, app/karsilama.php) baştan tasarlandı: başlık bir göz eşeli gibi satır satır
+    küçülür (yanında ondalık görme keskinliği 0,1 … 1,0), açılışta satırlar sırayla netleşir (hareket azaltma
+    ayarında animasyon yok). "Bir gözlüğün dükkândaki yolu" (5 adım), OptiFlow Pro penceresi (Medula ↔ sipariş),
+    işe göre gruplanmış özellikler (SGK ve mevzuat, müşteri, para, ekip), fiyatlar, güven, SSS.
+  - İçerik güncellendi: Chrome eklentisi yerine OptiFlow Pro; SGK ay sonu faturası, garanti kartı, ÜTS karekod,
+    SGK hak kontrolü, alış faturası, ödeme linki eklendi. SSS'te Medula ve kurulum cevapları güncel.
+  - Veritabanı şeması DEĞİŞMEDİ (27).
 
 DEĞİŞİKLİK NOTLARI — 4.16.1 (SGK faturası düzeltmesi; OptiFlow Pro 5.3.0 ile)
   - DÜZELTME (e-Fatura hazırlığı): SGK katkı payı sipariş başına ayrı faturaya konuyordu (her reçeteye

@@ -12,8 +12,9 @@
   Masaüstü birim/E2E değişmedi (91/91, 61/61).
 
 ## Son oturumda yapılanlar (4.16.2)
-- Tanıtım sayfası (`app/karsilama.php`) baştan tasarlandı: göz eşeli başlık, Pro penceresi, güncel modüller.
-  Masaüstü + telefon ekran görüntüsüyle kontrol edildi; yatay kaydırma yok.
+- Tanıtım sayfası (`app/karsilama.php`) baştan tasarlandı: göz eşeli başlık, Lite/Pro iki sürüm bölümü ve
+  farklar tablosu, gerçek ekran önizlemeleri (`assets/onizleme/*.webp`; arayüz değişince yeniden çekilmeli),
+  önce/sonra tablosu, SGK ay sonu örneği. Masaüstü + telefonda kontrol edildi; yatay kaydırma yok.
 
 ## Önceki oturum (4.16.1)
 - DÜZELTME (kullanıcı bildirdi): SGK payı sipariş başına faturalanıyordu → sipariş faturası yalnızca hasta payı;

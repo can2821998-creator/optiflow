@@ -251,6 +251,63 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 section{padding-block:96px}
 .bas{margin-bottom:44px}
 
+/* İki sürüm */
+.surum-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:stretch}
+.surum{min-width:0;display:flex;flex-direction:column;gap:24px;padding:28px;border-radius:20px;background:var(--night-2);border:1px solid rgba(255,255,255,.1)}
+.surum.pro{background:linear-gradient(180deg,#1b1460 0%,var(--night-2) 60%);border-color:rgba(196,20,216,.45)}
+.surum-bas p{color:var(--night-ink);margin-top:8px;max-width:52ch}
+.surum-bas h3{font-family:var(--serif);font-weight:500;font-size:1.65rem;margin-top:12px}
+.rozet{display:inline-block;font-weight:800;font-size:13px;padding:5px 12px;border-radius:999px}
+.rozet.lite{background:#fff;color:var(--blue-deep)}
+.rozet.pro{background:var(--magenta);color:#fff}
+.sahne{position:relative;padding-right:70px;padding-bottom:30px}
+.tarayici{margin:0;border-radius:12px;overflow:hidden;background:#fff;border:1px solid var(--line);box-shadow:0 30px 60px -30px rgba(0,0,0,.55)}
+.tarayici-ust{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#eef1f8;border-bottom:1px solid var(--line)}
+.tarayici-ust .nokta{width:9px;height:9px;border-radius:50%;background:#c6cce0}
+.tarayici-ust .adres{margin-left:8px;flex:1;min-width:0;font-size:11.5px;color:var(--ink-2);background:#fff;border-radius:6px;padding:3px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tarayici img,.masaustu img,.cep img{display:block;width:100%;height:auto}
+.cep{position:absolute;right:0;bottom:0;width:30%;max-width:150px;margin:0;border:6px solid #050820;border-radius:22px;overflow:hidden;box-shadow:0 20px 40px -10px rgba(0,0,0,.6);background:#fff}
+.masaustu{margin:0;border-radius:12px;overflow:hidden;background:#0d1236;border:1px solid rgba(255,255,255,.18);box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.ms-ust{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:#05081f;font-size:11.5px;color:var(--night-ink)}
+.ms-dug{display:flex;gap:10px}.ms-dug i{width:10px;height:2px;background:var(--night-ink);display:block}
+.ms-arac{display:flex;align-items:center;gap:6px;padding:7px 10px;background:#141a46;font-size:11.5px;font-weight:700;color:var(--night-ink);flex-wrap:wrap}
+.ms-arac .sekme{padding:5px 10px;border-radius:7px 7px 0 0;background:rgba(255,255,255,.06)}
+.ms-arac .sekme.acik{background:#fff;color:var(--ink)}
+.ms-arac .bosluk{flex:1}
+.ms-arac .dug{padding:5px 9px;border-radius:7px;background:rgba(255,255,255,.1);color:#fff}
+.ms-arac .dug.kirmizi{background:var(--red)}
+.ms-icerik{display:grid;grid-template-columns:.42fr .58fr;background:#fff}
+.ms-icerik > *{min-width:0}
+.ms-medula{padding:12px;background:#f2f2f2;color:#222;font-size:11.5px;border-right:3px solid var(--red);display:flex;flex-direction:column;gap:6px;font-family:Arial,sans-serif}
+.ms-medula small{color:#555}
+.ms-medula .kutular{grid-template-columns:auto repeat(3,1fr);gap:4px}
+.ms-medula .kutular i{color:#333;font-size:10.5px}
+.ms-medula .kutu{border:1px solid #999;font-size:11px;padding:2px 4px}
+.ms-medula .ok{margin-top:auto;align-self:flex-start;background:var(--red);color:#fff;font-family:var(--display);font-weight:800;padding:5px 10px;border-radius:6px}
+.karsi-kap{margin-top:36px}
+.karsi{width:100%;border-collapse:collapse;font-size:15px;color:#fff}
+.karsi th{text-align:left;padding:0 14px 12px 0;font-size:15px;border-bottom:2px solid #fff}
+.karsi th small,.karsi td small{color:var(--night-ink);font-weight:600;font-size:12px;margin-left:4px}
+.karsi th.p{color:#f2a6ff}
+.karsi td{padding:12px 14px 12px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.karsi td:first-child{width:52%}
+.karsi td:not(:first-child){font-weight:800}
+.karsi tr.grupcuk td{padding-top:22px;font-family:var(--serif);font-weight:500;font-size:1.15rem;color:var(--night-ink);border-bottom:0;width:auto}
+.karsi tr.fark-satir td:last-child{color:#f2a6ff}
+.karsi td.yok{color:var(--night-ink);font-weight:600}
+#surumler .gizlilik{margin-top:30px}
+
+.surum-isaret{display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;margin-top:6px;padding:10px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line);text-decoration:none;font-size:14px;font-weight:700;color:var(--ink-2)}
+.surum-isaret:hover{border-color:var(--ink)}
+.surum-isaret .rozet.lite{background:var(--lens)}
+.surum-isaret .ayrac{width:1px;height:16px;background:var(--line)}
+
+/* Galeri şeridi */
+.serit{display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px max(24px,calc((100vw - 1112px)/2)) 24px;scrollbar-width:thin}
+.serit figure{flex:0 0 min(78vw,640px);scroll-snap-align:center}
+.serit figcaption{padding:12px 14px;font-size:14px;color:var(--ink-2);background:#fff;border-top:1px solid var(--line)}
+.serit figcaption b{color:var(--ink);margin-right:6px}
+
 /* Önce / OptiFlow ile */
 .fark{width:100%;border-collapse:collapse;font-size:15.5px}
 .fark th{text-align:left;font-size:14px;font-weight:800;padding:0 18px 12px 0;border-bottom:3px solid var(--ink)}
@@ -330,35 +387,14 @@ section{padding-block:96px}
 .yol h3{margin:10px 0 8px}
 .yol p{color:var(--ink-2);font-size:15px}
 
-/* Pro penceresi (koyu bant) */
 .gece{background:var(--night);color:#fff}
 .gece .lead{color:var(--night-ink)}
-.pro-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center}
-.pro-grid > *{min-width:0}
-.pencere{background:var(--night-2);border:1px solid rgba(255,255,255,.12);border-radius:14px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(0,0,0,.6)}
-.pencere-ust{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.1);font-size:12.5px;color:var(--night-ink)}
-.pencere-ust .nokta{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.22)}
-.pencere-ust b{color:#fff;margin-left:6px}
-.arac{margin-left:auto;display:flex;gap:6px}
-.arac span{padding:4px 10px;border-radius:7px;background:rgba(255,255,255,.08);font-weight:700}
-.arac .aktar{background:var(--red);color:#fff}
-.bolmeler{display:grid;grid-template-columns:1fr 1fr}
-.bolme{padding:18px;font-size:13px}
-.bolme + .bolme{border-left:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03)}
-.bolme small{display:block;color:var(--night-ink);margin-bottom:10px;font-weight:700}
 .kutular{display:grid;grid-template-columns:auto repeat(3,1fr);gap:6px;align-items:center}
 .kutular i{font-style:normal;color:var(--night-ink);font-size:12px}
 .kutu{font-family:var(--mono);background:#fff;color:var(--night);border-radius:4px;padding:4px 6px;text-align:right;font-size:12.5px}
-.rx{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
-.rx th{font-family:var(--display);font-size:11px;color:var(--night-ink);font-weight:700;text-align:right;padding:0 4px 6px}
-.rx th:first-child,.rx td:first-child{text-align:left}
-.rx td{padding:5px 4px;border-top:1px solid rgba(255,255,255,.1);text-align:right}
-.sgk{margin-top:12px;display:flex;justify-content:space-between;gap:10px;padding:9px 10px;border-radius:8px;background:rgba(42,54,255,.35);font-size:12.5px}
-.sgk b{font-family:var(--mono)}
 .gizlilik{display:flex;gap:12px;margin-top:26px;padding-top:20px;border-top:1px solid rgba(255,255,255,.14);font-size:14.5px;color:var(--night-ink)}
 .gizlilik svg{width:22px;height:22px;flex:none;color:#fff}
 .gizlilik b{color:#fff}
-.pro-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
 
 /* Neler yapar */
 .grup{display:grid;grid-template-columns:260px 1fr;gap:32px;padding-block:30px;border-top:1px solid var(--line)}
@@ -430,14 +466,13 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
 
 @media (max-width:980px){
   .nav-links a:not(.btn){display:none}
-  .pro-grid{grid-template-columns:1fr;gap:40px}
-  .yol{grid-template-columns:1fr;gap:28px}
+    .yol{grid-template-columns:1fr;gap:28px}
   .yol li{border-top:0;border-left:2px solid var(--ink);padding:0 0 0 26px}
   .yol li:last-child{border-left-color:var(--magenta)}
   .yol li::before{top:0;left:-15px}
   .yol h3{margin-top:2px}
   .grup{grid-template-columns:1fr;gap:18px}
-  .iki,.ay-grid{grid-template-columns:1fr;gap:40px}
+  .iki,.ay-grid,.surum-grid{grid-template-columns:1fr;gap:40px}
   .sutunlar{grid-template-columns:repeat(2,1fr)}
   .guven{grid-template-columns:1fr 1fr}
   .alt{grid-template-columns:1fr 1fr}
@@ -453,14 +488,17 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
   .nav-links .giris{display:none}
   .grup dl{grid-template-columns:1fr}
   .guven{grid-template-columns:1fr}
-  .bolmeler{grid-template-columns:1fr}
-  .bolme + .bolme{border-left:0;border-top:1px solid rgba(255,255,255,.1)}
-  .arac span:not(.aktar){display:none}
-  .alt{grid-template-columns:1fr}
+        .alt{grid-template-columns:1fr}
   .kontrol-ust b{font-size:1.5rem}
   .kontrol-ust div{padding:12px}
   .fark{font-size:14.5px}
   .rehber{padding:22px}
+  .surum{padding:18px}
+  .sahne{padding-right:40px}
+  .ms-icerik{grid-template-columns:1fr}
+  .ms-icerik img{display:none}
+  .karsi{font-size:13.5px}
+  .karsi td:first-child{width:46%}
   .mbar{display:flex;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(243,245,251,.96);border-top:1px solid var(--line)}
   .mbar .btn{flex:1;padding:13px 10px}
   body.bar{padding-bottom:76px}
@@ -475,7 +513,7 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
     <a class="wordmark" href="/" aria-label="OptiFlow ana sayfa"><?= pz_logo('lgNav') ?>OptiFlow</a>
     <nav class="nav-links" aria-label="Ana menü">
       <a href="#yol">Nasıl çalışır</a>
-      <a href="#pro">OptiFlow Pro</a>
+      <a href="#surumler">Lite ve Pro</a>
       <a href="#ay-sonu">SGK faturası</a>
       <a href="#neler">Neler yapar</a>
       <a href="#fiyatlar">Fiyatlar</a>
@@ -513,9 +551,88 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
           <li><?= $p['kurulum_destegi'] ? 'Kurulumu sizinle birlikte yapıyoruz' : 'Teknik bilgi gerekmez' ?></li>
           <li>Her mağazaya ayrı veritabanı</li>
         </ul>
+        <a class="surum-isaret" href="#surumler"><span class="rozet lite">Lite</span> tarayıcıda, her cihazda <span class="ayrac"></span> <span class="rozet pro">Pro</span> Windows'ta, Medula'nın yanında</a>
       </div>
     </div>
   </div>
+
+  <section id="surumler" class="gece on-night">
+    <div class="wrap">
+      <div class="bas">
+        <h2>İki sürüm, tek sistem.</h2>
+        <p class="lead">Aynı mağaza, aynı veriler. Lite tarayıcıda her cihazda açılır; Pro, Windows'ta Medula'yı yanına alır. Pro'da Lite'ın her şeyi vardır.</p>
+      </div>
+      <div class="surum-grid">
+        <article class="surum">
+          <div class="surum-bas">
+            <span class="rozet lite">Lite</span>
+            <h3>Tarayıcıda, her cihazda</h3>
+            <p>Kurulum yok. Bilgisayarda, tablette ve telefonda optiflow.com.tr'den açılır; telefonun ana ekranına uygulama gibi eklenir.</p>
+          </div>
+          <div class="sahne">
+            <figure class="tarayici">
+              <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">optiflow.com.tr</span></div>
+              <img src="assets/onizleme/liste.webp" width="1280" height="800" loading="lazy" alt="OptiFlow Lite, tarayıcıda sipariş listesi ve günün özeti">
+            </figure>
+            <figure class="cep">
+              <img src="assets/onizleme/telefon.webp" width="390" height="780" loading="lazy" alt="OptiFlow Lite, telefonda siparişler ekranı">
+            </figure>
+          </div>
+        </article>
+        <article class="surum pro">
+          <div class="surum-bas">
+            <span class="rozet pro">Pro</span>
+            <h3>Windows'ta, Medula'nın yanında</h3>
+            <p>Medula Optik ve OptiFlow aynı pencerede. Reçete tek tuşla siparişe gelir, SGK hakkı Medula ekranından sorgulanır, karekod okuyucu doğrudan çalışır.</p>
+          </div>
+          <figure class="masaustu" role="img" aria-label="OptiFlow Pro penceresi: solda Medula reçetesi, sağda OptiFlow sipariş ekranı">
+            <div class="ms-ust"><span class="ms-ad">OptiFlow Pro · Örnek Optik</span><span class="ms-dug"><i></i><i></i><i></i></span></div>
+            <div class="ms-arac">
+              <span class="sekme">Medula Optik</span><span class="sekme acik">OptiFlow</span>
+              <span class="bosluk"></span>
+              <span class="dug">Barkod</span><span class="dug">Hak sorgula</span><span class="dug kirmizi">Aktar</span>
+            </div>
+            <div class="ms-icerik">
+              <div class="ms-medula">
+                <b>Reçete İşlemleri</b>
+                <small>e-Reçete 1A2B3C4 · Uzak gözlük</small>
+                <div class="kutular">
+                  <span></span><i>Sferik</i><i>Silend.</i><i>Aks</i>
+                  <i>Sağ</i><span class="kutu">+1,25</span><span class="kutu">−0,75</span><span class="kutu">45</span>
+                  <i>Sol</i><span class="kutu">+1,00</span><span class="kutu">−0,50</span><span class="kutu">130</span>
+                </div>
+                <div class="ok">Aktar</div>
+              </div>
+              <img src="assets/onizleme/siparis.webp" width="1140" height="800" loading="lazy" alt="OptiFlow sipariş ekranı: aktarılan reçetenin siparişi">
+            </div>
+          </figure>
+        </article>
+      </div>
+
+      <div class="tablo-kap karsi-kap">
+        <table class="karsi">
+          <thead><tr><th scope="col"></th><th scope="col">Lite <small>tarayıcı</small></th><th scope="col" class="p">Pro <small>Windows</small></th></tr></thead>
+          <tbody>
+            <tr class="grupcuk"><td colspan="3">İkisinde de</td></tr>
+            <tr><td>Sipariş, müşteri, reçete geçmişi, atölye panosu</td><td>✓</td><td>✓</td></tr>
+            <tr><td>WhatsApp mesajları, hatırlatmalar, "Siparişim nerede?"</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Kasa, bakiye, kâr raporu, stok ve etiket</td><td>✓</td><td>✓</td></tr>
+            <tr><td>SGK ay sonu faturası, Medula PDF dökümüyle karşılaştırma</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Garanti kartı, alış faturası, ödeme linki</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Telefon ve tabletten erişim</td><td>✓</td><td>✓ <small>aynı hesapla</small></td></tr>
+            <tr class="grupcuk"><td colspan="3">Farklar</td></tr>
+            <tr class="fark-satir"><td>Medula reçetesini siparişe aktarma</td><td class="yok">Elle yazılır</td><td>Tek tuş</td></tr>
+            <tr class="fark-satir"><td>SGK hak kontrolü</td><td class="yok">Ekranı yapıştırarak</td><td>Medula ekranından tek tuş</td></tr>
+            <tr class="fark-satir"><td>ÜTS karekod etiketi ve imha dosyası</td><td class="yok">—</td><td>✓</td></tr>
+            <tr class="fark-satir"><td>USB barkod / karekod okuyucu modu</td><td class="yok">—</td><td>✓</td></tr>
+            <tr class="fark-satir"><td>İnternet kesilince açık siparişleri görme</td><td class="yok">—</td><td>✓ <small>şifreli kopya</small></td></tr>
+            <tr class="fark-satir"><td>Medula listesini OptiFlow'la karşılaştırma</td><td class="yok">Yapıştırarak</td><td>Ekrandan tek tuş</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="gizlilik"><?= $ico['lock'] ?><span>OptiFlow Pro SGK kullanıcı adınızı ve şifrenizi <b>okumaz, saklamaz, göndermez</b>. Medula'ya her zamanki gibi kendiniz girersiniz; yalnızca "Aktar"a bastığınızda ekrandaki reçete gelir.</span></div>
+    </div>
+  </section>
 
   <section id="fark" style="padding-bottom:0">
     <div class="wrap">
@@ -552,42 +669,6 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
     </div>
   </section>
 
-  <section id="pro" class="gece on-night">
-    <div class="wrap pro-grid">
-      <div>
-        <h2>Medula ve OptiFlow aynı pencerede.</h2>
-        <p class="lead">Medula Optik'teki sferik, silendirik ve aks değerleri kutuların içinde durduğu için kopyala-yapıştırla gelmez. OptiFlow Pro bu değerleri doğru sırayla okur; siz kontrol edip onaylayınca siparişe yazılır.</p>
-        <p class="lead">Aynı pencereden müşterinin SGK hakkını sorgular, ÜTS karekodunu okutursunuz. İnternet kesilse bile açık siparişler ekranda kalır.</p>
-        <div class="gizlilik"><?= $ico['lock'] ?><span>SGK kullanıcı adınızı ve şifrenizi <b>okumaz, saklamaz, göndermez</b>. Medula'ya her zamanki gibi kendiniz girersiniz; yalnızca "Aktar"a bastığınızda ekrandaki reçete gelir.</span></div>
-        <div class="pro-ctas"><a class="btn btn-red" href="kayit.php">Mağazamı oluştur</a></div>
-      </div>
-      <div class="pencere" role="img" aria-label="OptiFlow Pro penceresi: solda Medula reçetesi, sağda OptiFlow siparişi">
-        <div class="pencere-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><b>OptiFlow Pro</b>
-          <span class="arac"><span>Hak sorgula</span><span class="aktar">Aktar</span></span></div>
-        <div class="bolmeler">
-          <div class="bolme">
-            <small>Medula Optik · e-Reçete 1A2B3C4</small>
-            <div class="kutular">
-              <span></span><i>Sferik</i><i>Silendirik</i><i>Aks</i>
-              <i>Sağ</i><span class="kutu">+1,25</span><span class="kutu">−0,75</span><span class="kutu">45</span>
-              <i>Sol</i><span class="kutu">+1,00</span><span class="kutu">−0,50</span><span class="kutu">130</span>
-              <i>Yakın</i><span class="kutu">+3,25</span><span class="kutu">−0,75</span><span class="kutu">45</span>
-            </div>
-          </div>
-          <div class="bolme">
-            <small>OptiFlow · Yeni sipariş</small>
-            <table class="rx">
-              <tr><th></th><th>SPH</th><th>CYL</th><th>AKS</th><th>ADD</th></tr>
-              <tr><td>Sağ</td><td>+1,25</td><td>−0,75</td><td>45</td><td>+2,00</td></tr>
-              <tr><td>Sol</td><td>+1,00</td><td>−0,50</td><td>130</td><td>+2,00</td></tr>
-            </table>
-            <div class="sgk"><span>SGK katkı payı</span><b>hesaplandı</b></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <section id="icerde">
     <div class="wrap">
       <div class="bas">
@@ -596,27 +677,10 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
       </div>
       <div class="iki">
         <div>
-          <div class="pano" role="img" aria-label="Atölye panosu örneği: cam bekleniyor, montajda, kontrolde ve hazır sütunları">
-            <div class="pano-ust">Atölye panosu <span>Örnek görünüm</span></div>
-            <div class="sutunlar">
-              <div class="sutun"><b>Cam bekleniyor <i>3</i></b>
-                <div class="is gec"><strong>#01284</strong><span>Progresif 1.6 · <em>5. gün</em></span></div>
-                <div class="is"><strong>#01291</strong><span>Tek odak 1.5 · 1. gün</span></div>
-                <div class="is"><strong>#01293</strong><span>Antirefle · bugün</span></div>
-              </div>
-              <div class="sutun"><b>Montajda <i>2</i></b>
-                <div class="is mon"><strong>#01279</strong><span>Metal çerçeve · M. K.</span></div>
-                <div class="is mon"><strong>#01286</strong><span>Nilor · A. Y.</span></div>
-              </div>
-              <div class="sutun"><b>Kontrolde <i>1</i></b>
-                <div class="is kon"><strong>#01277</strong><span>Aks ve PD ölçüldü</span></div>
-              </div>
-              <div class="sutun"><b>Hazır <i>2</i></b>
-                <div class="is hazir"><strong>#01270</strong><span>WhatsApp gitti</span></div>
-                <div class="is hazir"><strong>#01272</strong><span>Teslim: yarın</span></div>
-              </div>
-            </div>
-          </div>
+          <figure class="tarayici">
+            <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">optiflow.com.tr/workshop.php</span></div>
+            <img src="assets/onizleme/atolye.webp" width="1280" height="800" loading="lazy" alt="Atölye panosu: cam bekliyor, montajda, kalite kontrol ve hazır sütunları">
+          </figure>
           <p class="alt-not">Duvardaki atölye ekranında da aynı liste döner; fiyat, telefon ve reçete görünmez.</p>
         </div>
         <div class="telefon" role="img" aria-label="Müşterinin telefonunda sipariş durumu ve garanti bilgisi örneği">
@@ -632,6 +696,37 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
           <div class="tel-garanti"><span>Garanti · çerçeve</span><b>1 yıl 11 ay</b></div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section id="galeri" style="padding-top:0">
+    <div class="wrap">
+      <div class="bas">
+        <h2>Uygulamanın içinden.</h2>
+        <p class="lead">Örnek verili bir deneme mağazasından alınmış gerçek ekranlar. Yana kaydırın.</p>
+      </div>
+    </div>
+    <div class="serit" tabindex="0" aria-label="Uygulama ekranları">
+      <figure class="tarayici">
+        <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">Sipariş #00001</span></div>
+        <img src="assets/onizleme/siparis.webp" width="1140" height="800" loading="lazy" alt="Sipariş ekranı: müşteri, aşamalar, durum değiştirme">
+        <figcaption><b>Sipariş</b> Aşamalar, kim yaptı, reçete ve camlar, WhatsApp ve fiş tek ekranda.</figcaption>
+      </figure>
+      <figure class="tarayici">
+        <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">SGK ay sonu faturası</span></div>
+        <img src="assets/onizleme/sgk.webp" width="1280" height="800" loading="lazy" alt="SGK ay sonu faturası ekranı">
+        <figcaption><b>SGK ay sonu</b> Faturalanacak reçeteler, Medula'ya işlenmemişler ve döküm karşılaştırması.</figcaption>
+      </figure>
+      <figure class="tarayici">
+        <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">Garantiler</span></div>
+        <img src="assets/onizleme/garanti.webp" width="1280" height="800" loading="lazy" alt="Garantiler listesi">
+        <figcaption><b>Garantiler</b> Geçerli, bitecek ve talep açılmış garantiler; karekodlu kart.</figcaption>
+      </figure>
+      <figure class="tarayici">
+        <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">Siparişler</span></div>
+        <img src="assets/onizleme/liste.webp" width="1280" height="800" loading="lazy" alt="Siparişler ana ekranı">
+        <figcaption><b>Günün özeti</b> Bugün teslim sözü verilen, geciken, haber verilecek ve tahsilat bekleyenler.</figcaption>
+      </figure>
     </div>
   </section>
 
@@ -787,7 +882,7 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
       <div class="alt-kol">
         <b>Ürün</b>
         <a href="#yol">Nasıl çalışır</a>
-        <a href="#pro">OptiFlow Pro</a>
+        <a href="#surumler">Lite ve Pro</a>
         <a href="#neler">Neler yapar</a>
         <a href="#fiyatlar">Fiyatlar</a>
         <a href="#guven">Güven ve KVKK</a>

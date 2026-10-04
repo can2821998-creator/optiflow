@@ -12,6 +12,9 @@ DEĞİŞİKLİK NOTLARI — 4.16.2 (tanıtım sayfası yenilendi; OptiFlow Pro 5
   - Zenginleştirme: "Bugüne kadar / OptiFlow ile" karşılaştırması, örnek atölye panosu ve müşterinin telefonundaki
     durum + garanti görünümü, SGK ay sonu kontrol örneği (Medula dökümü ↔ OptiFlow), rehber bağlantısı.
     Renk paleti keskinleştirildi (daha derin lacivert, doygun marka mavisi, logodaki macenta durum vurgusu).
+  - "İki sürüm, tek sistem": OptiFlow Lite (tarayıcı + telefon önizlemesi) ve OptiFlow Pro (Medula'yı yanına
+    alan Windows penceresi) yan yana; ortak özellikler ve farklar tablosu. Uygulamanın gerçek ekranlarından
+    önizlemeler (assets/onizleme/*.webp, örnek verili deneme mağazasından) ve kaydırmalı ekran galerisi.
   - Veritabanı şeması DEĞİŞMEDİ (27).
 
 DEĞİŞİKLİK NOTLARI — 4.16.1 (SGK faturası düzeltmesi; OptiFlow Pro 5.3.0 ile)

@@ -28,12 +28,12 @@ jobs:
       - name: Bağlan, klasörü kontrol et, yazma dene
         run: |
           KLASOR="${FTP_KLASOR:-httpdocs}"
-          echo "deneme $(date -u +%FT%TZ)" > .optiflow-ftp-deneme.txt
-          lftp -u "$FTP_KULLANICI","$FTP_SIFRE" "$FTP_SUNUCU" -e "
-            set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $SERTIFIKA; set net:max-retries 2; set net:timeout 20;
-            cd $KLASOR; pwd;
-            cls -1 index.php durum.php kontrol.php VERSION.txt app indir;
-            cat VERSION.txt;
-            put .optiflow-ftp-deneme.txt; rm .optiflow-ftp-deneme.txt;
-            quit" 2>&1 | grep -v -i "password\|sifre" | head -40
-          echo "::notice::FTP bağlantısı, klasör ve yazma izni tamam."
+          echo "deneme $(date -u +%FT%TZ)" > deneme.txt
+          ftp() { lftp -u "$FTP_KULLANICI","$FTP_SIFRE" "$FTP_SUNUCU" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $SERTIFIKA; set net:max-retries 2; set net:timeout 20; cd $KLASOR; $1; quit"; }
+          SURUM=$(ftp "cat VERSION.txt" | grep -m1 '^Release:' || true)
+          [ -n "$SURUM" ] || { echo "::error::Klasörde VERSION.txt okunamadı: FTP_KLASOR yanlış olabilir"; exit 1; }
+          echo "::notice::Bağlantı tamam. Klasördeki sürüm: $SURUM"
+          DOSYA=$(ftp "cls -1 index.php kontrol.php" | tr '\n' ' ')
+          echo "::notice::Görülen dosyalar: $DOSYA"
+          ftp "put deneme.txt -o .optiflow-ftp-deneme.txt; cls -1 .optiflow-ftp-deneme.txt; rm .optiflow-ftp-deneme.txt" | grep -q optiflow-ftp-deneme || { echo "::error::Yazma izni yok"; exit 1; }
+          echo "::notice::Yazma izni tamam (deneme dosyası yazıldı ve silindi)."

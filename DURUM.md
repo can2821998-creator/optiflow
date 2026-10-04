@@ -4,7 +4,7 @@
 
 ## Sürüm
 - **Sunucu 4.16.2**, şema **27**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
-- **Canlı site (04.10): 4.16.1, masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
+- **Canlı site (04.10, 17:15): 4.16.2 (yeni tanıtım sayfası), masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
   Canlı veritabanı göçü (22 → 27) ilk personel girişinde çalışır; sonucu kontrol edilmedi.
 - Özellik anahtarları (hepsi varsayılan kapalı): `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
 - Testler: sunucu 635/635 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42, sgk-fatura 57+30);

@@ -4,8 +4,8 @@
 
 ## Sürüm
 - **Sunucu 4.16.1**, şema **27**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
-- **Canlı site (03.10 kontrolü): 4.12.0, şema 22, latest.yml 5.1.0** — 4.13–4.16 ve Pro 5.2/5.3 henüz YÜKLENMEDİ.
-  Kullanıcı girişin çalıştığını doğruladı (kontrol.php'deki poyraz2 bağlantı hatası girişleri etkilemiyor; ayrıca bakılmalı).
+- **Canlı site (04.10): 4.16.1, masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
+  Canlı veritabanı göçü (22 → 27) ilk personel girişinde çalışır; sonucu kontrol edilmedi.
 - Özellik anahtarları (hepsi varsayılan kapalı): `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
 - Testler: sunucu 635/635 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42, sgk-fatura 57+30);
   sunucu entegrasyon (yerel MariaDB): api 46/46, modüller 76/76, garanti 37/37, sgk-fatura 25/25.

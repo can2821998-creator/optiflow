@@ -1,0 +1,39 @@
+# Geçici: FTP sırlarıyla bağlantı denemesi (site dosyalarına dokunmaz; yalnızca listeler ve
+# küçük bir deneme dosyası yazıp siler). Canlıya alma doğrulanınca silinecek.
+name: FTP bağlantı denemesi
+on:
+  push:
+    branches: ['oturum/sgk-fatura']
+    paths: ['.github/workflows/ftp-dene.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dene:
+    runs-on: ubuntu-latest
+    env:
+      FTP_SUNUCU: ${{ secrets.FTP_SUNUCU }}
+      FTP_KULLANICI: ${{ secrets.FTP_KULLANICI }}
+      FTP_SIFRE: ${{ secrets.FTP_SIFRE }}
+      FTP_KLASOR: ${{ secrets.FTP_KLASOR }}
+      SERTIFIKA: ${{ vars.FTP_SERTIFIKA_KONTROL || 'no' }}
+    steps:
+      - name: Sırlar tanımlı mı?
+        run: |
+          for s in FTP_SUNUCU FTP_KULLANICI FTP_SIFRE; do
+            if [ -z "${!s}" ]; then echo "::error::$s tanımlı değil"; exit 1; else echo "$s: tanımlı"; fi
+          done
+          echo "FTP_KLASOR: ${FTP_KLASOR:-(yok, httpdocs kullanılacak)}"
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+      - name: Bağlan, klasörü kontrol et, yazma dene
+        run: |
+          KLASOR="${FTP_KLASOR:-httpdocs}"
+          echo "deneme $(date -u +%FT%TZ)" > .optiflow-ftp-deneme.txt
+          lftp -u "$FTP_KULLANICI","$FTP_SIFRE" "$FTP_SUNUCU" -e "
+            set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $SERTIFIKA; set net:max-retries 2; set net:timeout 20;
+            cd $KLASOR; pwd;
+            cls -1 index.php durum.php kontrol.php VERSION.txt app indir;
+            cat VERSION.txt;
+            put .optiflow-ftp-deneme.txt; rm .optiflow-ftp-deneme.txt;
+            quit" 2>&1 | grep -v -i "password\|sifre" | head -40
+          echo "::notice::FTP bağlantısı, klasör ve yazma izni tamam."

@@ -9,6 +9,9 @@ DEĞİŞİKLİK NOTLARI — 4.16.2 (tanıtım sayfası yenilendi; OptiFlow Pro 5
     işe göre gruplanmış özellikler (SGK ve mevzuat, müşteri, para, ekip), fiyatlar, güven, SSS.
   - İçerik güncellendi: Chrome eklentisi yerine OptiFlow Pro; SGK ay sonu faturası, garanti kartı, ÜTS karekod,
     SGK hak kontrolü, alış faturası, ödeme linki eklendi. SSS'te Medula ve kurulum cevapları güncel.
+  - Zenginleştirme: "Bugüne kadar / OptiFlow ile" karşılaştırması, örnek atölye panosu ve müşterinin telefonundaki
+    durum + garanti görünümü, SGK ay sonu kontrol örneği (Medula dökümü ↔ OptiFlow), rehber bağlantısı.
+    Renk paleti keskinleştirildi (daha derin lacivert, doygun marka mavisi, logodaki macenta durum vurgusu).
   - Veritabanı şeması DEĞİŞMEDİ (27).
 
 DEĞİŞİKLİK NOTLARI — 4.16.1 (SGK faturası düzeltmesi; OptiFlow Pro 5.3.0 ile)

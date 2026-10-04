@@ -121,7 +121,7 @@ function render_karsilama(): void
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="index,follow">
-<meta name="theme-color" content="#f5f7fc">
+<meta name="theme-color" content="#f3f5fb">
 <title>Gözlükçü Programı OptiFlow | Medula Aktarımı, SGK Faturası ve Atölye</title>
 <meta name="description" content="Gözlükçüler için yönetim programı: Medula'daki reçete tek tıkla siparişe, SGK katkı payı ve ay sonu SGK faturası hazır. Atölye panosu, WhatsApp bildirimi, garanti kartı, ÜTS karekod, kasa ve çok şube. 30 gün ücretsiz.">
 <link rel="canonical" href="https://optiflow.com.tr/">
@@ -166,19 +166,21 @@ function render_karsilama(): void
 /* Göz eşeli: başlık muayene tablosu gibi ortalanır ve satır satır küçülür; gerisi sola hizalı, sakin.
    Lacivert koyu bantlar (Pro penceresi, fiyat vurgusu) muayene odasının karanlık kısmı. */
 :root{
-  --paper:#f5f7fc;      /* soğuk, muayene odası beyazı */
+  --paper:#f3f5fb;      /* soğuk, muayene odası beyazı */
   --card:#ffffff;
-  --ink:#141a3d;        /* optik lacivert */
-  --ink-2:#565d7e;
-  --line:#dfe3ef;
-  --blue:#3346ff;       /* marka mavisi */
-  --blue-deep:#2131d6;
-  --lens:#e8ecff;       /* cam tonu */
-  --red:#e2372a;        /* tek eylem rengi */
-  --red-deep:#bf2a1f;
-  --night:#121734;      /* koyu bant */
-  --night-2:#1d2350;
-  --night-ink:#c9cff0;
+  --ink:#0a1033;        /* derin optik lacivert */
+  --ink-2:#454d73;
+  --line:#d3d9eb;
+  --blue:#2a36ff;       /* marka mavisi, doygun */
+  --blue-deep:#1822d6;
+  --magenta:#c414d8;    /* logodaki ikinci renk: yalnızca durum ve vurgu noktaları */
+  --lens:#e3e8ff;       /* cam tonu */
+  --red:#f2301f;        /* tek eylem rengi */
+  --red-deep:#c8200f;
+  --ok:#0f8a5f;
+  --night:#080d2b;      /* koyu bant */
+  --night-2:#141a46;
+  --night-ink:#c3cbf5;
   --display:"Manrope","Manrope Fallback",system-ui,Arial,sans-serif;
   --serif:"Fraunces",Georgia,"Times New Roman",serif;
   --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
@@ -206,7 +208,7 @@ p{margin:0}
 .on-night .btn-line:hover{background:#fff;color:var(--night)}
 
 /* ---------- Üst çubuk ---------- */
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rgba(245,247,252,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rgba(243,245,251,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:13px}
 .wordmark{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;text-decoration:none;color:var(--ink);letter-spacing:-.02em}
 .wordmark svg{width:30px;height:30px}
@@ -231,6 +233,9 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .e6{padding-top:.8em}
 .e6 .harf{font-size:clamp(1rem,1.5vw,1.2rem);font-weight:600;letter-spacing:0;white-space:normal;color:var(--ink-2);line-height:1.55;max-width:62ch;justify-self:center}
 .e1 .harf{color:var(--blue)}
+.e6 .keskin{color:var(--magenta)}
+.esel-satir{border-bottom-color:var(--line)}
+.esel h1 .esel-satir:first-child{border-top:3px solid var(--ink)}
 @media (prefers-reduced-motion:no-preference){
   .esel-satir .harf{animation:netles 1.1s cubic-bezier(.2,.7,.2,1) both}
   .e1 .harf{animation-delay:.05s}.e2 .harf{animation-delay:.2s}.e3 .harf{animation-delay:.35s}
@@ -246,12 +251,82 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 section{padding-block:96px}
 .bas{margin-bottom:44px}
 
+/* Önce / OptiFlow ile */
+.fark{width:100%;border-collapse:collapse;font-size:15.5px}
+.fark th{text-align:left;font-size:14px;font-weight:800;padding:0 18px 12px 0;border-bottom:3px solid var(--ink)}
+.fark th.ile{color:var(--blue)}
+.fark td{padding:16px 18px 16px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.fark td:first-child{font-weight:800;width:22%}
+.fark td.once{color:var(--ink-2);text-decoration:line-through;text-decoration-color:rgba(242,48,31,.55);text-decoration-thickness:2px}
+.fark td.ile{font-weight:600}
+.tablo-kap{overflow-x:auto}
+
+/* Dükkânın içi, müşterinin cebi */
+.iki{display:grid;grid-template-columns:1.35fr .65fr;gap:40px;align-items:start}
+.iki > *{min-width:0}
+.pano{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 30px 60px -40px rgba(10,16,51,.45)}
+.pano-ust{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:800;margin-bottom:14px}
+.pano-ust span{color:var(--ink-2);font-weight:600}
+.sutunlar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.sutun{background:var(--paper);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.sutun b{font-size:12.5px;display:flex;justify-content:space-between}
+.sutun b i{font-style:normal;color:var(--ink-2);font-family:var(--mono);font-weight:500}
+.is{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ink-2);border-radius:8px;padding:8px 9px;font-size:12px;line-height:1.35}
+.is strong{display:block;font-family:var(--mono);font-size:12px}
+.is span{color:var(--ink-2)}
+.is.gec{border-left-color:var(--red)}
+.is.gec em{color:var(--red);font-style:normal;font-weight:800}
+.is.hazir{border-left-color:var(--ok)}
+.is.mon{border-left-color:var(--blue)}
+.is.kon{border-left-color:var(--magenta)}
+.alt-not{margin-top:14px;color:var(--ink-2);font-size:14.5px}
+.telefon{border:10px solid var(--ink);border-radius:34px;background:var(--paper);padding:18px 14px;max-width:290px;margin-inline:auto;box-shadow:0 30px 60px -30px rgba(10,16,51,.55)}
+.tel-ust{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;margin-bottom:14px}
+.tel-ust i{width:22px;height:22px;border-radius:7px;background:var(--blue);display:block}
+.tel-kart{background:var(--card);border-radius:16px;padding:16px;border:1px solid var(--line)}
+.tel-kart small{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--ink-2);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+.tel-kart h4{margin:12px 0 4px;font-family:var(--serif);font-weight:500;font-size:1.6rem;line-height:1.1}
+.tel-kart p{font-size:13.5px;color:var(--ink-2)}
+.adimlar{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:14px}
+.adimlar span{height:6px;border-radius:3px;background:var(--line)}
+.adimlar span.on{background:var(--ok)}
+.tel-adim{font-size:12px;color:var(--ink-2);margin-top:6px}
+.tel-dugme{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tel-dugme span{text-align:center;font-size:12.5px;font-weight:800;padding:9px;border-radius:10px;background:var(--lens);color:var(--blue-deep)}
+.tel-garanti{margin-top:10px;display:flex;justify-content:space-between;font-size:12.5px;padding:10px 12px;border-radius:12px;background:var(--card);border:1px solid var(--line)}
+.tel-garanti b{color:var(--ok)}
+
+/* SGK ay sonu */
+.ay-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.ay-grid > *{min-width:0}
+.kontrol{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.kontrol-ust{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
+.kontrol-ust div{padding:16px 18px}
+.kontrol-ust div + div{border-left:1px solid var(--line)}
+.kontrol-ust small{display:block;font-size:12.5px;color:var(--ink-2);font-weight:700}
+.kontrol-ust b{font-size:1.9rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kontrol-ust .fark-hucre b{color:var(--red)}
+.dokum{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+.dokum td{padding:10px 18px;border-bottom:1px solid var(--line)}
+.dokum td.no{font-family:var(--mono)}
+.dokum td.tl{text-align:right;font-family:var(--mono)}
+.dokum tr.eksik td{background:#fff3f2}
+.dokum tr.eksik td:last-child{color:var(--red);font-weight:800;font-family:var(--display);text-align:right}
+.ay-liste{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:12px}
+.ay-liste li{display:grid;grid-template-columns:22px 1fr;gap:10px;color:var(--ink-2)}
+.ay-liste li::before{content:"";width:12px;height:7px;margin-top:.45em;border-left:2px solid var(--blue);border-bottom:2px solid var(--blue);transform:rotate(-45deg)}
+.ay-liste b{color:var(--ink)}
+
+/* Rehber */
+.rehber{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;padding:28px 32px;border:2px solid var(--ink);border-radius:16px}
+.rehber p{color:var(--ink-2);max-width:60ch;margin-top:6px}
+
 /* Bir siparişin yolu */
 .yol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:0;counter-reset:adim}
 .yol li{position:relative;padding:22px 20px 0 0;border-top:2px solid var(--ink)}
 .yol li::before{counter-increment:adim;content:counter(adim);position:absolute;top:-15px;left:0;width:28px;height:28px;border-radius:50%;background:var(--paper);border:2px solid var(--ink);display:grid;place-items:center;font-size:13px;font-weight:800;font-family:var(--mono)}
-.yol li:last-child{border-top-color:var(--blue)}
-.yol li:last-child::before{border-color:var(--blue);color:var(--blue)}
+.yol li:last-child{border-top-color:var(--magenta)}
+.yol li:last-child::before{border-color:var(--magenta);color:var(--magenta)}
 .yol h3{margin:10px 0 8px}
 .yol p{color:var(--ink-2);font-size:15px}
 
@@ -278,7 +353,7 @@ section{padding-block:96px}
 .rx th{font-family:var(--display);font-size:11px;color:var(--night-ink);font-weight:700;text-align:right;padding:0 4px 6px}
 .rx th:first-child,.rx td:first-child{text-align:left}
 .rx td{padding:5px 4px;border-top:1px solid rgba(255,255,255,.1);text-align:right}
-.sgk{margin-top:12px;display:flex;justify-content:space-between;gap:10px;padding:9px 10px;border-radius:8px;background:rgba(51,70,255,.25);font-size:12.5px}
+.sgk{margin-top:12px;display:flex;justify-content:space-between;gap:10px;padding:9px 10px;border-radius:8px;background:rgba(42,54,255,.35);font-size:12.5px}
 .sgk b{font-family:var(--mono)}
 .gizlilik{display:flex;gap:12px;margin-top:26px;padding-top:20px;border-top:1px solid rgba(255,255,255,.14);font-size:14.5px;color:var(--night-ink)}
 .gizlilik svg{width:22px;height:22px;flex:none;color:#fff}
@@ -358,10 +433,12 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
   .pro-grid{grid-template-columns:1fr;gap:40px}
   .yol{grid-template-columns:1fr;gap:28px}
   .yol li{border-top:0;border-left:2px solid var(--ink);padding:0 0 0 26px}
-  .yol li:last-child{border-left-color:var(--blue)}
+  .yol li:last-child{border-left-color:var(--magenta)}
   .yol li::before{top:0;left:-15px}
   .yol h3{margin-top:2px}
   .grup{grid-template-columns:1fr;gap:18px}
+  .iki,.ay-grid{grid-template-columns:1fr;gap:40px}
+  .sutunlar{grid-template-columns:repeat(2,1fr)}
   .guven{grid-template-columns:1fr 1fr}
   .alt{grid-template-columns:1fr 1fr}
 }
@@ -380,7 +457,11 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
   .bolme + .bolme{border-left:0;border-top:1px solid rgba(255,255,255,.1)}
   .arac span:not(.aktar){display:none}
   .alt{grid-template-columns:1fr}
-  .mbar{display:flex;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(245,247,252,.96);border-top:1px solid var(--line)}
+  .kontrol-ust b{font-size:1.5rem}
+  .kontrol-ust div{padding:12px}
+  .fark{font-size:14.5px}
+  .rehber{padding:22px}
+  .mbar{display:flex;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(243,245,251,.96);border-top:1px solid var(--line)}
   .mbar .btn{flex:1;padding:13px 10px}
   body.bar{padding-bottom:76px}
 }
@@ -395,6 +476,7 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
     <nav class="nav-links" aria-label="Ana menü">
       <a href="#yol">Nasıl çalışır</a>
       <a href="#pro">OptiFlow Pro</a>
+      <a href="#ay-sonu">SGK faturası</a>
       <a href="#neler">Neler yapar</a>
       <a href="#fiyatlar">Fiyatlar</a>
       <a href="#sss">Sorular</a>
@@ -434,6 +516,27 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
       </div>
     </div>
   </div>
+
+  <section id="fark" style="padding-bottom:0">
+    <div class="wrap">
+      <div class="bas">
+        <h2>Tezgâhta her gün tekrar eden işler, artık kendiliğinden.</h2>
+      </div>
+      <div class="tablo-kap">
+        <table class="fark">
+          <thead><tr><th scope="col">İş</th><th scope="col">Bugüne kadar</th><th scope="col" class="ile">OptiFlow ile</th></tr></thead>
+          <tbody>
+            <tr><td>Reçete</td><td class="once">Medula ekranından değerler tek tek okunup yazılır</td><td class="ile">"Aktar"a basılır, değerler sıra hatası olmadan siparişe gelir</td></tr>
+            <tr><td>SGK katkı payı</td><td class="once">Kullanım şekline göre hesap makinesiyle bulunur</td><td class="ile">Reçeteye göre önerilir, kalan bakiye kendiliğinden çıkar</td></tr>
+            <tr><td>"Gözlüğüm hazır mı?"</td><td class="once">Telefon çalar, sipariş defterde aranır</td><td class="ile">Müşteri fişteki karekodu okutur ya da WhatsApp'tan haber alır</td></tr>
+            <tr><td>Gelmeyen cam</td><td class="once">Hangi camın kaç gündür beklediği akılda tutulur</td><td class="ile">Atölye panosunda geciken iş kırmızıyla öne çıkar</td></tr>
+            <tr><td>Ay sonu SGK faturası</td><td class="once">Reçeteler tek tek sayılır, Medula listesiyle elle karşılaştırılır</td><td class="ile">Ayın reçeteleri tek faturada toplanır, Medula dökümüyle adet kontrol edilir</td></tr>
+            <tr><td>Garanti</td><td class="once">Kâğıt garanti belgesi kaybolur, tarih bilinmez</td><td class="ile">Karekodlu kart: müşteri kalan süreyi telefonundan görür</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
   <section id="yol">
     <div class="wrap">
@@ -485,6 +588,80 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
     </div>
   </section>
 
+  <section id="icerde">
+    <div class="wrap">
+      <div class="bas">
+        <h2>Atölye neyin beklediğini görür, müşteri telefonundan takip eder.</h2>
+        <p class="lead">Aynı sipariş iki ayrı ekranda: arkada iş listesi, müşterinin cebinde sade bir durum sayfası.</p>
+      </div>
+      <div class="iki">
+        <div>
+          <div class="pano" role="img" aria-label="Atölye panosu örneği: cam bekleniyor, montajda, kontrolde ve hazır sütunları">
+            <div class="pano-ust">Atölye panosu <span>Örnek görünüm</span></div>
+            <div class="sutunlar">
+              <div class="sutun"><b>Cam bekleniyor <i>3</i></b>
+                <div class="is gec"><strong>#01284</strong><span>Progresif 1.6 · <em>5. gün</em></span></div>
+                <div class="is"><strong>#01291</strong><span>Tek odak 1.5 · 1. gün</span></div>
+                <div class="is"><strong>#01293</strong><span>Antirefle · bugün</span></div>
+              </div>
+              <div class="sutun"><b>Montajda <i>2</i></b>
+                <div class="is mon"><strong>#01279</strong><span>Metal çerçeve · M. K.</span></div>
+                <div class="is mon"><strong>#01286</strong><span>Nilor · A. Y.</span></div>
+              </div>
+              <div class="sutun"><b>Kontrolde <i>1</i></b>
+                <div class="is kon"><strong>#01277</strong><span>Aks ve PD ölçüldü</span></div>
+              </div>
+              <div class="sutun"><b>Hazır <i>2</i></b>
+                <div class="is hazir"><strong>#01270</strong><span>WhatsApp gitti</span></div>
+                <div class="is hazir"><strong>#01272</strong><span>Teslim: yarın</span></div>
+              </div>
+            </div>
+          </div>
+          <p class="alt-not">Duvardaki atölye ekranında da aynı liste döner; fiyat, telefon ve reçete görünmez.</p>
+        </div>
+        <div class="telefon" role="img" aria-label="Müşterinin telefonunda sipariş durumu ve garanti bilgisi örneği">
+          <div class="tel-ust"><i></i>Örnek Optik</div>
+          <div class="tel-kart">
+            <small>#01270</small>
+            <h4>Gözlüğünüz hazır</h4>
+            <p>Siparişiniz tamamlandı, mağazamızdan teslim alabilirsiniz.</p>
+            <div class="adimlar"><span class="on"></span><span class="on"></span><span class="on"></span><span></span></div>
+            <div class="tel-adim">Adım 3 / 4</div>
+            <div class="tel-dugme"><span>Ara</span><span>Yol tarifi</span></div>
+          </div>
+          <div class="tel-garanti"><span>Garanti · çerçeve</span><b>1 yıl 11 ay</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ay-sonu" style="padding-top:0">
+    <div class="wrap ay-grid">
+      <div>
+        <h2>Ay sonunda SGK'ya tek fatura, sayısı Medula'yla tutarak.</h2>
+        <p class="lead">Reçeteyi Medula'ya işlediğinizde siparişte işaretlersiniz. Ay sonunda o ayın reçeteleri tek faturada toplanır.</p>
+        <ul class="ay-liste">
+          <li><span><b>Medula dökümünü yükleyin.</b> PDF'teki reçete numaraları OptiFlow'daki işaretlerle karşılaştırılır.</span></li>
+          <li><span><b>Eksik kalanı görün.</b> Medula'da olup işaretlenmemiş reçete siparişiyle birlikte listelenir.</span></li>
+          <li><span><b>Faturayı ekiyle alın.</b> Fatura taslağı ve hasta, e-reçete no ve tutarlı reçete dökümü hazır.</span></li>
+        </ul>
+      </div>
+      <div class="kontrol" role="img" aria-label="Ay sonu kontrol örneği: Medula dökümü ile OptiFlow sayıları">
+        <div class="kontrol-ust">
+          <div><small>Medula dökümü</small><b>48</b></div>
+          <div><small>OptiFlow'da işaretli</small><b>47</b></div>
+          <div class="fark-hucre"><small>Fark</small><b>1</b></div>
+        </div>
+        <table class="dokum">
+          <tr><td class="no">2K7M4QX</td><td>Ayşe Y.</td><td class="tl">150,00</td></tr>
+          <tr><td class="no">5D6E7F8</td><td>Mehmet D.</td><td class="tl">150,00</td></tr>
+          <tr class="eksik"><td class="no">9G8H7J6</td><td>Zeynep Ç.</td><td>işaretlenmemiş</td></tr>
+          <tr><td class="no">3R8T1WB</td><td>Ali K.</td><td class="tl">200,00</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <section id="neler">
     <div class="wrap">
       <div class="bas">
@@ -501,6 +678,18 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
           </dl>
         </div>
       <?php endforeach; ?>
+    </div>
+  </section>
+
+  <section id="rehber" style="padding-top:0">
+    <div class="wrap">
+      <div class="rehber">
+        <div>
+          <h3 style="font-family:var(--serif);font-weight:500;font-size:1.6rem">Gözlükçüler için rehber</h3>
+          <p>Gözlükçü programı seçerken nelere bakılmalı, dükkânın günlük işleyişi nasıl kolaylaşır: tezgâhtan yazılmış sade yazılar.</p>
+        </div>
+        <a class="btn btn-line" href="rehber.php">Rehberi okuyun</a>
+      </div>
     </div>
   </section>
 

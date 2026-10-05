@@ -4,7 +4,7 @@
 
 ## Sürüm
 - **Sunucu 4.16.8**, şema **28**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
-- **Canlı site: 4.16.8 main'e gönderildi 05.10 (yükleme sırasında hata düzeltmesi); masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
+- **Canlı site: 4.16.8 (05.10 17:00 doğrulandı; ilk bakım işaretli yükleme sorunsuz); masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
   Canlı veritabanı göçü (22 → 27) ilk personel girişinde çalışır; sonucu kontrol edilmedi.
 - Özellik anahtarları (hepsi varsayılan kapalı): `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
 - Testler: sunucu 635/635 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42, sgk-fatura 57+30, seo 48);
@@ -16,6 +16,8 @@
 - "Ara ara Beklenmeyen hata": canlı loglar (geçici `oturum/log-oku` iş akışı, maskeli) → hepsi FTP yüklemesi
   sırasında. Düzeltme: geçici dosyayla yükleme + `.guncelleniyor` bakım ekranı (`app/guncelleme.php`).
 - Cila: katalog iç notu (göç v28), yedek sayfasında phpMyAdmin dili.
+- CI: düşen sunucu testi artık Actions uyarısı olarak yazılıyor (oturumdan log okunamıyor). PHP 8.2 stat önbelleği düzeltildi.
+- `oturum/log-oku` uzak dalı oturumdan silinemedi (maskeli log özeti içerir) → GitHub'dan elle silinebilir.
 - BULGU: kodda şube kavramı YOK ama tanıtım sayfası "çok şube / şube yetkisi" vaat ediyor → kullanıcıya soruldu.
 
 ## Önceki oturum (4.16.6–4.16.7 — Rehber "OptiFlow Gazetesi")

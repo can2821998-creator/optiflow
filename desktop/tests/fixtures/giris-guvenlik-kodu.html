@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><title>Medula Optik Giriş</title></head>
+<body>
+<!-- Medula Optik giriş ekranının yapısı (JSF): kullanıcı adı, şifre, güvenlik kodu (resim), KVKK onayı.
+     Değerler sahte; gerçek kullanıcı bilgisi içermez. -->
+<form id="loginForm" name="loginForm" method="post" action="/Optik_Firma2_Web/login.faces">
+  <input type="hidden" name="loginForm" value="loginForm">
+  <input type="hidden" name="javax.faces.ViewState" value="-123:456">
+  <table>
+    <tr><td>Kullanıcı Adı</td><td><input id="loginForm:kullaniciAdi" name="loginForm:kullaniciAdi" type="text"></td></tr>
+    <tr><td>Şifre</td><td><input id="loginForm:sifre" name="loginForm:sifre" type="password"></td></tr>
+    <tr><td><img src="data:image/png;base64,iVBORw0KGgo=" alt="Güvenlik kodu"></td>
+        <td>Güvenlik Kod <input id="loginForm:guvenlikKodu" name="loginForm:guvenlikKodu" type="text"></td></tr>
+    <tr><td colspan="2"><label><input id="loginForm:kvkk" name="loginForm:kvkk" type="checkbox"> KVKK metnini okudum</label></td></tr>
+  </table>
+  <input id="loginForm:girisBtn" type="submit" value="Giriş">
+</form>
+</body></html>

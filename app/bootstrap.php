@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.17.1';
+const APP_VERSION = '4.18.0';
 const APP_ROOT = __DIR__ . '/..';
 
 // 4.16.8: canlıya yükleme sürerken yarım dosyalara denk gelmemek için kısa bakım ekranı (app/guncelleme.php).
@@ -99,6 +99,7 @@ require __DIR__ . '/domain.php';
 require __DIR__ . '/db.php';
 require __DIR__ . '/migrations.php';
 require __DIR__ . '/auth.php';
+require __DIR__ . '/hatirla.php';   // 4.18.0 beni hatırla
 require __DIR__ . '/layout.php';
 require __DIR__ . '/webpush.php';
 require __DIR__ . '/qr.php';
@@ -140,6 +141,16 @@ start_session();
  * artık o mağazanın veritabanını gösterir ve geri kalan her şey (db(), run_migrations(), tüm app/pages/*)
  * DEĞİŞMEDEN, tek mağazalıymış gibi çalışmaya devam eder.
  */
+/*
+ * 4.18.0 — "Beni hatırla": oturumda mağaza yoksa ve bu cihaz hatırlanıyorsa mağaza oturumu sessizce
+ * yeniden kurulur (personel oturumu ayrıca current_user() içinde). Sunucudan sunucuya uç noktalar,
+ * kayıt ve merkez panel hariç.
+ */
+if (!tenant_oturum() && isset($_COOKIE[HATIRLA_MAGAZA_CEREZ])
+    && !in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['cron.php', 'odeme-bildirim.php', 'kayit.php', 'merkez-panel.php', 'tesekkurler.php'], true)) {
+    magaza_hatirla_dene();
+}
+
 $merkezSayfasi = in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['magaza-giris.php', 'kayit.php', 'merkez-panel.php', 'tesekkurler.php'], true);
 $anaSayfaMisafir = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'index.php' && !tenant_oturum();
 

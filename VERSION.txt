@@ -1,6 +1,23 @@
 OPTIFLOW
-Release: 4.17.1 (2026-10-05)
+Release: 4.18.0 (2026-10-05)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.18.0 (beni hatırla + Medula şifresini kaydetme; OptiFlow Pro 5.4.0 ile)
+  - YENİ "Beni hatırla" (app/hatirla.php): mağaza girişinde "Bu bilgisayarda mağazayı hatırla", personel girişinde
+    "Beni hatırla". Masaüstünde ikisi varsayılan işaretli, web'de işaretsiz. 30 gün, her kullanımda uzar. Çerez
+    seçici.doğrulayıcı; sunucuda yalnızca SHA-256 özeti (merkez: magaza_hatirla, mağaza: oturum_hatirla, göç v30).
+    Geçersiz olur: mağaza/personel şifresi değişince, pasif kullanıcı, "Çıkış" (bu cihaz), "Farklı mağaza",
+    Profil › "Beni hatırlayan cihazlar" (tek tek / tümü), Ayarlar › "Beni hatırla" kapatılınca. Hatırlanan cihazda
+    oturum zaman aşımı sessizce yeniden girişe döner. Yanlış doğrulayıcılı çerez görülürse o kayıt silinir.
+  - OptiFlow Pro 5.4.0 — Medula şifresi (Chrome'daki gibi): "Giriş"e basıp giriş başarılı olunca "Kaydedilsin mi?"
+    (Kaydet / Şimdi değil / Bu bilgisayarda sorma). Sonraki girişte kullanıcı adı + şifre yazılır, imleç güvenlik
+    koduna gider; güvenlik kodu ve KVKK onayı ELLE. SGK şifre değiştirme ekranında "güncellensin mi?". Kayıt yalnızca
+    o bilgisayarda, Windows DPAPI (safeStorage) ile; şifreleme yoksa kaydedilmez; sunucuya, kayıtlara, tanılamaya
+    gitmez. Menü › SGK / Medula › "Kayıtlı Medula şifresi…" (sil) ve "Medula şifresini kaydetmeyi öner".
+  - Metinler güncellendi (tanıtım SSS, Pro kartı, güven bölümü, indir sayfası, SGK sayfası, rehber yazısı,
+    desktop/SECURITY.md, README): "okumaz, saklamaz" yerine "isterseniz yalnızca bu bilgisayarda saklanır".
+  - Testler: tests/hatirla (40), desktop/tests/server/hatirla-integration.mjs (24), desktop birim
+    tests/unit/medula-giris.test.ts (25), E2E +13 (Electron'da gerçek doldurma/kaydetme/güncelleme).
 
 DEĞİŞİKLİK NOTLARI — 4.17.1 (eski sistemden veri taşıma; OptiFlow Pro 5.3.0 ile)
   - YENİ: Merkez panel › mağaza › "Eski sistemden veri taşı" (app/tasima.php). Poyraz Optik Atölye ya da OptiFlow

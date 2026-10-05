@@ -35,6 +35,8 @@ export const IPC = {
   // main <-> Medula preload (isolated world). Main sends requests; preload only replies.
   medulaRequest: 'medula:istek',
   medulaReply: 'medula:yanit',
+  /** 5.4.0 — Medula preload → main: the user pressed "Giriş" (login form values, memory only). */
+  medulaGirisYakalandi: 'medula:giris-yakalandi',
 
   // OptiFlow page (trusted origin only) -> main
   optiflowOpenMedula: 'optiflow:medula-ac',

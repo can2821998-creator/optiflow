@@ -17,6 +17,7 @@ const BASE = (process.env.OPTIFLOW_TEST_URL || '').replace(/\/$/, '');
 const MERKEZ = process.env.OPTIFLOW_MERKEZ_SIFRE || '';
 const DBU = process.env.OPTIFLOW_TEST_DB_USER || '';
 const DBP = process.env.OPTIFLOW_TEST_DB_PASS || '';
+const MERKEZ_DB = process.env.OPTIFLOW_TEST_MERKEZ_DB || 'optiflow2';
 if (!BASE || !MERKEZ || !DBU) {
   console.log('SKIP: OPTIFLOW_TEST_URL, OPTIFLOW_MERKEZ_SIFRE and OPTIFLOW_TEST_DB_USER are required');
   process.exit(0);
@@ -138,12 +139,12 @@ const TUM = ['whatsapp', 'odeme_linki', 'lens_takip', 'cam_siparis', 'stok_oneri
 {
   const r = await merkez.form('merkez-panel.php', { action: 'ozellikler', id: String(iS.id), geri: 'detay', 'ozellik[]': [...TUM, 'bilinmeyen'] }, `merkez-panel.php?magaza=${iS.id}`);
   check('merkez saves the feature list', r.status === 303);
-  const kayit = sql('optiflow2', `SELECT ozellikler FROM magazalar WHERE id = ${iS.id}`);
+  const kayit = sql(MERKEZ_DB, `SELECT ozellikler FROM magazalar WHERE id = ${iS.id}`);
   check('unknown keys are dropped server-side', !kayit.includes('bilinmeyen') && TUM.every((k) => kayit.includes(k)), kayit);
 }
 {
   const r = await merkez.form('merkez-panel.php', { action: 'toplu', toplu_eylem: 'ozellik_ac:whatsapp', 'sec[]': [String(iT.id)] });
-  check('bulk action opens a feature for selected stores', r.status === 303 && sql('optiflow2', `SELECT ozellikler FROM magazalar WHERE id = ${iT.id}`) === '["whatsapp"]');
+  check('bulk action opens a feature for selected stores', r.status === 303 && sql(MERKEZ_DB, `SELECT ozellikler FROM magazalar WHERE id = ${iT.id}`) === '["whatsapp"]');
 }
 {
   const idx = await a.html('index.php');

@@ -8,7 +8,7 @@
  *   E2E_EMAIL=<store e-mail> E2E_USER=<staff user> xvfb-run -a electron dist-e2e/e2e-main.js
  * Optional: E2E_SCREENSHOT=/path/prefix writes toolbar/view screenshots.
  */
-import { app, BrowserWindow, type WebContents } from 'electron';
+import { app, BrowserWindow, dialog, type WebContents } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DesktopApp } from '../../src/main/app-controller';
@@ -20,6 +20,7 @@ import { applyHardRefreshHeaders, clearMedulaSession, restartMedulaBrowser, setu
 import http from 'node:http';
 import { session as eSession } from 'electron';
 import { MSG } from '../../src/shared/messages';
+import { MedulaGirisKasasi } from '../../src/main/medula-giris-kasasi';
 
 const ROOT = path.resolve(__dirname, '..');
 const FIX = path.join(ROOT, 'tests', 'fixtures');
@@ -28,6 +29,8 @@ const ROUTES: Record<string, string> = {
   '/': path.join(FIX, 'giris.html'),
   '/Optik_Firma2_Web/login.faces': path.join(FIX, 'giris.html'),
   '/Optik_Firma2_Web/index.faces': path.join(FIX, 'liste.html'),
+  '/Optik_Firma2_Web/giris2.faces': path.join(FIX, 'giris-guvenlik-kodu.html'),
+  '/Optik_Firma2_Web/sifre.faces': path.join(FIX, 'sifre-degistir.html'),
   '/Optik/Liste.aspx': path.join(FIX, 'liste.html'),
   '/Optik/HakSorgu.aspx': path.join(FIX, 'hak-sorgu.html'),
   '/Optik/Cerceveli.aspx': path.join(SITE, 'cerceveli.html'),
@@ -99,6 +102,8 @@ app.whenReady().then(async () => {
   const tenantSql = (q: string) =>
     tenantDb ? require('node:child_process').execFileSync('mysql', ['-uof', `-p${process.env.E2E_DB_PW || ''}`, '-N', '-B', tenantDb, '-e', q], { encoding: 'utf8' }).trim() : '';
 
+  // Önceki çalıştırmanın "beni hatırla" çerezleri kalmasın: her test temiz mağaza girişiyle başlar.
+  await sessions.optiflow.clearStorageData({ storages: ['cookies'] });
   const d = new DesktopApp(cfg, sessions, path.join(ROOT, 'dist'));
   d.create();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -120,6 +125,15 @@ app.whenReady().then(async () => {
     check('UA marker reaches the server on navigations', /OptiFlowDesktop\//.test(owc.getUserAgent()) && /OptiFlowDesktop\//.test(await js<string>(owc, 'navigator.userAgent')));
     await login();
     check('normal OptiFlow login works inside the shell', /index\.php/.test(owc.getURL()) && (await js<string>(owc, 'document.title')).startsWith('Siparişler'), owc.getURL());
+    {
+      // 4.18.0 — masaüstünde "Beni hatırla" kutuları varsayılan işaretli: uygulama kapanıp açılınca (oturum çerezi gider) şifre sorulmaz.
+      const kalici = (await sessions.optiflow.cookies.get({})).filter((c) => c.name === 'of_mh' || c.name === 'of_kh');
+      check('masaüstü girişi mağazayı ve personeli hatırlar (kalıcı, HttpOnly çerez)', kalici.length === 2 && kalici.every((c) => c.httpOnly && !c.session), JSON.stringify(kalici.map((c) => c.name)));
+      const oturum = await sessions.optiflow.cookies.get({ name: 'optiflow' });
+      for (const c of oturum) await sessions.optiflow.cookies.remove(BASE + '/', c.name);
+      await loadAndWait(owc, `${BASE}/index.php`);
+      check('uygulama yeniden açılmış gibi: şifre sorulmadan siparişler', /index\.php/.test(owc.getURL()) && (await js<string>(owc, 'document.title')).startsWith('Siparişler'), owc.getURL());
+    }
 
     const api = await js<string[]>(owc, 'window.optiflowDesktop ? Object.keys(window.optiflowDesktop).sort() : null');
     check('narrow API exposed on OptiFlow origin only', JSON.stringify(api) === JSON.stringify(['aktar', 'aktarimDinle', 'durum', 'medulaAc', 'surum']), JSON.stringify(api));
@@ -300,6 +314,107 @@ app.whenReady().then(async () => {
     await clearMedulaSession(sessions.medula);
     check('clearing removes Medula cookies', (await sessions.medula.cookies.get({})).length === 0);
     check('OptiFlow cookies untouched by Medula clear', (await sessions.optiflow.cookies.get({})).length > 0);
+
+    console.log('Medula giriş: kaydet + doldur (5.4.0)');
+    {
+      const sorulan: string[] = [];
+      const cevaplar: number[] = [];
+      const asil = dialog.showMessageBox;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (dialog as any).showMessageBox = async (...a: any[]) => {
+        sorulan.push(String(a[a.length - 1]?.message ?? ''));
+        return { response: cevaplar.length ? cevaplar.shift() : 1, checkboxChecked: false };
+      };
+      if (!A.kasa.kullanilabilir()) {
+        // Linux test makinesinde DPAPI/anahtarlık yok: yalnızca bu testte taklit şifreleme (ürün kodunda yok).
+        const kok = path.join(app.getPath('userData'), 'e2e-kasa');
+        fs.mkdirSync(kok, { recursive: true });
+        A.kasa = new MedulaGirisKasasi(path.join(kok, 'medula-giris.bin'), path.join(kok, 'ayar.json'), {
+          available: () => true,
+          encrypt: (t: string) => Buffer.from(Buffer.from(t).toString('base64').split('').reverse().join('')),
+          decrypt: (b: Buffer) => Buffer.from(b.toString().split('').reverse().join(''), 'base64').toString(),
+        });
+        A.__kasaDosya = path.join(kok, 'medula-giris.bin');
+      }
+      A.kasa.sil();
+      A.kasa.teklifAyarla(true);
+      const GIRIS = 'https://gss.sgk.gov.tr/Optik_Firma2_Web/giris2.faces';
+      const SIFRE = 'E2e-Sahte-Medula-9';
+      const yaz = (kul: string, sif: string, kod = '7Q4K') =>
+        js(mwc, `(() => { const f = document.getElementById('loginForm'); f.addEventListener('submit', (e) => e.preventDefault());
+          const s = (id, v) => { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+          s('loginForm:kullaniciAdi', ${JSON.stringify(kul)}); s('loginForm:sifre', ${JSON.stringify(sif)}); s('loginForm:guvenlikKodu', ${JSON.stringify(kod)});
+          document.getElementById('loginForm:girisBtn').click(); })()`);
+      const alanlar = () => js<{ k: string; s: string; g: string; kvkk: boolean; odak: string }>(mwc,
+        `(() => ({ k: document.getElementById('loginForm:kullaniciAdi').value, s: document.getElementById('loginForm:sifre').value,
+          g: document.getElementById('loginForm:guvenlikKodu').value, kvkk: document.getElementById('loginForm:kvkk').checked, odak: document.activeElement && document.activeElement.id }))()`);
+
+      await loadAndWait(mwc, GIRIS);
+      await sleep(1500);
+      let v = await alanlar();
+      check('kayıt yokken giriş alanları boş kalır', v.k === '' && v.s === '', JSON.stringify(v));
+      const sifreleme = A.kasa.kullanilabilir();
+      await yaz('e2e.optik', SIFRE);
+      await sleep(300);
+      cevaplar.push(0); // "Kaydet"
+      await loadAndWait(mwc, 'https://gss.sgk.gov.tr/Optik_Firma2_Web/index.faces'); // giriş başarılı → ana sayfa
+      await waitFor(() => sorulan.length > 0, 5000);
+      if (sifreleme) {
+        check('giriş başarılı olunca "kaydedilsin mi?" sorulur', !!sorulan[0]?.includes('kaydedilsin mi'), JSON.stringify(sorulan));
+        check('"Kaydet" → bu bilgisayarda şifreli kayıt', JSON.stringify(A.kasa.al()) === JSON.stringify({ kullanici: 'e2e.optik', sifre: SIFRE }));
+        const dosya = A.__kasaDosya ?? path.join(app.getPath('userData'), 'medula-giris.bin');
+        check('kayıt dosyasında şifre düz metin değil', fs.existsSync(dosya) && !fs.readFileSync(dosya).toString('latin1').includes(SIFRE));
+
+        await loadAndWait(mwc, GIRIS);
+        await waitFor(async () => (await alanlar()).s !== '', 5000);
+        v = await alanlar();
+        check('giriş ekranı kayıtlı bilgiyle dolar; güvenlik kodu ve KVKK boş, imleç güvenlik kodunda',
+          v.k === 'e2e.optik' && v.s === SIFRE && v.g === '' && !v.kvkk && v.odak === 'loginForm:guvenlikKodu', JSON.stringify({ ...v, s: v.s === SIFRE }));
+        check('araç çubuğunda "güvenlik kodunu girin" bildirimi', String(A.state.notice?.text ?? '').includes('Güvenlik kodunu'), A.state.notice?.text);
+        check('Medula sayfası OptiFlow API görmez (doldurmadan sonra da)', (await js<string>(mwc, 'typeof window.optiflowDesktop + typeof require')) === 'undefinedundefined');
+
+        // Aynı bilgiyle giriş → tekrar sorulmaz
+        const n = sorulan.length;
+        await js(mwc, `(() => { const f = document.getElementById('loginForm'); f.addEventListener('submit', (e) => e.preventDefault()); document.getElementById('loginForm:girisBtn').click(); })()`);
+        await loadAndWait(mwc, 'https://gss.sgk.gov.tr/Optik_Firma2_Web/index.faces');
+        await sleep(1500);
+        check('aynı bilgiyle girişte yeniden sorulmaz', sorulan.length === n, JSON.stringify(sorulan));
+
+        // SGK şifre değiştirme ekranı → "güncellensin mi?"
+        await loadAndWait(mwc, 'https://gss.sgk.gov.tr/Optik_Firma2_Web/sifre.faces');
+        await sleep(1200);
+        await js(mwc, `(() => { const f = document.getElementById('sifreForm'); f.addEventListener('submit', (e) => e.preventDefault());
+          document.getElementById('eski').value = ${JSON.stringify(SIFRE)}; document.getElementById('yeni').value = 'Yeni-E2e-10'; document.getElementById('tekrar').value = 'Yeni-E2e-10';
+          f.querySelector('input[type=submit]').click(); })()`);
+        await sleep(300);
+        cevaplar.push(0); // "Güncelle"
+        await loadAndWait(mwc, 'https://gss.sgk.gov.tr/Optik_Firma2_Web/index.faces');
+        await waitFor(() => sorulan.length > n, 5000);
+        check('şifre değiştirince "güncellensin mi?" → yeni şifre kayıtlı', !!sorulan[n]?.includes('güncellensin') && A.kasa.al()?.sifre === 'Yeni-E2e-10', JSON.stringify(sorulan));
+
+        // Kayıtlarda şifre yok
+        const logDir = app.getPath('logs');
+        const loglar = fs.existsSync(logDir) ? fs.readdirSync(logDir).map((f) => fs.readFileSync(path.join(logDir, f), 'utf8')).join('\n') : '';
+        check('masaüstü kayıtlarında Medula şifresi ve kullanıcı adı yok', !loglar.includes(SIFRE) && !loglar.includes('Yeni-E2e-10') && !loglar.includes('e2e.optik'));
+
+        // "Bu bilgisayarda sorma"
+        A.kasa.sil();
+        await loadAndWait(mwc, GIRIS);
+        await sleep(1200);
+        await yaz('e2e.optik', SIFRE);
+        await sleep(300);
+        cevaplar.push(2);
+        await loadAndWait(mwc, 'https://gss.sgk.gov.tr/Optik_Firma2_Web/index.faces');
+        await waitFor(() => A.kasa.teklifAcik() === false, 5000);
+        check('"Bu bilgisayarda sorma" → kaydedilmez, bir daha sorulmaz', A.kasa.al() === null && A.kasa.teklifAcik() === false);
+      } else {
+        check('şifreli saklama yoksa hiç sorulmaz ve kaydedilmez', sorulan.length === 0 && A.kasa.al() === null, JSON.stringify(sorulan));
+      }
+      A.kasa.sil();
+      A.kasa.teklifAyarla(true);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (dialog as any).showMessageBox = asil;
+    }
 
     console.log('Lite store (package switched to Lite on the server)');
     if (process.env.E2E_LITE_SQL === '1') {

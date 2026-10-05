@@ -29,7 +29,7 @@ function render_karsilama(): void
 
     $sss = [
         ['Medula ile nasıl çalışıyor, SGK şifremi istiyor mu?',
-         "Hayır. OptiFlow Pro, Medula Optik'i ve OptiFlow'u tek pencerede açan Windows uygulamasıdır. Medula'ya her zamanki gibi kendiniz girersiniz; reçeteyi açıp \"Aktar\"a bastığınızda yalnızca o an ekranda görünen reçete OptiFlow'a gelir. SGK kullanıcı adı ve şifrenizi okumaz, saklamaz, başka yere göndermez."],
+         "Hayır. OptiFlow Pro, Medula Optik'i ve OptiFlow'u tek pencerede açan Windows uygulamasıdır. Medula'ya kendiniz girersiniz; isterseniz Chrome'daki gibi \"Kaydet\" dersiniz, sonraki girişlerde kullanıcı adı ve şifre kendiliğinden yazılır, güvenlik kodunu siz girersiniz. Şifre yalnızca o bilgisayarda, Windows şifrelemesiyle saklanır; OptiFlow sunucusuna gönderilmez. Reçeteyi açıp \"Aktar\"a bastığınızda yalnızca o an ekranda görünen reçete OptiFlow'a gelir."],
         ['SGK katkı payı ve ay sonu faturası kesin mi?',
          "Reçetenin kullanım şekline göre katkı payı önerilir, siparişte düzenlenebilir. Ay sonunda Medula'ya işlenen reçeteler tek SGK faturasında toplanır; Medula'dan aldığınız dökümü yükleyip adetleri karşılaştırırsınız. Kesin tutarı her zaman Medula belirler."],
         ['Verilerimiz güvende mi?',
@@ -658,7 +658,7 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
           </tbody>
         </table>
       </div>
-      <div class="gizlilik"><?= $ico['lock'] ?><span>OptiFlow Pro SGK kullanıcı adınızı ve şifrenizi <b>okumaz, saklamaz, göndermez</b>. Medula'ya her zamanki gibi kendiniz girersiniz; yalnızca "Aktar"a bastığınızda ekrandaki reçete gelir.</span></div>
+      <div class="gizlilik"><?= $ico['lock'] ?><span>SGK şifreniz <b>sunucumuza hiç gelmez</b>. İsterseniz yalnızca kendi bilgisayarınızda, Windows şifrelemesiyle saklanır ve Medula girişine kendiliğinden yazılır. Reçete yalnızca "Aktar"a bastığınızda gelir.</span></div>
     </div>
   </section>
 
@@ -871,7 +871,7 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
       </div>
       <div class="guven">
         <div><?= $ico['db'] ?><h3>Her mağazaya ayrı veritabanı</h3><p>Bir mağazanın bilgisi başka bir mağazaya asla görünmez.</p></div>
-        <div><?= $ico['lock'] ?><h3>SGK şifreniz bizde değil</h3><p>OptiFlow Pro şifre okumaz, saklamaz; yalnızca siz "Aktar"a bastığınızda çalışır.</p></div>
+        <div><?= $ico['lock'] ?><h3>SGK şifreniz bizde değil</h3><p>Şifre isterseniz yalnızca sizin bilgisayarınızda, Windows şifrelemesiyle durur; sunucumuza gelmez. Aktarım yalnızca siz "Aktar"a bastığınızda çalışır.</p></div>
         <div><?= $ico['shield'] ?><h3>T.C. kimlik no saklanmaz</h3><p>Müşteri sayfaları soyadın tamamını ve telefonu göstermez.</p></div>
         <div><?= $ico['users'] ?><h3>Rol ve yetkiler</h3><p>Yönetici ve personel ayrı; tutarları ve raporları kimin göreceğini siz belirlersiniz.</p></div>
         <div><?= $ico['screen'] ?><h3>Ekranda kişisel veri yok</h3><p>Atölye ekranı yalnızca sipariş numarası, baş harfler ve aşamayı gösterir.</p></div>

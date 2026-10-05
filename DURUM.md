@@ -1,15 +1,23 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 5 Ekim 2026 (4.17.1 / Pro 5.3.0)*
+*Son güncelleme: 5 Ekim 2026 (4.18.0 / Pro 5.4.0)*
 
 ## Sürüm
-- **Sunucu 4.17.1**, şema **29**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
-- **Canlı site: 4.17.1 (05.10 doğrulandı; eski sistemden veri taşıma); masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
-  Canlı veritabanı göçü (22 → 27) ilk personel girişinde çalışır; sonucu kontrol edilmedi.
+- **Sunucu 4.18.0**, şema **30**. Masaüstü **OptiFlow Pro 5.4.0**.
+- **Canlı site: 4.17.1** (4.18.0 commit'lendi; kullanıcı "gite yükle" deyince push → Sürüm yayınla → Canlıya al).
 - Özellik anahtarları (hepsi varsayılan kapalı): `hizli_satis`, `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
-- Testler: sunucu 635/635 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42, sgk-fatura 57+30, seo 48, guncelleme 13, hizli-satis 72+43, tasima 46);
-  sunucu entegrasyon (yerel MariaDB): api 46/46, modüller 76/76, garanti 37/37, sgk-fatura 25/25, hizli-satis 20/20, tasima 18/18.
-  Masaüstü birim/E2E değişmedi (91/91, 61/61).
+  "Beni hatırla" anahtarsız (her mağazada açık; Ayarlar › Genel'den kapatılır).
+- Testler (05.10): sunucu tümü geçti (… tasima 46, hatirla 40); sunucu entegrasyon (yerel MariaDB): api 46, modüller 76,
+  garanti 37, sgk-fatura 26, hizli-satis 20, tasima 18, hatirla 24; masaüstü birim 116/116; E2E (gerçek Electron) 74/74.
+
+## Son oturumda yapılanlar (4.18.0 / Pro 5.4.0 — beni hatırla + Medula şifresi)
+- Kullanıcı isteği: her seferinde şifre yazmak zor; Medula şifresi Chrome'daki gibi kaydedilip otomatik girilsin.
+- Sunucu: mağaza + personel "Beni hatırla" (`app/hatirla.php`, merkez `magaza_hatirla`, göç v30 `oturum_hatirla`),
+  profil cihaz listesi, ayar, "Farklı mağaza" artık POST. Masaüstünde kutular varsayılan işaretli.
+- Pro 5.4.0: Medula girişini yakala → başarılıysa "kaydedilsin mi?" → DPAPI ile yalnızca o PC'de; sonraki girişte doldur
+  (güvenlik kodu/KVKK elle). Şifre değiştirme ekranında güncelleme. `desktop/src/medula/giris.ts`, `src/main/medula-giris-kasasi.ts`.
+- Politika değişti: "SGK şifresini okumaz/saklamaz" metinleri her yerde "isterseniz yalnızca bu bilgisayarda" olarak güncellendi
+  (SECURITY.md §6). Rehber: `docs/YENILIKLER-4.18.md`.
 
 ## Son oturumda yapılanlar (4.17.1 — eski sistemden taşıma)
 - Kullanıcı eski Poyraz 3.43.0 yedeğini (şema 21) paylaştı: olduğu gibi aktarılınca sayfalar hata veriyordu (Poyraz
@@ -90,6 +98,8 @@
 3. Kullanıcıya sor: sıradaki modül (karar bekleyen: SGK dönem sonu paketi + kesinti defteri).
 
 ## Açık sorunlar / doğrulanmamış
+- Pro 5.4.0 Medula doldurma gerçek Medula giriş ekranında denenmedi (sentetik sayfayla E2E). Alan bulma: şifreden önceki
+  yazı kutusu = kullanıcı adı, sonraki = güvenlik kodu. Kullanıcıdan ilk girişte kontrol etmesi istendi.
 - Hızlı satış: ürün etiketi (etiket sihirbazı yalnızca çerçeve basıyor), ürünler için Excel toplu yükleme, müşteri kartında hızlı satış geçmişi, e-Arşiv faturası taslağı henüz yok.
 - Göçler v23–v27 yerel MariaDB'de çalıştı; canlı hosting MySQL'inde henüz değil (canlı şema 22).
 - Medula PDF dökümünün gerçek biçimi görülmedi: kullanıcıdan örnek (kişisel veriler karartılmış) PDF iste,

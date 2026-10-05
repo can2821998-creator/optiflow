@@ -8,11 +8,17 @@ if (current_user()) {
 
 $error = '';
 $username = '';
+$hatirlaAcik = hatirla_acik();
+$hatirla = $hatirlaAcik && is_optiflow_desktop();   // masaüstü: varsayılan işaretli
 if (is_post()) {
     $username = post('username');
+    $hatirla = $hatirlaAcik && isset($_POST['hatirla']);
     $result = attempt_login($username, (string) ($_POST['password'] ?? ''));
     if (is_array($result)) {
-        audit('login', 'user', (int) $result['id']);
+        if ($hatirla) {
+            kullanici_hatirla_ver($result);
+        }
+        audit('login', 'user', (int) $result['id'], $hatirla ? ['beni hatırla' => 'evet'] : []);
         flash('Hoş geldiniz, ' . $result['full_name'] . '.');
         $r = query('r');
         redirect(preg_match('/^[a-z\-]+\.php(\?[\w=&%\-.]*)?$/i', $r) ? $r : 'index.php');
@@ -199,9 +205,16 @@ SVG;
         <label class="field"><span>Parola</span>
           <input name="password" type="password" autocomplete="current-password" required>
         </label>
+        <?php if ($hatirlaAcik): ?>
+        <label class="check-line remember-line"><input type="checkbox" name="hatirla" value="1" <?= $hatirla ? 'checked' : '' ?>>
+          <span>Beni hatırla <small class="muted">· bu bilgisayarda 30 gün parola sorulmaz</small></span></label>
+        <?php endif; ?>
         <button class="btn btn-primary btn-block btn-lg">Giriş yap</button>
       </form>
-      <small class="foot"><?= e($shop) ?> · <a href="magaza-giris.php" style="color:inherit;text-decoration:underline">Farklı mağaza</a></small>
+      <form method="post" action="magaza-giris.php" class="foot">
+        <?= csrf_field() ?><input type="hidden" name="action" value="farkli">
+        <small><?= e($shop) ?> · <button type="submit" class="link-btn">Farklı mağaza</button></small>
+      </form>
     </div>
   </main>
 </div>

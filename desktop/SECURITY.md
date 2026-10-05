@@ -77,8 +77,26 @@ Tek karar noktası: `src/main/bridge/origin-policy.ts` (birim testli).
 
 ## 6. Gizlilik
 
-- SGK kullanıcı adı/şifresi **okunmaz, saklanmaz, iletilmez**; şifre alanlarının değerine erişilmez
-  (birim testi). Medula'ya otomatik giriş yok. SGK'ya uygulamadan istek atılmaz.
+- **Reçete okuma** şifre alanlarının değerine erişmez (birim testi). SGK'ya uygulamadan istek atılmaz.
+- **Medula şifresini kaydetme (5.4.0, Chrome'un şifre yöneticisi gibi):**
+  - Kullanıcı Medula giriş ekranında “Giriş”e bastığında kullanıcı adı ve şifre alanlarının o anki değeri
+    okunur ve YALNIZCA ana sürecin belleğine gider (`medula:giris-yakalandi`; gönderen çerçevenin SGK
+    adresi ve kökeni yeniden denetlenir, değerler `parseGirisYakalandi` ile doğrulanır, kayda yazılmaz).
+  - Giriş ekranı kapanırsa (giriş başarılı) kullanıcıya sorulur: **Kaydet / Şimdi değil / Bu bilgisayarda
+    sorma**. Kaydet denmezse değer bellekten atılır; 3 dakika içinde sonuç gelmezse de atılır.
+  - Kayıt `userData/medula-giris.bin` dosyasında, YALNIZCA `safeStorage` (Windows DPAPI, Windows hesabına
+    bağlı) ile şifreli durur. Şifreleme yoksa hiç kaydedilmez. OptiFlow sunucusuna, kayıtlara (log),
+    tanılama dışa aktarımına ve OptiFlow sayfasına asla gitmez.
+  - Doldurma: giriş ekranında kullanıcı adı ve şifre alanları BOŞSA doldurulur; kullanıcının yazdığının
+    üzerine yazılmaz. **Güvenlik kodu (resimdeki kod) ve KVKK onayı asla doldurulmaz/işaretlenmez**;
+    “Giriş”e kullanıcı basar. Yani otomatik oturum açma yok, yalnızca otomatik doldurma var.
+  - Şifre değiştirme ekranında yeni şifre iki kez aynı yazılırsa kayıt “güncellensin mi?” diye sorulur.
+  - Silme: Menü › SGK / Medula › **Kayıtlı Medula şifresi… › Sil**. Teklifi kapatma: aynı menüde
+    “Medula şifresini kaydetmeyi öner”.
+- **OptiFlow “Beni hatırla” (4.18.0):** sunucu, isteğe bağlı olarak cihaza 30 gün geçerli (kullandıkça
+  uzayan) bir çerez verir: `seçici:doğrulayıcı`, sunucuda yalnızca doğrulayıcının SHA-256 özeti tutulur.
+  Mağaza ya da personel şifresi değişince, “Çıkış”ta ve profildeki “Tüm cihazlarda unut” ile geçersizleşir.
+  Masaüstünde çerez `persist:optiflow` bölümünde kalır (OptiFlow şifresi uygulamada saklanmaz).
 - Okuma yalnızca kullanıcının düğmeye basmasıyla. Arka planda yalnızca **içerik içermeyen** bir
   yoklama yapılır (araç çubuğundaki “Reçete ekranı” rozeti için).
 - Okunan metin yalnızca bellekte, en fazla 15 dakika (bkz. MEDULA-BRIDGE §8).
@@ -120,7 +138,7 @@ CI gizli deposundan gelir (`CSC_LINK`, `CSC_KEY_PASSWORD`).
 - [x] Açılır pencereler yetkisiz (E2E)
 - [x] `file:` / `javascript:` / SGK dışı gezinme engelli (E2E)
 - [x] Sertifika hataları reddediliyor
-- [x] SGK kimlik bilgisi okunmuyor/saklanmıyor; şifre alanı değeri okunmuyor (birim testi)
+- [x] Reçete okuma şifre alanı değerini okumuyor (birim testi); Medula şifresi yalnızca kullanıcı “Kaydet” derse, DPAPI ile, yalnızca bu bilgisayarda (5.4.0, birim testi)
 - [x] Aktarım yalnızca kullanıcı eylemiyle
 - [x] Kayıtlarda hasta bilgisi yok (E2E)
 - [x] Mağazalar arası erişim yok; destek oturumunda aktarım kapalı (sunucu testi)

@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 29;
+const SCHEMA_VERSION = 30;
 
 function run_migrations(): void
 {
@@ -67,6 +67,7 @@ function run_migrations(): void
         if ($current < 27) { migrate_v27_sgk_donem_fatura(); set_schema_version(27); }
         if ($current < 28) { migrate_v28_katalog_notu(); set_schema_version(28); }
         if ($current < 29) { migrate_v29_hizli_satis(); set_schema_version(29); }
+        if ($current < 30) { migrate_v30_beni_hatirla(); set_schema_version(30); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1553,4 +1554,27 @@ function migrate_v29_hizli_satis(): void
         KEY idx_so_tarih (created_at)
     ) " . t_opts());
     add_column('frame_moves', 'satis_id', 'INT UNSIGNED NULL');
+}
+
+/* ------------------------------------------------------------------ */
+/*  v30 — 4.18.0 "Beni hatırla" (personel girişi)                       */
+/* ------------------------------------------------------------------ */
+
+function migrate_v30_beni_hatirla(): void
+{
+    db()->exec("CREATE TABLE IF NOT EXISTS oturum_hatirla (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        user_id INT UNSIGNED NOT NULL,
+        magaza_id INT UNSIGNED NOT NULL DEFAULT 0,
+        secici CHAR(24) NOT NULL,
+        dogrulayici_hash CHAR(64) NOT NULL,
+        pw_stamp VARCHAR(32) NOT NULL DEFAULT '',
+        cihaz VARCHAR(120) NOT NULL DEFAULT '',
+        created_at DATETIME NOT NULL,
+        last_used_at DATETIME NULL,
+        expires_at DATETIME NOT NULL,
+        UNIQUE KEY uq_oh_secici (secici),
+        INDEX idx_oh_user (user_id)
+    ) " . t_opts());
+    q("INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES ('beni_hatirla', '1')");
 }

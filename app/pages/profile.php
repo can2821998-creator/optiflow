@@ -15,6 +15,27 @@ if (is_post() && post('eylem') === 'usta_profil') {
     redirect('profile.php');
 }
 
+/* 4.18.0 — "Beni hatırla": hatırlanan cihazlar */
+if (is_post() && post('eylem') === 'hatirla_unut') {
+    $id = (int) post('id');
+    if ($id > 0) {
+        $k = row('SELECT secici FROM oturum_hatirla WHERE id = ? AND user_id = ?', [$id, $me['id']]);
+        if ($k) {
+            q('DELETE FROM oturum_hatirla WHERE id = ?', [$id]);
+            if (hatirla_bu_cihaz_mi((string) $k['secici'])) {
+                hatirla_cerez_sil(HATIRLA_KULLANICI_CEREZ);
+            }
+            flash('Cihaz unutuldu; o cihazda bir dahaki girişte parola sorulacak.');
+        }
+    } else {
+        $n = kullanici_hatirla_hepsini_unut((int) $me['id']);
+        hatirla_cerez_sil(HATIRLA_KULLANICI_CEREZ);
+        flash($n ? $n . ' cihaz unutuldu.' : 'Hatırlanan cihaz yoktu.');
+    }
+    audit('hatirla_unut', 'user', (int) $me['id']);
+    redirect('profile.php');
+}
+
 if (is_post()) {
     $current = (string) ($_POST['current_password'] ?? '');
     $new = (string) ($_POST['new_password'] ?? '');
@@ -62,6 +83,30 @@ page_header('Profilim', e($me['full_name']) . ' · ' . e(roles()[$me['role']] ??
     <small class="muted">En az 8 karakter, en az bir harf ve bir rakam.</small>
     <div class="form-actions"><button class="btn btn-primary"><?= icon('lock') ?> Parolayı değiştir</button></div>
   </form>
+</section>
+
+<?php $hatirlananlar = kullanici_hatirla_cihazlar((int) $me['id']); ?>
+<section class="card narrow" id="hatirlanan-cihazlar">
+  <div class="card-head"><h2><?= icon('lock') ?> Beni hatırlayan cihazlar</h2></div>
+  <?php if (!$hatirlananlar): ?>
+    <p class="muted">Hiçbir cihaz sizi hatırlamıyor. Girişte <b>“Beni hatırla”</b> kutusunu işaretlerseniz o bilgisayarda 30 gün parola sorulmaz.</p>
+  <?php else: ?>
+    <p class="muted" style="margin-bottom:12px">Bu cihazlarda parola sorulmadan giriş yapılıyor. Tanımadığınız ya da artık kullanmadığınız bir cihazı unutun; parolanızı değiştirmek de hepsini unutturur.</p>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Cihaz</th><th>Son kullanım</th><th>Bitiş</th><th></th></tr></thead>
+      <tbody>
+      <?php foreach ($hatirlananlar as $h): ?>
+        <tr>
+          <td><?= e($h['cihaz'] ?: 'Bilinmeyen cihaz') ?><?= hatirla_bu_cihaz_mi((string) $h['secici']) ? ' <span class="badge sm tone-green">bu cihaz</span>' : '' ?></td>
+          <td><?= e(date_tr($h['last_used_at'] ?: $h['created_at'], true)) ?></td>
+          <td><?= e(date_tr($h['expires_at'])) ?></td>
+          <td><form method="post"><?= csrf_field() ?><input type="hidden" name="eylem" value="hatirla_unut"><input type="hidden" name="id" value="<?= (int) $h['id'] ?>"><button class="btn btn-sm">Unut</button></form></td>
+        </tr>
+      <?php endforeach; ?>
+      </tbody>
+    </table></div>
+    <form method="post" class="form-actions"><?= csrf_field() ?><input type="hidden" name="eylem" value="hatirla_unut"><input type="hidden" name="id" value="0"><button class="btn">Tüm cihazlarda unut</button></form>
+  <?php endif; ?>
 </section>
 
 <?php if ($ustaYuklu): ?>

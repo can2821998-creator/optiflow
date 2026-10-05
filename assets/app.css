@@ -888,6 +888,10 @@ h3.sub { margin: 22px 0 8px; font: 700 12.5px/1.2 var(--sans); color: var(--gold
 .auth-card .btn { margin-top: 8px; }
 .auth-card .foot { margin-top: 26px; font: italic 500 13px var(--serif); color: var(--muted); }
 .auth-card .kicker { margin-bottom: 6px; }
+.auth-card .remember-line { display: flex; gap: 9px; align-items: center; font-size: 14px; cursor: pointer; margin-top: 2px; }
+.auth-card .remember-line input { width: 17px; height: 17px; accent-color: var(--wine, #7a0a16); margin: 0; }
+.auth-card .remember-line small { font-size: 12.5px; }
+.link-btn { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; cursor: pointer; }
 .auth-single { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
 .auth-single .auth-card { padding: 38px 34px; background: var(--surface); border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow-lg); }
 @media (max-width: 900px) {

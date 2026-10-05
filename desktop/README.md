@@ -5,7 +5,7 @@ Electron kabuğunda açar ve **SGK Medula'yı uygulamanın içinde** çalıştı
 reçete tek düğmeyle OptiFlow'a aktarılır:
 
 - Chrome eklentisi, Geliştirici modu, köprü adresi veya köprü anahtarı **gerekmez**.
-- SGK kullanıcı adı ve şifresi **okunmaz, saklanmaz**. Medula'ya otomatik giriş yapılmaz.
+- SGK kullanıcı adı ve şifresi yalnızca siz “Kaydet” derseniz, **yalnızca bu bilgisayarda** Windows şifrelemesiyle (DPAPI) saklanır ve giriş ekranına kendiliğinden yazılır; güvenlik kodunu siz girersiniz. OptiFlow sunucusuna gönderilmez.
 - Reçete yalnızca kullanıcı **“Reçeteyi aktar”** dediğinde, o an ekranda görünen haliyle okunur.
 - Siparişe yazma, mevcut önizleme ekranında **personel onayıyla** olur (değişmedi).
 

@@ -34,13 +34,21 @@ export interface MedulaListReply {
   ok: true;
   numaralar: string[];
 }
+export interface MedulaGirisReply {
+  id: string;
+  kind: 'giris';
+  ok: true;
+  sonuc: 'doldu' | 'zaten-dolu' | 'alan-yok' | 'izleniyor';
+}
 export interface MedulaErrorReply {
   id: string;
-  kind: 'probe' | 'extract' | 'liste';
+  kind: 'probe' | 'extract' | 'liste' | 'giris';
   ok: false;
   error: string;
 }
-export type MedulaReply = MedulaProbeReply | MedulaExtractReply | MedulaListReply | MedulaErrorReply;
+export type MedulaReply = MedulaProbeReply | MedulaExtractReply | MedulaListReply | MedulaGirisReply | MedulaErrorReply;
+
+const GIRIS_SONUCLARI = ['doldu', 'zaten-dolu', 'alan-yok', 'izleniyor'] as const;
 
 /** e-Reçete numara listesi: en çok 1000 öğe; her biri 4–12 büyük harf/rakam ve en az bir rakam. */
 export function parseNumaralar(v: unknown): string[] | null {
@@ -86,7 +94,7 @@ export function parseExtraction(v: unknown): MedulaExtraction | null {
 
 export function parseMedulaReply(v: unknown): MedulaReply | null {
   if (!isObj(v) || !isStr(v.id, 64) || v.id.length < 8) return null;
-  if (v.kind !== 'probe' && v.kind !== 'extract' && v.kind !== 'liste') return null;
+  if (v.kind !== 'probe' && v.kind !== 'extract' && v.kind !== 'liste' && v.kind !== 'giris') return null;
   if (v.ok === false) {
     return { id: v.id, kind: v.kind, ok: false, error: isStr(v.error, 200) ? v.error : 'error' };
   }
@@ -94,6 +102,10 @@ export function parseMedulaReply(v: unknown): MedulaReply | null {
   if (v.kind === 'probe') {
     const probe = parseProbe(v.probe);
     return probe ? { id: v.id, kind: 'probe', ok: true, probe } : null;
+  }
+  if (v.kind === 'giris') {
+    const sonuc = (GIRIS_SONUCLARI as readonly unknown[]).includes(v.sonuc) ? (v.sonuc as MedulaGirisReply['sonuc']) : null;
+    return sonuc ? { id: v.id, kind: 'giris', ok: true, sonuc } : null;
   }
   if (v.kind === 'liste') {
     const numaralar = parseNumaralar(v.numaralar);
@@ -124,4 +136,15 @@ export function truncateUtf8(s: string, maxBytes: number): string {
   // don't leave a lone high surrogate
   if (/[\uD800-\uDBFF]$/.test(out)) out = out.slice(0, -1);
   return out;
+}
+
+/** 5.4.0 — "Giriş"e basıldığında Medula preload'ından gelen değerler. */
+export function parseGirisYakalandi(v: unknown): { kullanici: string; sifre: string; degisim: boolean } | null {
+  if (!isObj(v) || !isBool(v.degisim) || !isStr(v.kullanici, 100) || !isStr(v.sifre, 200)) return null;
+  // eslint-disable-next-line no-control-regex
+  const kontrol = /[\u0000-\u001F\u007F]/;
+  const kullanici = v.kullanici.trim();
+  if (!v.sifre || kontrol.test(v.sifre) || kontrol.test(kullanici)) return null;
+  if (!v.degisim && !kullanici) return null;
+  return { kullanici, sifre: v.sifre, degisim: v.degisim };
 }

@@ -100,6 +100,22 @@ function merkez_sema_hazirla(PDO $pdo): void
             INDEX idx_mil_t (created_at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
+    // 4.18.0 — "Beni hatırla" (mağaza girişi): yalnızca doğrulayıcının SHA-256 özeti tutulur (bkz. app/hatirla.php)
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS magaza_hatirla (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            magaza_id INT UNSIGNED NOT NULL,
+            secici CHAR(24) NOT NULL,
+            dogrulayici_hash CHAR(64) NOT NULL,
+            sifre_damga CHAR(64) NOT NULL,
+            cihaz VARCHAR(120) NOT NULL DEFAULT '',
+            olusturma DATETIME NOT NULL,
+            son_kullanim DATETIME NULL,
+            bitis DATETIME NOT NULL,
+            UNIQUE KEY uq_mh_secici (secici),
+            INDEX idx_mh_magaza (magaza_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
     // Sonradan eklenen kolonlar (geriye dönük uyumlu)
     merkez_kolon_ekle($pdo, 'magazalar', 'notlar', 'TEXT NULL');
     merkez_kolon_ekle($pdo, 'magazalar', 'guncelleme', 'DATETIME NULL');
@@ -471,6 +487,7 @@ function merkez_giris_sifresi_sifirla(int $id, string $yeni): void
         throw new DomainException('Mağaza bulunamadı.');
     }
     merkez_q('UPDATE magazalar SET sifre_hash = ?, guncelleme = NOW() WHERE id = ?', [password_hash($yeni, PASSWORD_DEFAULT), $id]);
+    magaza_hatirla_hepsini_unut($id);   // 4.18.0: hatırlanan cihazlar yeni şifreyle yeniden girer
 }
 
 /** Aktif bir mağazanın veritabanı bağlantı bilgilerini günceller (bağlanarak doğrular). */
@@ -501,6 +518,7 @@ function merkez_magaza_sil(int $id): void
         throw new DomainException('Mağaza bulunamadı.');
     }
     merkez_q('DELETE FROM magazalar WHERE id = ?', [$id]);
+    magaza_hatirla_hepsini_unut($id);
 }
 
 /**

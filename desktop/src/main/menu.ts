@@ -8,6 +8,9 @@ export interface MenuHandlers {
   medulaHome: () => void;
   clearMedulaSession: () => void;
   resetMedula: () => void;
+  medulaSifresi: () => void;
+  medulaTeklifAcik: () => boolean;
+  medulaTeklifAyarla: (acik: boolean) => void;
   toggleLayout: () => void;
   checkUpdates: () => void;
   exportDiagnostics: () => void;
@@ -53,6 +56,14 @@ export function buildMenu(h: MenuHandlers, devTools: boolean): Menu {
         { type: 'separator' },
         { label: 'Medula\'yı sıfırla (giriş hata veriyorsa)', click: h.resetMedula },
         { label: 'Medula oturumunu temizle…', click: h.clearMedulaSession },
+        { type: 'separator' },
+        { label: 'Kayıtlı Medula şifresi…', click: h.medulaSifresi },
+        {
+          label: 'Medula şifresini kaydetmeyi öner',
+          type: 'checkbox',
+          checked: h.medulaTeklifAcik(),
+          click: (item) => h.medulaTeklifAyarla(item.checked),
+        },
       ],
     },
     {

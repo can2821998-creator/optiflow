@@ -19,6 +19,7 @@ import { parseShellCommand, type ShellCommand } from './ipc-validation';
 import { exportDiagnostics, log } from './logging';
 import { buildMenu } from './menu';
 import { attachMedulaGuards, attachOptiflowGuards, attachShellGuards, type NavDeps } from './navigation';
+import { MedulaGirisKasasi, neSorulmali } from './medula-giris-kasasi';
 import { OfflineStore } from './offline-store';
 import { medulaPrefs, offlinePrefs, optiflowPrefs, shellPrefs } from './security';
 import { clearMedulaSession, restartMedulaBrowser, type Sessions } from './sessions';
@@ -44,6 +45,10 @@ export class DesktopApp {
   private offlineWin: BrowserWindow | null = null;
   private offlineFetchedAt = 0;
   private offlineUrl = '';
+  /** 5.4.0 — saved Medula login (DPAPI, this PC only) and the last "Giriş" press awaiting its result. */
+  private kasa!: MedulaGirisKasasi;
+  private bekleyenGiris: { kullanici: string; sifre: string; degisim: boolean; at: number } | null = null;
+  private girisSorusuAcik = false;
   private readonly shellUrl: string;
   private readonly iconPath: string;
   /** Desktop opens straight into the store login (never the marketing landing page). */
@@ -80,6 +85,15 @@ export class DesktopApp {
       encrypt: (t) => safeStorage.encryptString(t),
       decrypt: (b) => safeStorage.decryptString(b),
     });
+    this.kasa = new MedulaGirisKasasi(
+      path.join(app.getPath('userData'), 'medula-giris.bin'),
+      path.join(app.getPath('userData'), 'medula-giris-ayar.json'),
+      {
+        available: () => safeStorage.isEncryptionAvailable(),
+        encrypt: (t) => safeStorage.encryptString(t),
+        decrypt: (b) => safeStorage.decryptString(b),
+      },
+    );
     this.offlineUrl = pathToFileURL(path.join(this.distDir, 'shell', 'cevrimdisi.html')).toString();
     this.state.offline = this.offline.meta();
     this.win = new BrowserWindow({
@@ -123,25 +137,7 @@ export class DesktopApp {
     this.updater = new Updater(this.cfg, (u) => this.patch({ update: u }));
     this.updater.start();
 
-    this.menu = buildMenu(
-      {
-        showOptiflow: () => this.showView('optiflow'),
-        showMedula: () => this.openMedula(),
-        reloadOptiflow: () => this.reloadOptiflow(),
-        medulaHome: () => this.openMedula(this.cfg.medulaHomeUrl, true),
-        clearMedulaSession: () => void this.confirmClearMedula(),
-        resetMedula: () => void this.command('medula-sifirla'),
-        toggleLayout: () => this.setLayout(this.state.layout === 'sekme' ? 'bolunmus' : 'sekme'),
-        checkUpdates: () =>
-          void this.updater.check().then((msg) => {
-            if (msg) this.patch({ notice: { kind: 'info', text: msg } });
-          }),
-        exportDiagnostics: () => void exportDiagnostics(this.win, { appEnv: this.cfg.appEnv, server: new URL(this.cfg.optiflowBaseUrl).origin }),
-        openLogsFolder: () => void shell.openPath(app.getPath('logs')),
-        about: () => this.about(),
-      },
-      !app.isPackaged,
-    );
+    this.menu = this.buildAppMenu();
     // No classic menu bar: the "⋯" button opens this menu; shortcuts are handled in onShortcut().
     this.win.setMenu(null);
     for (const wc of [this.win.webContents, owc]) this.attachShortcuts(wc);
@@ -159,6 +155,34 @@ export class DesktopApp {
     void owc.loadURL(this.startUrl);
   }
 
+  private buildAppMenu(): Menu {
+    return buildMenu(
+      {
+        showOptiflow: () => this.showView('optiflow'),
+        showMedula: () => this.openMedula(),
+        reloadOptiflow: () => this.reloadOptiflow(),
+        medulaHome: () => this.openMedula(this.cfg.medulaHomeUrl, true),
+        clearMedulaSession: () => void this.confirmClearMedula(),
+        resetMedula: () => void this.command('medula-sifirla'),
+        medulaSifresi: () => void this.medulaSifresiPenceresi(),
+        medulaTeklifAcik: () => this.kasa.teklifAcik(),
+        medulaTeklifAyarla: (acik) => {
+          this.kasa.teklifAyarla(acik);
+          this.menu = this.buildAppMenu();
+        },
+        toggleLayout: () => this.setLayout(this.state.layout === 'sekme' ? 'bolunmus' : 'sekme'),
+        checkUpdates: () =>
+          void this.updater.check().then((msg) => {
+            if (msg) this.patch({ notice: { kind: 'info', text: msg } });
+          }),
+        exportDiagnostics: () => void exportDiagnostics(this.win, { appEnv: this.cfg.appEnv, server: new URL(this.cfg.optiflowBaseUrl).origin }),
+        openLogsFolder: () => void shell.openPath(app.getPath('logs')),
+        about: () => this.about(),
+      },
+      !app.isPackaged,
+    );
+  }
+
   focus(): void {
     if (!this.win || this.win.isDestroyed()) return;
     if (this.win.isMinimized()) this.win.restore();
@@ -167,6 +191,9 @@ export class DesktopApp {
 
   shutdown(): void {
     this.retry.clear();
+    this.bekleyenGiris = null;
+    // "Beni hatırla" çerezi (OptiFlow) diske yazılmış olsun.
+    void this.sessions.optiflow.cookies.flushStore().catch(() => undefined);
     this.medula?.dispose();
     this.updater?.stop();
     if (this.onlineTimer) clearInterval(this.onlineTimer);
@@ -496,7 +523,9 @@ export class DesktopApp {
     attachMedulaGuards(wc, this.navDeps());
     this.attachShortcuts(wc);
     this.watchCrashes(wc, 'medula');
-    this.medula = new MedulaController(wc, this.cfg);
+    this.medula = new MedulaController(wc, this.cfg, (y) => {
+      this.bekleyenGiris = { ...y, at: Date.now() };
+    });
 
     const nav = () => {
       let host: string | undefined;
@@ -550,7 +579,89 @@ export class DesktopApp {
       if (!this.medula) return;
       const probe = await this.medula.probe();
       this.patch({ medula: { ...this.state.medula, probe } });
+      if (probe?.looksLikeLogin) void this.girisEkrani();
+      else if (probe && this.bekleyenGiris) void this.girisBasarili();
     }, 700);
+  }
+
+  /* ------------------------------------------------- Medula girişi (5.4.0) */
+
+  /** Giriş ekranı açıldı: kayıtlı bilgiyle doldur, "Giriş"e basılınca değerleri yakala. */
+  private async girisEkrani(): Promise<void> {
+    if (!this.medula) return;
+    const kayit = this.kasa.al();
+    const sonuclar = await this.medula.giris(kayit, this.kasa.kullanilabilir());
+    if (sonuclar.includes('doldu')) {
+      log.info('medula.giris.dolduruldu');
+      this.patch({ notice: { kind: 'info', text: 'Medula kullanıcı adı ve şifreniz yazıldı. Güvenlik kodunu girip “Giriş”e basın.' } });
+    }
+  }
+
+  /** "Giriş"ten sonra giriş ekranı kapandı: giriş başarılı sayılır; kaydetmeyi / güncellemeyi sor. */
+  private async girisBasarili(): Promise<void> {
+    const y = this.bekleyenGiris;
+    this.bekleyenGiris = null;
+    if (!y || Date.now() - y.at > 3 * 60_000 || this.girisSorusuAcik) return;
+    const karar = neSorulmali(y, this.kasa.al(), this.kasa.teklifAcik(), this.kasa.kullanilabilir());
+    if (karar.soru === 'yok' || !karar.kayit) return;
+    this.girisSorusuAcik = true;
+    try {
+      const guncelle = karar.soru === 'guncelle';
+      const r = await dialog.showMessageBox(this.win, {
+        type: 'question',
+        title: 'Medula şifresi',
+        message: guncelle ? 'Kayıtlı Medula şifresi güncellensin mi?' : 'Medula giriş bilgileriniz bu bilgisayara kaydedilsin mi?',
+        detail:
+          'Bir dahaki girişte kullanıcı adı ve şifre kendiliğinden yazılır; siz yalnızca güvenlik kodunu girersiniz.\n\n' +
+          'Bilgi yalnızca bu bilgisayarda, Windows hesabınıza bağlı şifrelemeyle saklanır. OptiFlow sunucusuna ya da başka bir yere gönderilmez. ' +
+          'İstediğiniz zaman Menü › SGK / Medula › “Kayıtlı Medula şifresi” ile silebilirsiniz.',
+        buttons: guncelle ? ['Güncelle', 'Şimdi değil'] : ['Kaydet', 'Şimdi değil', 'Bu bilgisayarda sorma'],
+        defaultId: 0,
+        cancelId: 1,
+        noLink: true,
+      });
+      if (r.response === 0) {
+        const ok = this.kasa.kaydet(karar.kayit);
+        log.info('medula.giris.kaydedildi', { ok, guncelleme: guncelle });
+        this.patch({ notice: ok ? { kind: 'info', text: guncelle ? 'Medula şifresi güncellendi.' : 'Medula giriş bilgileri bu bilgisayara kaydedildi.' } : { kind: 'warn', text: 'Bu bilgisayarda şifreli saklama kullanılamıyor; bilgi kaydedilmedi.' } });
+      } else if (r.response === 2) {
+        this.kasa.teklifAyarla(false);
+        this.menu = this.buildAppMenu();
+      }
+    } finally {
+      this.girisSorusuAcik = false;
+    }
+  }
+
+  private async medulaSifresiPenceresi(): Promise<void> {
+    const o = this.kasa.ozet();
+    if (!o.kayitli) {
+      await dialog.showMessageBox(this.win, {
+        type: 'info',
+        title: 'Kayıtlı Medula şifresi',
+        message: 'Bu bilgisayarda kayıtlı Medula şifresi yok.',
+        detail: this.kasa.kullanilabilir()
+          ? 'Medula’ya bir kez giriş yaptığınızda OptiFlow Pro kaydetmeyi önerir.'
+          : 'Bu bilgisayarda şifreli saklama kullanılamadığı için şifre kaydedilemiyor.',
+        buttons: ['Tamam'],
+      });
+      return;
+    }
+    const r = await dialog.showMessageBox(this.win, {
+      type: 'info',
+      title: 'Kayıtlı Medula şifresi',
+      message: `Kayıtlı kullanıcı: ${o.kullanici}`,
+      detail: 'Bilgi yalnızca bu bilgisayarda, Windows hesabınıza bağlı şifrelemeyle saklanıyor. Silerseniz Medula girişinde kullanıcı adı ve şifreyi yeniden yazarsınız.',
+      buttons: ['Kapat', 'Sil'],
+      defaultId: 0,
+      cancelId: 0,
+      noLink: true,
+    });
+    if (r.response === 1) {
+      this.kasa.sil();
+      log.info('medula.giris.silindi');
+      this.patch({ notice: { kind: 'info', text: 'Kayıtlı Medula şifresi silindi.' } });
+    }
   }
 
   private async confirmClearMedula(): Promise<void> {
@@ -561,7 +672,7 @@ export class DesktopApp {
       cancelId: 0,
       title: 'Medula oturumunu temizle',
       message: 'Medula oturumu ve çerezleri silinsin mi?',
-      detail: 'Medula’ya yeniden giriş yapmanız gerekecek. OptiFlow oturumunuz etkilenmez.',
+      detail: 'Medula’ya yeniden giriş yapmanız gerekecek. OptiFlow oturumunuz ve kayıtlı Medula şifreniz (varsa) etkilenmez.',
     });
     if (r.response !== 1) return;
     this.retry.clear();
@@ -832,7 +943,8 @@ export class DesktopApp {
         `Ortam: ${this.cfg.appEnv}\nSunucu: ${new URL(this.cfg.optiflowBaseUrl).origin}\n` +
         `Electron ${process.versions.electron} · Chromium ${process.versions.chrome}\n\n` +
         (this.state.account ? `Paket: ${this.state.account.package === 'pro' ? 'OptiFlow Pro' : 'OptiFlow Lite'}\n\n` : '') +
-        'Medula köprüsü uygulamanın içindedir; Chrome eklentisi gerekmez. SGK şifreniz okunmaz, saklanmaz; ' +
+        'Medula köprüsü uygulamanın içindedir; Chrome eklentisi gerekmez. SGK şifreniz yalnızca siz “Kaydet” derseniz, ' +
+        'yalnızca bu bilgisayarda Windows şifrelemesiyle saklanır ve OptiFlow sunucusuna gönderilmez; ' +
         'reçete yalnızca siz “Aktar” dediğinizde, o an ekranda görünen haliyle OptiFlow’a gönderilir.',
     });
   }

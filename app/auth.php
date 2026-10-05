@@ -14,13 +14,28 @@ function current_user(): ?array
     $user = null;
     $id = (int) ($_SESSION['user_id'] ?? 0);
     if ($id <= 0) {
-        return null;
+        // 4.18.0 "Beni hatırla": bu cihaz hatırlanıyorsa oturum sessizce yeniden kurulur.
+        if (isset($_COOKIE[HATIRLA_KULLANICI_CEREZ]) && ($u = kullanici_hatirla_dene())) {
+            $id = (int) $u['id'];
+        } else {
+            return null;
+        }
     }
     $idle = max(15, (int) setting('session_idle_minutes', '480')) * 60;
     if (isset($_SESSION['last_seen']) && time() - (int) $_SESSION['last_seen'] > $idle) {
+        // Hatırlanan cihazda zaman aşımı yeniden girişe dönüşür (mağaza bağlamı korunur).
+        $magaza = $_SESSION['magaza'] ?? null;
         logout_session();
-        flash('Uzun süre işlem yapılmadığı için oturum kapandı.', 'info');
-        return null;
+        if (is_array($magaza)) {
+            $_SESSION['magaza'] = $magaza;
+        }
+        if (isset($_COOKIE[HATIRLA_KULLANICI_CEREZ]) && ($u = kullanici_hatirla_dene())) {
+            $id = (int) $u['id'];
+        } else {
+            unset($_SESSION['magaza']);
+            flash('Uzun süre işlem yapılmadığı için oturum kapandı.', 'info');
+            return null;
+        }
     }
     $u = row('SELECT id, full_name, username, role, is_active, password_changed_at FROM user_accounts WHERE id = ?', [$id]);
     if (!$u || !(int) $u['is_active'] || ($_SESSION['pw_stamp'] ?? '') !== (string) $u['password_changed_at']) {
@@ -87,13 +102,22 @@ function attempt_login(string $username, string $password): array|string
     q('DELETE FROM login_attempts WHERE username = ? OR attempted_at < ?', [$username, date('Y-m-d H:i:s', time() - 86400)]);
     q('UPDATE user_accounts SET last_login_at = NOW() WHERE id = ?', [$u['id']]);
 
+    oturum_kullanici_yaz($u);
+    return $u;
+}
+
+/** Doğrulanmış kullanıcı için oturumu kurar (şifreyle giriş ve "beni hatırla" aynı yapıyı kullanır). */
+function oturum_kullanici_yaz(array $u): void
+{
     /* 4.10.0 DÜZELTME: Mağaza bağlamı (çok mağazalı yapı) kullanıcı girişinde korunur.
        Eskiden $_SESSION tamamen yeniden yazıldığı için 'magaza' anahtarı siliniyor, girişten
        hemen sonraki istek tanıtım sayfasına / mağaza girişine düşüyordu. Kullanıcı, bu istekte
        tenant_gereksin() ile seçilmiş OLAN mağazanın kendi veritabanında doğrulandı; aynı mağaza
        bağlamını taşımak başka mağazaya erişim vermez. */
     $magaza = $_SESSION['magaza'] ?? null;
-    session_regenerate_id(true);
+    if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_ACTIVE) {
+        session_regenerate_id(true);
+    }
     $_SESSION = [
         'user_id'   => (int) $u['id'],
         'pw_stamp'  => (string) $u['password_changed_at'],
@@ -103,7 +127,6 @@ function attempt_login(string $username, string $password): array|string
     if (is_array($magaza)) {
         $_SESSION['magaza'] = $magaza;
     }
-    return $u;
 }
 
 function logout_session(): void
@@ -121,6 +144,7 @@ function set_password(int $userId, string $password): void
     if ((int) ($_SESSION['user_id'] ?? 0) === $userId) {
         $_SESSION['pw_stamp'] = $stamp; // kendi oturumu açık kalsın, diğer cihazlar kapanır
     }
+    kullanici_hatirla_sifre_degisti($userId);   // 4.18.0: hatırlanan cihazlar da kapanır (bu cihaz hariç)
 }
 
 function password_problem(string $password): ?string

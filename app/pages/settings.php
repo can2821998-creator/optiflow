@@ -50,6 +50,7 @@ if (is_post()) {
             'staff_see_amounts'    => isset($_POST['staff_see_amounts']) ? '1' : '0',
             'staff_take_payments'  => isset($_POST['staff_take_payments']) ? '1' : '0',
             'session_idle_minutes' => (string) max(15, min(1440, $idle ?: 480)),
+            'beni_hatirla'         => isset($_POST['beni_hatirla']) ? '1' : '0',
             'commission_rate'      => number_format(max(0, min(100, (float) str_replace(',', '.', post('commission_rate')))), 2, '.', ''),
             'daily_summary'        => isset($_POST['daily_summary']) ? '1' : '0',
             'daily_summary_hour'   => (string) max(0, min(23, (int) post('daily_summary_hour'))),
@@ -68,6 +69,9 @@ if (is_post()) {
         }
         foreach ($values as $k => $v) {
             setting_set($k, $v);
+        }
+        if ($values['beni_hatirla'] === '0' && table_exists_safe('oturum_hatirla')) {
+            q('DELETE FROM oturum_hatirla');   // kapatıldı: hatırlanan tüm cihazlar unutulur
         }
         audit('settings_update', 'settings', null, $values);
         flash('Ayarlar kaydedildi.');
@@ -358,6 +362,11 @@ page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.'
         <small class="muted">Raporlar, toplam açık bakiye, tutar değiştirme, silme ve iptal her zaman yalnızca süper yetkilidedir.</small>
       </fieldset>
       <label class="field"><span>Oturum zaman aşımı (dakika)</span><input type="number" min="15" max="1440" name="session_idle_minutes" value="<?= e(setting('session_idle_minutes', '480')) ?>"></label>
+      <fieldset class="field checks">
+        <legend>Beni hatırla</legend>
+        <label><input type="checkbox" name="beni_hatirla" <?= setting('beni_hatirla', '1') !== '0' ? 'checked' : '' ?>> Personel girişte “Beni hatırla”yı kullanabilir (30 gün parola sorulmaz)</label>
+        <small class="muted">Kapatırsanız hatırlanan tüm cihazlarda bir sonraki açılışta parola sorulur.</small>
+      </fieldset>
       <label class="field"><span>Genel prim oranı (%)</span>
         <input name="commission_rate" inputmode="decimal" value="<?= e(number_format((float) str_replace(',', '.', setting('commission_rate', '0')), 2, ',', '')) ?>">
         <small class="muted">Kârlılık ekranındaki prim hesabı. Kişiye özel oran kullanıcı kartından girilir.</small></label>

@@ -172,7 +172,7 @@ footer a{color:var(--ink-2)}
   <section>
     <h2>Bilmeniz gerekenler</h2>
     <div class="izgara">
-      <div class="kart"><h3>SGK şifreniz bizde değil</h3><p>Uygulama SGK kullanıcı adınızı ve şifrenizi okumaz, saklamaz, göndermez. Reçete yalnızca siz "Aktar"a bastığınızda, ekranda görünen haliyle gelir.</p></div>
+      <div class="kart"><h3>SGK şifreniz bizde değil</h3><p>Medula şifrenizi isterseniz Chrome gibi kaydeder: yalnızca bu bilgisayarda, Windows şifrelemesiyle saklanır ve girişte kendiliğinden yazılır. Güvenlik kodunu siz girersiniz. Şifre OptiFlow sunucusuna hiç gönderilmez. Reçete yalnızca siz "Aktar"a bastığınızda, ekranda görünen haliyle gelir.</p></div>
       <div class="kart"><h3>Güncellemeyi kendisi bulur</h3><p>Uygulama yeni sürümü kendisi denetler ve araç çubuğunda haber verir; tek tıkla indirip kurarsınız. Bu sayfaya tekrar gelmeniz gerekmez.</p></div>
       <div class="kart"><h3>Aynı hesap, aynı veriler</h3><p>Uygulamada tarayıcıdaki mağaza hesabınızla giriş yaparsınız. Telefondan ve tabletten tarayıcıyla kullanmaya devam edebilirsiniz.</p></div>
       <div class="kart"><h3>Pro özellikleri paketle açılır</h3><p>Medula aktarımı ve ÜTS karekod OptiFlow Pro paketinde çalışır. Hesabınız yoksa <a href="kayit.php">30 gün ücretsiz deneyin</a><?= $wa !== '' ? '; paket için <a href="' . pz_e($wa) . '" target="_blank" rel="noopener">bize yazın</a>' : '' ?>.</p></div>

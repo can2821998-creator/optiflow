@@ -621,7 +621,7 @@ page_header('SGK reçete aktar', 'Medula Optik ekranındaki reçeteyi siparişe 
         Medula bu uygulamanın içinde açılır. Medula'ya <b>siz</b> giriş yaparsınız;
         reçete detayını açıp <b>“Reçeteyi aktar”</b> dediğinizde yalnızca o anda
         ekranda görünen reçete buraya gelir. Eklenti, köprü adresi veya anahtar gerekmez;
-        SGK kullanıcı adı/şifresi okunmaz, saklanmaz.
+        SGK şifrenizi kaydederseniz yalnızca bu bilgisayarda (Windows şifrelemesiyle) durur ve girişte kendiliğinden yazılır; sunucuya gönderilmez.
       </p>
       <div class="form-actions" style="margin-top:12px">
         <a class="btn" href="https://gss.sgk.gov.tr/Optik_Firma2_Web/login.faces" data-masaustu="medula-ac">Medula'yı aç</a>
@@ -674,7 +674,7 @@ page_header('SGK reçete aktar', 'Medula Optik ekranındaki reçeteyi siparişe 
       <div class="card-head"><h2>Neden böyle?</h2></div>
       <ul class="kv">
         <li><span>SGK ekranı mağazanızın <b>statik IP</b>'sine tanımlı; sunucumuz oraya bağlanamaz. Köprü, işlemi mağazadaki bilgisayarda bırakır.</span></li>
-        <li><span>Sistem SGK'ya <b>hiç istek atmaz</b>, şifre saklamaz, otomatik giriş yapmaz.</span></li>
+        <li><span>Sistem SGK'ya <b>hiç istek atmaz</b>; SGK şifrenizi sunucuda saklamaz, Medula'ya kendi kendine giriş yapmaz.</span></li>
         <li><span>Aktarılan değerler <b>önce önizlemede</b> gösterilir; siz onaylamadan siparişe yazılmaz.</span></li>
         <li><span>Aktarımdan sonra reçete ekranı açılır: <b>cam tipini seçip kaydedin</b>, camlar o zaman atölye listesine düşer.</span></li>
       </ul>

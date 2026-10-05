@@ -11,10 +11,11 @@
  */
 import { randomUUID } from 'node:crypto';
 import type { IpcMainEvent, WebContents, WebFrameMain } from 'electron';
+import type { MedulaGirisKaydi } from '../medula-giris-kasasi';
 import { FRAME_REPLY_TIMEOUT_MS, IPC } from '../../shared/constants';
 import { redactUrl } from '../../shared/redact';
 import type { DesktopConfig, MedulaExtraction, MedulaProbe } from '../../shared/types';
-import { parseMedulaReply, type MedulaReply } from '../ipc-validation';
+import { parseGirisYakalandi, parseMedulaReply, type MedulaReply } from '../ipc-validation';
 import { log } from '../logging';
 import { chooseFrame, chooseTextFrame, summarizeProbes, type FrameProbe } from './frame-selection';
 import { isMedulaExtractOrigin, isMedulaExtractUrl, isMedulaUrl } from './origin-policy';
@@ -22,7 +23,7 @@ import { isMedulaExtractOrigin, isMedulaExtractUrl, isMedulaUrl } from './origin
 interface Pending {
   frameToken: string;
   processId: number;
-  kind: 'probe' | 'extract' | 'liste';
+  kind: 'probe' | 'extract' | 'liste' | 'giris';
   resolve: (r: MedulaReply | null) => void;
   timer: ReturnType<typeof setTimeout>;
 }
@@ -40,9 +41,20 @@ export class MedulaController {
   constructor(
     private readonly wc: WebContents,
     private readonly cfg: DesktopConfig,
+    /** 5.4.0 — the user pressed "Giriş" on the Medula login page (values stay in main memory). */
+    private readonly onGiris: (y: { kullanici: string; sifre: string; degisim: boolean }) => void = () => {},
   ) {
     // Scoped to THIS webContents only – no global ipcMain listener.
     wc.ipc.on(IPC.medulaReply, (event, msg) => this.onReply(event, msg));
+    wc.ipc.on(IPC.medulaGirisYakalandi, (event, msg) => {
+      const f = event.senderFrame;
+      if (!f || !isMedulaExtractUrl(f.url, this.cfg) || !isMedulaExtractOrigin(f.origin, this.cfg)) {
+        log.warn('medula.giris.wrong-sender');
+        return;
+      }
+      const y = parseGirisYakalandi(msg);
+      if (y) this.onGiris(y); // never logged
+    });
   }
 
   private onReply(event: IpcMainEvent, raw: unknown): void {
@@ -64,7 +76,7 @@ export class MedulaController {
     p.resolve(reply);
   }
 
-  private ask(frame: WebFrameMain, kind: 'probe' | 'extract' | 'liste'): Promise<MedulaReply | null> {
+  private ask(frame: WebFrameMain, kind: 'probe' | 'extract' | 'liste' | 'giris', extra: Record<string, unknown> = {}): Promise<MedulaReply | null> {
     return new Promise((resolve) => {
       if (frame.isDestroyed() || frame.detached) return resolve(null);
       const id = randomUUID();
@@ -74,7 +86,7 @@ export class MedulaController {
       }, FRAME_REPLY_TIMEOUT_MS);
       this.pending.set(id, { frameToken: frame.frameToken, processId: frame.processId, kind, resolve, timer });
       try {
-        frame.send(IPC.medulaRequest, { id, kind });
+        frame.send(IPC.medulaRequest, { ...extra, id, kind });
       } catch {
         clearTimeout(timer);
         this.pending.delete(id);
@@ -168,6 +180,17 @@ export class MedulaController {
     }
     log.info('bridge.list.read', { frames: frames.length, count: set.size });
     return set.size ? { kind: 'ok', numaralar: Array.from(set).slice(0, 1000) } : { kind: 'empty' };
+  }
+
+  /**
+   * 5.4.0 — Giriş ekranı(ları)nda: izlemeyi kurar ve kayıt varsa boş alanları doldurur.
+   * Yalnızca şifre alanı görünen (giriş / şifre değiştirme) ve okunabilir SGK çerçevelerine gider.
+   */
+  async giris(kayit: MedulaGirisKaydi | null, izle: boolean): Promise<string[]> {
+    if (!this.topUrlAllowed() || (!kayit && !izle)) return [];
+    const girisCerceveleri = (await this.probeFrames()).filter((p) => p.probe.looksLikeLogin).map((p) => p.frame);
+    const replies = await Promise.all(girisCerceveleri.map((f) => this.ask(f, 'giris', { izle, ...(kayit ? { kayit } : {}) })));
+    return replies.map((r) => (r && r.ok && r.kind === 'giris' ? r.sonuc : 'yanit-yok'));
   }
 
   dispose(): void {

@@ -2,16 +2,29 @@
 declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 
+// 4.18.0 — "Farklı mağaza": bu cihazın hatırlanan mağazası ve oturumu bırakılır.
+if (is_post() && post('action') === 'farkli') {
+    hatirla_cerez_sil(HATIRLA_KULLANICI_CEREZ);   // personel çerezi de (kaydı kendi mağaza veritabanında süresi dolunca silinir)
+    magaza_hatirla_unut();
+    logout_session();
+    redirect('magaza-giris.php');
+}
+
 if (tenant_oturum()) {
     redirect('login.php');
 }
 
 $error = '';
 $email = '';
+$hatirla = is_optiflow_desktop();   // masaüstü: mağazanın kendi bilgisayarı → varsayılan işaretli
 if (is_post()) {
     $email = post('email');
+    $hatirla = isset($_POST['hatirla']);
     $magaza = tenant_giris($email, (string) ($_POST['password'] ?? ''));
     if ($magaza) {
+        if ($hatirla) {
+            magaza_hatirla_ver($magaza);
+        }
         redirect('login.php');
     }
     $error = 'E-posta veya şifre hatalı.';
@@ -38,6 +51,9 @@ if (is_post()) {
   .alert{background:#fdeceb;color:#9c2b23;border-radius:9px;padding:10px 12px;font-size:13.5px;margin-bottom:16px}
   .foot{display:block;margin-top:18px;text-align:center;font-size:13px;color:var(--muted)}
   .foot a{color:var(--brand);font-weight:600;text-decoration:none}
+  .remember{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;margin:2px 0 8px;cursor:pointer}
+  .remember input{margin-top:3px;width:16px;height:16px;accent-color:var(--brand)}
+  .remember small{display:block;color:var(--muted);font-size:12px}
   .pro-baslik{display:flex;align-items:center;gap:10px;margin:0 0 18px;font-size:17px;color:#122f4d}
   .pro-baslik svg{width:34px;height:34px}.pro-baslik b{color:#b08a2a}
 </style>
@@ -60,6 +76,8 @@ if (is_post()) {
     <label class="field"><span>Mağaza şifresi</span>
       <input name="password" type="password" autocomplete="current-password" required>
     </label>
+    <label class="remember"><input type="checkbox" name="hatirla" value="1" <?= $hatirla ? 'checked' : '' ?>>
+      <span>Bu bilgisayarda mağazayı hatırla<small>30 gün boyunca mağaza şifresi sorulmaz. Ortak kullanılan bilgisayarlarda işaretlemeyin.</small></span></label>
     <button class="btn">Devam et</button>
   </form>
   <?php if (!is_optiflow_desktop()): ?><small class="foot">Yeni mağazasınız? <a href="kayit.php">Ücretsiz deneyin</a></small><?php endif; ?>

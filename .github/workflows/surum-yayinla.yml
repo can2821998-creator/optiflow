@@ -68,14 +68,23 @@ jobs:
           php-version: '8.2'
           extensions: pdo_sqlite, sqlite3, zip, mbstring, sodium, curl
       - name: Sunucu testleri
+        # Her test ayrı çalışır; düşen testin ✗ satırları Actions uyarısı (annotation) olarak da yazılır
+        # (oturumdan log dosyasına erişilemiyor, uyarılar API'den okunabiliyor).
         run: |
-          php tests/uts/uts-test.php && bash tests/uts/sayfa-test.sh
-          php tests/alis/alis-test.php && bash tests/alis/sayfa-test.sh
-          php tests/hata-hak/test.php && bash tests/hata-hak/sayfa-test.sh
-          php tests/garanti/test.php && bash tests/garanti/sayfa-test.sh
-          php tests/sgk-fatura/test.php && bash tests/sgk-fatura/sayfa-test.sh
-          php tests/seo/test.php
-          php tests/guncelleme/test.php
+          hata=0
+          for t in "php tests/uts/uts-test.php" "bash tests/uts/sayfa-test.sh" "php tests/alis/alis-test.php" "bash tests/alis/sayfa-test.sh" \
+                   "php tests/hata-hak/test.php" "bash tests/hata-hak/sayfa-test.sh" "php tests/garanti/test.php" "bash tests/garanti/sayfa-test.sh" \
+                   "php tests/sgk-fatura/test.php" "bash tests/sgk-fatura/sayfa-test.sh" "php tests/seo/test.php" "php tests/guncelleme/test.php"; do
+            if ! cikti=$($t 2>&1); then
+              hata=1
+              echo "$cikti"
+              ozet=$(echo "$cikti" | grep -E "✗|Fatal|Error|Uncaught" | head -6 | tr '\n' ' ' | cut -c1-900)
+              echo "::error title=$t::${ozet:-çıkış kodu sıfır değil}"
+            else
+              echo "$cikti" | tail -1
+            fi
+          done
+          exit $hata
 
   masaustu:
     needs: surumler

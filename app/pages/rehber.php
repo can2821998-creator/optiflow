@@ -5,7 +5,7 @@ declare(strict_types=1);
  * Rehber (blog) — herkese açık sayfa. Veritabanına ve oturuma dokunmaz, bootstrap yüklemez.
  *   rehber.php          → yazı listesi (gazetenin ön sayfası)
  *   rehber.php?y=<slug> → tek yazı
- * 4.16.6: "Gözlükçü Gazetesi" — eskimiş gazete sayfası tasarımı (sararmış kâğıt, mürekkep, sepya baskı fotoğraf).
+ * 4.16.6: "OptiFlow Gazetesi" — eskimiş gazete sayfası tasarımı (sararmış kâğıt, mürekkep, sepya baskı fotoğraf).
  * Yazıların JSON'unda isteğe bağlı alanlar: "manset": true (ön sayfa manşeti), "bolum", "gorsel" (assets/onizleme/*.webp).
  */
 require dirname(__DIR__) . '/pazarlama.php';
@@ -343,11 +343,11 @@ h1,h2,h3{font-weight:500;margin:0;text-wrap:balance}
     <div class="kunye">
       <p class="kunye-yan">Medula, SGK ve ÜTS işleri,<br>atölye, stok ve kasa</p>
       <?php if (!$yazi && !$bulunamadi): ?>
-        <h1 class="ad">Gözlükçü Gazetesi<small>Gözlükçüler için uygulamalı rehberler</small></h1>
+        <h1 class="ad">OptiFlow Gazetesi<small>Gözlükçüler için uygulamalı rehberler</small></h1>
       <?php else: ?>
-        <a class="ad" href="rehber.php">Gözlükçü Gazetesi<small>Gözlükçüler için uygulamalı rehberler</small></a>
+        <a class="ad" href="rehber.php">OptiFlow Gazetesi<small>Gözlükçüler için uygulamalı rehberler</small></a>
       <?php endif; ?>
-      <p class="kunye-yan sag">OptiFlow yayınıdır.<br>Her sayıda dükkândan bir iş.</p>
+      <p class="kunye-yan sag">Optik dükkânının gündemi.<br>Her sayıda bir iş, adım adım.</p>
     </div>
     <div class="kunye-alt">
       <span class="sayi">Sayı <?= count($hepsi) ?></span>
@@ -445,7 +445,7 @@ h1,h2,h3{font-weight:500;margin:0;text-wrap:balance}
 <?php endif; ?>
 
   <footer class="alt">
-    <span>Gözlükçü Gazetesi, OptiFlow tarafından yayımlanır. © <?= date('Y') ?></span>
+    <span>OptiFlow Gazetesi, gözlükçüler için yayımlanır. © <?= date('Y') ?></span>
     <span><a href="/">Gözlükçü programı OptiFlow</a> · <a href="indir.php">OptiFlow Pro</a> · <a href="kvkk.php">KVKK</a></span>
   </footer>
 </div>

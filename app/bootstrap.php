@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.16.6';
+const APP_VERSION = '4.16.7';
 const APP_ROOT = __DIR__ . '/..';
 
 /**

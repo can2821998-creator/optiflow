@@ -1,6 +1,9 @@
 OPTIFLOW
-Release: 4.16.6 (2026-10-05)
+Release: 4.16.7 (2026-10-05)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.16.7 (Rehber gazetesinin adı; OptiFlow Pro 5.3.0 ile)
+  - Rehber künyesi "Gözlükçü Gazetesi" → "OptiFlow Gazetesi" (kullanıcı isteği). Başka değişiklik yok.
 
 DEĞİŞİKLİK NOTLARI — 4.16.6 (Rehber: "Gözlükçü Gazetesi" tasarımı; OptiFlow Pro 5.3.0 ile)
   - rehber.php baştan tasarlandı: eskimiş gazete sayfası (sararmış kâğıt dokusu, kenar kararması, kat izi,

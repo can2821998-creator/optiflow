@@ -1,6 +1,19 @@
 OPTIFLOW
-Release: 4.16.3 (2026-10-05)
+Release: 4.16.4 (2026-10-05)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.16.4 (SEO aracı panele bağlandı; OptiFlow Pro 5.3.0 ile)
+  - YENİ: Merkez panel › "SEO · Google" ekranı. Search Console (son 28 gün tıklama, gösterim, tıklama oranı,
+    sorgular ve sıra değişimi, sayfalar) ve PageSpeed (mobil hız/SEO puanı, iyileştirme önerileri) panelde görünür.
+  - Bağlantı Plesk'te config.php düzenlemeden panelden kurulur: hizmet hesabı JSON anahtarı yükleme (doğrulanır,
+    yalnızca gerekli alanlar 0600 izinle storage/gsc-anahtar.json'a yazılır), mülk, PageSpeed anahtarı, erişim
+    anahtarı (seo-veri.php?t=…) üretme/yenileme. Hizmet hesabının gördüğü mülkler listelenir; hata mesajları
+    eksik adımı söyler (API kapalı / kullanıcı eklenmemiş / kota).
+  - Google ve Bing doğrulama kodu panelden girilebilir (tam <meta> etiketi yapıştırılabilir); tanıtım sayfası ve
+    rehbere hemen eklenir.
+  - seo-veri.php ortak modüle taşındı (app/seo.php); config.php'deki eski anahtarlar geçerli kalır. Kurulmamışsa
+    503 mesajı paneli gösterir.
+  - Yeni test: tests/seo/test.php (sahte Google yanıtlarıyla, ağ kullanmaz). Şema DEĞİŞMEDİ (27).
 
 DEĞİŞİKLİK NOTLARI — 4.16.3 (SEO; OptiFlow Pro 5.3.0 ile)
   - Google Search Console / Bing doğrulama etiketi ayarı (app/pazarlama.php › google_dogrulama, bing_dogrulama);

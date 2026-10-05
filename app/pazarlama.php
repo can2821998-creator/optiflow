@@ -118,9 +118,11 @@ function pz_logo(string $id = 'pzLogo', string $tek = ''): string
 function pz_dogrulama_meta(): string
 {
     $p = optiflow_pazarlama();
+    require_once __DIR__ . '/seo.php';
+    $panel = seo_dogrulama_kodlari();       // Merkez panel › SEO · Google
     $out = '';
     foreach (['google-site-verification' => 'google_dogrulama', 'msvalidate.01' => 'bing_dogrulama'] as $ad => $k) {
-        $kod = trim((string) ($p[$k] ?? ''));
+        $kod = trim((string) ($p[$k] ?? '')) ?: $panel[$k];
         if ($kod !== '' && preg_match('/^[A-Za-z0-9_\-]{10,100}$/', $kod)) {
             $out .= '<meta name="' . $ad . '" content="' . pz_e($kod) . '">' . "\n";
         }

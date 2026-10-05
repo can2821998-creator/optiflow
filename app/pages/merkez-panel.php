@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
+require_once APP_ROOT . '/app/seo.php';
 
 if (!config('merkez_admin_password') && !config('merkez_admin_password_hash')) {
     render_error_page('Panel kapalı', "config.php içine 'merkez_admin_password_hash' (önerilir) ya da 'merkez_admin_password' anahtarı eklenmeden bu panel açılmaz.");
@@ -188,6 +189,64 @@ if (is_post()) {
                 flash('Yazı silindi.');
                 $geri = 'merkez-panel.php?gorunum=rehber';
                 break;
+            case 'seo_kaydet':
+                try {
+                    $yuklu = $_FILES['anahtar'] ?? null;
+                    if (is_array($yuklu) && ($yuklu['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+                        if ($yuklu['error'] !== UPLOAD_ERR_OK || !is_uploaded_file((string) $yuklu['tmp_name'])) {
+                            throw new RuntimeException('Anahtar dosyası yüklenemedi.');
+                        }
+                        if ((int) $yuklu['size'] > 20000) {
+                            throw new RuntimeException('Anahtar dosyası çok büyük; Google\'ın verdiği .json dosyasını seçin.');
+                        }
+                        $eposta = seo_anahtar_kaydet((string) file_get_contents((string) $yuklu['tmp_name']));
+                        merkez_log('seo', null, 'hizmet hesabı anahtarı yüklendi · ' . $eposta);
+                    }
+                    seo_ayar_kaydet([
+                        'gsc_site' => post('gsc_site'), 'site_url' => post('site_url'),
+                        'psi_api_key' => post('psi_api_key'), 'psi_api_key_sil' => post('psi_api_key_sil') === '1',
+                        'google_dogrulama' => (string) ($_POST['google_dogrulama'] ?? ''),
+                        'bing_dogrulama' => (string) ($_POST['bing_dogrulama'] ?? ''),
+                    ]);
+                } catch (RuntimeException $e) {
+                    throw new DomainException($e->getMessage());
+                }
+                merkez_log('seo', null, 'ayarlar kaydedildi');
+                flash('SEO ayarları kaydedildi.');
+                $geri = 'merkez-panel.php?gorunum=seo';
+                break;
+            case 'seo_token':
+                try {
+                    seo_ayar_kaydet(['token_uret' => true]);
+                } catch (RuntimeException $e) {
+                    throw new DomainException($e->getMessage());
+                }
+                merkez_log('seo', null, 'erişim anahtarı yenilendi');
+                flash('Yeni erişim anahtarı üretildi. Eski bağlantı artık çalışmaz.');
+                $geri = 'merkez-panel.php?gorunum=seo';
+                break;
+            case 'seo_anahtar_sil':
+                seo_anahtar_sil();
+                merkez_log('seo', null, 'hizmet hesabı anahtarı silindi');
+                flash('Google anahtarı silindi.');
+                $geri = 'merkez-panel.php?gorunum=seo';
+                break;
+            case 'seo_yenile':
+                @set_time_limit(120);
+                $sonuc = seo_veri_topla(post('psi') === '1');
+                $_SESSION['seo_mulkler'] = $sonuc['mulkler'];
+                if ($sonuc['hatalar']) {
+                    foreach ($sonuc['hatalar'] as $h) {
+                        flash($h, 'error');
+                    }
+                } else {
+                    flash('Google verisi alındı.');
+                }
+                if ($sonuc['gsc'] !== null || $sonuc['psi'] !== null) {
+                    seo_onbellek_yaz($sonuc);   // kısmi sonuç da gösterilsin
+                }
+                $geri = 'merkez-panel.php?gorunum=seo';
+                break;
             case 'cikis':
                 unset($_SESSION['merkez_admin'], $_SESSION['merkez_impersonate']);
                 redirect('merkez-panel.php');
@@ -195,6 +254,9 @@ if (is_post()) {
         }
     } catch (DomainException $e) {
         flash($e->getMessage(), 'error');
+        if (str_starts_with($action, 'seo_')) {
+            $geri = 'merkez-panel.php?gorunum=seo';
+        }
         if (str_starts_with($action, 'rehber_')) {
             $geri = 'merkez-panel.php?gorunum=rehber' . (post('eski_slug') !== '' ? '&yazi=' . rawurlencode(post('eski_slug')) : '');
         }
@@ -339,7 +401,7 @@ $logo = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidd
 
 $detayId = query_int('magaza');
 $detay = $detayId ? merkez_magaza($detayId) : null;
-$gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yeni', 'rehber'], true) ? query('gorunum') : 'liste');
+$gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yeni', 'rehber', 'seo'], true) ? query('gorunum') : 'liste');
 
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title><?= $detay ? e($detay['isim']) . ' · ' : '' ?>Merkez panel</title>
@@ -352,7 +414,8 @@ $gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yen
     <a class="<?= $gorunum === 'liste' || $gorunum === 'detay' ? 'on' : '' ?>" href="merkez-panel.php">Mağazalar</a>
     <a class="<?= $gorunum === 'saglik' ? 'on' : '' ?>" href="merkez-panel.php?gorunum=saglik">Sağlık</a>
     <a class="<?= $gorunum === 'log' ? 'on' : '' ?>" href="merkez-panel.php?gorunum=log">İşlem günlüğü</a>
-    <a class="<?= $gorunum === 'rehber' ? 'on' : '' ?>" href="merkez-panel.php?gorunum=rehber">Rehber · SEO</a>
+    <a class="<?= $gorunum === 'rehber' ? 'on' : '' ?>" href="merkez-panel.php?gorunum=rehber">Rehber</a>
+    <a class="<?= $gorunum === 'seo' ? 'on' : '' ?>" href="merkez-panel.php?gorunum=seo">SEO · Google</a>
     <a class="<?= $gorunum === 'yeni' ? 'on' : '' ?>" href="merkez-panel.php?gorunum=yeni">+ Yeni mağaza</a>
   </nav>
   <div class="tb-actions">
@@ -731,7 +794,7 @@ $gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yen
   <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px">
     <div>
       <h1>Rehber yazıları</h1>
-      <p class="muted" style="margin:2px 0 0">Sitede <a href="rehber.php" target="_blank" rel="noopener">optiflow.com.tr/rehber.php</a> altında yayınlanır, site haritasına kendiliğinden eklenir. Taslaklar SEO panosundan gelir.</p>
+      <p class="muted" style="margin:2px 0 0">Sitede <a href="rehber.php" target="_blank" rel="noopener">optiflow.com.tr/rehber.php</a> altında yayınlanır, site haritasına kendiliğinden eklenir. Aramadaki sonuçları <a href="merkez-panel.php?gorunum=seo">SEO · Google</a> ekranında izleyin.</p>
     </div>
     <a class="btn btn-primary" href="merkez-panel.php?gorunum=rehber&amp;yeni=1">+ Yeni yazı</a>
   </div>
@@ -789,6 +852,148 @@ $gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yen
     <?php if (!$tum): ?><tr><td colspan="5" class="muted" style="padding:20px;text-align:center">Henüz yazı yok.</td></tr><?php endif; ?>
     </tbody>
   </table></div>
+
+<?php elseif ($gorunum === 'seo'): /* ==================== SEO · GOOGLE ==================== */
+  $sa = seo_ayar();
+  $anahtar = seo_anahtar_bilgi();
+  $veri = seo_onbellek_oku(true);
+  $mulkler = $_SESSION['seo_mulkler'] ?? ($veri['mulkler'] ?? null);
+  $ucNokta = rtrim($sa['site_url'], '/') . '/seo-veri.php?t=' . $sa['token'];
+  $adimTamam = [
+      'anahtar' => $anahtar !== null,
+      'mulk'    => $veri !== null && $veri['gsc'] !== null,
+      'dogrula' => $sa['google_dogrulama'] !== '' || ($veri !== null && $veri['gsc'] !== null),
+  ];
+  $puanRenk = static fn(?int $p): string => $p === null ? 'var(--soft)' : ($p >= 90 ? 'var(--ok)' : ($p >= 50 ? 'var(--amber)' : 'var(--pop-deep)'));
+  $sayi = static fn($n): string => number_format((float) $n, 0, ',', '.');
+?>
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+    <div>
+      <h1>SEO · Google bağlantısı</h1>
+      <p class="muted" style="margin:2px 0 0">Search Console arama verisi ve PageSpeed hız ölçümü bu ekranda görünür. Hasta ya da mağaza verisi Google'a gönderilmez.</p>
+    </div>
+    <?php if ($anahtar): ?>
+    <form method="post" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0">
+      <?= csrf_field() ?><input type="hidden" name="action" value="seo_yenile">
+      <label class="muted" style="display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px"><input type="checkbox" name="psi" value="1" checked> Hız ölçümü de (≈30 sn)</label>
+      <button class="btn btn-primary">Google'dan verileri al</button>
+    </form>
+    <?php endif; ?>
+  </div>
+
+  <?php if ($veri && ($veri['gsc'] || $veri['psi'])): $g = $veri['gsc']; $p = $veri['psi']; ?>
+  <p class="muted" style="margin:0 0 8px;font-size:13px">Son veri: <?= e(date('d.m.Y H:i', (int) strtotime((string) $veri['uretildi']))) ?><?= $g ? ' · ' . e(date('d.m', (int) strtotime($g['aralik'][0]))) . '–' . e(date('d.m.Y', (int) strtotime($g['aralik'][1]))) . ' (son 28 gün)' : '' ?> · <?= e($veri['site']) ?></p>
+  <div class="kpis">
+    <div class="kpi act"><div class="n"><?= $g ? $sayi($g['toplam']['tiklama']) : '—' ?></div><div class="l">Tıklama (28 gün)</div></div>
+    <div class="kpi"><div class="n"><?= $g ? $sayi($g['toplam']['gosterim']) : '—' ?></div><div class="l">Gösterim</div></div>
+    <div class="kpi"><div class="n"><?= $g ? e(str_replace('.', ',', (string) $g['toplam']['to'])) . '%' : '—' ?></div><div class="l">Tıklama oranı</div></div>
+    <div class="kpi"><div class="n" style="color:<?= $puanRenk($p['performans'] ?? null) ?>"><?= $p ? (int) $p['performans'] : '—' ?><small style="font-size:14px;color:var(--soft)"> / <?= $p ? (int) $p['seo'] : '—' ?></small></div><div class="l">Mobil hız / SEO puanı</div></div>
+  </div>
+
+  <div class="grid2" style="align-items:start;margin-bottom:18px">
+    <div class="card" style="overflow-x:auto">
+      <div style="padding:14px 16px 4px;font-weight:800">Arama sorguları</div>
+      <table class="utable">
+        <thead><tr><th style="text-align:left">Sorgu</th><th>Tık</th><th>Gösterim</th><th>Sıra</th></tr></thead>
+        <tbody>
+        <?php foreach (array_slice($g['sorgular'] ?? [], 0, 15) as $s):
+            $fark = $s['onceki_sira'] !== null ? round($s['onceki_sira'] - $s['sira'], 1) : null; ?>
+          <tr><td><?= e($s['sorgu']) ?></td><td style="text-align:center"><?= (int) $s['tiklama'] ?></td><td style="text-align:center"><?= $sayi($s['gosterim']) ?></td>
+            <td style="text-align:center;white-space:nowrap"><?= e(str_replace('.', ',', (string) $s['sira'])) ?><?php if ($fark !== null && abs($fark) >= 0.5): ?> <small style="color:<?= $fark > 0 ? 'var(--ok)' : 'var(--pop-deep)' ?>;font-weight:800"><?= $fark > 0 ? '▲' : '▼' ?><?= e(str_replace('.', ',', (string) abs($fark))) ?></small><?php endif; ?></td></tr>
+        <?php endforeach; ?>
+        <?php if (empty($g['sorgular'])): ?><tr><td colspan="4" class="muted" style="padding:18px;text-align:center"><?= $g ? 'Henüz arama verisi yok. Yeni mülklerde ilk veri 2–7 günde gelir.' : 'Search Console verisi alınamadı.' ?></td></tr><?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="overflow-x:auto">
+      <div style="padding:14px 16px 4px;font-weight:800">Sayfalar</div>
+      <table class="utable">
+        <thead><tr><th style="text-align:left">Sayfa</th><th>Tık</th><th>Gösterim</th><th>Sıra</th></tr></thead>
+        <tbody>
+        <?php foreach (array_slice($g['sayfalar'] ?? [], 0, 15) as $s): $yol = (string) (parse_url($s['sayfa'], PHP_URL_PATH) ?: '/') . (parse_url($s['sayfa'], PHP_URL_QUERY) ? '?' . parse_url($s['sayfa'], PHP_URL_QUERY) : ''); ?>
+          <tr><td><a href="<?= e($s['sayfa']) ?>" target="_blank" rel="noopener" style="color:var(--ink)"><?= e($yol) ?></a></td><td style="text-align:center"><?= (int) $s['tiklama'] ?></td><td style="text-align:center"><?= $sayi($s['gosterim']) ?></td><td style="text-align:center"><?= e(str_replace('.', ',', (string) $s['sira'])) ?></td></tr>
+        <?php endforeach; ?>
+        <?php if (empty($g['sayfalar'])): ?><tr><td colspan="4" class="muted" style="padding:18px;text-align:center">—</td></tr><?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <?php if ($p): ?>
+  <div class="card panel" style="margin-bottom:18px">
+    <div style="font-weight:800;margin-bottom:8px">Mobil hız ölçümü (PageSpeed) · <?= e($veri['sayfa']) ?></div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px">
+      <?php foreach (['performans' => 'Performans', 'erisilebilirlik' => 'Erişilebilirlik', 'en_iyi_uygulama' => 'En iyi uygulama', 'seo' => 'SEO'] as $k => $ad): ?>
+        <div><b style="font-size:22px;color:<?= $puanRenk($p[$k]) ?>"><?= $p[$k] === null ? '—' : (int) $p[$k] ?></b> <span class="muted" style="font-size:13px"><?= e($ad) ?></span></div>
+      <?php endforeach; ?>
+    </div>
+    <p class="muted" style="margin:0 0 8px;font-size:13px">LCP <?= e((string) ($p['lcp'] ?? '—')) ?> · CLS <?= e((string) ($p['cls'] ?? '—')) ?> · TBT <?= e((string) ($p['tbt'] ?? '—')) ?> · FCP <?= e((string) ($p['fcp'] ?? '—')) ?></p>
+    <?php if ($p['sorunlar']): ?>
+    <details><summary class="muted" style="cursor:pointer;font-weight:700"><?= count($p['sorunlar']) ?> iyileştirme önerisi</summary>
+      <ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px"><?php foreach ($p['sorunlar'] as $s): ?><li><?= e($s['baslik']) ?><?= $s['deger'] ? ' <span class="muted">(' . e((string) $s['deger']) . ')</span>' : '' ?></li><?php endforeach; ?></ul>
+    </details>
+    <?php endif; ?>
+  </div>
+  <?php endif; ?>
+  <?php endif; ?>
+
+  <div class="card panel" style="margin-bottom:18px">
+    <div style="font-weight:800;margin-bottom:4px">Bağlantı ayarları</div>
+    <p class="muted" style="margin:0 0 14px;font-size:13.5px">Bir kez yapılır. Adımlar: <a href="https://github.com/can2821998-creator/optiflow/blob/main/docs/SEO-SEARCH-CONSOLE.md" target="_blank" rel="noopener">docs/SEO-SEARCH-CONSOLE.md</a></p>
+
+    <ol style="margin:0 0 16px;padding-left:20px;line-height:1.7;font-size:14px">
+      <li><?= $adimTamam['anahtar'] ? '✅' : '⬜' ?> Google Cloud'da hizmet hesabı açıp <b>JSON anahtarını</b> aşağıdan yükleyin (Search Console API etkin olmalı).</li>
+      <li><?= $adimTamam['mulk'] ? '✅' : '⬜' ?> Search Console › Ayarlar › <b>Kullanıcılar ve izinler</b> › Kullanıcı ekle: hizmet hesabı e-postası, izin <b>Kısıtlı</b>.
+        <?php if ($anahtar): ?><br><code style="user-select:all;background:#f2f2fa;padding:3px 7px;border-radius:6px;font-size:13px"><?= e($anahtar['e_posta']) ?></code><?php endif; ?></li>
+      <li><?= $adimTamam['mulk'] ? '✅' : '⬜' ?> Aşağıda mülkü seçip <b>Google'dan verileri al</b>'a basın.</li>
+    </ol>
+
+    <form method="post" enctype="multipart/form-data">
+      <?= csrf_field() ?><input type="hidden" name="action" value="seo_kaydet">
+      <div class="grid2">
+        <label class="field"><span>Google hizmet hesabı anahtarı (.json)<?= $anahtar ? ' — yüklü: ' . e($anahtar['e_posta']) : '' ?></span><input type="file" name="anahtar" accept=".json,application/json"></label>
+        <label class="field"><span>Search Console mülkü</span>
+          <input type="text" name="gsc_site" list="seo-mulkler" value="<?= e($sa['gsc_site']) ?>" required>
+          <datalist id="seo-mulkler"><option value="sc-domain:optiflow.com.tr"><option value="https://optiflow.com.tr/"><?php foreach ((array) $mulkler as $m): ?><option value="<?= e($m['site']) ?>"><?php endforeach; ?></datalist>
+        </label>
+      </div>
+      <?php if (is_array($mulkler)): ?>
+        <p class="muted" style="margin:-4px 0 12px;font-size:13px"><?= $mulkler ? 'Hizmet hesabının gördüğü mülkler: ' . e(implode(', ', array_map(static fn($m) => $m['site'], $mulkler))) : '⚠ Hizmet hesabı henüz hiçbir mülkü görmüyor: 2. adımı yapın (eklemeden sonra birkaç dakika sürebilir).' ?></p>
+      <?php endif; ?>
+      <p class="muted" style="margin:-4px 0 12px;font-size:12.5px">"Alan adı" mülkü için <code>sc-domain:optiflow.com.tr</code>, "URL ön eki" mülkü için <code>https://optiflow.com.tr/</code> yazın.</p>
+      <div class="grid2">
+        <label class="field"><span>Hız ölçümü yapılacak sayfa</span><input type="text" inputmode="url" name="site_url" value="<?= e($sa['site_url']) ?>"></label>
+        <label class="field"><span>PageSpeed API anahtarı (isteğe bağlı<?= $sa['psi_api_key'] !== '' ? ' — kayıtlı ••••' . e(substr($sa['psi_api_key'], -4)) : '' ?>)</span><input type="password" name="psi_api_key" autocomplete="off" placeholder="<?= $sa['psi_api_key'] !== '' ? 'değiştirmek için yazın' : 'kota hatası alırsanız girin' ?>"></label>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>Google doğrulama kodu (HTML etiketi yöntemi — gerekirse)</span><input type="text" name="google_dogrulama" value="<?= e($sa['google_dogrulama']) ?>" placeholder='<meta name="google-site-verification" content="…"> ya da yalnızca kod'></label>
+        <label class="field"><span>Bing doğrulama kodu (msvalidate.01 — gerekirse)</span><input type="text" name="bing_dogrulama" value="<?= e($sa['bing_dogrulama']) ?>" placeholder="isteğe bağlı"></label>
+      </div>
+      <p class="muted" style="margin:-4px 0 12px;font-size:12.5px">Doğrulama kodları yalnızca tanıtım sayfası ve rehberin <code>&lt;head&gt;</code> bölümüne eklenir; panel sayfalarına eklenmez.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-primary">Kaydet</button>
+        <?php if ($sa['psi_api_key'] !== ''): ?><label class="muted" style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" name="psi_api_key_sil" value="1"> PageSpeed anahtarını kaldır</label><?php endif; ?>
+      </div>
+    </form>
+
+    <?php if ($anahtar): ?>
+    <details style="margin-top:16px"><summary class="muted" style="cursor:pointer;font-weight:700">Google anahtarını sil</summary>
+      <form method="post" style="margin-top:10px"><?= csrf_field() ?><input type="hidden" name="action" value="seo_anahtar_sil"><button class="btn btn-danger btn-sm">Anahtarı sil</button>
+      <span class="muted" style="font-size:12.5px">Google Cloud'daki anahtarı da devre dışı bırakmayı unutmayın.</span></form>
+    </details>
+    <?php endif; ?>
+  </div>
+
+  <div class="card panel">
+    <div style="font-weight:800;margin-bottom:4px">Veri uç noktası (otomatik raporlar için)</div>
+    <?php if (strlen($sa['token']) >= 24): ?>
+      <p class="muted" style="margin:0 0 8px;font-size:13.5px">Günlük SEO raporu ya da başka bir araç bu adresten JSON okur. Adresi yalnızca güvendiğiniz yerde paylaşın.</p>
+      <code style="display:block;user-select:all;background:#f2f2fa;padding:9px 11px;border-radius:8px;font-size:12.5px;word-break:break-all"><?= e($ucNokta) ?></code>
+      <form method="post" style="margin-top:10px"><?= csrf_field() ?><input type="hidden" name="action" value="seo_token"><button class="btn btn-ghost btn-sm">Erişim anahtarını yenile</button></form>
+    <?php else: ?>
+      <p class="muted" style="margin:0;font-size:13.5px">Ayarları bir kez kaydedince erişim anahtarı kendiliğinden üretilir.</p>
+    <?php endif; ?>
+  </div>
 
 <?php elseif ($gorunum === 'yeni'): /* ==================== YENİ MAĞAZA ==================== */ ?>
   <a class="crumb" href="merkez-panel.php">← Tüm mağazalar</a>

@@ -1,6 +1,14 @@
-# OptiFlow — kök güvenlik kuralları (yalnızca erişim engelleme; yeniden yazma YOK).
+# OptiFlow — kök güvenlik kuralları + tek yönlendirme (www → çıplak alan adı, SEO için).
 # Amaç: PHP çözümlemesi bir an devre dışı kalsa bile config.php, yedekler ve
 # log/dosya kalıntıları web'den okunamasın.
+
+# SEO: www.optiflow.com.tr → https://optiflow.com.tr (kalıcı 301). Yalnızca www için çalışır; döngü riski yok.
+# (HTTP → HTTPS yönlendirmesi Plesk › SSL/TLS ayarından yapılır.)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^www\.optiflow\.com\.tr$ [NC]
+  RewriteRule ^(.*)$ https://optiflow.com.tr/$1 [R=301,L]
+</IfModule>
 
 # Dizin listelemeyi kapat
 Options -Indexes
@@ -25,6 +33,7 @@ Options -Indexes
   ExpiresByType font/woff2 "access plus 1 year"
   ExpiresByType image/svg+xml "access plus 1 month"
   ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
   ExpiresByType text/css "access plus 1 month"
   ExpiresByType application/javascript "access plus 1 month"
   ExpiresByType text/javascript "access plus 1 month"

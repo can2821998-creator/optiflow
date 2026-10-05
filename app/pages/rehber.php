@@ -58,6 +58,7 @@ if ($yazi) {
 <title><?= pz_e($bulunamadi ? 'Yazı bulunamadı | OptiFlow Rehber' : $title) ?></title>
 <meta name="description" content="<?= pz_e($desc) ?>">
 <?php if (!$bulunamadi): ?><link rel="canonical" href="<?= pz_e($canon) ?>"><?php endif; ?>
+<?= pz_dogrulama_meta() ?>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/manrope-latin-wght-normal.woff2" crossorigin>
 <meta property="og:type" content="<?= $yazi ? 'article' : 'website' ?>">

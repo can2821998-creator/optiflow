@@ -125,6 +125,7 @@ function render_karsilama(): void
 <title>Gözlükçü Programı OptiFlow | Medula Aktarımı, SGK Faturası ve Atölye</title>
 <meta name="description" content="Gözlükçüler için yönetim programı: Medula'daki reçete tek tıkla siparişe, SGK katkı payı ve ay sonu SGK faturası hazır. Atölye panosu, WhatsApp bildirimi, garanti kartı, ÜTS karekod, kasa ve çok şube. 30 gün ücretsiz.">
 <link rel="canonical" href="https://optiflow.com.tr/">
+<?= pz_dogrulama_meta() ?>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/manrope-latin-wght-normal.woff2" crossorigin>
@@ -142,6 +143,12 @@ function render_karsilama(): void
 <meta name="twitter:image" content="https://optiflow.com.tr/assets/og-optiflow.png">
 <script type="application/ld+json"><?= $ldJson(['@context' => 'https://schema.org', '@type' => 'SoftwareApplication', 'name' => 'OptiFlow', 'applicationCategory' => 'BusinessApplication', 'operatingSystem' => 'Web, Windows', 'inLanguage' => 'tr', 'description' => 'Gözlükçüler için Medula aktarımı, SGK katkı payı ve ay sonu SGK faturası, sipariş, atölye, garanti, kasa ve çok şube yönetim sistemi.', 'offers' => ['@type' => 'Offer', 'price' => '0', 'priceCurrency' => 'TRY', 'description' => '30 gün ücretsiz deneme'], 'url' => 'https://optiflow.com.tr/']) ?></script>
 <script type="application/ld+json"><?= $ldJson(['@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => $faqLd]) ?></script>
+<script type="application/ld+json"><?= $ldJson(['@context' => 'https://schema.org', '@graph' => [
+    ['@type' => 'Organization', '@id' => 'https://optiflow.com.tr/#org', 'name' => 'OptiFlow', 'url' => 'https://optiflow.com.tr/', 'logo' => 'https://optiflow.com.tr/assets/icons/icon-512.png']
+        + ($p['eposta'] !== '' || $p['telefon'] !== '' ? ['contactPoint' => array_filter(['@type' => 'ContactPoint', 'contactType' => 'customer support', 'email' => $p['eposta'] ?: null, 'telephone' => $p['telefon'] ?: null, 'areaServed' => 'TR', 'availableLanguage' => 'tr'])] : [])
+        + ($p['instagram'] !== '' ? ['sameAs' => ['https://instagram.com/' . $p['instagram']]] : []),
+    ['@type' => 'WebSite', '@id' => 'https://optiflow.com.tr/#site', 'name' => 'OptiFlow', 'url' => 'https://optiflow.com.tr/', 'inLanguage' => 'tr', 'publisher' => ['@id' => 'https://optiflow.com.tr/#org']],
+]]) ?></script>
 <style>
 @font-face { font-family: "Manrope"; font-style: normal; font-display: swap; font-weight: 200 800;
   src: url("assets/fonts/manrope-latin-wght-normal.woff2") format("woff2");
@@ -377,6 +384,8 @@ section{padding-block:96px}
 /* Rehber */
 .rehber{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;padding:28px 32px;border:2px solid var(--ink);border-radius:16px}
 .rehber p{color:var(--ink-2);max-width:60ch;margin-top:6px}
+.rehber-liste{margin:14px 0 0;padding-left:18px;display:grid;gap:6px;font-weight:700}
+.rehber-liste a{color:var(--blue-deep)}
 
 /* Bir siparişin yolu */
 .yol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:0;counter-reset:adim}
@@ -781,7 +790,10 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
       <div class="rehber">
         <div>
           <h3 style="font-family:var(--serif);font-weight:500;font-size:1.6rem">Gözlükçüler için rehber</h3>
-          <p>Gözlükçü programı seçerken nelere bakılmalı, dükkânın günlük işleyişi nasıl kolaylaşır: tezgâhtan yazılmış sade yazılar.</p>
+          <p>Medula reçetesi, SGK ay sonu faturası, atölye takibi ve garanti üzerine tezgâhtan yazılmış sade yazılar.</p>
+          <?php $sonYazilar = function_exists('rehber_hepsi') ? array_slice(rehber_hepsi(true), 0, 4) : []; if ($sonYazilar): ?>
+            <ul class="rehber-liste"><?php foreach ($sonYazilar as $ry): ?><li><a href="<?= pz_e(rehber_url($ry['slug'])) ?>"><?= pz_e($ry['baslik']) ?></a></li><?php endforeach; ?></ul>
+          <?php endif; ?>
         </div>
         <a class="btn btn-line" href="rehber.php">Rehberi okuyun</a>
       </div>

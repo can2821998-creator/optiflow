@@ -1,6 +1,15 @@
 OPTIFLOW
-Release: 4.16.2 (2026-10-04)
+Release: 4.16.3 (2026-10-05)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.16.3 (SEO; OptiFlow Pro 5.3.0 ile)
+  - Google Search Console / Bing doğrulama etiketi ayarı (app/pazarlama.php › google_dogrulama, bing_dogrulama);
+    ana sayfa ve rehber sayfalarına basılır.
+  - Ana sayfaya Organization + WebSite yapılandırılmış verisi; rehber kutusunda son yazılara iç bağlantılar.
+  - .htaccess: www.optiflow.com.tr → https://optiflow.com.tr kalıcı 301; WebP için tarayıcı önbelleği.
+  - Rehbere 4 yeni yazı: Medula Optik reçete aktarma, SGK gözlük faturası (ay sonu), optik atölye sipariş takibi,
+    gözlük garantisi. Site haritasına kendiliğinden girer.
+  - Rehber: docs/SEO-SEARCH-CONSOLE.md. Veritabanı şeması DEĞİŞMEDİ (27).
 
 DEĞİŞİKLİK NOTLARI — 4.16.2 (tanıtım sayfası yenilendi; OptiFlow Pro 5.3.0 ile)
   - Ana sayfa (oturumsuz ziyaretçi, app/karsilama.php) baştan tasarlandı: başlık bir göz eşeli gibi satır satır

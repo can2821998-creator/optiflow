@@ -3,7 +3,7 @@
 *Son güncelleme: 3 Ekim 2026 (4.16.1 / Pro 5.3.0)*
 
 ## Sürüm
-- **Sunucu 4.16.2**, şema **27**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
+- **Sunucu 4.16.3**, şema **27**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
 - **Canlı site (04.10, 17:15): 4.16.2 (yeni tanıtım sayfası), masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
   Canlı veritabanı göçü (22 → 27) ilk personel girişinde çalışır; sonucu kontrol edilmedi.
 - Özellik anahtarları (hepsi varsayılan kapalı): `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
@@ -11,7 +11,13 @@
   sunucu entegrasyon (yerel MariaDB): api 46/46, modüller 76/76, garanti 37/37, sgk-fatura 25/25.
   Masaüstü birim/E2E değişmedi (91/91, 61/61).
 
-## Son oturumda yapılanlar (4.16.2)
+## Son oturumda yapılanlar (4.16.3 — SEO)
+- Search Console/Bing doğrulama ayarı, Organization/WebSite şeması, www → çıplak alan adı 301, rehbere 4 yazı.
+- Kullanıcıdan beklenen: Search Console HTML etiketi kodu (→ `pazarlama.php` google_dogrulama) ya da DNS TXT;
+  sonra sitemap.xml gönderimi. Plesk'te HTTP→HTTPS 301 açık olmalı. Rehber: `docs/SEO-SEARCH-CONSOLE.md`.
+- 05.10 kontrolü: site Google'da henüz görünmüyor (site: aramasında sonuç yok).
+
+## Önceki oturum (4.16.2)
 - Tanıtım sayfası (`app/karsilama.php`) baştan tasarlandı: göz eşeli başlık, Lite/Pro iki sürüm bölümü ve
   farklar tablosu, gerçek ekran önizlemeleri (`assets/onizleme/*.webp`; arayüz değişince yeniden çekilmeli),
   önce/sonra tablosu, SGK ay sonu örneği. Masaüstü + telefonda kontrol edildi; yatay kaydırma yok.

@@ -30,6 +30,8 @@ function optiflow_pazarlama(): array
 
         // --- ÖLÇÜMLEME -------------------------------------------------------
         'ga4_id'        => 'G-MYLZP3G755',     // Google Analytics 4 ölçüm kimliği. Boşsa hiçbir yere GA kodu eklenmez.
+        'google_dogrulama' => '',              // Google Search Console › HTML etiketi yöntemi: content="..." içindeki kod (yalnızca kod)
+        'bing_dogrulama'   => '',              // Bing Webmaster Tools › meta etiketi (msvalidate.01) kodu
                                                // NOT: Yalnızca genel (giriş öncesi) sayfalara eklenir; hasta/reçete verisi
                                                // gösteren panel sayfalarına KVKK gereği eklenmez.
 
@@ -110,6 +112,20 @@ function pz_logo(string $id = 'pzLogo', string $tek = ''): string
         . '<stop offset="0" stop-color="#3346ff"/><stop offset=".5" stop-color="#c026d3"/><stop offset="1" stop-color="#ff4433"/></linearGradient></defs>';
     return '<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' . $defs
         . '<g transform="rotate(-10 50 50)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z" fill="' . $fill . '"/></g></svg>';
+}
+
+/** Arama motoru site doğrulama etiketleri (Search Console / Bing). Kod ayarlı değilse boş. */
+function pz_dogrulama_meta(): string
+{
+    $p = optiflow_pazarlama();
+    $out = '';
+    foreach (['google-site-verification' => 'google_dogrulama', 'msvalidate.01' => 'bing_dogrulama'] as $ad => $k) {
+        $kod = trim((string) ($p[$k] ?? ''));
+        if ($kod !== '' && preg_match('/^[A-Za-z0-9_\-]{10,100}$/', $kod)) {
+            $out .= '<meta name="' . $ad . '" content="' . pz_e($kod) . '">' . "\n";
+        }
+    }
+    return $out;
 }
 
 /* ------------------------------------------------------------------ */

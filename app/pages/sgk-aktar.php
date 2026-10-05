@@ -637,6 +637,10 @@ page_header('SGK reçete aktar', 'Medula Optik ekranındaki reçeteyi siparişe 
         bilgisayarınızdaki <b>OptiFlow Pro</b> uygulamasını açın: Medula uygulamanın içinde
         açılır, eklenti veya anahtar gerekmez.
       </p>
+      <div class="form-actions" style="margin-top:12px">
+        <a class="btn btn-primary" href="indir.php" target="_blank" rel="noopener"><?= icon('download') ?> OptiFlow Pro'yu indir</a>
+        <span class="hint">Uygulama yüklü değilse: Windows 10 / 11, ücretsiz.</span>
+      </div>
       <details style="margin-top:12px">
         <summary class="small">Chrome eklentisini kullanmaya devam et (geçiş dönemi)</summary>
         <p class="hint" style="margin-top:8px">

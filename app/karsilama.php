@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/pazarlama.php';
+require_once __DIR__ . '/indir.php';
 
 /**
  * OptiFlow karşılama (tanıtım) sayfası — v5 (4.17.0)
@@ -20,6 +21,7 @@ function render_karsilama(): void
     $mail  = $p['eposta'];
     $kamp  = $p['kampanya'];
     $video = $p['demo_video'];
+    $indir = indir_masaustu_bilgi();       // OptiFlow Pro kurulum dosyası (indir/masaustu/latest.yml)
 
     // İletişim düğmesi önceliği: WhatsApp → telefon → e-posta
     $iletisimUrl = $wa ?: ($tel ?: ($mail !== '' ? 'mailto:' . $mail . '?subject=' . rawurlencode('OptiFlow demo') : ''));
@@ -264,6 +266,11 @@ section{padding-block:96px}
 .surum.pro{background:linear-gradient(180deg,#1b1460 0%,var(--night-2) 60%);border-color:rgba(196,20,216,.45)}
 .surum-bas p{color:var(--night-ink);margin-top:8px;max-width:52ch}
 .surum-bas h3{font-family:var(--serif);font-weight:500;font-size:1.65rem;margin-top:12px}
+.surum-eylem{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-top:18px}
+.surum-eylem .btn{padding:12px 20px;font-size:15px}
+.surum-eylem .btn svg{width:18px;height:18px}
+.surum-eylem small{color:var(--night-ink);font-size:13px;font-weight:600}
+.surum-eylem small a{color:#fff;font-weight:800}
 .rozet{display:inline-block;font-weight:800;font-size:13px;padding:5px 12px;border-radius:999px}
 .rozet.lite{background:#fff;color:var(--blue-deep)}
 .rozet.pro{background:var(--magenta);color:#fff}
@@ -527,6 +534,7 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
       <a href="#neler">Neler yapar</a>
       <a href="#fiyatlar">Fiyatlar</a>
       <a href="#sss">Sorular</a>
+      <a href="indir.php">Pro'yu indir</a>
       <a class="btn btn-line giris" href="magaza-giris.php">Giriş yap</a>
       <a class="btn btn-red" href="kayit.php">Ücretsiz deneyin</a>
     </nav>
@@ -577,6 +585,10 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
             <span class="rozet lite">Lite</span>
             <h3>Tarayıcıda, her cihazda</h3>
             <p>Kurulum yok. Bilgisayarda, tablette ve telefonda optiflow.com.tr'den açılır; telefonun ana ekranına uygulama gibi eklenir.</p>
+            <div class="surum-eylem">
+              <a class="btn btn-line" href="magaza-giris.php">Tarayıcıda giriş yap</a>
+              <small>Hesabınız yok mu? <a href="kayit.php">30 gün ücretsiz deneyin</a></small>
+            </div>
           </div>
           <div class="sahne">
             <figure class="tarayici">
@@ -593,6 +605,10 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
             <span class="rozet pro">Pro</span>
             <h3>Windows'ta, Medula'nın yanında</h3>
             <p>Medula Optik ve OptiFlow aynı pencerede. Reçete tek tuşla siparişe gelir, SGK hakkı Medula ekranından sorgulanır, karekod okuyucu doğrudan çalışır.</p>
+            <div class="surum-eylem">
+              <a class="btn btn-red" href="indir.php"><?= $ico['down'] ?>Windows için indir</a>
+              <small><?= $indir ? 'Sürüm ' . pz_e(indir_etiket($indir)) . ' · ' : '' ?>Windows 10 / 11 · ücretsiz</small>
+            </div>
           </div>
           <figure class="masaustu" role="img" aria-label="OptiFlow Pro penceresi: solda Medula reçetesi, sağda OptiFlow sipariş ekranı">
             <div class="ms-ust"><span class="ms-ad">OptiFlow Pro · Örnek Optik</span><span class="ms-dug"><i></i><i></i><i></i></span></div>
@@ -899,6 +915,7 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
         <a href="#fiyatlar">Fiyatlar</a>
         <a href="#guven">Güven ve KVKK</a>
         <a href="rehber.php">Gözlükçüler için rehber</a>
+        <a href="indir.php">OptiFlow Pro'yu indir (Windows)</a>
         <a href="magaza-giris.php">Mağaza girişi</a>
       </div>
       <div class="alt-kol">

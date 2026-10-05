@@ -21,6 +21,7 @@ $urls = [
 foreach ($yazilar as $y) {
     $urls[] = [rehber_url($y['slug']), (string) ($y['guncelleme'] ?: $y['yayin_tarihi']), 'monthly', '0.7'];
 }
+$urls[] = ['https://optiflow.com.tr/indir.php', $mt('app/pages/indir.php'), 'monthly', '0.6'];
 $urls[] = ['https://optiflow.com.tr/kvkk.php', $mt('app/pages/kvkk.php'), 'yearly', '0.2'];
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";

@@ -157,7 +157,7 @@ function ozellik_gereksin(string $k): void
     render_error_page(
         $ad,
         $d === 'masaustu_gerekli'
-            ? 'Bu özellik yalnızca OptiFlow Pro masaüstü uygulamasında çalışır.'
+            ? 'Bu özellik yalnızca OptiFlow Pro masaüstü uygulamasında çalışır. Uygulamayı optiflow.com.tr/indir.php adresinden indirebilirsiniz.'
             : 'Bu özellik mağazanızda henüz açılmamış. Açtırmak için OptiFlow destek ile iletişime geçin.'
     );
 }

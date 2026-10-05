@@ -45,6 +45,10 @@ page_header('OptiFlow Pro', 'Mağazanızı bir üst seviyeye taşıyan özellikl
         <span>Mağazanız <b>OptiFlow Pro</b> paketinde. Bu özellik bilgisayarınızdaki
         <b>OptiFlow Pro</b> uygulamasında çalışır; uygulamayı açıp aynı hesapla giriş yapın.</span>
       </div>
+      <div class="form-actions pro-cta">
+        <a class="btn btn-primary btn-lg" href="indir.php" target="_blank" rel="noopener"><?= icon('download') ?> OptiFlow Pro'yu indir</a>
+        <span class="hint">Windows 10 / 11 · ücretsiz · yeni sürümü uygulama kendisi bulur</span>
+      </div>
     <?php else: ?>
       <p class="pro-durum">Mağazanız şu an <b>OptiFlow Lite</b> paketinde.</p>
       <div class="form-actions pro-cta">

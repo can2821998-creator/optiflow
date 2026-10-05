@@ -1,6 +1,17 @@
 OPTIFLOW
-Release: 4.16.4 (2026-10-05)
+Release: 4.16.5 (2026-10-05)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.16.5 (OptiFlow Pro indirme sayfası; OptiFlow Pro 5.3.0 ile)
+  - YENİ: indir.php — OptiFlow Pro indirme sayfası (sürüm, boyut, tarih indir/masaustu/latest.yml'den;
+    kurulum adımları, SmartScreen uyarısı, sistem gereksinimleri, SoftwareApplication şeması).
+    indir.php?dosya=1 doğrudan kurulum dosyasına yönlendirir (paylaşmak için kısa bağlantı).
+    latest.yml yoksa sayfa "güncelleniyor" der, kırık bağlantı vermez.
+  - Tanıtım sayfası: menüde "Pro'yu indir", Pro kartında "Windows için indir" (sürüm + boyut), Lite kartında
+    "Tarayıcıda giriş yap", alt bilgide indirme bağlantısı.
+  - Uygulama içi: Pro paketli mağaza tarayıcıdan girince (SGK reçete aktar, Pro sayfası, masaüstü özellik
+    uyarısı) "OptiFlow Pro'yu indir" bağlantısı.
+  - Site haritasına indir.php eklendi. Şema DEĞİŞMEDİ (27).
 
 DEĞİŞİKLİK NOTLARI — 4.16.4 (SEO aracı panele bağlandı; OptiFlow Pro 5.3.0 ile)
   - YENİ: Merkez panel › "SEO · Google" ekranı. Search Console (son 28 gün tıklama, gösterim, tıklama oranı,

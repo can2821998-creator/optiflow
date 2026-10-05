@@ -74,7 +74,8 @@ jobs:
           hata=0
           for t in "php tests/uts/uts-test.php" "bash tests/uts/sayfa-test.sh" "php tests/alis/alis-test.php" "bash tests/alis/sayfa-test.sh" \
                    "php tests/hata-hak/test.php" "bash tests/hata-hak/sayfa-test.sh" "php tests/garanti/test.php" "bash tests/garanti/sayfa-test.sh" \
-                   "php tests/sgk-fatura/test.php" "bash tests/sgk-fatura/sayfa-test.sh" "php tests/seo/test.php" "php tests/guncelleme/test.php"; do
+                   "php tests/sgk-fatura/test.php" "bash tests/sgk-fatura/sayfa-test.sh" "php tests/seo/test.php" "php tests/guncelleme/test.php" \
+                   "php tests/hizli-satis/test.php" "bash tests/hizli-satis/sayfa-test.sh"; do
             if ! cikti=$($t 2>&1); then
               hata=1
               echo "$cikti"

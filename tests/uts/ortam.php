@@ -15,7 +15,7 @@ $GLOBALS['__loglar'] = [];
 
 function config(string $key, mixed $default = null): mixed { return $default; }
 function current_user(): ?array { return $GLOBALS['__kullanici']; }
-function is_super(): bool { return true; }
+function is_super(): bool { return ($GLOBALS['__kullanici']['role'] ?? 'super') !== 'personel'; }
 function can_see_amounts(): bool { return true; }
 function audit(string $a, string $e = '', ?int $id = null, array $d = []): void {}
 function ozellik_acik(string $k): bool { return true; }
@@ -23,6 +23,7 @@ function ozellik_acik_arka_plan(string $k): bool { return true; }
 function order_track_url(int $id): string { return ''; }
 function musteri_link(string $s, array $p = []): string { return $s . '?' . http_build_query(['m' => 7] + $p); }
 function musteri_url(string $s, array $p = []): string { return 'https://test.local/' . musteri_link($s, $p); }
+function find_customer(int $id): ?array { return row('SELECT * FROM customers WHERE id = ?', [$id]); }
 function payment_methods(): array { return ['nakit' => 'Nakit', 'kart' => 'Kredi kartı', 'havale' => 'Havale / EFT', 'diger' => 'Diğer']; }
 $GLOBALS['__push'] = [];
 function push_send(array $m, array $ids = [], ?int $haric = null): array { $GLOBALS['__push'][] = [$m, $ids]; return ['sent' => count($ids), 'failed' => 0, 'detail' => [], 'reason' => '']; }
@@ -115,7 +116,21 @@ function sema_kur(PDO $p): void
         barcode TEXT NULL UNIQUE, qty INTEGER NOT NULL DEFAULT 0, min_qty INTEGER NOT NULL DEFAULT 1, cost REAL NULL, price REAL NULL, supplier_id INTEGER NULL,
         shelf TEXT NULL, note TEXT NULL, is_active INTEGER NOT NULL DEFAULT 1, created_by INTEGER NULL, created_at TEXT, updated_at TEXT)");
     $p->exec("CREATE TABLE frame_moves (id INTEGER PRIMARY KEY AUTOINCREMENT, frame_item_id INTEGER NOT NULL, delta INTEGER NOT NULL, reason TEXT NOT NULL DEFAULT 'giris',
-        order_id INTEGER NULL, note TEXT NULL, created_by INTEGER NULL, created_at TEXT)");
+        order_id INTEGER NULL, note TEXT NULL, created_by INTEGER NULL, created_at TEXT, satis_id INTEGER NULL)");
+    // migrate_v29_hizli_satis ile aynı sütunlar
+    $p->exec("CREATE TABLE urunler (id INTEGER PRIMARY KEY AUTOINCREMENT, ad TEXT NOT NULL, kategori TEXT NOT NULL DEFAULT 'aksesuar', barkod TEXT NULL UNIQUE,
+        fiyat REAL NULL, maliyet REAL NULL, kdv INTEGER NOT NULL DEFAULT 20, stok INTEGER NOT NULL DEFAULT 0, min_stok INTEGER NOT NULL DEFAULT 0,
+        stok_takip INTEGER NOT NULL DEFAULT 1, not_metni TEXT NULL, is_active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NULL)");
+    $p->exec("CREATE TABLE urun_hareketleri (id INTEGER PRIMARY KEY AUTOINCREMENT, urun_id INTEGER NOT NULL, delta INTEGER NOT NULL, sebep TEXT NOT NULL,
+        satis_id INTEGER NULL, not_metni TEXT NULL, created_by INTEGER NULL, created_at TEXT NOT NULL)");
+    $p->exec("CREATE TABLE satislar (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER NULL, ara_toplam REAL NOT NULL DEFAULT 0, indirim REAL NOT NULL DEFAULT 0,
+        toplam REAL NOT NULL DEFAULT 0, maliyet REAL NOT NULL DEFAULT 0, durum TEXT NOT NULL DEFAULT 'tamam', not_metni TEXT NULL, created_by INTEGER NULL,
+        created_at TEXT NOT NULL, iptal_by INTEGER NULL, iptal_at TEXT NULL, iptal_sebep TEXT NULL)");
+    $p->exec("CREATE TABLE satis_kalemleri (id INTEGER PRIMARY KEY AUTOINCREMENT, satis_id INTEGER NOT NULL, tur TEXT NOT NULL, ref_id INTEGER NULL, ad TEXT NOT NULL,
+        adet INTEGER NOT NULL DEFAULT 1, birim_fiyat REAL NOT NULL DEFAULT 0, indirim REAL NOT NULL DEFAULT 0, tutar REAL NOT NULL DEFAULT 0, birim_maliyet REAL NULL,
+        kdv INTEGER NOT NULL DEFAULT 20)");
+    $p->exec("CREATE TABLE satis_odemeleri (id INTEGER PRIMARY KEY AUTOINCREMENT, satis_id INTEGER NOT NULL, method TEXT NOT NULL DEFAULT 'nakit', amount REAL NOT NULL,
+        created_by INTEGER NULL, created_at TEXT NOT NULL)");
     // migrate_v23_uts ile birebir aynı sütunlar
     $p->exec("CREATE TABLE uts_urunler (id INTEGER PRIMARY KEY AUTOINCREMENT, anahtar TEXT NOT NULL UNIQUE, uno TEXT NOT NULL, lno TEXT NULL, sno TEXT NULL,
         adet INTEGER NOT NULL DEFAULT 1, kaynak TEXT NOT NULL DEFAULT 'uts', skt TEXT NULL, urt TEXT NULL, kategori TEXT NOT NULL DEFAULT 'diger', marka_model TEXT NULL,
@@ -140,6 +155,7 @@ require dirname(__DIR__, 2) . '/app/garanti.php';
 require dirname(__DIR__, 2) . '/app/fatura.php';
 require dirname(__DIR__, 2) . '/app/sgk-mutabakat.php';
 require dirname(__DIR__, 2) . '/app/pdf-metin.php';
+require dirname(__DIR__, 2) . '/app/satis.php';
 
 /* ---------- Küçük test çatısı ---------- */
 $GLOBALS['__gecen'] = 0;

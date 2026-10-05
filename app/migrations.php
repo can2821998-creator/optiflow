@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 28;
+const SCHEMA_VERSION = 29;
 
 function run_migrations(): void
 {
@@ -59,6 +59,7 @@ function run_migrations(): void
         if ($current < 26) { migrate_v26_garanti(); set_schema_version(26); }
         if ($current < 27) { migrate_v27_sgk_donem_fatura(); set_schema_version(27); }
         if ($current < 28) { migrate_v28_katalog_notu(); set_schema_version(28); }
+        if ($current < 29) { migrate_v29_hizli_satis(); set_schema_version(29); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1463,4 +1464,86 @@ const LENS_KATALOG_NOTU = 'Örnek katalog: tasarım, indeks ve fiyatı kendi ted
 function migrate_v28_katalog_notu(): void
 {
     q('UPDATE lens_products SET note = ? WHERE note = ?', [LENS_KATALOG_NOTU, 'v28 asistanından aktarıldı · tasarım, indeks ve fiyatı kontrol edin']);
+}
+
+/* ------------------------------------------------------------------ */
+/*  v29 (4.17.0) — Hızlı satış (sipariş açmadan, barkodla) ve genel     */
+/*  ürün kataloğu (aksesuar, solüsyon, lens, güneş gözlüğü …).          */
+/*  Yalnızca yeni tablolar + frame_moves.satis_id; veri silinmez.        */
+/* ------------------------------------------------------------------ */
+function migrate_v29_hizli_satis(): void
+{
+    db()->exec("CREATE TABLE IF NOT EXISTS urunler (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        ad VARCHAR(160) NOT NULL,
+        kategori VARCHAR(20) NOT NULL DEFAULT 'aksesuar',
+        barkod VARCHAR(64) NULL,
+        fiyat DECIMAL(12,2) NULL,
+        maliyet DECIMAL(12,2) NULL,
+        kdv TINYINT UNSIGNED NOT NULL DEFAULT 20,
+        stok INT NOT NULL DEFAULT 0,
+        min_stok INT NOT NULL DEFAULT 0,
+        stok_takip TINYINT(1) NOT NULL DEFAULT 1,
+        not_metni VARCHAR(255) NULL,
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        created_at DATETIME NOT NULL,
+        updated_at DATETIME NULL,
+        UNIQUE KEY uq_urun_barkod (barkod),
+        KEY idx_urun_kategori (kategori, is_active)
+    ) " . t_opts());
+    db()->exec("CREATE TABLE IF NOT EXISTS urun_hareketleri (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        urun_id INT UNSIGNED NOT NULL,
+        delta INT NOT NULL,
+        sebep VARCHAR(20) NOT NULL,
+        satis_id INT UNSIGNED NULL,
+        not_metni VARCHAR(255) NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL,
+        KEY idx_uh_urun (urun_id, created_at),
+        KEY idx_uh_satis (satis_id)
+    ) " . t_opts());
+    db()->exec("CREATE TABLE IF NOT EXISTS satislar (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        customer_id INT UNSIGNED NULL,
+        ara_toplam DECIMAL(12,2) NOT NULL DEFAULT 0,
+        indirim DECIMAL(12,2) NOT NULL DEFAULT 0,
+        toplam DECIMAL(12,2) NOT NULL DEFAULT 0,
+        maliyet DECIMAL(12,2) NOT NULL DEFAULT 0,
+        durum VARCHAR(12) NOT NULL DEFAULT 'tamam',
+        not_metni VARCHAR(255) NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL,
+        iptal_by INT UNSIGNED NULL,
+        iptal_at DATETIME NULL,
+        iptal_sebep VARCHAR(255) NULL,
+        KEY idx_satis_tarih (created_at),
+        KEY idx_satis_musteri (customer_id),
+        KEY idx_satis_personel (created_by, created_at)
+    ) " . t_opts());
+    db()->exec("CREATE TABLE IF NOT EXISTS satis_kalemleri (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        satis_id INT UNSIGNED NOT NULL,
+        tur VARCHAR(12) NOT NULL,
+        ref_id INT UNSIGNED NULL,
+        ad VARCHAR(200) NOT NULL,
+        adet INT NOT NULL DEFAULT 1,
+        birim_fiyat DECIMAL(12,2) NOT NULL DEFAULT 0,
+        indirim DECIMAL(12,2) NOT NULL DEFAULT 0,
+        tutar DECIMAL(12,2) NOT NULL DEFAULT 0,
+        birim_maliyet DECIMAL(12,2) NULL,
+        kdv TINYINT UNSIGNED NOT NULL DEFAULT 20,
+        KEY idx_sk_satis (satis_id)
+    ) " . t_opts());
+    db()->exec("CREATE TABLE IF NOT EXISTS satis_odemeleri (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        satis_id INT UNSIGNED NOT NULL,
+        method VARCHAR(20) NOT NULL DEFAULT 'nakit',
+        amount DECIMAL(12,2) NOT NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL,
+        KEY idx_so_satis (satis_id),
+        KEY idx_so_tarih (created_at)
+    ) " . t_opts());
+    add_column('frame_moves', 'satis_id', 'INT UNSIGNED NULL');
 }

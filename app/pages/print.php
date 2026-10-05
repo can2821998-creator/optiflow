@@ -174,6 +174,42 @@ if ($type === 'order') {
     if (!$f) { render_error_page('SGK dönem faturası bulunamadı', ''); }
     $title = 'SGK reçete dökümü ' . fatura_sgk_ay_adi((string) $f['sgk_donem']);
     require dirname(__DIR__) . '/partials/sgk-dokum.php';
+} elseif ($type === 'satis' && ozellik_acik('hizli_satis') && can_see_amounts()) {   // 4.17.0 hızlı satış fişi
+    $s = satis_bul(query_int('id'));
+    if (!$s || (!is_super() && (int) $s['created_by'] !== (int) (current_user()['id'] ?? 0))) { render_error_page('Satış bulunamadı', ''); }
+    $title = 'Satış fişi #' . (int) $s['id'];
+    $mus = $s['musteri'] ? trim($s['musteri']['first_name'] . ' ' . $s['musteri']['last_name']) : '';
+    $kalemInd = array_sum(array_map(static fn($k) => (float) $k['indirim'], $s['kalemler']));
+    $genelInd = round((float) $s['indirim'] - $kalemInd, 2);
+    ?>
+    <div class="ticket">
+    <div class="doc-brand"><div class="brand-row"><span class="doc-brand-mark"><?= brand_mark() ?></span><div><p class="doc-kicker">SATIŞ FİŞİ</p><h1><?= e($shop) ?></h1><p><?= e(setting('shop_address')) ?><?= setting('shop_phone') ? ' · ' . e(setting('shop_phone')) : '' ?></p></div></div>
+      <div class="doc-ref"><b>Satış #<?= (int) $s['id'] ?></b><?= date_tr($s['created_at'], true) ?></div></div>
+    <?php if ($s['durum'] === 'iptal'): ?>
+      <div class="status-banner tone-gold"><?= icon('x') ?><div class="txt"><b>İPTAL EDİLMİŞTİR</b><span><?= e(date_tr($s['iptal_at'], true)) ?> · <?= e((string) $s['iptal_sebep']) ?></span></div></div>
+    <?php endif; ?>
+    <?php if ($mus !== '' || $s['not_metni']): ?>
+    <table class="kv-table">
+      <?php if ($mus !== ''): ?><tr><th>Müşteri</th><td colspan="3"><?= e($mus) ?></td></tr><?php endif; ?>
+      <?php if ($s['not_metni']): ?><tr><th>Not</th><td colspan="3"><?= e((string) $s['not_metni']) ?></td></tr><?php endif; ?>
+    </table>
+    <?php endif; ?>
+    <table class="lines">
+      <thead><tr><th>Ürün</th><th class="num">Adet</th><th class="num">Birim</th><th class="num">Tutar</th></tr></thead>
+      <tbody>
+      <?php foreach ($s['kalemler'] as $k): ?>
+        <tr><td><?= e($k['ad']) ?><?= (float) $k['indirim'] > 0 ? '<br><small>İndirim −' . money($k['indirim']) . '</small>' : '' ?></td><td class="num"><?= (int) $k['adet'] ?></td><td class="num"><?= money($k['birim_fiyat']) ?></td><td class="num"><?= money($k['tutar']) ?></td></tr>
+      <?php endforeach; ?>
+      </tbody>
+      <tfoot>
+        <?php if ($genelInd > 0): ?><tr><th colspan="3">İndirim</th><th class="num">−<?= money($genelInd) ?></th></tr><?php endif; ?>
+        <tr><th colspan="3">Toplam</th><th class="num"><?= money($s['toplam']) ?></th></tr>
+        <?php foreach ($s['odemeler'] as $o): ?><tr><td colspan="3"><?= e(payment_methods()[$o['method']] ?? $o['method']) ?></td><td class="num"><?= money($o['amount']) ?></td></tr><?php endforeach; ?>
+      </tfoot>
+    </table>
+    <div class="foot"><span class="foot-mark"><?= brand_mark() ?></span><span><?= e($shop) ?> · <?= e((string) $s['personel']) ?></span><span class="foot-note">Bu fiş işlem takibi içindir, fatura yerine geçmez.</span></div>
+    </div>
+    <?php
 } elseif ($type === 'payment') {
     $p = row('SELECT p.*, o.id AS order_id, o.transaction_type, c.first_name, c.last_name, c.phone, u.full_name AS by_name
               FROM payments p JOIN orders o ON o.id = p.order_id JOIN customers c ON c.id = o.customer_id
@@ -343,12 +379,14 @@ if ($type === 'order') {
     $date = valid_date(query('date')) ? query('date') : date('Y-m-d');
     $range = [$date . ' 00:00:00', date('Y-m-d', strtotime($date . ' +1 day')) . ' 00:00:00'];
     $byMethod = rows("SELECT method, COUNT(*) AS cnt, SUM(amount) AS total FROM payments WHERE created_at >= ? AND created_at < ? GROUP BY method ORDER BY total DESC", $range);
+    $byMethod = satis_kasa_birlestir($byMethod, satis_kasa_yontemleri($range));   // 4.17.0 hızlı satış dahil
     $totalIn = (float) array_sum(array_column($byMethod, 'total'));
     $byStaff = rows(
         "SELECT COALESCE(u.full_name, 'Bilinmiyor') AS name, SUM(p.amount) AS total, COUNT(*) AS cnt
          FROM payments p LEFT JOIN user_accounts u ON u.id = p.created_by
          WHERE p.created_at >= ? AND p.created_at < ? GROUP BY name ORDER BY total DESC", $range
     );
+    $byStaff = satis_kasa_birlestir($byStaff, array_map(static fn($r) => ['name' => $r['name'], 'cnt' => $r['cnt'], 'total' => $r['total']], satis_kasa_personel($range)), ['name']);
     $expenses = rows('SELECT * FROM expenses WHERE expense_date = ? ORDER BY created_at', [$date]);
     $totalExpenses = (float) array_sum(array_column($expenses, 'amount'));
     $revenues = rows('SELECT * FROM revenues WHERE revenue_date = ? ORDER BY created_at', [$date]);

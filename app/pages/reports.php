@@ -64,12 +64,21 @@ $avg = (int) $summary['orders'] ? (float) $summary['turnover'] / (int) $summary[
 $days = (strtotime($to) - strtotime($from)) / 86400 + 1;
 $monthly = $days > 62;
 $fmt = $monthly ? '%Y-%m' : '%Y-%m-%d';
+$hs = satis_rapor($range, $fmt);   // 4.17.0 hızlı satış: ciro, tahsilat, seri, personel ve yöntemlere eklenir
+$summary['turnover'] = (float) $summary['turnover'] + $hs['ciro'];
+$collected += $hs['tahsilat'];
 $series = [];
 foreach (rows("SELECT DATE_FORMAT(created_at, '$fmt') AS k, SUM(total_amount) AS v FROM orders WHERE order_stage <> 'iptal' AND created_at >= ? AND created_at < ? GROUP BY k", $range) as $r) {
     $series[$r['k']]['sales'] = (float) $r['v'];
 }
 foreach (rows("SELECT DATE_FORMAT(created_at, '$fmt') AS k, SUM(amount) AS v FROM payments WHERE created_at >= ? AND created_at < ? GROUP BY k", $range) as $r) {
     $series[$r['k']]['paid'] = (float) $r['v'];
+}
+foreach ($hs['seri_satis'] as $k => $v) {
+    $series[$k]['sales'] = ($series[$k]['sales'] ?? 0) + $v;
+}
+foreach ($hs['seri_odeme'] as $k => $v) {
+    $series[$k]['paid'] = ($series[$k]['paid'] ?? 0) + $v;
 }
 $buckets = [];
 for ($t = strtotime($from); $t <= strtotime($to); $t = strtotime($monthly ? '+1 month' : '+1 day', $t)) {
@@ -86,6 +95,8 @@ $designDist = rows('SELECT lens_design AS name, COUNT(*) AS cnt FROM prescriptio
 $stageDist = rows('SELECT order_stage AS name, COUNT(*) AS cnt FROM orders WHERE created_at >= ? AND created_at < ? GROUP BY order_stage', $range);
 $staff = rows("SELECT COALESCE(u.full_name, o.sales_person, '—') AS name, COUNT(*) AS cnt, SUM(o.total_amount) AS total FROM orders o LEFT JOIN user_accounts u ON u.id = o.created_by WHERE o.order_stage <> 'iptal' AND o.created_at >= ? AND o.created_at < ? GROUP BY name ORDER BY total DESC", $range);
 $methods = rows('SELECT method, COUNT(*) AS cnt, SUM(amount) AS total FROM payments WHERE created_at >= ? AND created_at < ? GROUP BY method ORDER BY total DESC', $range);
+$staff = satis_kasa_birlestir($staff, $hs['personel'], ['name']);
+$methods = satis_kasa_birlestir($methods, $hs['yontem']);
 $maxLens = max(1, ...array_map('intval', array_column($lensDist, 'cnt') ?: [0]));
 $stageOrder = array_flip(array_keys(stages()));
 usort($stageDist, static fn($a, $b) => ($stageOrder[$a['name']] ?? 99) <=> ($stageOrder[$b['name']] ?? 99));
@@ -115,7 +126,7 @@ page_header(
 
 <section class="stats">
   <div class="stat"><small>Sipariş</small><b><?= (int) $summary['orders'] ?></b><span><?= $cancelled ?> iptal hariç · <?= (int) $summary['delivered'] ?> teslim</span></div>
-  <div class="stat"><small>Ciro</small><b><?= money($summary['turnover']) ?></b><span>Ortalama <?= money($avg) ?></span></div>
+  <div class="stat"><small>Ciro</small><b><?= money($summary['turnover']) ?></b><span><?= $hs['adet'] ? (int) $hs['adet'] . ' hızlı satış dahil (' . money($hs['ciro']) . ')' : 'Sipariş ortalaması ' . money($avg) ?></span></div>
   <div class="stat tone-green"><small>Tahsilat</small><b><?= money($collected) ?></b><span>Bu dönemde alınan tüm ödemeler</span></div>
   <div class="stat tone-red"><small>Dönem siparişlerinin kalanı</small><b><?= money($summary['period_balance']) ?></b><span>Tüm zamanlar açık: <?= money($openAll) ?></span></div>
 </section>

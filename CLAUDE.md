@@ -51,6 +51,7 @@ php tests/garanti/test.php && bash tests/garanti/sayfa-test.sh
 php tests/sgk-fatura/test.php && bash tests/sgk-fatura/sayfa-test.sh
 php tests/seo/test.php
 php tests/guncelleme/test.php
+php tests/hizli-satis/test.php && bash tests/hizli-satis/sayfa-test.sh
 ```
 Masaüstü (desktop/ içinde, Node 22): `npm ci && npm run typecheck && npm test`
 (sunucu entegrasyon: `tests/server/*.mjs`, uçtan uca: `tests/e2e/` — yerel test sunucusu ister, bkz. desktop/BUILD.md).

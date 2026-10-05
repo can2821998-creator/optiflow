@@ -1,6 +1,26 @@
 OPTIFLOW
-Release: 4.16.9 (2026-10-05)
+Release: 4.17.0 (2026-10-05)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.17.0 (hızlı satış ve ürün kataloğu; OptiFlow Pro 5.3.0 ile)
+  - YENİ özellik anahtarı "hizli_satis" (merkez panelden, varsayılan kapalı). Rakip analizi Faz 1'in ilk maddesi.
+  - Hızlı satış (hizli-satis.php, app/satis.php, assets/hizli-satis.js): sipariş açmadan barkodla satış.
+    Barkod okuyucu (USB; barkod.js okunan kodu sayfadaki [data-barkod-hedef] alanına verir), kamera
+    (BarcodeDetector) ya da adla arama; aynı ürün adet artırır; serbest kalem; kalem ve sepet indirimi;
+    parçalı ödeme (nakit / kart / havale / diğer, "Kalanı" düğmesi), para üstü, isteğe bağlı müşteri bağlama, not.
+    Fiyat ve maliyet sunucuda katalogdan alınır (tarayıcıdan gelen fiyat yok sayılır); personel indirimi
+    "hizli_satis_indirim_yuzde" ayarıyla sınırlı (varsayılan %20), yönetici sınırsız. Personel yalnızca kendi
+    satışlarını görür; iptal yalnızca yöneticide (sebep zorunlu, stok geri girer, kayıt silinmez).
+  - Ürün kataloğu (urunler.php): güneş gözlüğü, kontakt lens, solüsyon, aksesuar, hizmet, diğer. Barkod (yoksa
+    PU+8 hane üretilir; çerçeve barkoduyla çakışamaz), fiyat, alış, KDV, stok, kritik adet, stok takibi açık/kapalı,
+    stok girişi / sayım / fire hareketleri. Menü rozeti: kritik ürün sayısı. Çerçeveler frame_items'ta kalır.
+  - Satış fişi (print.php?type=satis), iptal damgalı.
+  - Entegrasyon: gün sonu kasası (beklenen nakit, yöntem ve personel toplamları, "Hızlı satışlar" kartı) ve kasa
+    dökümü; Raporlar (ciro, tahsilat, seri, personel, yöntem); Kârlılık ve prim (ciro, ürün maliyeti, personel
+    primi). İptaller hiçbir toplamda sayılmaz.
+  - Veritabanı: şema 29 (urunler, urun_hareketleri, satislar, satis_kalemleri, satis_odemeleri,
+    frame_moves.satis_id). Yalnızca ekleme.
+  - Testler: tests/hizli-satis (72 + 43), desktop/tests/server/hizli-satis-integration.mjs (20, MariaDB).
 
 DEĞİŞİKLİK NOTLARI — 4.16.9 (tanıtım sayfasında şube vaadi düzeltildi; OptiFlow Pro 5.3.0 ile)
   - OptiFlow'da şube özelliği henüz yok; tanıtım sayfası "çok şube, tek panel / personel yalnızca kendi şubesini

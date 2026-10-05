@@ -84,6 +84,13 @@
       hizli = true;
       if (okuyucu && !alan) {
         e.preventDefault();
+        // 4.17.0: sayfa okunan kodu kendisi işliyorsa (ör. hızlı satış sepeti) oraya ver, sayfadan çıkma.
+        var hedef = document.querySelector('[data-barkod-hedef]');
+        if (hedef) {
+          hedef.value = kod;
+          hedef.dispatchEvent(new CustomEvent('barkod', { detail: kod, bubbles: true }));
+          return;
+        }
         coz(kod);
       }
       return;

@@ -59,6 +59,11 @@ function ozellik_tanimlari(): array
             'kisa'     => 'Yeniden yapılan camların sebebi, maliyeti, laboratuvardan iade alacağı ve aylık rapor; tedarikçi karnesinde hata oranı.',
             'masaustu' => false,
         ],
+        'hizli_satis' => [
+            'ad'       => 'Hızlı satış ve ürün kataloğu',
+            'kisa'     => 'Güneş gözlüğü, aksesuar, solüsyon ve lensi sipariş açmadan barkodla sat; parçalı ödeme, fiş, stok düşümü. Kasa, rapor ve prime yansır.',
+            'masaustu' => false,
+        ],
         'garanti' => [
             'ad'       => 'Garanti kaydı ve garanti kartı',
             'kisa'     => 'Teslimde kalem bazında garanti; karekodlu garanti kartı (müşteri telefonundan kalan süreyi görür), garanti talepleri, tamir geçmişi ve tedarikçiye gönderim.',

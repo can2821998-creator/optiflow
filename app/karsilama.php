@@ -101,6 +101,7 @@ function render_karsilama(): void
             ['Kontakt lens takibi', 'Kutu bitmeden müşteriye tekrar sipariş hatırlatması.'],
         ]],
         ['Paranın nerede olduğu', [
+            ['Hızlı satış', 'Güneş gözlüğü, solüsyon, lens, aksesuar: barkodu okutun, nakit + kart ödemeyi alın; sipariş açmadan, stok kendiliğinden düşer.'],
             ['Kâr raporu', 'Sipariş ve cam tipine göre gerçek kâr; hatalı camın maliyeti düşülmüş.'],
             ['Gün sonu kasa', 'Nakit sayımı, küçük satışlar ve harcamalar; kasa farkının nedeni ortada.'],
             ['Bakiye takibi', 'Söz verilen ödeme tarihi geçen müşteriler ayrı listede.'],
@@ -645,6 +646,7 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
             <tr><td>Kasa, bakiye, kâr raporu, stok ve etiket</td><td>✓</td><td>✓</td></tr>
             <tr><td>SGK ay sonu faturası, Medula PDF dökümüyle karşılaştırma</td><td>✓</td><td>✓</td></tr>
             <tr><td>Garanti kartı, alış faturası, ödeme linki</td><td>✓</td><td>✓</td></tr>
+            <tr><td>Hızlı satış: barkodla sepet, parçalı ödeme, fiş</td><td>✓ <small>kamerayla</small></td><td>✓ <small>USB okuyucuyla</small></td></tr>
             <tr><td>Telefon ve tabletten erişim</td><td>✓</td><td>✓ <small>aynı hesapla</small></td></tr>
             <tr class="grupcuk"><td colspan="3">Farklar</td></tr>
             <tr class="fark-satir"><td>Medula reçetesini siparişe aktarma</td><td class="yok">Elle yazılır</td><td>Tek tuş</td></tr>

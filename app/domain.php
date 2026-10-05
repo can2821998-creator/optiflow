@@ -1008,6 +1008,11 @@ function audit_actions(): array
         'template_update'  => 'Mesaj şablonunu değiştirdi',
         'lens_type_update' => 'Cam tiplerini değiştirdi',
         'report_export'    => 'Rapor dışa aktardı',
+        'satis_create'     => 'Hızlı satış yaptı',
+        'satis_iptal'      => 'Hızlı satışı iptal etti',
+        'urun_ekle'        => 'Ürün ekledi',
+        'urun_guncelle'    => 'Ürünü güncelledi',
+        'urun_stok'        => 'Ürün stoğunu değiştirdi',
     ];
 }
 

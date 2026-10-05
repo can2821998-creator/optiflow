@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.16.9';
+const APP_VERSION = '4.17.0';
 const APP_ROOT = __DIR__ . '/..';
 
 // 4.16.8: canlıya yükleme sürerken yarım dosyalara denk gelmemek için kısa bakım ekranı (app/guncelleme.php).
@@ -125,6 +125,7 @@ require __DIR__ . '/senet.php';    // 4.14.0 tedarikçi senetleri, ödeme takvim
 require __DIR__ . '/cam-hata.php'; // 4.15.0 hatalı cam / yeniden yapım
 require __DIR__ . '/sgk-hak.php';  // 4.15.0 SGK hak kontrolü
 require __DIR__ . '/garanti.php';  // 4.16.0 garanti kaydı ve garanti kartı
+require __DIR__ . '/satis.php';    // 4.17.0 hızlı satış ve ürün kataloğu
 require __DIR__ . '/karsilama.php';
 
 set_exception_handler('handle_fatal');

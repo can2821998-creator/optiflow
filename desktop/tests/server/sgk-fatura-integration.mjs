@@ -117,7 +117,7 @@ const a = await login(S);
 check('göç v27: şema ≥ 27, sgk_donem sütunu, bağ tablosu', Number(sql(db, "SELECT setting_value FROM app_settings WHERE setting_key = 'schema_version'")) >= 27
   && sql(db, "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'faturalar' AND column_name = 'sgk_donem'") === '1'
   && sql(db, "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'fatura_sgk_siparisleri'") === '1');
-check('göç v28: şema 28, katalogda iç not kalmadı', sql(db, "SELECT setting_value FROM app_settings WHERE setting_key = 'schema_version'") === '28'
+check('göç v28: şema ≥ 28, katalogda iç not kalmadı', Number(sql(db, "SELECT setting_value FROM app_settings WHERE setting_key = 'schema_version'")) >= 28
   && sql(db, "SELECT COUNT(*) FROM lens_products WHERE note LIKE 'v28 asistan%'") === '0'
   && Number(sql(db, "SELECT COUNT(*) FROM lens_products WHERE note LIKE '%indeks ve fiyat%kendi%'")) > 0);
 

@@ -376,6 +376,11 @@ function ozellik_menusu_ekle(array &$nav): void
     if (ozellik_acik('barkod')) {
         $ekle($a, 'orders', ['barkod', 'barkod.php', 'Barkod okut', 'barcode', 0]);
     }
+    if (ozellik_acik('hizli_satis') && can_see_amounts()) {   // 4.17.0
+        $ekle($a, 'orders', ['hizli-satis', 'hizli-satis.php', 'Hızlı satış', 'receipt', 0]);
+        $ekle($a, 'cerceve', ['urunler', 'urunler.php', 'Ürün kataloğu', 'box',
+            $sayi('SELECT COUNT(*) FROM urunler WHERE is_active = 1 AND stok_takip = 1 AND stok <= min_stok')]);
+    }
     if (ozellik_acik('whatsapp')) {
         $ekle($a, 'hatirlatma', ['mesajlar', 'mesajlar.php', 'WhatsApp mesajları', 'chat', wa_bekleyen_sayisi()]);
     }

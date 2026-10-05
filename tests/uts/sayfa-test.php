@@ -145,6 +145,22 @@ switch ($senaryo) {
         $f = row('SELECT * FROM faturalar WHERE id = ?', [(int) ($istek['id'] ?? 1)]);
         require dirname(__DIR__, 2) . '/app/partials/sgk-dokum.php';
         break;
+    case 'hizli_satis':
+        require $kaynak(dirname(__DIR__, 2) . '/app/pages/hizli-satis.php');
+        break;
+    case 'urunler':
+        require $kaynak(dirname(__DIR__, 2) . '/app/pages/urunler.php');
+        break;
+    case 'satis_fis':
+        if (!function_exists('brand_mark')) { function brand_mark(): string { return '<svg></svg>'; } }
+        if (!function_exists('brand_style_tag')) { function brand_style_tag(): string { return ''; } }
+        $_GET['type'] = 'satis';
+        require $kaynak(dirname(__DIR__, 2) . '/app/pages/print.php');
+        break;
+    case 'personel':
+        $GLOBALS['__kullanici'] = ['id' => 2, 'full_name' => 'Personel', 'role' => 'personel'];
+        require $kaynak(dirname(__DIR__, 2) . '/app/pages/hizli-satis.php');
+        break;
     case 'fn':
         // Küçük işlem çağrıları (sayfa akışını hazırlamak için)
         $f = (string) $istek['f'];

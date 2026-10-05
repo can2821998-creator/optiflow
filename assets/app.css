@@ -1770,3 +1770,62 @@ input.kopyala { width: 100%; font: 12px/1.4 ui-monospace, Consolas, monospace; p
 .row-highlight td { background: var(--amber-bg); }
 .card.inset { box-shadow: none; background: var(--surface-2); border: 1px solid var(--line); padding: 14px 16px; margin: 0; }
 .card.inset > summary { cursor: pointer; font-weight: 650; }
+
+/* ==========================================================================
+   4.17.0 Hızlı satış
+   ========================================================================== */
+.satis-ekrani { margin-bottom: 22px; }
+.satis-arama { gap: 10px; flex-wrap: wrap; }
+.satis-arama .search { flex: 1 1 320px; }
+.satis-arama .search input { font-size: 1.05rem; }
+.satis-oneri { list-style: none; margin: 0 0 12px; padding: 4px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); box-shadow: var(--shadow); max-height: 340px; overflow: auto; }
+.satis-oneri li.muted { padding: 10px 12px; }
+.satis-oneri button { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "ad fiyat" "alt fiyat"; gap: 0 14px; width: 100%; text-align: left; padding: 9px 12px; border: 0; border-radius: 8px; background: none; font: inherit; color: inherit; cursor: pointer; }
+.satis-oneri button:hover, .satis-oneri button:focus-visible { background: var(--surface-2); }
+.satis-oneri button b { grid-area: ad; }
+.satis-oneri button small { grid-area: alt; color: var(--muted); }
+.satis-oneri-fiyat { grid-area: fiyat; align-self: center; font-weight: 700; white-space: nowrap; }
+.satis-sepet td { vertical-align: middle; }
+.satis-sepet input[aria-label="Serbest kalem adı"] { width: 100%; min-width: 140px; }
+.satis-kucuk { width: 5.4em; text-align: right; padding-left: 6px; padding-right: 6px; }
+.satis-adet { display: inline-flex; align-items: center; gap: 4px; }
+.satis-adet { gap: 3px; }
+.satis-adet .satis-kucuk { width: 2.8em; text-align: center; }
+.satis-adet .btn-sm { padding: 4px 8px; min-width: 0; }
+.satis-sepet th, .satis-sepet td { padding-left: 8px; padding-right: 8px; }
+.satis-sepet td:first-child { min-width: 150px; }
+.satis-sepet td.num b { white-space: nowrap; }
+.satis-bos { display: flex; align-items: center; gap: 14px; padding: 26px 18px; color: var(--muted); }
+.satis-bos svg { width: 34px; height: 34px; flex: none; opacity: .6; }
+.satis-bos p { margin: 0; max-width: 56ch; }
+.satis-bos[hidden] { display: none; }
+.satis-toplamlar li input { width: 8em; text-align: right; }
+.satis-toplam { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0 6px; margin-top: 4px; border-top: 2px solid var(--ink); }
+.satis-toplam span { font-weight: 700; }
+.satis-toplam b { font-size: 1.9rem; letter-spacing: -.02em; }
+.satis-yontemler { display: grid; gap: 8px; margin: 12px 0 6px; }
+.satis-yontem { margin: 0; }
+.satis-yontem-giris { display: flex; gap: 6px; }
+.satis-yontem-giris input { flex: 1; text-align: right; }
+.satis-kalan { margin: 8px 0 12px; padding: 9px 12px; border-radius: var(--radius-sm); background: var(--surface-2); font-weight: 700; text-align: center; }
+.satis-kalan.tamam { background: color-mix(in srgb, var(--green) 14%, white); color: var(--green); }
+.satis-kalan.fazla { background: color-mix(in srgb, var(--red) 12%, white); color: var(--red); }
+.satis-paraustu, .satis-musteri { margin: 0 0 12px; }
+.satis-paraustu summary, .satis-musteri summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.satis-paraustu-sonuc { margin: 0; font-weight: 700; }
+.satis-tamamla { width: 100%; margin-top: 6px; }
+.satis-detay .card-head h2 .badge { vertical-align: middle; margin-left: 6px; }
+@media (min-width: 1280px) {
+  .satis-ekrani.split { grid-template-columns: minmax(0, 1fr) 330px; }
+}
+@media (max-width: 1279px) {
+  .satis-ekrani.split { grid-template-columns: 1fr; }
+  .satis-odeme { max-width: 560px; margin-left: auto; }
+}
+@media (max-width: 640px) {
+  .satis-sepet thead { display: none; }
+  .satis-sepet tr { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .satis-sepet td { display: flex; justify-content: space-between; align-items: center; border: 0; padding: 2px 0; }
+  .satis-sepet td:first-child { grid-column: 1 / -1; display: block; }
+  .satis-sepet td[data-etiket]:not(:first-child)::before { content: attr(data-etiket); color: var(--muted); font-size: .85rem; margin-right: 8px; }
+}

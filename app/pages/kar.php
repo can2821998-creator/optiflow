@@ -85,6 +85,22 @@ foreach ($siparisler as $s) {
     $personel[$pid]['satis'] += (float) $s['total_amount'];
     $personel[$pid]['kar'] += $kar;
 }
+/* 4.17.0 Hızlı satış: ciro, ürün maliyeti ve personel primi */
+$toplam['urun'] = 0.0;
+$toplam['hizli'] = 0;
+$adlar = array_column(rows('SELECT id, full_name FROM user_accounts'), 'full_name', 'id');
+foreach (satis_personel_kar($from, $to) as $pid => $h) {
+    $kar = $h['ciro'] - $h['maliyet'];
+    $toplam['satis'] += $h['ciro'];
+    $toplam['urun'] += $h['maliyet'];
+    $toplam['kar'] += $kar;
+    $toplam['adet'] += $h['adet'];
+    $toplam['hizli'] += $h['adet'];
+    $personel[$pid] ??= ['ad' => (string) ($adlar[$pid] ?? 'Bilinmiyor'), 'adet' => 0, 'satis' => 0.0, 'kar' => 0.0];
+    $personel[$pid]['adet'] += $h['adet'];
+    $personel[$pid]['satis'] += $h['ciro'];
+    $personel[$pid]['kar'] += $kar;
+}
 uasort($camTipi, static fn($a, $b) => $b['kar'] <=> $a['kar']);
 uasort($personel, static fn($a, $b) => $b['satis'] <=> $a['satis']);
 
@@ -138,8 +154,8 @@ page_header(
 </section>
 
 <section class="stats">
-  <div class="stat"><small>Satış</small><b><?= e(money($toplam['satis'])) ?></b><span><?= (int) $toplam['adet'] ?> işlem</span></div>
-  <div class="stat tone-amber"><small>Maliyet</small><b><?= e(money($toplam['cam'] + $toplam['cerceve'])) ?></b><span>cam <?= e(money($toplam['cam'])) ?> · çerçeve <?= e(money($toplam['cerceve'])) ?></span></div>
+  <div class="stat"><small>Satış</small><b><?= e(money($toplam['satis'])) ?></b><span><?= (int) $toplam['adet'] ?> işlem<?= $toplam['hizli'] ? ' · ' . (int) $toplam['hizli'] . ' hızlı satış' : '' ?></span></div>
+  <div class="stat tone-amber"><small>Maliyet</small><b><?= e(money($toplam['cam'] + $toplam['cerceve'] + $toplam['urun'])) ?></b><span>cam <?= e(money($toplam['cam'])) ?> · çerçeve <?= e(money($toplam['cerceve'])) ?><?= $toplam['urun'] > 0 ? ' · ürün ' . e(money($toplam['urun'])) : '' ?></span></div>
   <div class="stat <?= $toplam['kar'] >= 0 ? 'tone-green' : 'tone-red' ?>"><small>Brüt kâr</small><b><?= e(money($toplam['kar'])) ?></b><span>marj %<?= number_format($marj, 1, ',', '.') ?></span></div>
   <div class="stat <?= $net >= 0 ? '' : 'tone-red' ?>"><small>Gider ve prim sonrası</small><b><?= e(money($net)) ?></b><span>gider <?= e(money($gider)) ?> · prim <?= e(money($primToplam)) ?></span></div>
 </section>

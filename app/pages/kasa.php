@@ -16,7 +16,9 @@ function kasa_expected_cash(array $range, string $date): float
     $cashOutSupplier = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM supplier_payments WHERE method = 'nakit' AND created_at >= ? AND created_at < ?", $range)
         + (table_var_mi('tedarikci_senetleri') ? (float) scalar("SELECT COALESCE(SUM(tutar), 0) FROM tedarikci_senetleri WHERE durum = 'odendi' AND odeme_yontemi = 'nakit' AND odeme_tarihi = ?", [$date]) : 0.0);   // 4.14.0 nakit ödenen senetler
     $cashOutExpense = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE method = 'nakit' AND expense_date = ?", [$date]);
-    return $cashIn + $cashRevenue - $cashOutSupplier - $cashOutExpense;
+    $cashSale = function_exists('satis_kasa_yontemleri')   // 4.17.0 hızlı satış nakdi
+        ? (float) (array_column(satis_kasa_yontemleri($range), 'total', 'method')['nakit'] ?? 0) : 0.0;
+    return $cashIn + $cashSale + $cashRevenue - $cashOutSupplier - $cashOutExpense;
 }
 
 if (is_post()) {
@@ -98,6 +100,7 @@ $byMethod = rows(
     "SELECT method, COUNT(*) AS cnt, SUM(amount) AS total FROM payments WHERE created_at >= ? AND created_at < ? GROUP BY method ORDER BY total DESC",
     $range
 );
+$byMethod = satis_kasa_birlestir($byMethod, satis_kasa_yontemleri($range));   // 4.17.0 hızlı satış ödemeleri dahil
 $totalIn = (float) array_sum(array_column($byMethod, 'total'));
 
 $byStaff = rows(
@@ -106,6 +109,7 @@ $byStaff = rows(
      WHERE p.created_at >= ? AND p.created_at < ? GROUP BY name, p.method ORDER BY name, total DESC",
     $range
 );
+$byStaff = satis_kasa_birlestir($byStaff, satis_kasa_personel($range), ['name', 'method']);
 $staffTotals = [];
 foreach ($byStaff as $r) {
     $staffTotals[$r['name']] ??= ['cnt' => 0, 'total' => 0.0, 'methods' => []];
@@ -186,9 +190,17 @@ page_header(
       <?php endif; ?>
     </section>
 
+    <?php $gunSatis = function_exists('satis_ozeti') && ozellik_acik('hizli_satis') ? satis_ozeti($date, $date) : null; ?>
+    <?php if ($gunSatis && $gunSatis['adet'] > 0): ?>
+    <section class="card">
+      <div class="card-head"><h2><?= icon('receipt') ?> Hızlı satışlar</h2><a class="btn btn-sm" href="hizli-satis.php">Aç</a></div>
+      <p class="muted" style="margin-top:-8px"><?= (int) $gunSatis['adet'] ?> satış · <?= money($gunSatis['ciro']) ?>. Ödemeleri yukarıdaki yöntem ve personel toplamlarına dahildir.</p>
+    </section>
+    <?php endif; ?>
+
     <section class="card">
       <div class="card-head"><h2><?= icon('wallet') ?> Diğer gelirler</h2></div>
-      <p class="muted" style="margin-top:-8px">Sipariş dışı gelirleri (ufak ürün satışı, kasaya eklenen para vb.) buraya girin.</p>
+      <p class="muted" style="margin-top:-8px">Sipariş dışı gelirleri (kasaya eklenen para vb.) buraya girin.<?= function_exists('ozellik_acik') && ozellik_acik('hizli_satis') ? ' Ürün satışı için <a class="link" href="hizli-satis.php">Hızlı satış</a>\'ı kullanın; stok da düşer.' : '' ?></p>
       <form method="post" class="grid cols-3" style="margin-bottom:16px">
         <?= csrf_field() ?><input type="hidden" name="action" value="add_revenue">
         <label class="field"><span>Açıklama *</span><input name="description" required placeholder="örn. Kılıf / mendil satışı"></label>

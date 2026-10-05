@@ -1,6 +1,12 @@
 OPTIFLOW
-Release: 4.19.0 (2026-10-05)
+Release: 4.19.1 (2026-10-05)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.19.1 (düzeltme; OptiFlow Pro 5.5.0 ile)
+  - Kullanıcı bildirdi: optiflow.com.tr açılınca tanıtım sayfası yerine Siparişler geliyordu ("Beni hatırla"
+    çerezi kökte de oturumu kuruyordu). Artık alan adının kökü (/) oturum açık ya da cihaz hatırlanıyor olsa da
+    HER ZAMAN tanıtım sayfasıdır; üstte "Giriş yap" yerine "Uygulamaya git" çıkar. Uygulama index.php adresinden
+    (menü, logo, telefona eklenen uygulama, giriş sonrası) açılmaya devam eder; OptiFlow Pro etkilenmez.
 
 DEĞİŞİKLİK NOTLARI — 4.19.0 (yeni tema "Siyah & Bordo"; OptiFlow Pro 5.5.0 ile)
   - Kullanıcı isteği: daha premium, üst segment ve "dolu dolu" görünüm. Önce siyah-altın (serif) denendi, kullanıcı

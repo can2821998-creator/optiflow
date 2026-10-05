@@ -548,7 +548,11 @@ h3{font-weight:750}
       <a href="#fiyatlar">Fiyatlar</a>
       <a href="#sss">Sorular</a>
       <a href="indir.php">Pro'yu indir</a>
+      <?php if (tenant_oturum() || isset($_COOKIE[HATIRLA_MAGAZA_CEREZ])): ?>
+      <a class="btn btn-line giris" href="index.php">Uygulamaya git</a>
+      <?php else: ?>
       <a class="btn btn-line giris" href="magaza-giris.php">Giriş yap</a>
+      <?php endif; ?>
       <a class="btn btn-red" href="kayit.php">Ücretsiz deneyin</a>
     </nav>
   </div>

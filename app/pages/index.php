@@ -2,12 +2,12 @@
 declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 
-if (!tenant_oturum()) {
+if (!tenant_oturum() || !empty($GLOBALS['__kok_istek'])) {
     // 4.11.0 — OptiFlow Pro (masaüstü) tanıtım sayfasını göstermez; doğrudan mağaza girişine gider.
     if (is_optiflow_desktop()) {
         redirect('magaza-giris.php');
     }
-    render_karsilama();
+    render_karsilama();   // 4.19.1: alan adının kökü oturum açıkken de tanıtım sayfasıdır
 }
 
 require_login();

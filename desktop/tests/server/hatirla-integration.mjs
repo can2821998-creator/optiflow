@@ -147,6 +147,9 @@ check('personel çerezi verildi', /^[a-f0-9]{24}\.[a-f0-9]{64}$/.test(c.cookies.
 d = yenidenAc(c);
 r = await d.req('index.php');
 check('yeniden açınca doğrudan uygulama (şifre sorulmaz)', r.status === 200 && (await r.text()).includes('logout.php'), String(r.status) + yer(r));
+r = await d.req('');
+const kok = await r.text();
+check('alan adının kökü (/) hatırlanan cihazda da tanıtım sayfası, "Uygulamaya git" ile', r.status === 200 && kok.includes('Gözlükçü Programı OptiFlow') && kok.includes('Uygulamaya git') && !kok.includes('logout.php'));
 const db = sql(MERKEZ_DB, `SELECT db_name FROM magazalar WHERE email='${S.email}'`);
 check('sunucuda doğrulayıcının kendisi tutulmuyor', !sql(db, 'SELECT dogrulayici_hash FROM oturum_hatirla').includes((c.cookies.get('of_kh') || 'x').split('.')[1]));
 check('şema v30', sql(db, "SELECT setting_value FROM app_settings WHERE setting_key='schema_version'") === '30');

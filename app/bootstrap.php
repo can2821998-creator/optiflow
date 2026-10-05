@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.19.0';
+const APP_VERSION = '4.19.1';
 const APP_ROOT = __DIR__ . '/..';
 
 // 4.16.8: canlıya yükleme sürerken yarım dosyalara denk gelmemek için kısa bakım ekranı (app/guncelleme.php).
@@ -146,13 +146,24 @@ start_session();
  * yeniden kurulur (personel oturumu ayrıca current_user() içinde). Sunucudan sunucuya uç noktalar,
  * kayıt ve merkez panel hariç.
  */
-if (!tenant_oturum() && isset($_COOKIE[HATIRLA_MAGAZA_CEREZ])
+/*
+ * 4.19.1 — Alan adının kendisi (optiflow.com.tr/) HER ZAMAN tanıtım sayfasıdır: oturum açık ya da cihaz
+ * hatırlanıyor olsa bile. Uygulama "index.php" adresinden (menü, logo, telefona eklenen uygulama) açılır.
+ * OptiFlow Pro (masaüstü) zaten doğrudan mağaza girişiyle açılır.
+ */
+$kokIstek = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'index.php'
+    && str_ends_with((string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH), '/')
+    && ($_SERVER['QUERY_STRING'] ?? '') === ''
+    && !is_optiflow_desktop();
+$GLOBALS['__kok_istek'] = $kokIstek;
+
+if (!tenant_oturum() && isset($_COOKIE[HATIRLA_MAGAZA_CEREZ]) && !$kokIstek
     && !in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['cron.php', 'odeme-bildirim.php', 'kayit.php', 'merkez-panel.php', 'tesekkurler.php'], true)) {
     magaza_hatirla_dene();
 }
 
 $merkezSayfasi = in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['magaza-giris.php', 'kayit.php', 'merkez-panel.php', 'tesekkurler.php'], true);
-$anaSayfaMisafir = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'index.php' && !tenant_oturum();
+$anaSayfaMisafir = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'index.php' && (!tenant_oturum() || $kokIstek);
 
 /*
  * SGK köprü uç noktası, oturum çerezine değil kullanıcıya özel köprü

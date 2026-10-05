@@ -5,8 +5,14 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.16.7';
+const APP_VERSION = '4.16.8';
 const APP_ROOT = __DIR__ . '/..';
+
+// 4.16.8: canlıya yükleme sürerken yarım dosyalara denk gelmemek için kısa bakım ekranı (app/guncelleme.php).
+require __DIR__ . '/guncelleme.php';
+if (PHP_SAPI !== 'cli' && guncelleme_suruyor(APP_ROOT)) {
+    guncelleme_yaniti();
+}
 
 /**
  * Erken hata yakalama: yapılandırma veya eklenti sorunlarında boş "500" yerine

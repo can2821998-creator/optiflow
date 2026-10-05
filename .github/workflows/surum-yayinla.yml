@@ -75,6 +75,7 @@ jobs:
           php tests/garanti/test.php && bash tests/garanti/sayfa-test.sh
           php tests/sgk-fatura/test.php && bash tests/sgk-fatura/sayfa-test.sh
           php tests/seo/test.php
+          php tests/guncelleme/test.php
 
   masaustu:
     needs: surumler

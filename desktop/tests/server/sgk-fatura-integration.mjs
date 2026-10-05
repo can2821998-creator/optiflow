@@ -114,9 +114,12 @@ const sid = Number((html.match(/merkez-panel\.php\?magaza=(\d+)/) || [])[1] || 0
 const db = ((await merkez.html(`merkez-panel.php?magaza=${sid}`)).match(/(mgz_[a-z0-9_]+)/) || [])[1] || '';
 await merkez.form('merkez-panel.php', { action: 'ozellikler', id: String(sid), geri: 'detay', 'ozellik[]': ['efatura'] }, `merkez-panel.php?magaza=${sid}`);
 const a = await login(S);
-check('göç v27: şema 27, sgk_donem sütunu, bağ tablosu', sql(db, "SELECT setting_value FROM app_settings WHERE setting_key = 'schema_version'") === '27'
+check('göç v27: şema ≥ 27, sgk_donem sütunu, bağ tablosu', Number(sql(db, "SELECT setting_value FROM app_settings WHERE setting_key = 'schema_version'")) >= 27
   && sql(db, "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'faturalar' AND column_name = 'sgk_donem'") === '1'
   && sql(db, "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'fatura_sgk_siparisleri'") === '1');
+check('göç v28: şema 28, katalogda iç not kalmadı', sql(db, "SELECT setting_value FROM app_settings WHERE setting_key = 'schema_version'") === '28'
+  && sql(db, "SELECT COUNT(*) FROM lens_products WHERE note LIKE 'v28 asistan%'") === '0'
+  && Number(sql(db, "SELECT COUNT(*) FROM lens_products WHERE note LIKE '%indeks ve fiyat%kendi%'")) > 0);
 
 const ids = [];
 for (const [ad, teslim] of [['Bir', '2026-09-05 10:00:00'], ['İki', '2026-09-28 16:00:00'], ['Üç', '2026-08-30 12:00:00'], ['Dört', '2026-10-02 09:00:00']]) {

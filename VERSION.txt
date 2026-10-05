@@ -1,6 +1,18 @@
 OPTIFLOW
-Release: 4.16.7 (2026-10-05)
+Release: 4.16.8 (2026-10-05)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.16.8 (canlıya yüklemede "Beklenmeyen hata" düzeltmesi; OptiFlow Pro 5.3.0 ile)
+  - KÖK NEDEN (canlı loglarla doğrulandı): otomatik FTP yüklemesi dosyaları tek tek üzerine yazıyordu; yükleme
+    sürerken açılan sayfalar yarım yazılmış ya da henüz gelmemiş dosyalara denk gelip "Beklenmeyen bir hata
+    oluştu" veriyordu (04.10 17:04 ve 05.10 16:19 yüklemeleri; rakip analizindeki #F2225CF2, #89AAE2E1 dahil).
+  - Canlıya al: dosyalar geçici adla yüklenip tek hamlede yerine konur (lftp xfer:use-temp-file); yükleme
+    boyunca kökte .guncelleniyor işareti durur, iş başarısız olsa bile kaldırılır.
+  - YENİ app/guncelleme.php: işaret varken (en fazla 20 dk) sayfalar "OptiFlow güncelleniyor" (503, kendini
+    yenileyen) gösterir; masaüstü köprüsü / API / cron / ödeme bildirimi JSON 503 alır.
+  - Cila: hazır cam kataloğundaki iç not ("v28 asistanından aktarıldı …") müşteri diline çevrildi
+    (göç v28, yalnızca o metin); yedek sayfasında phpMyAdmin anlatımı kaldırıldı.
+  - Veritabanı: şema 28 (yalnızca not metni güncellenir). Test: tests/guncelleme (13).
 
 DEĞİŞİKLİK NOTLARI — 4.16.7 (Rehber gazetesinin adı; OptiFlow Pro 5.3.0 ile)
   - Rehber künyesi "Gözlükçü Gazetesi" → "OptiFlow Gazetesi" (kullanıcı isteği). Başka değişiklik yok.

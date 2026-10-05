@@ -72,13 +72,37 @@ jobs:
         if: steps.ayar.outputs.var == '1'
         run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
 
+      # 4.16.8: Yükleme sürerken sayfalar yarım yazılmış ya da henüz gelmemiş dosyalara denk gelip
+      # "Beklenmeyen bir hata" veriyordu. Artık: (1) kökte .guncelleniyor işareti → bootstrap kısa bakım
+      # sayfası (503) gösterir; (2) her dosya geçici adla yüklenip tek hamlede yerine konur
+      # (xfer:use-temp-file); (3) işaret, iş başarısız olsa bile kaldırılır (20 dk'dan eskisi zaten yok sayılır).
+      - name: Bakım işaretini koy
+        if: steps.ayar.outputs.var == '1'
+        run: |
+          KLASOR="${FTP_KLASOR:-httpdocs}"
+          echo "$TAG $(date -u +%FT%TZ)" > guncelleniyor.txt
+          lftp -u "$FTP_KULLANICI","$FTP_SIFRE" "$FTP_SUNUCU" -e "
+            set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $SERTIFIKA; set net:max-retries 3; set net:timeout 30;
+            cd $KLASOR; put guncelleniyor.txt -o .guncelleniyor;
+            quit"
+
       - name: Sunucu dosyalarını yükle
         if: steps.ayar.outputs.var == '1'
         run: |
           KLASOR="${FTP_KLASOR:-httpdocs}"
           lftp -u "$FTP_KULLANICI","$FTP_SIFRE" "$FTP_SUNUCU" -e "
             set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $SERTIFIKA; set net:max-retries 3; set net:timeout 30;
+            set xfer:use-temp-file yes; set xfer:temp-file-name .yukleniyor.*;
             mirror -R --parallel=4 --verbose=1 paket/ $KLASOR/;
+            quit"
+
+      - name: Bakım işaretini kaldır
+        if: always() && steps.ayar.outputs.var == '1'
+        run: |
+          KLASOR="${FTP_KLASOR:-httpdocs}"
+          lftp -u "$FTP_KULLANICI","$FTP_SIFRE" "$FTP_SUNUCU" -e "
+            set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $SERTIFIKA; set net:max-retries 3; set net:timeout 30;
+            cd $KLASOR; rm -f .guncelleniyor;
             quit"
 
       - name: Masaüstü kurulumunu yükle (sürüm değiştiyse)

@@ -1,17 +1,24 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 5 Ekim 2026 (4.16.7 / Pro 5.3.0)*
+*Son güncelleme: 5 Ekim 2026 (4.16.8 / Pro 5.3.0)*
 
 ## Sürüm
-- **Sunucu 4.16.7**, şema **27**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
-- **Canlı site: 4.16.7 main'e gönderildi 05.10 (rehber "OptiFlow Gazetesi"); masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
+- **Sunucu 4.16.8**, şema **28**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
+- **Canlı site: 4.16.8 main'e gönderildi 05.10 (yükleme sırasında hata düzeltmesi); masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
   Canlı veritabanı göçü (22 → 27) ilk personel girişinde çalışır; sonucu kontrol edilmedi.
 - Özellik anahtarları (hepsi varsayılan kapalı): `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
 - Testler: sunucu 635/635 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42, sgk-fatura 57+30, seo 48);
   sunucu entegrasyon (yerel MariaDB): api 46/46, modüller 76/76, garanti 37/37, sgk-fatura 25/25.
   Masaüstü birim/E2E değişmedi (91/91, 61/61).
 
-## Son oturumda yapılanlar (4.16.6–4.16.7 — Rehber "OptiFlow Gazetesi")
+## Son oturumda yapılanlar (4.16.8 — rakip analizi, yükleme hatası)
+- Kullanıcı OptikPanel rakip analizini paylaştı → `docs/OPTIFLOW-RAKIP-ANALIZI-OPTIKPANEL-2026-10-05.md`.
+- "Ara ara Beklenmeyen hata": canlı loglar (geçici `oturum/log-oku` iş akışı, maskeli) → hepsi FTP yüklemesi
+  sırasında. Düzeltme: geçici dosyayla yükleme + `.guncelleniyor` bakım ekranı (`app/guncelleme.php`).
+- Cila: katalog iç notu (göç v28), yedek sayfasında phpMyAdmin dili.
+- BULGU: kodda şube kavramı YOK ama tanıtım sayfası "çok şube / şube yetkisi" vaat ediyor → kullanıcıya soruldu.
+
+## Önceki oturum (4.16.6–4.16.7 — Rehber "OptiFlow Gazetesi")
 - Kullanıcı isteği: rehber sayfası eskimiş gazete görünümünde. `app/pages/rehber.php` yeniden yazıldı (CSS satır içi,
   JS yok); fotoğraflar `assets/onizleme/*.webp`'ten sepya + nokta tarama. Masaüstü + telefonda kontrol edildi.
 
@@ -80,4 +87,6 @@
   (4.12 belgeleri `docs/`'a eklendi). `optiflow-4.15.0-hosting.zip` depodan yeniden üretilebilir.
 
 ## Karar bekleyen
+- Tanıtım sayfasındaki çok şube vaadi: kaldırılsın mı, şube özelliği mi yapılsın? (kodda şube yok)
+- Rakip analizi Faz 1 sırası (TCKN müşteri kartı — KVKK kuralıyla çelişir, hızlı satış ekranı, PD/yükseklik/prizma, destek düğmesi, Ctrl+K).
 - SGK dönem sonu paketi + kesinti defteri.

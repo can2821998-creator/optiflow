@@ -28,3 +28,6 @@ Thumbs.db
 indir/masaustu/*.blockmap
 indir/masaustu/latest.yml
 indir/masaustu/*.exe
+
+# canlıya yükleme sırasında bakım işareti (Actions koyar/kaldırır)
+/.guncelleniyor

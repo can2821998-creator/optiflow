@@ -158,8 +158,8 @@ page_header('Yedekleme ve günün özeti', 'Verinin tamamını indirin, akşam �
       <p class="muted">
         Bütün tablolar (müşteriler, siparişler, reçeteler, tahsilatlar, stok, ayarlar) tek bir
         <code>.sql<?= $gz ? '.gz' : '' ?></code> dosyasına yazılır ve bilgisayarınıza iner.
-        Dosya sunucuda bırakılmaz. Geri yüklemek gerekirse hosting panelindeki
-        phpMyAdmin → <b>İçe aktar</b> ile bu dosyayı yüklemeniz yeterli.
+        Dosya sunucuda bırakılmaz. Bu dosya verilerinizin tam kopyasıdır; geri yükleme gerekirse
+        OptiFlow destek ekibi bu dosyayla yapar. Dosyayı güvenli bir yerde saklayın.
       </p>
       <ul class="kv">
         <li><span>Son yedek</span><b><?= $sonYedek !== '' ? e(date_tr($sonYedek, true)) . ' · ' . (int) $yas . ' gün önce' : 'Hiç alınmadı' ?></b></li>

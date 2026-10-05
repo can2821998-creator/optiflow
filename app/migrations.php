@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 27;
+const SCHEMA_VERSION = 28;
 
 function run_migrations(): void
 {
@@ -58,6 +58,7 @@ function run_migrations(): void
         if ($current < 25) { migrate_v25_cam_hata_sgk_hak(); set_schema_version(25); }
         if ($current < 26) { migrate_v26_garanti(); set_schema_version(26); }
         if ($current < 27) { migrate_v27_sgk_donem_fatura(); set_schema_version(27); }
+        if ($current < 28) { migrate_v28_katalog_notu(); set_schema_version(28); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -446,7 +447,7 @@ function migrate_v3_seed(): void
     }
 
     if (!(int) scalar('SELECT COUNT(*) FROM lens_products')) {
-        $note = 'v28 asistanından aktarıldı · tasarım, indeks ve fiyatı kontrol edin';
+        $note = LENS_KATALOG_NOTU;
         $products = [
             ['Smart Vision', 'Smart ID', 'tek_odak', 'ekonomik', null],
             ['Kodak', 'Kodak Atlas', 'tek_odak', 'dengeli', 16750],
@@ -1452,3 +1453,14 @@ function migrate_v27_sgk_donem_fatura(): void
     ) " . t_opts());
 }
 
+/* ------------------------------------------------------------------ */
+/*  v28 (4.16.8) — Hazır cam kataloğundaki iç not müşteriye görünüyordu */
+/*  ("v28 asistanından aktarıldı …"). Yalnızca o metin değiştirilir;    */
+/*  mağazanın kendi yazdığı notlara dokunulmaz.                         */
+/* ------------------------------------------------------------------ */
+const LENS_KATALOG_NOTU = 'Örnek katalog: tasarım, indeks ve fiyatı kendi tedarikçinize göre güncelleyin';
+
+function migrate_v28_katalog_notu(): void
+{
+    q('UPDATE lens_products SET note = ? WHERE note = ?', [LENS_KATALOG_NOTU, 'v28 asistanından aktarıldı · tasarım, indeks ve fiyatı kontrol edin']);
+}

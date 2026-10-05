@@ -1,17 +1,21 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 5 Ekim 2026 (4.16.5 / Pro 5.3.0)*
+*Son güncelleme: 5 Ekim 2026 (4.16.6 / Pro 5.3.0)*
 
 ## Sürüm
-- **Sunucu 4.16.5**, şema **27**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
-- **Canlı site: 4.16.5 (05.10 14:00 doğrulandı: indir.php ve ana sayfa bağlantıları yayında); masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
+- **Sunucu 4.16.6**, şema **27**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
+- **Canlı site: 4.16.6 main'e gönderildi 05.10 (rehber gazete tasarımı); masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
   Canlı veritabanı göçü (22 → 27) ilk personel girişinde çalışır; sonucu kontrol edilmedi.
 - Özellik anahtarları (hepsi varsayılan kapalı): `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
 - Testler: sunucu 635/635 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42, sgk-fatura 57+30, seo 48);
   sunucu entegrasyon (yerel MariaDB): api 46/46, modüller 76/76, garanti 37/37, sgk-fatura 25/25.
   Masaüstü birim/E2E değişmedi (91/91, 61/61).
 
-## Son oturumda yapılanlar (4.16.5 — OptiFlow Pro indirme bağlantısı)
+## Son oturumda yapılanlar (4.16.6 — Rehber "Gözlükçü Gazetesi")
+- Kullanıcı isteği: rehber sayfası eskimiş gazete görünümünde. `app/pages/rehber.php` yeniden yazıldı (CSS satır içi,
+  JS yok); fotoğraflar `assets/onizleme/*.webp`'ten sepya + nokta tarama. Masaüstü + telefonda kontrol edildi.
+
+## Önceki oturum (4.16.5 — OptiFlow Pro indirme bağlantısı)
 - Kullanıcı bildirdi: sitede uygulama linki yoktu. `indir.php` (sürüm/boyut latest.yml'den, `?dosya=1` doğrudan exe),
   tanıtım sayfasında menü + Pro kartı + alt bilgi, uygulama içi Pro uyarılarında indirme bağlantısı, site haritası.
 - Exe imzasız: sayfada SmartScreen "Ek bilgi › Yine de çalıştır" açıklaması var (sertifika alınınca kaldır).

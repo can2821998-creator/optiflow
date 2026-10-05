@@ -4,7 +4,7 @@
 
 ## Sürüm
 - **Sunucu 4.18.0**, şema **30**. Masaüstü **OptiFlow Pro 5.4.0**.
-- **Canlı site: 4.17.1** (4.18.0 commit'lendi; kullanıcı "gite yükle" deyince push → Sürüm yayınla → Canlıya al).
+- **Canlı site: 4.18.0, masaüstü latest.yml 5.4.0** (05.10 doğrulandı; Release v4.18.0-pro5.4.0). Şema 29 → 30 ilk personel girişinde.
 - Özellik anahtarları (hepsi varsayılan kapalı): `hizli_satis`, `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
   "Beni hatırla" anahtarsız (her mağazada açık; Ayarlar › Genel'den kapatılır).
 - Testler (05.10): sunucu tümü geçti (… tasima 46, hatirla 40); sunucu entegrasyon (yerel MariaDB): api 46, modüller 76,

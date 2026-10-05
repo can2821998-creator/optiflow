@@ -17,6 +17,7 @@ const GUNCELLEME_AZAMI_SN = 1200;
 function guncelleme_suruyor(string $kok, ?int $simdi = null): bool
 {
     $f = $kok . '/' . GUNCELLEME_ISARETI;
+    clearstatcache(true, $f);           // dosya zamanı önbellekten okunmasın (PHP 8.2'de touch sonrası eski kalıyordu)
     if (!is_file($f)) {
         return false;
     }

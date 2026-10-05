@@ -1,0 +1,74 @@
+# Geçici: canlıdaki storage/logs/app-*.log dosyalarından hata özetini çıkarır (salt okunur, siteye dokunmaz).
+# Kişisel veri sızmasın diye 5+ haneli sayılar, e-postalar ve tırnak içi değerler maskelenir.
+# Sonuç bu dala tani/log-ozeti.md olarak yazılır. İş bitince dal ve dosya silinir.
+name: Log özeti (geçici)
+on:
+  push:
+    branches: ['oturum/log-oku']
+    paths: ['.github/workflows/log-oku.yml', 'tani/istek.txt']
+permissions:
+  contents: write
+jobs:
+  oku:
+    runs-on: ubuntu-latest
+    env:
+      FTP_SUNUCU: ${{ secrets.FTP_SUNUCU }}
+      FTP_KULLANICI: ${{ secrets.FTP_KULLANICI }}
+      FTP_SIFRE: ${{ secrets.FTP_SIFRE }}
+      FTP_KLASOR: ${{ secrets.FTP_KLASOR }}
+      SERTIFIKA: ${{ vars.FTP_SERTIFIKA_KONTROL || 'no' }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+      - name: Logları indir
+        run: |
+          KLASOR="${FTP_KLASOR:-httpdocs}"
+          mkdir -p /tmp/log
+          lftp -u "$FTP_KULLANICI","$FTP_SIFRE" "$FTP_SUNUCU" -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $SERTIFIKA; set net:max-retries 2; set net:timeout 20; cd $KLASOR/storage/logs; lcd /tmp/log; mget -c app-2026-*.log; quit" || true
+          ls -la /tmp/log
+      - name: Özetle (maskeli)
+        run: |
+          python3 - <<'PY'
+          import re, glob, collections, os
+          def maske(s):
+              s = re.sub(r'[\w.+-]+@[\w-]+\.[\w.]+', '<eposta>', s)
+              s = re.sub(r"'[^']{2,}'", "'…'", s)
+              s = re.sub(r'"[^"]{2,}"', '"…"', s)
+              s = re.sub(r'\d{5,}', '#####', s)
+              return s[:400]
+          kayitlar = []
+          for f in sorted(glob.glob('/tmp/log/app-*.log')):
+              cur = None
+              for line in open(f, encoding='utf-8', errors='replace'):
+                  line = line.rstrip('\n')
+                  m = re.match(r'^\[(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\] (.*)$', line)
+                  if m:
+                      cur = {'t': m.group(1), 'm': m.group(2), 'iz': []}
+                      kayitlar.append(cur)
+                  elif cur is not None and len(cur['iz']) < 8:
+                      cur['iz'].append(line)
+          gruplar = collections.OrderedDict()
+          for k in kayitlar:
+              anahtar = re.sub(r'^#[0-9A-F]{8} ', '', k['m'])
+              anahtar = re.sub(r'\d+', 'N', maske(anahtar))[:220]
+              g = gruplar.setdefault(anahtar, {'n': 0, 'ilk': k['t'], 'son': k['t'], 'ornek': k, 'refler': []})
+              g['n'] += 1; g['son'] = k['t']
+              r = re.match(r'^#([0-9A-F]{8})', k['m'])
+              if r: g['refler'].append(r.group(1))
+          os.makedirs('tani', exist_ok=True)
+          with open('tani/log-ozeti.md', 'w') as o:
+              o.write(f"# Log özeti\n\nToplam kayıt: {len(kayitlar)}; dosyalar: {', '.join(os.path.basename(x) for x in glob.glob('/tmp/log/*'))}\n\n")
+              aranan = {'F2225CF2', '89AAE2E1'}
+              for k in kayitlar:
+                  if any(('#'+a) in k['m'] for a in aranan):
+                      o.write(f"## Aranan kod — {k['t']}\n```\n{maske(k['m'])}\n" + '\n'.join(maske(x) for x in k['iz']) + "\n```\n\n")
+              o.write("## Gruplar (sık → seyrek)\n\n")
+              for a, g in sorted(gruplar.items(), key=lambda x: -x[1]['n'])[:40]:
+                  k = g['ornek']
+                  o.write(f"### {g['n']}× · {g['ilk']} → {g['son']}\nKodlar: {', '.join(g['refler'][-6:])}\n```\n{maske(k['m'])}\n" + '\n'.join(maske(x) for x in k['iz'][:6]) + "\n```\n\n")
+          print(open('tani/log-ozeti.md').read()[:3000])
+          PY
+      - name: Özeti dala yaz
+        run: |
+          git config user.name "optiflow-bot"; git config user.email "bot@users.noreply.github.com"
+          git add tani/log-ozeti.md && git commit -m "Log özeti (maskeli)" && git push

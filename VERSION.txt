@@ -1,6 +1,20 @@
 OPTIFLOW
-Release: 4.17.0 (2026-10-05)
+Release: 4.17.1 (2026-10-05)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.17.1 (eski sistemden veri taşıma; OptiFlow Pro 5.3.0 ile)
+  - YENİ: Merkez panel › mağaza › "Eski sistemden veri taşı" (app/tasima.php). Poyraz Optik Atölye ya da OptiFlow
+    yedeği (.sql / .sql.gz) yüklenir → özet (yedekte / mağazada) → "TAŞI" onayı → mağazanın o anki verisi otomatik
+    yedeklenir → aktarım → eski sürümse şema numarası sıfırlanıp göçler baştan çalışır. "GERİ AL" ile son taşıma
+    geri alınır (yarıda kalsa da). Geçmiş ve ön yedekler storage/tasima/ (web'e kapalı).
+  - Güvenlik: dosya tırnak/yorum farkında ayrıştırılır; yalnızca SET NAMES/FOREIGN_KEY_CHECKS/SQL_MODE,
+    DROP TABLE IF EXISTS, CREATE TABLE (SELECT/dosya işlemi yok) ve sabit değerli INSERT kabul edilir; başka her
+    komut (DROP DATABASE, USE, GRANT, tetikleyici, /*! */ …) dosyayı reddettirir. Başlık ve "Yedek sonu" zorunlu.
+  - Göçler: şema numarası ≥1 görünüp orders.sgk_amount yoksa (eski Poyraz yedeği phpMyAdmin'le aktarılmış) göçler
+    baştan çalışır. (Poyraz "şema 21" ≠ OptiFlow şema 21.)
+  - Gerçek bir Poyraz 3.43.0 yedeğiyle denendi: 103 müşteri / 101 sipariş / tutarlar birebir; şema 0 → 29; tüm
+    ana sayfalar hatasız. Rehber: docs/ESKI-SISTEMDEN-TASIMA.md. Testler: tests/tasima (46, uydurma kayıtlı örnek
+    yedek), desktop/tests/server/tasima-integration.mjs (18).
 
 DEĞİŞİKLİK NOTLARI — 4.17.0 (hızlı satış ve ürün kataloğu; OptiFlow Pro 5.3.0 ile)
   - YENİ özellik anahtarı "hizli_satis" (merkez panelden, varsayılan kapalı). Rakip analizi Faz 1'in ilk maddesi.

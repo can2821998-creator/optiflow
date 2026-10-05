@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 require_once APP_ROOT . '/app/seo.php';
+require_once APP_ROOT . '/app/tasima.php';
 
 if (!config('merkez_admin_password') && !config('merkez_admin_password_hash')) {
     render_error_page('Panel kapalı', "config.php içine 'merkez_admin_password_hash' (önerilir) ya da 'merkez_admin_password' anahtarı eklenmeden bu panel açılmaz.");
@@ -124,6 +125,48 @@ if (is_post()) {
                 merkez_tenant_kullanici_durum($mag, post_int('user_id'), post('aktif') === '1');
                 merkez_log('kul_durum', $id, 'user#' . post_int('user_id') . ' → ' . (post('aktif') === '1' ? 'aktif' : 'pasif'));
                 flash('Personel durumu güncellendi.');
+                break;
+            case 'tasima_yukle':   // 4.17.1 eski sistemden veri taşıma: 1) yükle ve önizle
+                $mag = merkez_magaza($id) ?? throw new DomainException('Mağaza bulunamadı.');
+                $ozet = tasima_yukle($id, $_FILES['yedek'] ?? []);
+                $_SESSION['tasima'][$id] = $ozet;
+                merkez_log('tasima', $id, 'yedek yüklendi: ' . $ozet['ad'] . ' (' . $ozet['kaynak'] . ' ' . $ozet['surum'] . ')');
+                flash('Yedek okundu. Aşağıdaki özeti kontrol edip taşımayı onaylayın.');
+                $geri = 'merkez-panel.php?magaza=' . $id . '#tasima';
+                break;
+            case 'tasima_vazgec':
+                $dosya = (string) ($_SESSION['tasima'][$id]['dosya'] ?? '');
+                if ($dosya !== '' && preg_match('/^yukleme-' . $id . '-[0-9a-f]{12}\.sql(\.gz)?$/', $dosya)) {
+                    @unlink(tasima_klasor() . '/' . $dosya);
+                }
+                unset($_SESSION['tasima'][$id]);
+                flash('Taşıma iptal edildi; yüklenen dosya silindi.');
+                $geri = 'merkez-panel.php?magaza=' . $id . '#tasima';
+                break;
+            case 'tasima_uygula':
+                $mag = merkez_magaza($id) ?? throw new DomainException('Mağaza bulunamadı.');
+                if (tasima_onay(post('onay')) !== 'TAŞI') {
+                    throw new DomainException('Onaylamak için kutuya TAŞI yazın.');
+                }
+                $bekleyen = $_SESSION['tasima'][$id] ?? null;
+                if (!$bekleyen) {
+                    throw new DomainException('Önce yedek dosyasını yükleyin.');
+                }
+                $sonuc = tasima_uygula_magaza($mag, (string) $bekleyen['dosya']);
+                unset($_SESSION['tasima'][$id]);
+                merkez_log('tasima', $id, 'taşındı: ' . $bekleyen['ad'] . ' → ' . $sonuc['sayilar']['customers'] . ' müşteri, ' . $sonuc['sayilar']['orders'] . ' sipariş, şema ' . $sonuc['sema']);
+                flash('Taşıma tamamlandı: ' . $sonuc['sayilar']['customers'] . ' müşteri, ' . $sonuc['sayilar']['orders'] . ' sipariş, ' . $sonuc['sayilar']['payments'] . ' tahsilat aktarıldı. Veritabanı güncel sürüme (şema ' . $sonuc['sema'] . ') yükseltildi.');
+                $geri = 'merkez-panel.php?magaza=' . $id . '#tasima';
+                break;
+            case 'tasima_geri_al':
+                $mag = merkez_magaza($id) ?? throw new DomainException('Mağaza bulunamadı.');
+                if (tasima_onay(post('onay')) !== 'GERİ AL') {
+                    throw new DomainException('Onaylamak için kutuya GERİ AL yazın.');
+                }
+                $sonuc = tasima_geri_al($mag);
+                merkez_log('tasima', $id, 'son taşıma geri alındı');
+                flash('Son taşıma geri alındı; mağaza taşımadan önceki haline döndü.');
+                $geri = 'merkez-panel.php?magaza=' . $id . '#tasima';
                 break;
             case 'gir':
                 merkez_magaza_gir($id);
@@ -260,6 +303,16 @@ if (is_post()) {
         if (str_starts_with($action, 'rehber_')) {
             $geri = 'merkez-panel.php?gorunum=rehber' . (post('eski_slug') !== '' ? '&yazi=' . rawurlencode(post('eski_slug')) : '');
         }
+        if (str_starts_with($action, 'tasima_')) {
+            $geri = 'merkez-panel.php?magaza=' . $id . '#tasima';
+        }
+    } catch (Throwable $e) {
+        if (!str_starts_with((string) $action, 'tasima_')) {
+            throw $e;
+        }
+        app_log('Veri taşıma hatası (mağaza #' . $id . '): ' . $e->getMessage());
+        flash('Taşıma sırasında beklenmeyen bir hata oluştu: ' . mb_substr($e->getMessage(), 0, 200) . ' — Mağaza verisi taşımadan önce yedeklendi; "Son taşımayı geri al" ile eski haline döndürebilirsiniz.', 'error');
+        $geri = 'merkez-panel.php?magaza=' . $id . '#tasima';
     }
     redirect($geri);
 }
@@ -616,6 +669,77 @@ $gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yen
         <label class="field" style="margin:0"><span>Şifre</span><input type="password" name="db_sifre" value="<?= e($detay['db_sifre'] ?? '') ?>" required autocomplete="new-password"></label>
         <button class="btn btn-primary">Test et ve kaydet</button>
       </form>
+    </div></details>
+    <?php endif; ?>
+
+    <?php if (($detay['durum'] ?? '') !== 'beklemede' && !empty($detay['db_name'])):   /* 4.17.1 eski sistemden veri taşıma */
+      $tBekleyen = $_SESSION['tasima'][(int) $detay['id']] ?? null;
+      $tGecmis = tasima_gecmis((int) $detay['id']);
+      $tSon = $tGecmis[0] ?? null;
+      $tGeriAlinabilir = $tSon && ($tSon['tur'] ?? '') === 'tasima';
+      $tHedef = [];
+      if ($tBekleyen) {
+          try { $tHedef = tasima_hedef_sayilari(merkez_tenant_pdo($detay)); } catch (Throwable) { $tHedef = []; }
+      }
+      $tAdlar = tasima_ozet_tablolari(); ?>
+    <details class="acc" id="tasima" <?= $tBekleyen || ($tSon && strtotime((string) ($tSon['zaman'] ?? '')) > time() - 3600) ? 'open' : '' ?>><summary>Eski sistemden veri taşı</summary><div class="body">
+      <?php if (!$tBekleyen): ?>
+        <p class="muted mini" style="margin-top:0">Eski <b>Poyraz Optik Atölye</b> sisteminin ya da başka bir OptiFlow mağazasının <b>Yedekleme</b> ekranından indirdiğiniz <code>.sql.gz</code> dosyasını yükleyin. Önce bir özet gösterilir; onaylarsanız:</p>
+        <ol class="muted mini" style="margin:0 0 12px;padding-left:18px;line-height:1.7">
+          <li>mağazanın şu anki verisi otomatik yedeklenir,</li>
+          <li>yedekteki müşteri, sipariş, reçete, tahsilat, stok ve kullanıcılar aktarılır,</li>
+          <li>veritabanı güncel OptiFlow sürümüne yükseltilir.</li>
+        </ol>
+        <form method="post" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <?= csrf_field() ?><input type="hidden" name="action" value="tasima_yukle"><input type="hidden" name="id" value="<?= (int) $detay['id'] ?>">
+          <label class="field" style="margin:0"><span>Yedek dosyası (.sql / .sql.gz)</span><input type="file" name="yedek" accept=".sql,.gz,application/gzip,application/sql" required></label>
+          <button class="btn btn-primary">Yükle ve önizle</button>
+        </form>
+        <p class="muted mini" style="margin:10px 0 0">Dosya web'e kapalı klasörde tutulur, 24 saat içinde silinir. Yalnızca yedek komutları (tablo oluşturma ve veri ekleme) kabul edilir.</p>
+      <?php else: $tVar = (int) ($tHedef['orders'] ?? 0) + (int) ($tHedef['customers'] ?? 0); ?>
+        <p style="margin-top:0"><b><?= e($tBekleyen['ad']) ?></b> · <?= e($tBekleyen['kaynak'] === 'poyraz' ? 'Poyraz Optik Atölye' : 'OptiFlow') ?> <?= e($tBekleyen['surum']) ?> · yedek tarihi <?= e($tBekleyen['tarih']) ?></p>
+        <table class="utable" style="max-width:520px;margin-bottom:12px">
+          <thead><tr><th style="text-align:left">Kayıt</th><th style="text-align:right">Yedekte</th><th style="text-align:right">Şu an mağazada</th></tr></thead>
+          <tbody>
+          <?php foreach ($tAdlar as $tk => $tad): ?>
+            <tr><td><?= e($tad) ?></td><td style="text-align:right"><b><?= (int) ($tBekleyen['tablolar'][$tk] ?? 0) ?></b></td><td style="text-align:right" class="muted"><?= (int) ($tHedef[$tk] ?? 0) ?></td></tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+        <?php if ($tBekleyen['kaynak'] === 'poyraz'): ?>
+          <p class="muted mini">Eski sürüm yedeği: aktarımdan sonra veritabanı baştan güncellenecek (şema <?= (int) $tBekleyen['sema'] ?> → <?= SCHEMA_VERSION ?>). Eski şifreli parolalar korunur; personel eski kullanıcı adı ve şifresiyle girer.</p>
+        <?php endif; ?>
+        <?php if ($tVar > 0): ?>
+          <div class="flash flash-error" style="margin:0 0 12px">Bu mağazada şu an <b><?= (int) ($tHedef['customers'] ?? 0) ?> müşteri ve <?= (int) ($tHedef['orders'] ?? 0) ?> sipariş</b> var. Taşıma bu kayıtları silip yerine yedektekileri yazar. Önce otomatik yedek alınır ve işlem geri alınabilir, ama en güvenlisi boş bir mağazaya taşımaktır.</div>
+        <?php endif; ?>
+        <form method="post" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <?= csrf_field() ?><input type="hidden" name="action" value="tasima_uygula"><input type="hidden" name="id" value="<?= (int) $detay['id'] ?>">
+          <label class="field" style="margin:0"><span>Onaylamak için TAŞI yazın</span><input type="text" name="onay" placeholder="TAŞI" autocomplete="off" required style="width:140px"></label>
+          <button class="btn btn-ok">Taşımayı başlat</button>
+        </form>
+        <form method="post" style="margin-top:8px"><?= csrf_field() ?><input type="hidden" name="action" value="tasima_vazgec"><input type="hidden" name="id" value="<?= (int) $detay['id'] ?>"><button class="btn btn-ghost btn-sm">Vazgeç</button></form>
+      <?php endif; ?>
+
+      <?php if ($tGecmis): ?>
+        <h3 style="margin:18px 0 6px;font-size:14px">Geçmiş</h3>
+        <ul class="muted mini" style="margin:0;padding-left:18px;line-height:1.7">
+          <?php foreach (array_slice($tGecmis, 0, 5) as $tg): ?>
+            <li><?= e(date('d.m.Y H:i', (int) strtotime((string) ($tg['zaman'] ?? '')))) ?> ·
+              <?php if (($tg['tur'] ?? '') === 'geri_al'): ?>geri alındı<?php elseif (($tg['durum'] ?? '') === 'basladi'): ?><b style="color:var(--pop-deep)">yarıda kaldı</b><?php else: ?>taşındı (<?= e(($tg['kaynak'] ?? '') === 'poyraz' ? 'Poyraz' : 'OptiFlow') ?> <?= e((string) ($tg['surum'] ?? '')) ?>)<?php endif; ?>
+              <?php if (!empty($tg['sayilar'])): ?> · <?= (int) ($tg['sayilar']['customers'] ?? 0) ?> müşteri, <?= (int) ($tg['sayilar']['orders'] ?? 0) ?> sipariş<?php endif; ?></li>
+          <?php endforeach; ?>
+        </ul>
+        <?php if ($tGeriAlinabilir): ?>
+          <details style="margin-top:10px"><summary class="muted mini" style="cursor:pointer;font-weight:700">Son taşımayı geri al</summary>
+            <p class="muted mini"><?= !empty($tSon['onceki_yedek']) ? 'Taşımadan önce alınan yedek geri yüklenir.' : 'Taşımadan önce mağaza boştu; mağaza veritabanı boşaltılır.' ?></p>
+            <form method="post" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+              <?= csrf_field() ?><input type="hidden" name="action" value="tasima_geri_al"><input type="hidden" name="id" value="<?= (int) $detay['id'] ?>">
+              <label class="field" style="margin:0"><span>GERİ AL yazın</span><input type="text" name="onay" placeholder="GERİ AL" autocomplete="off" required style="width:140px"></label>
+              <button class="btn btn-amber">Geri al</button>
+            </form>
+          </details>
+        <?php endif; ?>
+      <?php endif; ?>
     </div></details>
     <?php endif; ?>
 

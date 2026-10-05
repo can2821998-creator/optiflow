@@ -597,7 +597,7 @@ function merkez_eylem_etiket(string $e): string
         'not' => 'Not güncellendi', 'sifre' => 'Giriş şifresi sıfırlandı', 'db' => 'Veritabanı güncellendi',
         'sil' => 'Mağaza silindi', 'olustur' => 'Mağaza oluşturuldu', 'gir' => 'Mağaza paneline girildi',
         'kul_sifre' => 'Personel şifresi sıfırlandı', 'kul_durum' => 'Personel durumu değişti',
-        'toplu' => 'Toplu işlem', 'rehber' => 'Rehber yazısı', 'seo' => 'SEO · Google',
+        'toplu' => 'Toplu işlem', 'rehber' => 'Rehber yazısı', 'seo' => 'SEO · Google', 'tasima' => 'Veri taşıma',
     ][$e] ?? $e;
 }
 

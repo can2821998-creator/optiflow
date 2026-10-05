@@ -31,6 +31,13 @@ function run_migrations(): void
             $current = 0;
         }
         @set_time_limit(300);
+        // 4.17.1: Poyraz Optik Atölye (eski sürüm) yedeği içe aktarılmışsa oradaki "şema" numarası
+        // OptiFlow'unkiyle aynı değildir (ör. "şema 21" ama orders.sgk_amount yok). Temel sütunlar
+        // eksikse göçler baştan çalışır; hepsi tekrar çalıştırılabilir, veri silmez.
+        if ($current > 0 && table_exists('orders') && !column_exists('orders', 'sgk_amount')) {
+            app_log("Şema numarası $current görünüyor ama temel sütunlar eksik (eski sürüm yedeği): göçler baştan çalıştırılıyor.");
+            $current = 0;
+        }
         if ($current < 1) { migrate_v1_tables(); set_schema_version(1); }
         if ($current < 2) { migrate_v2_data(); set_schema_version(2); }
         if ($current < 3) { migrate_v3_seed(); set_schema_version(3); }

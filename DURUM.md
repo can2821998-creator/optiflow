@@ -1,17 +1,24 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 5 Ekim 2026 (4.17.0 / Pro 5.3.0)*
+*Son güncelleme: 5 Ekim 2026 (4.17.1 / Pro 5.3.0)*
 
 ## Sürüm
-- **Sunucu 4.17.0**, şema **29**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
-- **Canlı site: 4.17.0 (05.10 doğrulandı; hızlı satış — mağazada özellik merkez panelden açılmalı); masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
+- **Sunucu 4.17.1**, şema **29**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
+- **Canlı site: 4.17.1 main'e gönderildi 05.10 (eski sistemden veri taşıma); masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
   Canlı veritabanı göçü (22 → 27) ilk personel girişinde çalışır; sonucu kontrol edilmedi.
 - Özellik anahtarları (hepsi varsayılan kapalı): `hizli_satis`, `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
-- Testler: sunucu 635/635 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42, sgk-fatura 57+30, seo 48, guncelleme 13, hizli-satis 72+43);
-  sunucu entegrasyon (yerel MariaDB): api 46/46, modüller 76/76, garanti 37/37, sgk-fatura 25/25, hizli-satis 20/20.
+- Testler: sunucu 635/635 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42, sgk-fatura 57+30, seo 48, guncelleme 13, hizli-satis 72+43, tasima 46);
+  sunucu entegrasyon (yerel MariaDB): api 46/46, modüller 76/76, garanti 37/37, sgk-fatura 25/25, hizli-satis 20/20, tasima 18/18.
   Masaüstü birim/E2E değişmedi (91/91, 61/61).
 
-## Son oturumda yapılanlar (4.17.0 — hızlı satış)
+## Son oturumda yapılanlar (4.17.1 — eski sistemden taşıma)
+- Kullanıcı eski Poyraz 3.43.0 yedeğini (şema 21) paylaştı: olduğu gibi aktarılınca sayfalar hata veriyordu (Poyraz
+  "şema 21" ≠ OptiFlow 21). Merkez panel › mağaza › **Eski sistemden veri taşı** (`app/tasima.php`): yükle → önizle →
+  TAŞI → ön yedek + aktarım + göçler; GERİ AL. Göçlere kendini onarma (orders.sgk_amount yoksa baştan).
+- Gerçek yedekle yerelde denendi (veri depoya girmedi; yerel kopyalar silindi). Rehber: `docs/ESKI-SISTEMDEN-TASIMA.md`.
+- Kullanıcıdan beklenen: canlıda yeni (boş) mağaza açıp yedeği yüklemesi.
+
+## Önceki oturum (4.17.0 — hızlı satış)
 - Hızlı satış + ürün kataloğu (`hizli_satis`): `app/satis.php`, `hizli-satis.php`, `urunler.php`, `assets/hizli-satis.js`,
   fiş (`print.php?type=satis`), göç v29. Kasa / kasa dökümü / raporlar / kâr-prim entegre. Rehber: `docs/YENILIKLER-4.17.md`.
 - Masaüstü 1366 / 1100 / 820 ve telefon 390 px tarayıcıda denendi (gerçek etkileşim: okutma, arama, serbest kalem,

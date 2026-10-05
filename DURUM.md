@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 5 Ekim 2026 (4.16.8 / Pro 5.3.0)*
+*Son güncelleme: 5 Ekim 2026 (4.16.9 / Pro 5.3.0)*
 
 ## Sürüm
-- **Sunucu 4.16.8**, şema **28**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
-- **Canlı site: 4.16.8 (05.10 17:00 doğrulandı; ilk bakım işaretli yükleme sorunsuz); masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
+- **Sunucu 4.16.9**, şema **28**. Masaüstü **OptiFlow Pro 5.3.0** (değişmedi).
+- **Canlı site: 4.16.9 main'e gönderildi 05.10 (şube vaadi "yakında"); masaüstü latest.yml 5.3.0** — GitHub Actions ile otomatik yüklendi (Canlıya al).
   Canlı veritabanı göçü (22 → 27) ilk personel girişinde çalışır; sonucu kontrol edilmedi.
 - Özellik anahtarları (hepsi varsayılan kapalı): `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
 - Testler: sunucu 635/635 (uts 168+34, alis 104+27, hata-hak 70+26, garanti 77+42, sgk-fatura 57+30, seo 48);
@@ -18,7 +18,7 @@
 - Cila: katalog iç notu (göç v28), yedek sayfasında phpMyAdmin dili.
 - CI: düşen sunucu testi artık Actions uyarısı olarak yazılıyor (oturumdan log okunamıyor). PHP 8.2 stat önbelleği düzeltildi.
 - `oturum/log-oku` uzak dalı oturumdan silinemedi (maskeli log özeti içerir) → GitHub'dan elle silinebilir.
-- BULGU: kodda şube kavramı YOK ama tanıtım sayfası "çok şube / şube yetkisi" vaat ediyor → kullanıcıya soruldu.
+- BULGU: kodda şube kavramı YOK ama tanıtım sayfası vaat ediyordu. Kullanıcı kararı: metin "yakında" (4.16.9) + şube özelliği yapılacak.
 
 ## Önceki oturum (4.16.6–4.16.7 — Rehber "OptiFlow Gazetesi")
 - Kullanıcı isteği: rehber sayfası eskimiş gazete görünümünde. `app/pages/rehber.php` yeniden yazıldı (CSS satır içi,
@@ -69,6 +69,8 @@
 - Devir paketi incelendi; depo bu oturumda kuruldu (geçmiş 4.12.0 hosting paketinden başlar).
 
 ## Sıradaki iş
+0a. **Hızlı satış ekranı** (kullanıcı kararı, Faz 1'in ilki): barkodlu sepet, parçalı ödeme, sipariş açmadan satış.
+0b. **Şube özelliği** (kullanıcı kararı): şube, şubeye göre yetki, merkezden görme, transfer; bitince pazarlama.php 'yakinda' kaldır.
 0. **SEO bağlantısı:** kullanıcı hizmet hesabını kurunca panelde ilk veriyi birlikte kontrol et; sorgulara göre yeni rehber yazıları planla.
 1. **T.C. no maskeleme (KVKK) — kullanıcı "bir süre ertele" dedi (01.10):** `app/sgk-hak.php` › `sgk_hak_coz` okunan satırları ham saklıyor;
    `sgk_hak_sorgulari.satirlar`'a 11 haneli numara girebiliyor. Kaydetmeden önce maskele + test ekle.
@@ -89,6 +91,5 @@
   (4.12 belgeleri `docs/`'a eklendi). `optiflow-4.15.0-hosting.zip` depodan yeniden üretilebilir.
 
 ## Karar bekleyen
-- Tanıtım sayfasındaki çok şube vaadi: kaldırılsın mı, şube özelliği mi yapılsın? (kodda şube yok)
 - Rakip analizi Faz 1 sırası (TCKN müşteri kartı — KVKK kuralıyla çelişir, hızlı satış ekranı, PD/yükseklik/prizma, destek düğmesi, Ctrl+K).
 - SGK dönem sonu paketi + kesinti defteri.

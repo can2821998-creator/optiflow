@@ -39,14 +39,14 @@ function render_karsilama(): void
             ? "Müşteri listenizi Excel ya da başka bir biçimde bize gönderin, OptiFlow'a biz aktaralım. İlk günden eski müşterilerinizle çalışmaya başlarsınız."
             : 'Müşterileriniz ilk siparişlerinde sisteme eklenir; reçete ve gözlük geçmişi o andan itibaren birikir.'],
         ['Birden fazla şubem var, her biri ayrı mı çalışır?',
-         'Evet. Her şube kendi kullanıcılarıyla giriş yapar ve yalnızca kendi siparişlerini görür; siz merkezden hepsini takip edersiniz.'],
+         'Şube yönetimi geliştiriliyor: şubeye göre kullanıcı ve yetki, merkezden tüm şubeleri görme ve şubeler arası stok transferi. Şimdilik her şube ayrı bir mağaza hesabıyla çalışır.'],
         ['Telefon ve tablette çalışır mı? Bir şey kurmam gerekir mi?',
          "OptiFlow tarayıcıda çalışır; bilgisayar, tablet ve telefonda açılır, telefonun ana ekranına uygulama gibi eklenir. Medula aktarımı ve ÜTS karekod okuyucu için mağaza bilgisayarına OptiFlow Pro'yu kurarsınız; güncellemeleri kendisi alır."],
         ['Kredi kartı bilgisi vermem gerekiyor mu?',
          'Hayır. 30 günlük deneme kart bilgisi olmadan başlar. Deneme bittiğinde erişim durur; devam etmek isterseniz sizinle iletişime geçeriz.'],
         ['Kurulum ne kadar sürer?',
          $p['kurulum_destegi']
-            ? 'Başvurunuzu bıraktıktan sonra mağazanızı biz açar, sizi arayıp ilk ayarları birlikte yaparız: mağaza adınız, renginiz, şubeleriniz ve kullanıcılarınız. Teknik bilgi gerekmez.'
+            ? 'Başvurunuzu bıraktıktan sonra mağazanızı biz açar, sizi arayıp ilk ayarları birlikte yaparız: mağaza adınız, renginiz ve kullanıcılarınız. Teknik bilgi gerekmez.'
             : 'Mağaza adı, e-posta ve bir yönetici hesabı yeterli; hesabınız etkinleştirildiğinde kendi panelinize girersiniz.'],
     ];
 
@@ -109,7 +109,7 @@ function render_karsilama(): void
         ]],
         ['Ekip ve şubeler', [
             ['Atölye ekranı', 'Duvardaki ekranda canlı iş listesi; fiyat, telefon ve reçete göstermez.'],
-            ['Çok şube, tek panel', 'Her şubenin kendi kullanıcıları; siz merkezden hepsini görürsünüz.'],
+            ['Çok şube (yakında)', 'Şubeye göre kullanıcı ve yetki, merkezden tüm şubeleri görme. Şu an geliştiriliyor.'],
             ['Personel ve prim', 'Kim ne sattı, kim ne tahsil etti; prim kendiliğinden hesaplanır.'],
             ['Stok ve etiket', 'Çerçeve ve cam stoğu, kritik stok uyarısı, barkodlu etiket.'],
             ['Kendi adınız', 'Müşteri sayfaları ve fişler dükkânınızın adını ve rengini taşır.'],
@@ -125,7 +125,7 @@ function render_karsilama(): void
 <meta name="robots" content="index,follow">
 <meta name="theme-color" content="#f3f5fb">
 <title>Gözlükçü Programı OptiFlow | Medula Aktarımı, SGK Faturası ve Atölye</title>
-<meta name="description" content="Gözlükçüler için yönetim programı: Medula'daki reçete tek tıkla siparişe, SGK katkı payı ve ay sonu SGK faturası hazır. Atölye panosu, WhatsApp bildirimi, garanti kartı, ÜTS karekod, kasa ve çok şube. 30 gün ücretsiz.">
+<meta name="description" content="Gözlükçüler için yönetim programı: Medula'daki reçete tek tıkla siparişe, SGK katkı payı ve ay sonu SGK faturası hazır. Atölye panosu, WhatsApp bildirimi, garanti kartı, ÜTS karekod, kasa ve stok. 30 gün ücretsiz.">
 <link rel="canonical" href="https://optiflow.com.tr/">
 <?= pz_dogrulama_meta() ?>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -143,7 +143,7 @@ function render_karsilama(): void
 <meta property="og:locale" content="tr_TR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://optiflow.com.tr/assets/og-optiflow.png">
-<script type="application/ld+json"><?= $ldJson(['@context' => 'https://schema.org', '@type' => 'SoftwareApplication', 'name' => 'OptiFlow', 'applicationCategory' => 'BusinessApplication', 'operatingSystem' => 'Web, Windows', 'inLanguage' => 'tr', 'description' => 'Gözlükçüler için Medula aktarımı, SGK katkı payı ve ay sonu SGK faturası, sipariş, atölye, garanti, kasa ve çok şube yönetim sistemi.', 'offers' => ['@type' => 'Offer', 'price' => '0', 'priceCurrency' => 'TRY', 'description' => '30 gün ücretsiz deneme'], 'url' => 'https://optiflow.com.tr/']) ?></script>
+<script type="application/ld+json"><?= $ldJson(['@context' => 'https://schema.org', '@type' => 'SoftwareApplication', 'name' => 'OptiFlow', 'applicationCategory' => 'BusinessApplication', 'operatingSystem' => 'Web, Windows', 'inLanguage' => 'tr', 'description' => 'Gözlükçüler için Medula aktarımı, SGK katkı payı ve ay sonu SGK faturası, sipariş, atölye, garanti, kasa ve stok yönetim sistemi.', 'offers' => ['@type' => 'Offer', 'price' => '0', 'priceCurrency' => 'TRY', 'description' => '30 gün ücretsiz deneme'], 'url' => 'https://optiflow.com.tr/']) ?></script>
 <script type="application/ld+json"><?= $ldJson(['@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => $faqLd]) ?></script>
 <script type="application/ld+json"><?= $ldJson(['@context' => 'https://schema.org', '@graph' => [
     ['@type' => 'Organization', '@id' => 'https://optiflow.com.tr/#org', 'name' => 'OptiFlow', 'url' => 'https://optiflow.com.tr/', 'logo' => 'https://optiflow.com.tr/assets/icons/icon-512.png']
@@ -432,6 +432,7 @@ section{padding-block:96px}
 .paketler{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
 .paket{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:30px;display:flex;flex-direction:column;gap:14px}
 .paket.vurgu{background:var(--night);color:#fff;border-color:var(--night)}
+.paket h3 .yakinda{display:inline-block;vertical-align:middle;font-family:var(--sans,inherit);font-size:12px;font-weight:800;padding:3px 10px;border-radius:999px;background:var(--magenta);color:#fff;margin-left:6px}
 .paket .acik{color:var(--ink-2)}
 .paket.vurgu .acik,.paket.vurgu li{color:var(--night-ink)}
 .paket h3{font-family:var(--serif);font-weight:500;font-size:1.7rem}
@@ -835,7 +836,7 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
       <div class="paketler">
         <?php foreach ($p['paketler'] as $pk): $vurgu = !empty($pk['vurgu']); ?>
           <div class="paket<?= $vurgu ? ' vurgu on-night' : '' ?>">
-            <h3><?= pz_e($pk['ad']) ?></h3>
+            <h3><?= pz_e($pk['ad']) ?><?php if (!empty($pk['yakinda'])): ?> <span class="yakinda">Yakında</span><?php endif; ?></h3>
             <p class="acik"><?= pz_e($pk['aciklama']) ?></p>
             <?php if (trim((string) $pk['fiyat']) !== ''): ?>
               <div class="tutar"><?= pz_e($pk['fiyat']) ?><span><?= pz_e($pk['donem']) ?></span></div>
@@ -870,7 +871,7 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
         <div><?= $ico['db'] ?><h3>Her mağazaya ayrı veritabanı</h3><p>Bir mağazanın bilgisi başka bir mağazaya asla görünmez.</p></div>
         <div><?= $ico['lock'] ?><h3>SGK şifreniz bizde değil</h3><p>OptiFlow Pro şifre okumaz, saklamaz; yalnızca siz "Aktar"a bastığınızda çalışır.</p></div>
         <div><?= $ico['shield'] ?><h3>T.C. kimlik no saklanmaz</h3><p>Müşteri sayfaları soyadın tamamını ve telefonu göstermez.</p></div>
-        <div><?= $ico['users'] ?><h3>Rol ve şube yetkileri</h3><p>Personel yalnızca kendi şubesini görür; tutarları kimin göreceğini siz belirlersiniz.</p></div>
+        <div><?= $ico['users'] ?><h3>Rol ve yetkiler</h3><p>Yönetici ve personel ayrı; tutarları ve raporları kimin göreceğini siz belirlersiniz.</p></div>
         <div><?= $ico['screen'] ?><h3>Ekranda kişisel veri yok</h3><p>Atölye ekranı yalnızca sipariş numarası, baş harfler ve aşamayı gösterir.</p></div>
         <div><?= $ico['down'] ?><h3>Yedeğiniz elinizde</h3><p>Veritabanınızın yedeğini istediğiniz an tek tıkla indirirsiniz. Veriniz sizindir.</p></div>
       </div>
@@ -905,7 +906,7 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
     <div class="alt">
       <div>
         <a class="wordmark" href="/"><?= pz_logo('lgFoot') ?>OptiFlow</a>
-        <p>Gözlükçüler için reçeteden teslimata yönetim sistemi. Medula aktarımı, SGK faturası, atölye, kasa ve çok şube tek panelde.</p>
+        <p>Gözlükçüler için reçeteden teslimata yönetim sistemi. Medula aktarımı, SGK faturası, atölye, kasa ve stok tek panelde.</p>
       </div>
       <div class="alt-kol">
         <b>Ürün</b>

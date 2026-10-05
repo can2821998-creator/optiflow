@@ -68,8 +68,9 @@ function optiflow_pazarlama(): array
                 'ad'       => 'Çok Şubeli',
                 'fiyat'    => '',               // Örn: '990 ₺'
                 'donem'    => '/ şube / ay + KDV',
-                'aciklama' => 'Zincirler için merkezden tüm şubeleri yönetin.',
+                'aciklama' => 'Zincirler için şube yönetimi geliştiriliyor. Ön kayıt için bize yazın; hazır olunca ilk siz kullanın.',
                 'vurgu'    => true,
+                'yakinda'  => true,             // şube özelliği yayına girince kaldırın
                 'ozellikler' => [
                     'Tek Mağaza paketindeki her şey',
                     'Şube başına ayrı kullanıcı ve yetki',

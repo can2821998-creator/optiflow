@@ -1,6 +1,11 @@
 OPTIFLOW
-Release: 4.16.8 (2026-10-05)
+Release: 4.16.9 (2026-10-05)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.16.9 (tanıtım sayfasında şube vaadi düzeltildi; OptiFlow Pro 5.3.0 ile)
+  - OptiFlow'da şube özelliği henüz yok; tanıtım sayfası "çok şube, tek panel / personel yalnızca kendi şubesini
+    görür" diyordu. Metinler "yakında" olarak düzeltildi: SSS, "Neler yapar", güven bölümü, alt bilgi, açıklama
+    ve yapılandırılmış veri; "Çok Şubeli" paket kartına "Yakında" rozeti (app/pazarlama.php › 'yakinda').
 
 DEĞİŞİKLİK NOTLARI — 4.16.8 (canlıya yüklemede "Beklenmeyen hata" düzeltmesi; OptiFlow Pro 5.3.0 ile)
   - KÖK NEDEN (canlı loglarla doğrulandı): otomatik FTP yüklemesi dosyaları tek tek üzerine yazıyordu; yükleme

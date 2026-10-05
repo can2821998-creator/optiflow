@@ -46,7 +46,7 @@ $aciklama = 'OptiFlow Pro: gözlükçüler için Windows uygulaması. Medula Opt
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="index,follow">
-<meta name="theme-color" content="#080d2b">
+<meta name="theme-color" content="#141012">
 <title>OptiFlow Pro'yu indirin — Windows uygulaması | OptiFlow</title>
 <meta name="description" content="<?= pz_e($aciklama) ?>">
 <link rel="canonical" href="https://optiflow.com.tr/indir.php">
@@ -74,23 +74,23 @@ $aciklama = 'OptiFlow Pro: gözlükçüler için Windows uygulaması. Medula Opt
 @font-face { font-family: "Manrope"; font-style: normal; font-display: swap; font-weight: 200 800;
   src: url("assets/fonts/manrope-latin-ext-wght-normal.woff2") format("woff2");
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20C0, U+2C60-2C7F, U+A720-A7FF; }
-:root{--ink:#0a1033;--ink-2:#454b6b;--line:#e3e6f2;--bg:#f3f5fb;--blue:#2a36ff;--blue-tint:#eceefe;--magenta:#c414d8;--red:#f2301f;--night:#080d2b;--night-2:#11173d;--night-ink:#c3cbf5;--ok:#0f7a45}
+:root{--ink:#1b1416;--ink-2:#55494c;--line:#e8e1e2;--bg:#f5f3f3;--blue:#a01f36;--blue-tint:#fbe4e8;--magenta:#d0334f;--red:#b4233c;--night:#141012;--night-2:#221a1d;--night-ink:#c9bcc0;--ok:#157347}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,Arial,sans-serif;line-height:1.6;font-weight:500;-webkit-font-smoothing:antialiased}
 a{color:var(--blue)}
 .wrap{max-width:920px;margin:0 auto;padding:0 20px}
 header{background:var(--night);color:#fff}
 .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;gap:12px}
-.wordmark{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;text-decoration:none;color:#fff}
+.wordmark{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.02em;text-decoration:none;color:#fff}
 .wordmark svg{width:28px;height:28px}
 .nav a.geri{color:var(--night-ink);font-weight:700;font-size:14px;text-decoration:none}
-.ust{background:linear-gradient(180deg,var(--night) 0%,#1b1460 100%);color:#fff;padding:44px 0 64px}
+.ust{background:radial-gradient(80% 140% at 100% 0%,rgba(255,107,129,.3),transparent 55%),linear-gradient(120deg,#1a1214 0%,#3a1520 100%);color:#fff;padding:44px 0 64px}
 .rozet{display:inline-block;font-weight:800;font-size:13px;padding:5px 12px;border-radius:999px;background:var(--magenta);color:#fff}
-h1{font-size:clamp(2rem,5vw,3rem);line-height:1.08;letter-spacing:-.02em;margin:14px 0 10px;font-weight:800;max-width:20ch}
+h1{font-size:clamp(2rem,5vw,3rem);line-height:1.06;letter-spacing:-.03em;margin:14px 0 10px;font-weight:800;max-width:20ch}
 .lede{color:var(--night-ink);font-size:1.12rem;max-width:56ch;margin:0 0 28px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:16px 26px;border-radius:12px;font-weight:800;font-size:16px;text-decoration:none;border:2px solid transparent;white-space:nowrap}
-.btn-red{background:var(--red);color:#fff}
-.btn-red:hover{background:#d8240f}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:16px 26px;border-radius:10px;font-weight:700;font-size:16px;text-decoration:none;border:1px solid transparent;white-space:nowrap}
+.btn-red{background:linear-gradient(135deg,#d0334f,#8f1a2e);color:#fff}
+.btn-red:hover{filter:brightness(1.08)}
 .btn-line{border-color:rgba(255,255,255,.6);color:#fff}
 .btn svg{width:20px;height:20px;flex:none}
 .eylem{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
@@ -99,7 +99,7 @@ h1{font-size:clamp(2rem,5vw,3rem);line-height:1.08;letter-spacing:-.02em;margin:
 .mobil-not{display:none;margin-top:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--night-ink)}
 @media (max-width:760px),(pointer:coarse) and (max-width:1024px){.mobil-not{display:block}}
 main.wrap{padding:52px 20px 72px}
-h2{font-size:1.4rem;letter-spacing:-.01em;margin:0 0 16px;font-weight:800}
+h2{font-size:1.45rem;letter-spacing:-.02em;margin:0 0 16px;font-weight:800}
 section+section{margin-top:48px}
 .adimlar{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;counter-reset:a}
 .adimlar li{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;counter-increment:a}

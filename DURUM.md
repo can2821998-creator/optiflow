@@ -1,16 +1,22 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 5 Ekim 2026 (4.18.0 / Pro 5.4.0)*
+*Son güncelleme: 5 Ekim 2026 (4.19.0 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.18.0**, şema **30**. Masaüstü **OptiFlow Pro 5.4.0**.
-- **Canlı site: 4.18.0, masaüstü latest.yml 5.4.0** (05.10 doğrulandı; Release v4.18.0-pro5.4.0). Şema 29 → 30 ilk personel girişinde.
+- **Sunucu 4.19.0**, şema **30**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Canlı site: 4.18.0 / Pro 5.4.0** (4.19.0 tema hazır; kullanıcı "gite yükle" deyince canlıya).
 - Özellik anahtarları (hepsi varsayılan kapalı): `hizli_satis`, `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
-  "Beni hatırla" anahtarsız (her mağazada açık; Ayarlar › Genel'den kapatılır).
-- Testler (05.10): sunucu tümü geçti (… tasima 46, hatirla 40); sunucu entegrasyon (yerel MariaDB): api 46, modüller 76,
-  garanti 37, sgk-fatura 26, hizli-satis 20, tasima 18, hatirla 24; masaüstü birim 116/116; E2E (gerçek Electron) 74/74.
+- Testler (05.10): sunucu tümü geçti; entegrasyon (yerel MariaDB) api 46, modüller 76, garanti 37, sgk-fatura 26,
+  hizli-satis 20, tasima 18, hatirla 24; masaüstü birim 116/116; E2E 74/74.
 
-## Son oturumda yapılanlar (4.18.0 / Pro 5.4.0 — beni hatırla + Medula şifresi)
+## Son oturumda yapılanlar (4.19.0 / Pro 5.5.0 — tema "Siyah & Bordo")
+- Kullanıcı: "köklü, premium, üst segment" → siyah-altın serif denendi, beğenilmedi (serif, altın, çıplak). 3 prototip
+  (zümrüt / indigo / bordo) gösterildi, **bordo** seçildi; "daha dolu" isteğiyle başlık bandı, simge rozetleri,
+  tonlu istatistik kartları eklendi. Tüm uygulama + giriş + site + merkez panel + masaüstü çubuğu + simgeler.
+- Tanıtım önizlemeleri yeniden çekildi (yerelde "Örnek Optik" mağazası, uydurma veri; depoya yalnızca webp girdi).
+- Tema tek katmanda: `assets/app.css` sonundaki "4.19.0 — BORDO" bölümü + üstteki :root belirteçleri.
+
+## Önceki oturum (4.18.0 / Pro 5.4.0 — beni hatırla + Medula şifresi)
 - Kullanıcı isteği: her seferinde şifre yazmak zor; Medula şifresi Chrome'daki gibi kaydedilip otomatik girilsin.
 - Sunucu: mağaza + personel "Beni hatırla" (`app/hatirla.php`, merkez `magaza_hatirla`, göç v30 `oturum_hatirla`),
   profil cihaz listesi, ayar, "Farklı mağaza" artık POST. Masaüstünde kutular varsayılan işaretli.
@@ -98,6 +104,7 @@
 3. Kullanıcıya sor: sıradaki modül (karar bekleyen: SGK dönem sonu paketi + kesinti defteri).
 
 ## Açık sorunlar / doğrulanmamış
+- Tema: her sayfa tek tek gözden geçirilmedi (ana ekranlar, giriş, site, telefon kontrol edildi). Etiket/fiş baskıları değişmedi.
 - Pro 5.4.0 Medula doldurma gerçek Medula giriş ekranında denenmedi (sentetik sayfayla E2E). Alan bulma: şifreden önceki
   yazı kutusu = kullanıcı adı, sonraki = güvenlik kodu. Kullanıcıdan ilk girişte kontrol etmesi istendi.
 - Hızlı satış: ürün etiketi (etiket sihirbazı yalnızca çerçeve basıyor), ürünler için Excel toplu yükleme, müşteri kartında hızlı satış geçmişi, e-Arşiv faturası taslağı henüz yok.

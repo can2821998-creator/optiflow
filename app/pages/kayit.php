@@ -38,37 +38,29 @@ if (is_post()) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#081520">
+<meta name="theme-color" content="#141012">
 <title>Mağaza kaydı — 30 gün ücretsiz</title>
+<link rel="icon" href="<?= e(asset('favicon.svg')) ?>" type="image/svg+xml">
+<link rel="stylesheet" href="<?= e(asset('app.css')) ?>">
 <style>
-  :root{--ink:#1a1723;--muted:#6b6673;--bg:#faf8f4;--brand:#7a0a16;--border:#e5dfd6}
-  *{box-sizing:border-box}
-  body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);font:15px/1.6 system-ui,Arial,sans-serif;color:var(--ink);padding:16px 16px 40px}
-  .card{width:100%;max-width:460px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:32px}
-  h1{font-size:22px;margin:0 0 4px}
-  p.muted{color:var(--muted);margin:0 0 22px;font-size:14px}
-  .badge{display:inline-block;background:#fdf1e0;color:#8a5a12;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:99px;margin-bottom:14px}
-  fieldset{border:0;padding:0;margin:0 0 18px}
-  legend{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;padding:0}
-  .field{display:block;margin-bottom:12px}
-  .field span{display:block;font-size:13px;font-weight:600;margin-bottom:5px}
-  .field input{width:100%;padding:11px 12px;border:1.4px solid var(--border);border-radius:9px;font-size:15px}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .btn{width:100%;padding:12px;border:0;border-radius:9px;background:var(--brand);color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:6px}
-  .alert{background:#fdeceb;color:#9c2b23;border-radius:9px;padding:10px 12px;font-size:13.5px;margin-bottom:16px}
-  .foot{display:block;margin-top:18px;text-align:center;font-size:13px;color:var(--muted)}
-  .foot a{color:var(--brand);font-weight:600;text-decoration:none}
-  small.hint{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+  .kayit .auth-card{max-width:480px;width:100%}
+  .kayit fieldset{margin:0 0 6px}
+  .kayit legend{margin-bottom:12px;font:600 10.5px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--accent-ink)}
+  .kayit .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .kayit small.hint{display:block;margin-top:2px;font-size:12px}
+  @media (max-width:480px){.kayit .row2{grid-template-columns:1fr}}
 </style>
 <?= ga_head() ?>
 </head>
-<body>
-<div class="card">
-  <span class="badge">30 gün ücretsiz deneme</span>
-  <h1>Mağazanızı açın</h1>
+<body class="auth-page kayit">
+<main class="auth-single">
+<div class="auth-card">
+  <a class="mg-marka" href="index.php"><?= brand_mark() ?><span>OptiFlow</span></a>
+  <span class="kicker">30 gün ücretsiz deneme</span>
+  <h1>Mağazanızı <em>açın</em></h1>
   <p class="muted">Kredi kartı gerekmez. Deneme süresi bitince sizinle iletişime geçeriz.</p>
-  <?php if ($hata): ?><div class="alert" role="alert"><?= e($hata) ?></div><?php endif; ?>
-  <form method="post" autocomplete="on">
+  <?php if ($hata): ?><div class="alert alert-error" role="alert"><?= e($hata) ?></div><?php endif; ?>
+  <form method="post" class="stack" autocomplete="on">
     <?= csrf_field() ?>
     <fieldset>
       <legend>Mağaza bilgileri</legend>
@@ -101,10 +93,11 @@ if (is_post()) {
         <input name="admin_sifre" type="password" autocomplete="new-password" minlength="8" required>
       </label>
     </fieldset>
-    <button class="btn">Mağazamı oluştur</button>
-    <small class="hint" style="display:block;margin-top:12px">Kaydolarak kişisel verilerinizin <a href="kvkk.php" target="_blank" rel="noopener">KVKK aydınlatma metni</a> kapsamında işleneceğini kabul etmiş olursunuz.</small>
+    <button class="btn btn-primary btn-block btn-lg">Mağazamı oluştur</button>
+    <small class="hint" style="display:block;margin-top:12px">Kaydolarak kişisel verilerinizin <a class="link" href="kvkk.php" target="_blank" rel="noopener">KVKK aydınlatma metni</a> kapsamında işleneceğini kabul etmiş olursunuz.</small>
   </form>
-  <small class="foot">Zaten mağazanız var mı? <a href="magaza-giris.php">Giriş yapın</a></small>
+  <small class="foot">Zaten mağazanız var mı? <a class="link" href="magaza-giris.php">Giriş yapın</a></small>
 </div>
+</main>
 </body>
 </html>

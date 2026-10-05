@@ -105,14 +105,14 @@ function pz_tel(): string
     return $no === '' ? '' : 'tel:' . $no;
 }
 
-/** OptiFlow monogramı (inline SVG). $tek: tek renk (ör. 'currentColor'); boşsa gradyan. */
+/** OptiFlow monogramı (inline SVG). $tek: tek renk (ör. 'currentColor'); boşsa bordo gradyan (4.19.0). */
 function pz_logo(string $id = 'pzLogo', string $tek = ''): string
 {
     $fill = $tek !== '' ? $tek : 'url(#' . $id . ')';
     $defs = $tek !== '' ? '' : '<defs><linearGradient id="' . $id . '" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse">'
-        . '<stop offset="0" stop-color="#3346ff"/><stop offset=".5" stop-color="#c026d3"/><stop offset="1" stop-color="#ff4433"/></linearGradient></defs>';
+        . '<stop offset="0" stop-color="#ff6b81"/><stop offset=".55" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/></linearGradient></defs>';
     return '<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' . $defs
-        . '<g transform="rotate(-10 50 50)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z" fill="' . $fill . '"/></g></svg>';
+        . '<g transform="rotate(-10 50 50)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z" fill="' . $fill . '"/><circle cx="50" cy="50" r="7" fill="' . $fill . '"/></g></svg>';
 }
 
 /** Arama motoru site doğrulama etiketleri (Search Console / Bing). Kod ayarlı değilse boş. */

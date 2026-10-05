@@ -103,11 +103,11 @@ export class DesktopApp {
       minHeight: 640,
       show: false,
       title: 'OptiFlow Pro',
-      backgroundColor: '#0a2038',
+      backgroundColor: '#141012',
       icon: this.iconPath,
       // The navy toolbar doubles as the title bar; Windows draws its own min/max/close on top.
       titleBarStyle: 'hidden',
-      titleBarOverlay: { color: '#0a2038', symbolColor: '#e9f0f6', height: TOOLBAR_HEIGHT },
+      titleBarOverlay: { color: '#141012', symbolColor: '#f3eef0', height: TOOLBAR_HEIGHT },
       autoHideMenuBar: true,
       webPreferences: shellPrefs(this.distDir),
     });
@@ -387,7 +387,7 @@ export class DesktopApp {
       title: 'OptiFlow · Çevrimdışı kopya',
       icon: this.iconPath,
       autoHideMenuBar: true,
-      backgroundColor: '#f6f7fa',
+      backgroundColor: '#f5f3f3',
       webPreferences: offlinePrefs(this.distDir),
     });
     w.setMenu(null);

@@ -29,8 +29,8 @@ echo json_encode([
     'display'           => 'standalone',
     'display_override'  => ['standalone', 'minimal-ui'],
     'orientation'       => 'portrait-primary',
-    'background_color'  => '#faf8f4',
-    'theme_color'       => '#0a2038',
+    'background_color'  => '#f5f3f3',
+    'theme_color'       => '#141012',
     'categories'        => ['business', 'productivity', 'medical'],
     'icons' => [
         ['src' => 'assets/icons/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],

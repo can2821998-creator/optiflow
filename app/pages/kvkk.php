@@ -41,7 +41,7 @@ $eposta = $p['kvkk_eposta'] !== '' ? $p['kvkk_eposta'] : $p['eposta'];
 @font-face { font-family: "Manrope"; font-style: normal; font-display: swap; font-weight: 200 800;
   src: url("assets/fonts/manrope-latin-ext-wght-normal.woff2") format("woff2");
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20C0, U+2C60-2C7F, U+A720-A7FF; }
-:root{--bg:#fafafa;--ink:#14131f;--ink-soft:#5b5a6c;--line:#ececf1;--primary:#3346ff;--primary-tint:#eceffe}
+:root{--bg:#f5f3f3;--ink:#1b1416;--ink-soft:#5f5558;--line:#e8e1e2;--primary:#b4233c;--primary-tint:#fbe4e8}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,Arial,sans-serif;line-height:1.65;font-weight:500}
 header{border-bottom:1px solid var(--line);background:#fff}

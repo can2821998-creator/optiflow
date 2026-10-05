@@ -378,14 +378,14 @@ page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.'
         <small class="muted">Özet, bu saatten sonra sisteme ilk girişte gönderilir (sunucuda zamanlanmış görev gerekmez) — günde bir kez.</small>
       </fieldset>
       <fieldset class="field span-all checks">
-        <legend>Marka rengi</legend>
+        <legend>Müşteriye giden sayfalarda marka rengi</legend>
         <div class="grid cols-2" style="gap:14px">
           <label class="field"><span>Ana renk</span>
             <input type="color" name="brand_color" value="<?= e(brand_color()) ?>" style="height:42px;padding:4px"></label>
           <label class="field"><span>Koyu ton (gölge/gradyan için)</span>
             <input type="color" name="brand_color_deep" value="<?= e(brand_color_deep()) ?>" style="height:42px;padding:4px"></label>
         </div>
-        <small class="muted">Müşteri sayfaları, fiş ve atölye ekranındaki bordo rengin yerini alır.</small>
+        <small class="muted">Müşterinin gördüğü sipariş durumu sayfası, garanti kartı ve fişlerde kullanılır. OptiFlow'un kendi ekranları sabit siyah-altın temadadır.</small>
       </fieldset>
       <fieldset class="field span-all checks">
         <legend>SGK katkı payı (tahmini)</legend>

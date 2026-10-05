@@ -55,7 +55,8 @@ function brand_color_deep(): string
 
 /** Müşteri sayfaları / fiş gibi ayrı stil dosyası kullanan sayfaların <head>'ine, o dosyanın <link>'inden HEMEN
     SONRA eklenir; CSS'teki --brand/--brand-deep (veya print.css'teki --marka/--marka-koyu) değişkenlerini bu
-    mağazanın rengiyle geçersiz kılar. Ana atölye arayüzü (app.css) de aynı mekanizmayı kullanır. */
+    mağazanın rengiyle geçersiz kılar. 4.19.0: atölye arayüzü (app.css) artık sabit Noir temasıdır; mağaza rengi
+    yalnızca müşteriye giden sayfalarda ve fişlerde kullanılır. */
 function brand_style_tag(): string
 {
     $c = e(brand_color());
@@ -66,13 +67,11 @@ function brand_style_tag(): string
 /** Marka işareti: iki kesişen mercek ve ışık çizgisi (ince altın çizgi). */
 function brand_mark(): string
 {
+    // 4.19.0 Noir: tek renkli (currentColor) işaret — menüde şampanya altını, açık zeminde siyah.
     return '<span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">'
-        . '<defs><linearGradient id="logoGrad" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse">'
-        . '<stop offset="0" stop-color="#3346ff"/><stop offset=".5" stop-color="#c026d3"/><stop offset="1" stop-color="#ff4433"/>'
-        . '</linearGradient></defs>'
         . '<g transform="rotate(-10 50 50)"><path fill-rule="evenodd" clip-rule="evenodd" '
         . 'd="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z" '
-        . 'fill="url(#logoGrad)"/></g>'
+        . 'fill="currentColor"/><circle cx="50" cy="50" r="7" fill="currentColor"/></g>'
         . '</svg></span>';
 }
 
@@ -196,10 +195,9 @@ function page_start(string $title, string $active = '', array $opts = []): void
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#0a2038">
+<meta name="theme-color" content="#141012">
 <title><?= e($title) ?> · <?= e($shop) ?></title>
 <link rel="icon" href="<?= e(asset('favicon.svg')) ?>" type="image/svg+xml">
-<link rel="preload" href="assets/fonts/fraunces-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="manifest" href="manifest.php">
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
@@ -208,7 +206,6 @@ function page_start(string $title, string $active = '', array $opts = []): void
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="<?= e($shop) ?>">
 <link rel="stylesheet" href="<?= e(asset('app.css')) ?>">
-<?= brand_style_tag() ?>
 </head>
 <body class="<?= e($opts['body'] ?? '') ?>">
 <?php if (config('ortam', '') === 'test'): ?>

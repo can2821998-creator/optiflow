@@ -57,7 +57,7 @@ function guncelleme_yaniti(): never
         . '<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f3f5fb;font:16px/1.6 system-ui,Arial,sans-serif;color:#0a1033;padding:16px}'
         . 'main{max-width:460px;background:#fff;border:1px solid #e3e6f2;border-radius:16px;padding:28px;text-align:center}'
         . 'h1{margin:0 0 8px;font-size:21px}p{margin:0;color:#454b6b}'
-        . '.c{width:34px;height:34px;margin:0 auto 14px;border-radius:50%;border:4px solid #e3e6f2;border-top-color:#2a36ff;animation:d 1s linear infinite}'
+        . '.c{width:34px;height:34px;margin:0 auto 14px;border-radius:50%;border:4px solid #efe6e8;border-top-color:#b4233c;animation:d 1s linear infinite}'
         . '@keyframes d{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.c{animation:none}}</style></head>'
         . '<body><main><div class="c" aria-hidden="true"></div><h1>OptiFlow güncelleniyor</h1>'
         . '<p>Yeni sürüm yükleniyor; 1 dakika içinde hazır olur. Bu sayfa kendiliğinden yenilenir. Verileriniz etkilenmez.</p></main></body></html>';

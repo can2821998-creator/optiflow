@@ -44,47 +44,47 @@ function login_art(): string
 <svg class="art" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" fill="none" aria-hidden="true">
   <defs>
     <linearGradient id="pa-beam-v" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#a6d5ff" stop-opacity=".00"/>
-      <stop offset=".42" stop-color="#6cb2f0" stop-opacity=".20"/>
-      <stop offset="1" stop-color="#2e7cc0" stop-opacity=".02"/>
+      <stop offset="0" stop-color="#ffd6dd" stop-opacity=".00"/>
+      <stop offset=".42" stop-color="#ff8fa0" stop-opacity=".20"/>
+      <stop offset="1" stop-color="#8f1a2e" stop-opacity=".02"/>
     </linearGradient>
     <linearGradient id="pa-beam-a" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffd79a" stop-opacity=".00"/>
-      <stop offset=".45" stop-color="#ffb63d" stop-opacity=".16"/>
-      <stop offset="1" stop-color="#e79a1b" stop-opacity=".02"/>
+      <stop offset="0" stop-color="#ffc2cc" stop-opacity=".00"/>
+      <stop offset=".45" stop-color="#ff6b81" stop-opacity=".16"/>
+      <stop offset="1" stop-color="#b4233c" stop-opacity=".02"/>
     </linearGradient>
     <linearGradient id="pa-frame" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffcf7a"/>
-      <stop offset=".5" stop-color="#ffb63d"/>
-      <stop offset="1" stop-color="#a8d6ff"/>
+      <stop offset="0" stop-color="#ff9aaa"/>
+      <stop offset=".5" stop-color="#ff6b81"/>
+      <stop offset="1" stop-color="#ffd6dd"/>
     </linearGradient>
     <radialGradient id="pa-glass" cx=".34" cy=".28" r=".85">
       <stop offset="0" stop-color="#ffffff" stop-opacity=".18"/>
-      <stop offset=".55" stop-color="#a6d5ff" stop-opacity=".07"/>
+      <stop offset=".55" stop-color="#ffd6dd" stop-opacity=".07"/>
       <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="pa-spot-v">
-      <stop offset="0" stop-color="#7dc2ff" stop-opacity=".85"/>
-      <stop offset="1" stop-color="#2e7cc0" stop-opacity="0"/>
+      <stop offset="0" stop-color="#ffb3bf" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#8f1a2e" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="pa-spot-a">
-      <stop offset="0" stop-color="#ffc45e" stop-opacity=".9"/>
-      <stop offset="1" stop-color="#e79a1b" stop-opacity="0"/>
+      <stop offset="0" stop-color="#ff8fa0" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#b4233c" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="pa-floor" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#2e7cc0" stop-opacity=".16"/>
-      <stop offset=".55" stop-color="#3f7aae" stop-opacity=".07"/>
-      <stop offset="1" stop-color="#2e7cc0" stop-opacity="0"/>
+      <stop offset="0" stop-color="#8f1a2e" stop-opacity=".16"/>
+      <stop offset=".55" stop-color="#5a1424" stop-opacity=".07"/>
+      <stop offset="1" stop-color="#8f1a2e" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="pa-horizon" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#bde0ff" stop-opacity="0"/>
-      <stop offset=".5" stop-color="#bde0ff" stop-opacity=".34"/>
-      <stop offset="1" stop-color="#bde0ff" stop-opacity="0"/>
+      <stop offset="0" stop-color="#ffc9d2" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#ffc9d2" stop-opacity=".34"/>
+      <stop offset="1" stop-color="#ffc9d2" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="pa-vignette" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#071725" stop-opacity="0"/>
-      <stop offset=".55" stop-color="#071725" stop-opacity=".45"/>
-      <stop offset="1" stop-color="#071725" stop-opacity=".62"/>
+      <stop offset="0" stop-color="#141012" stop-opacity="0"/>
+      <stop offset=".55" stop-color="#141012" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#141012" stop-opacity=".62"/>
     </linearGradient>
     <filter id="pa-soft" x="-40%" y="-60%" width="180%" height="220%">
       <feGaussianBlur stdDeviation="22"/>
@@ -95,7 +95,7 @@ function login_art(): string
   </defs>
 
   <!-- ince nokta ızgarası -->
-  <g fill="#bde0ff" opacity=".10">{$dots}</g>
+  <g fill="#ffc9d2" opacity=".10">{$dots}</g>
 
   <!-- masa düzlemi -->
   <rect x="0" y="702" width="1000" height="298" fill="url(#pa-floor)"/>
@@ -114,7 +114,7 @@ function login_art(): string
   </g>
 
   <!-- gölge -->
-  <ellipse cx="500" cy="704" rx="322" ry="24" fill="#071725" opacity=".55" filter="url(#pa-soft-sm)"/>
+  <ellipse cx="500" cy="704" rx="322" ry="24" fill="#141012" opacity=".55" filter="url(#pa-soft-sm)"/>
 
   <!-- gözlük -->
   <g stroke="url(#pa-frame)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
@@ -143,7 +143,7 @@ function login_art(): string
   <rect x="0" y="560" width="1000" height="440" fill="url(#pa-vignette)"/>
 
   <!-- ışıltılar -->
-  <g fill="#ffd79a" class="pa-sparks">
+  <g fill="#ffc2cc" class="pa-sparks">
     <path class="pa-spark" d="M806 250c3 22 8 27 30 30-22 3-27 8-30 30-3-22-8-27-30-30 22-3 27-8 30-30Z" opacity=".75"/>
     <path class="pa-spark pa-spark-2" d="M168 300c2 15 5 18 20 20-15 2-18 5-20 20-2-15-5-18-20-20 15-2 18-5 20-20Z" opacity=".5"/>
     <path class="pa-spark pa-spark-3" d="M880 630c2 13 4 15 17 17-13 2-15 4-17 17-2-13-4-15-17-17 13-2 15-4 17-17Z" opacity=".45"/>
@@ -158,10 +158,10 @@ SVG;
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#081520">
+<meta name="theme-color" content="#141012">
 <title>Giriş · <?= e($shop) ?></title>
 <link rel="icon" href="<?= e(asset('favicon.svg')) ?>" type="image/svg+xml">
-<link rel="preload" href="assets/fonts/fraunces-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="manifest" href="manifest.php">
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -169,7 +169,6 @@ SVG;
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="<?= e($shop) ?>">
 <link rel="stylesheet" href="<?= e(asset('app.css')) ?>">
-<?= brand_style_tag() ?>
 <?= ga_head() ?>
 </head>
 <body class="auth-page">

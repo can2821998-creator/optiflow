@@ -21,16 +21,16 @@ $aktif = $kayit['durum'] === 'aktif';
 @font-face { font-family: "Manrope"; font-style: normal; font-display: swap; font-weight: 200 800;
   src: url("assets/fonts/manrope-latin-ext-wght-normal.woff2") format("woff2");
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20C0, U+2C60-2C7F, U+A720-A7FF; }
-:root{--bg:#fafafa;--ink:#14131f;--ink-soft:#5b5a6c;--primary:#3346ff;--pop:#ff4433;--line:#ececf1}
+:root{--bg:#f5f3f3;--ink:#1b1416;--ink-soft:#5f5558;--primary:#1b1416;--pop:#b4233c;--line:#e8e1e2}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:grid;place-items:center;background:linear-gradient(150deg,#4a5aff 0%,#3346ff 45%,#1c2ecc 100%);font-family:Manrope,system-ui,Arial,sans-serif;padding:24px}
-.card{background:#fff;border-radius:24px;padding:44px 36px;max-width:440px;width:100%;text-align:center;box-shadow:0 30px 60px -20px rgba(11,17,60,.45)}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(80% 140% at 100% 0%,rgba(255,107,129,.3),transparent 55%),linear-gradient(120deg,#1a1214 0%,#3a1520 100%);font-family:Manrope,system-ui,Arial,sans-serif;padding:24px}
+.card{background:#fff;border-radius:24px;padding:44px 36px;max-width:440px;width:100%;text-align:center;box-shadow:0 30px 80px -30px rgba(0,0,0,.7)}
 .mark{width:52px;height:52px;margin:0 auto 20px}
 .badge{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:#e6f4ea;margin-bottom:18px}
-h1{font-family:Manrope,sans-serif;font-weight:800;font-size:1.6rem;color:var(--ink);margin:0 0 12px;letter-spacing:-.02em}
+h1{font-family:Manrope,sans-serif;font-weight:800;font-size:1.7rem;color:var(--ink);margin:0 0 12px;letter-spacing:-.02em}
 p{color:var(--ink-soft);font-size:1rem;line-height:1.6;margin:0 0 26px;font-weight:600}
-.btn{display:inline-flex;padding:14px 26px;border-radius:99px;background:var(--pop);color:#fff;font-weight:800;text-decoration:none;font-size:15px}
-.btn:hover{background:#db2f20}
+.btn{display:inline-flex;padding:14px 26px;border-radius:10px;background:linear-gradient(135deg,#d0334f,#8f1a2e);color:#fff;font-weight:700;text-decoration:none;font-size:15px}
+.btn:hover{filter:brightness(1.08)}
 small{display:block;margin-top:18px;color:var(--ink-soft);font-size:12.5px;font-weight:700}
 </style>
 <?= ga_head() ?>
@@ -39,7 +39,7 @@ small{display:block;margin-top:18px;color:var(--ink-soft);font-size:12.5px;font-
 <div class="card">
   <svg class="mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs><linearGradient id="logoGrad" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#3346ff"/><stop offset=".5" stop-color="#c026d3"/><stop offset="1" stop-color="#ff4433"/>
+      <stop offset="0" stop-color="#ff6b81"/><stop offset=".55" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/>
     </linearGradient></defs>
     <g transform="rotate(-10 50 50)"><path fill-rule="evenodd" clip-rule="evenodd"
       d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z"

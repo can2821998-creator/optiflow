@@ -1,6 +1,21 @@
 OPTIFLOW
-Release: 4.18.0 (2026-10-05)
+Release: 4.19.0 (2026-10-05)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.19.0 (yeni tema "Siyah & Bordo"; OptiFlow Pro 5.5.0 ile)
+  - Kullanıcı isteği: daha premium, üst segment ve "dolu dolu" görünüm. Önce siyah-altın (serif) denendi, kullanıcı
+    beğenmedi; 3 prototipten "C · Siyah & Bordo" seçildi.
+  - Uygulama (assets/app.css): siyah menü (bordo parıltı, aktif öğe bordo şerit), sıcak açık gri zemin, bordo
+    gradyan ana düğmeler, başlıklar Manrope (serif kaldırıldı: --serif artık Manrope). Sayfa başlıkları koyu bordo
+    bant + nokta doku + gözlük çizimi; kart başlıklarında simge rozeti / bordo çizgi; istatistik kartlarında tonlu
+    zemin ve simge kutusu; tablo başlık şeridi, renkli avatarlar; sekmeler hap biçimli; nabız/parıltı animasyonları
+    kapatıldı. Telefon alt çubuğu ve üst çubuk siyah.
+  - Logo tek renk (bordo gradyan); favicon, PWA ve masaüstü simgeleri siyah zemin + bordo göz. manifest renkleri.
+  - Mağazanın "marka rengi" ayarı artık yalnızca müşteriye giden sayfalar ve fişlerde (uygulama sabit temada).
+  - Giriş ekranları: mağaza girişi ve kayıt app.css ile yeniden; personel girişi çizimi bordo tonlarında.
+  - Tanıtım sitesi, indir, KVKK, teşekkürler, merkez panel ve güncelleme ekranı aynı palete geçti; tanıtım
+    önizleme görselleri (assets/onizleme) yeni temayla örnek verili mağazadan yeniden çekildi.
+  - OptiFlow Pro 5.5.0: araç çubuğu, açılış ekranı, çevrimdışı pencere ve pencere çubuğu siyah-bordo.
 
 DEĞİŞİKLİK NOTLARI — 4.18.0 (beni hatırla + Medula şifresini kaydetme; OptiFlow Pro 5.4.0 ile)
   - YENİ "Beni hatırla" (app/hatirla.php): mağaza girişinde "Bu bilgisayarda mağazayı hatırla", personel girişinde

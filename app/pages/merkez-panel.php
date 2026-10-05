@@ -24,18 +24,18 @@ if (!merkez_admin_mi()) {
     ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Merkez panel girişi</title>
     <style>
-    body{margin:0;min-height:100vh;display:grid;place-items:center;background:linear-gradient(150deg,#4a5aff,#1c2ecc);font:15px system-ui,Arial,sans-serif;padding:20px}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:linear-gradient(150deg,#d0334f,#8f1a2e);font:15px system-ui,Arial,sans-serif;padding:20px}
     .card{background:#fff;border-radius:18px;padding:32px 28px;width:100%;max-width:360px;box-shadow:0 30px 60px -20px rgba(11,17,60,.5)}
     .mk{width:46px;height:46px;margin:0 auto 14px;display:block}
     h2{margin:0 0 4px;text-align:center;font-size:19px;color:#14131f}
-    .sub{margin:0 0 20px;text-align:center;color:#5b5a6c;font-size:13px}
-    label{font-size:12px;font-weight:700;color:#5b5a6c;letter-spacing:.03em;text-transform:uppercase}
+    .sub{margin:0 0 20px;text-align:center;color:#5f5558;font-size:13px}
+    label{font-size:12px;font-weight:700;color:#5f5558;letter-spacing:.03em;text-transform:uppercase}
     input{width:100%;padding:12px;border:1.5px solid #e5e2ea;border-radius:10px;margin:7px 0 16px;box-sizing:border-box;font-size:15px}
-    input:focus{outline:0;border-color:#3346ff;box-shadow:0 0 0 3px rgba(51,70,255,.15)}
-    button{width:100%;padding:13px;border:0;border-radius:99px;background:linear-gradient(180deg,#4a5aff,#1c2ecc);color:#fff;font-weight:800;font-size:15px;cursor:pointer}
+    input:focus{outline:0;border-color:#b4233c;box-shadow:0 0 0 3px rgba(51,70,255,.15)}
+    button{width:100%;padding:13px;border:0;border-radius:99px;background:linear-gradient(180deg,#d0334f,#8f1a2e);color:#fff;font-weight:800;font-size:15px;cursor:pointer}
     .err{background:#fdeceb;color:#9c2b23;padding:9px 11px;border-radius:9px;font-size:13px;margin-bottom:14px}</style>
     </head><body><form class="card" method="post">
-      <svg class="mk" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="g" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3346ff"/><stop offset=".5" stop-color="#c026d3"/><stop offset="1" stop-color="#ff4433"/></linearGradient></defs><g transform="rotate(-10 50 50)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z" fill="url(#g)"/></g></svg>
+      <svg class="mk" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="g" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6b81"/><stop offset=".5" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/></linearGradient></defs><g transform="rotate(-10 50 50)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z" fill="url(#g)"/></g></svg>
       <?= csrf_field() ?><input type="hidden" name="action" value="giris">
       <h2>OptiFlow Merkez</h2>
       <p class="sub">Yönetim paneli</p>
@@ -344,12 +344,12 @@ function kalan_sinif(?int $g): string
 $stil = <<<'CSS'
 @font-face{font-family:"Manrope";font-style:normal;font-display:swap;font-weight:200 800;src:url("assets/fonts/manrope-latin-wght-normal.woff2") format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+2000-206F,U+20AC,U+2122}
 @font-face{font-family:"Manrope";font-style:normal;font-display:swap;font-weight:200 800;src:url("assets/fonts/manrope-latin-ext-wght-normal.woff2") format("woff2");unicode-range:U+0100-02BA,U+1E00-1E9F,U+2C60-2C7F,U+A720-A7FF}
-:root{--bg:#f4f5fb;--card:#fff;--ink:#14131f;--soft:#5b5a6c;--line:#e7e7ef;--primary:#3346ff;--primary-deep:#1c2ecc;--primary-tint:#eceffe;--mid:#c026d3;--pop:#ff4433;--pop-deep:#db2f20;--ok:#1c7a4d;--ok-tint:#e6f4ea;--amber:#8a5a12;--amber-tint:#fdf1e0}
+:root{--bg:#f5f3f3;--card:#fff;--ink:#1b1416;--soft:#5f5558;--line:#e8e1e2;--primary:#b4233c;--primary-deep:#8f1a2e;--primary-tint:#fbe4e8;--mid:#d0334f;--pop:#b4233c;--pop-deep:#8f1a2e;--ok:#1c7a4d;--ok-tint:#e6f4ea;--amber:#8a5a12;--amber-tint:#fdf1e0}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,Arial,sans-serif;font-size:14.5px;line-height:1.5}
 a{color:var(--primary-deep)}
 .wrap{max-width:1200px;margin:0 auto;padding:22px}
-.topbar{position:sticky;top:0;z-index:10;background:rgba(244,245,251,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar{position:sticky;top:0;z-index:10;background:rgba(245,243,243,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:14px;padding-bottom:14px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px}
 .brand svg{width:30px;height:30px}
@@ -450,7 +450,7 @@ details.acc .body{padding:0 16px 16px}
 @media(max-width:560px){.wrap{padding:14px}.kpis{grid-template-columns:repeat(2,1fr)}}
 CSS;
 
-$logo = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="ml" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3346ff"/><stop offset=".5" stop-color="#c026d3"/><stop offset="1" stop-color="#ff4433"/></linearGradient></defs><g transform="rotate(-10 50 50)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z" fill="url(#ml)"/></g></svg>';
+$logo = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="ml" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6b81"/><stop offset=".5" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/></linearGradient></defs><g transform="rotate(-10 50 50)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z" fill="url(#ml)"/></g></svg>';
 
 $detayId = query_int('magaza');
 $detay = $detayId ? merkez_magaza($detayId) : null;

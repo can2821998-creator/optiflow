@@ -2178,3 +2178,101 @@ html.tema-koyu .tema-dugme .tema-ay { display: none; }
   .page-actions > .btn, .page-actions > form { flex: none; width: 100%; }
   .page-actions form.inline input { flex: 1; min-width: 0; }
 }
+
+/* ==========================================================================
+   4.21.0 — TELEFON (PWA): kısa başlık bandı, kart listesi tablolar, düzgün düğme ızgarası
+   ========================================================================== */
+@media (max-width: 640px) {
+  .content { padding-left: 12px; padding-right: 12px; }
+  /* Başlık bandı: ekranın yarısını kaplamasın */
+  .page-head, .hero { padding: 18px 18px 16px; margin-bottom: 16px; border-radius: 18px; gap: 14px; }
+  .page-head h1, .hero h1 { font-size: 25px; }
+  .page-head p, .hero p { font-size: 13px; margin-top: 4px; }
+  .page-head .kicker, .hero .eyebrow { margin-bottom: 6px; font-size: 10.5px; }
+  .page-head .back-link { margin-bottom: 8px; }
+  .page-actions, .hero-actions { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; flex-direction: initial; }
+  .page-actions > *, .hero-actions > * { width: auto; min-width: 0; }
+  .page-actions > :only-child, .page-actions > form, .page-actions > .btn-primary:first-child:nth-last-child(odd) { grid-column: 1 / -1; }
+  .hero-actions > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .page-actions .btn, .hero-actions .btn, .hero-actions form .btn { min-height: 40px; padding: 8px 10px; font-size: 13px; width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .hero-actions form { margin: 0; }
+  .hero-main { gap: 14px; align-items: flex-start; }
+  .hero .avatar.lg { width: 52px; height: 52px; font-size: 19px; }
+  .hero p { gap: 6px; }
+
+  /* Kartlar ve istatistikler daha sıkı */
+  .card { padding: 18px 16px; border-radius: 16px; margin-bottom: 14px; }
+  .card-head { margin-bottom: 14px; padding-bottom: 12px; }
+  .card-head h2 { font-size: 16.5px; }
+  .card-head h2 .ic { width: 32px; height: 32px; padding: 7px; }
+  .stats { gap: 10px; margin-bottom: 16px; }
+  .stat { padding: 14px 14px 12px; border-radius: 14px; }
+  .stat::before { top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 10px; }
+  .stat::after { top: 20px; right: 20px; width: 16px; height: 16px; }
+  .stat small { padding-right: 38px; font-size: 10px; min-height: 24px; letter-spacing: .06em; }
+  .stat b { font-size: 24px; margin-top: 8px; }
+  .stat span { font-size: 12px; }
+
+  /* Tablolar → kart listesi (form alanı içeren tablolar hariç) */
+  .table-wrap:has(> .table:not(.satis-sepet):not(:has(input, select, textarea))) { margin: 0; padding: 0; overflow: visible; }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) thead { display: none; }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) tbody tr {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; row-gap: 3px;
+    padding: 12px 4px; border-bottom: 1px solid var(--line);
+  }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) tbody tr:last-child { border-bottom: 0; }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) tbody td {
+    display: block; padding: 0; border: 0; text-align: left; grid-column: 1 / -1; font-size: 13.5px; color: var(--ink-2); min-width: 0;
+  }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) tbody td:first-child { grid-column: 1; font-size: 15px; color: var(--ink); }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) tbody td.num:last-child { grid-column: 2; grid-row: 1; text-align: right; align-self: center; font-weight: 700; color: inherit; }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) tbody td[data-th]:not(:first-child):not(.num:last-child):not(:empty)::before {
+    content: attr(data-th) " · "; color: var(--muted); font: 700 10.5px/1 var(--sans); letter-spacing: .06em; text-transform: uppercase;
+  }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) tbody td.hide-sm, .table tbody td.hide-md { display: none; }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) tbody tr:hover td { background: none; }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) tbody tr:active { background: var(--brand-tint); }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) td .row-actions { justify-content: flex-start; margin-top: 4px; }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) tfoot tr { display: flex; justify-content: space-between; padding-top: 10px; }
+  .table:not(.satis-sepet):not(:has(input, select, textarea)) tfoot th, .table:not(.satis-sepet):not(:has(input, select, textarea)) tfoot td { padding: 0; border: 0; }
+  .table .avatar { width: 38px; height: 38px; font-size: 13px; }
+
+  /* Sekmeler ve çipler yatay kaysın */
+  .tabs, .chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; max-width: 100%; }
+  .tabs::-webkit-scrollbar, .chips::-webkit-scrollbar { display: none; }
+  .chip, .tab { flex: none; }
+  .toolbar { gap: 10px; }
+  .search { flex-basis: 100%; max-width: none; }
+}
+.tabbar a { position: relative; }
+.tabbar-rozet { position: absolute; top: 0; left: 50%; margin-left: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; background: var(--brand-bright, #d0334f); color: #fff; font: 800 10.5px/18px var(--sans); font-style: normal; text-align: center; box-shadow: 0 0 0 2px var(--night, #141012); }
+
+/* 4.21.0 — uygulama hissi: yükleme çizgisi, aşağı çekip yenile, sayfa geçişi */
+.yukleme-cizgi { position: fixed; top: 0; left: 0; z-index: 9999; height: 3px; width: 0; background: var(--grad, #d0334f); box-shadow: 0 0 10px rgba(208, 51, 79, .7); opacity: 0; pointer-events: none; }
+.yukleme-cizgi.is-on { opacity: 1; animation: yukleme 2.2s cubic-bezier(.1, .7, .2, 1) forwards; }
+@keyframes yukleme { 0% { width: 0; } 30% { width: 45%; } 70% { width: 78%; } 100% { width: 92%; } }
+.cek-yenile { position: fixed; top: calc(8px + env(safe-area-inset-top)); left: 50%; z-index: 9998; width: 40px; height: 40px; margin-top: 40px; display: grid; place-items: center; border-radius: 50%; background: var(--surface); color: var(--muted); box-shadow: var(--shadow-lg); opacity: 0; transform: translate(-50%, 0); transition: opacity .15s, color .15s; pointer-events: none; }
+.cek-yenile svg { width: 20px; height: 20px; }
+.cek-yenile.hazir { color: var(--brand); }
+.cek-yenile.donuyor svg { animation: cek-don .7s linear infinite; }
+@keyframes cek-don { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root) { animation: 120ms ease-out both vt-cik; }
+  ::view-transition-new(root) { animation: 180ms ease-out both vt-gir; }
+  .tabbar { view-transition-name: alt-cubuk; }
+  .topbar { view-transition-name: ust-cubuk; }
+  ::view-transition-group(alt-cubuk), ::view-transition-group(ust-cubuk),
+  ::view-transition-old(alt-cubuk), ::view-transition-new(alt-cubuk),
+  ::view-transition-old(ust-cubuk), ::view-transition-new(ust-cubuk) { animation: none; }
+}
+@keyframes vt-cik { to { opacity: 0; } }
+@keyframes vt-gir { from { opacity: 0; transform: translateY(6px); } }
+@media (max-width: 1023px) {
+  .tabbar { padding-bottom: calc(6px + env(safe-area-inset-bottom)); }
+  /* Ana ekrandan açılmış uygulamada dokunma vurgusu ve metin seçme baloncukları sadeleşir */
+  @media (display-mode: standalone) {
+    .tabbar, .topbar, .btn, .chip, .tab { -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+    .topbar { padding-top: calc(10px + env(safe-area-inset-top)); }
+  }
+}

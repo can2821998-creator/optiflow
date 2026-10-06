@@ -190,6 +190,16 @@ function page_start(string $title, string $active = '', array $opts = []): void
     } catch (Throwable $e) {
         // otomatik yedek başlatılamadı: sayfa açılışını engellemesin
     }
+    // 4.21.0 — telefon alt çubuğu: kullanıcının seçtiği kısayollar, YALNIZCA bu menüde (yetki/özellik/Pro kilidi uygun) olanlardan.
+    $GLOBALS['__menu_ogeleri'] = [];
+    foreach ($nav as $grupOgeleri) {
+        foreach ($grupOgeleri as $o) {
+            if (isset($o[5]) && function_exists('pro_ozellik_acik') && !pro_ozellik_acik($o[5])) {
+                continue;
+            }
+            $GLOBALS['__menu_ogeleri'][$o[0]] = ['href' => $o[1], 'ad' => $o[2], 'ic' => $o[3], 'sayi' => (int) $o[4]];
+        }
+    }
     bottom_nav($active !== '' ? $active : 'yok');
     ?><!doctype html>
 <html lang="tr">
@@ -209,6 +219,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
 <meta name="apple-mobile-web-app-title" content="<?= e($shop) ?>">
 <link rel="stylesheet" href="<?= e(asset('app.css')) ?>">
 <script src="<?= e(asset('tema.js')) ?>"></script>
+<meta name="of-rozet" content="<?= (int) ($atolyede ?? 0) ?>">
 </head>
 <body class="<?= e($opts['body'] ?? '') ?>">
 <?php if (config('ortam', '') === 'test'): ?>
@@ -264,32 +275,96 @@ function page_start(string $title, string $active = '', array $opts = []): void
 <?php
 }
 
+/** Alt çubukta görünen kısa adlar (menüdeki uzun adların yerine). */
+function alt_menu_kisa_ad(string $key, string $ad): string
+{
+    $kisa = [
+        'orders' => 'Siparişler', 'quotes' => 'Teklifler', 'workshop' => 'Atölye', 'customers' => 'Müşteriler',
+        'basarilar' => 'Başarılar', 'hatirlatma' => 'Hatırlat', 'sgk' => 'SGK aktar', 'stock' => 'Stok',
+        'uts' => 'ÜTS', 'cerceve' => 'Çerçeve', 'bagis' => 'Bağış', 'deliveries' => 'Teslimat', 'kasa' => 'Kasa',
+        'tahsilat' => 'Bakiye', 'hizli-satis' => 'Satış', 'barkod' => 'Barkod', 'mesajlar' => 'Mesajlar',
+        'sgk-mutabakat' => 'Mutabakat', 'garantiler' => 'Garanti', 'suppliers' => 'Tedarikçi', 'reports' => 'Raporlar',
+        'kar' => 'Kârlılık', 'settings' => 'Ayarlar', 'logs' => 'Geçmiş', 'yedek' => 'Yedek',
+    ];
+    return $kisa[$key] ?? mb_substr(explode(' ', $ad)[0], 0, 11);
+}
+
+/** Kullanıcının alt çubuk seçimi: 3 kısayol + ortadaki düğme ('yeni' | 'satis'). */
+function alt_menu_secimi(int $userId): array
+{
+    $varsayilan = ['slotlar' => ['orders', 'workshop', 'customers'], 'orta' => 'yeni'];
+    try {
+        $v = json_decode((string) setting('alt_menu_u' . $userId, ''), true);
+    } catch (Throwable $e) {
+        $v = null;
+    }
+    if (!is_array($v)) {
+        return $varsayilan;
+    }
+    $slotlar = array_values(array_filter(array_map('strval', (array) ($v['slotlar'] ?? [])), static fn($k) => preg_match('/^[a-z\-]{2,30}$/', $k)));
+    return [
+        'slotlar' => array_slice(array_pad($slotlar, 3, ''), 0, 3),
+        'orta'    => ($v['orta'] ?? '') === 'satis' ? 'satis' : 'yeni',
+    ];
+}
+
+function alt_menu_kaydet(int $userId, array $slotlar, string $orta): void
+{
+    $temiz = [];
+    foreach (array_slice($slotlar, 0, 3) as $k) {
+        $k = (string) $k;
+        $temiz[] = preg_match('/^[a-z\-]{2,30}$/', $k) ? $k : '';
+    }
+    setting_set('alt_menu_u' . $userId, json_encode(['slotlar' => $temiz, 'orta' => $orta === 'satis' ? 'satis' : 'yeni']));
+}
+
 /**
- * Telefonda alt gezinme çubuğu. Ortadaki yuvarlak düğme yeni sipariş açar,
- * son düğme kenar çubuğunu (tüm menü) getirir. Masaüstünde gizlidir.
+ * Telefonda alt gezinme çubuğu: 3 kısayol (kullanıcı seçer, Profil › Telefon alt menüsü), ortada yuvarlak düğme
+ * (Yeni sipariş ya da Hızlı satış), sonda tüm menü. Masaüstünde gizlidir.
  */
 function bottom_nav(string $active = ''): string
 {
     static $son = '';
     if ($active !== '') { $son = $active; $active = ''; }
     $aktif = $son;
+    $menu = $GLOBALS['__menu_ogeleri'] ?? [];
+    $u = function_exists('current_user') ? current_user() : null;
+    $secim = alt_menu_secimi((int) ($u['id'] ?? 0));
 
-    $ogeler = [
-        ['orders',   'index.php',    'Siparişler', 'orders'],
-        ['workshop', 'workshop.php', 'Atölye',     'glasses'],
-        null, // orta: yeni sipariş
-        ['customers','customers.php','Müşteriler', 'users'],
-    ];
+    $varsayilanlar = ['orders', 'workshop', 'customers', 'quotes', 'kasa'];
+    $slotlar = [];
+    foreach ($secim['slotlar'] as $k) {
+        if ($k !== '' && isset($menu[$k]) && !in_array($k, $slotlar, true)) {
+            $slotlar[] = $k;
+        }
+    }
+    foreach ($varsayilanlar as $k) {          // boş ya da artık erişilemeyen yuvaları doldur
+        if (count($slotlar) >= 3) {
+            break;
+        }
+        if (isset($menu[$k]) && !in_array($k, $slotlar, true)) {
+            $slotlar[] = $k;
+        }
+    }
+
+    $oge = static function (string $k) use ($menu, $aktif): string {
+        $m = $menu[$k];
+        $cls = $aktif === $k ? ' class="is-on" aria-current="page"' : '';
+        $rozet = $m['sayi'] > 0 ? '<em class="tabbar-rozet">' . ($m['sayi'] > 99 ? '99+' : (int) $m['sayi']) . '</em>' : '';
+        return '<a href="' . e($m['href']) . '"' . $cls . ' data-alt-oge="' . e($k) . '">' . icon($m['ic']) . $rozet . '<span>' . e(alt_menu_kisa_ad($k, $m['ad'])) . '</span></a>';
+    };
+
+    $orta = $secim['orta'] === 'satis' && isset($menu['hizli-satis'])
+        ? '<a class="tabbar-fab" href="hizli-satis.php" aria-label="Hızlı satış">' . icon('receipt') . '</a>'
+        : '<a class="tabbar-fab" href="order-new.php" aria-label="Yeni sipariş">' . icon('plus') . '</a>';
 
     $h = '<nav class="tabbar" aria-label="Alt gezinme">';
-    foreach ($ogeler as $o) {
-        if ($o === null) {
-            $h .= '<a class="tabbar-fab" href="order-new.php" aria-label="Yeni sipariş">' . icon('plus') . '</a>';
-            continue;
-        }
-        [$key, $href, $label, $ic] = $o;
-        $cls = $aktif === $key ? ' class="is-on" aria-current="page"' : '';
-        $h .= '<a href="' . e($href) . '"' . $cls . '>' . icon($ic) . '<span>' . e($label) . '</span></a>';
+    foreach (array_slice($slotlar, 0, 2) as $k) {
+        $h .= $oge($k);
+    }
+    $h .= $orta;
+    if (isset($slotlar[2])) {
+        $h .= $oge($slotlar[2]);
     }
     $h .= '<button type="button" data-toggle-sidebar aria-controls="sidebar">' . icon('grid') . '<span>Menü</span></button>';
     $h .= '</nav>';

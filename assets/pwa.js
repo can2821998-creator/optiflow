@@ -27,6 +27,95 @@
     });
   }
 
+  /* ---------------- 4.21.0 — uygulama hissi ---------------- */
+  var kurulu = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  var hareketAz = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Ana ekran simgesinde rozet: atölyedeki iş sayısı (desteklenen telefonlarda).
+  try {
+    var rozet = document.querySelector('meta[name="of-rozet"]');
+    if (rozet && 'setAppBadge' in navigator) {
+      var n = parseInt(rozet.getAttribute('content') || '0', 10);
+      if (n > 0) navigator.setAppBadge(n).catch(function () {});
+      else navigator.clearAppBadge().catch(function () {});
+    }
+  } catch (e) { /* yoksay */ }
+
+  // Dokunma titreşimi (Android): alt çubuk ve ana düğmeler.
+  function titret() {
+    if (kurulu && navigator.vibrate) { try { navigator.vibrate(8); } catch (e) { /* yoksay */ } }
+  }
+
+  // Sayfa geçişinde üstte ince yükleme çizgisi.
+  var cizgi = null;
+  function cizgiAc() {
+    if (!document.body) return;
+    if (!cizgi) {
+      cizgi = document.createElement('div');
+      cizgi.className = 'yukleme-cizgi';
+      cizgi.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(cizgi);
+    }
+    cizgi.classList.remove('is-on');
+    void cizgi.offsetWidth;
+    cizgi.classList.add('is-on');
+  }
+  addEventListener('pageshow', function () { if (cizgi) cizgi.classList.remove('is-on'); });
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href], .tabbar button, .btn-primary') : null;
+    if (!a) return;
+    if (a.closest('.tabbar') || a.classList.contains('btn-primary')) titret();
+    if (a.tagName !== 'A' || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    var href = a.getAttribute('href') || '';
+    if (a.target === '_blank' || a.hasAttribute('download') || href.charAt(0) === '#' || /^(mailto|tel|javascript|whatsapp):/i.test(href)) return;
+    try { if (new URL(a.href, location.href).origin !== location.origin) return; } catch (err) { return; }
+    cizgiAc();
+  });
+  document.addEventListener('submit', function (e) {
+    var f = e.target;
+    if (!e.defaultPrevented && f && f.target !== '_blank') cizgiAc();
+  });
+
+  // Aşağı çekip yenileme: yalnızca ana ekrana eklenmiş uygulamada (tarayıcının kendi özelliği yok).
+  if (kurulu && 'ontouchstart' in window) {
+    var basY = null, cekilen = 0, gosterge = null, ESIK = 78;
+    var gostergeYap = function () {
+      gosterge = document.createElement('div');
+      gosterge.className = 'cek-yenile';
+      gosterge.setAttribute('aria-hidden', 'true');
+      gosterge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 8a8 8 0 1 0 1 6"/><path d="M20 3v5h-5"/></svg>';
+      document.body.appendChild(gosterge);
+    };
+    document.addEventListener('touchstart', function (e) {
+      var t = e.target;
+      if (window.scrollY > 0 || document.body.classList.contains('nav-open') || (t.closest && t.closest('input, textarea, select, .pano, .pano-col, .modal, [data-no-pull]'))) { basY = null; return; }
+      basY = e.touches[0].clientY; cekilen = 0;
+    }, { passive: true });
+    document.addEventListener('touchmove', function (e) {
+      if (basY === null) return;
+      cekilen = Math.max(0, e.touches[0].clientY - basY);
+      if (cekilen < 6) return;
+      if (!gosterge) gostergeYap();
+      var oran = Math.min(1, cekilen / ESIK);
+      gosterge.style.transform = 'translate(-50%, ' + Math.min(cekilen * 0.6, 70) + 'px) rotate(' + Math.round(oran * 300) + 'deg)';
+      gosterge.style.opacity = String(oran);
+      gosterge.classList.toggle('hazir', oran >= 1);
+    }, { passive: true });
+    document.addEventListener('touchend', function () {
+      if (basY === null) return;
+      basY = null;
+      if (cekilen >= ESIK && gosterge) {
+        gosterge.classList.add('donuyor');
+        titret();
+        cizgiAc();
+        location.reload();
+        return;
+      }
+      if (gosterge) { gosterge.style.opacity = '0'; gosterge.style.transform = 'translate(-50%, 0)'; }
+    }, { passive: true });
+  }
+  void hareketAz;
+
   var ANAHTAR = 'pa-kurulum-kapat';
   var AY = 30 * 24 * 60 * 60 * 1000;
 

@@ -490,3 +490,29 @@ function triggerDiscoMode() {
   var closeBtn = box.querySelector('[data-fortune-close]');
   if (closeBtn) { closeBtn.addEventListener('click', function () { box.hidden = true; }); }
 })();
+
+/* 4.21.0 — Telefonda tablolar kart listesine dönüşür (CSS: "TELEFON"). Her hücreye sütun başlığı
+   data-th olarak yazılır; CSS bunu küçük bir etiket olarak gösterir. Sayfa HTML'i değişmez. */
+(function () {
+  'use strict';
+  function etiketle(kok) {
+    var tablolar = (kok || document).querySelectorAll('table.table');
+    Array.prototype.forEach.call(tablolar, function (t) {
+      var basliklar = Array.prototype.map.call(t.querySelectorAll('thead th'), function (th) {
+        return (th.textContent || '').replace(/\s+/g, ' ').trim();
+      });
+      if (!basliklar.length) return;
+      Array.prototype.forEach.call(t.querySelectorAll('tbody tr'), function (tr) {
+        var i = 0;
+        Array.prototype.forEach.call(tr.children, function (td) {
+          var ad = basliklar[i] || '';
+          if (ad && !td.hasAttribute('data-th')) td.setAttribute('data-th', ad);
+          i += parseInt(td.getAttribute('colspan') || '1', 10);
+        });
+      });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { etiketle(); });
+  else etiketle();
+  window.optiflowTabloEtiketle = etiketle;
+})();

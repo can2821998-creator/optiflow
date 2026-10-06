@@ -15,6 +15,13 @@ if (is_post() && post('eylem') === 'usta_profil') {
     redirect('profile.php');
 }
 
+/* 4.21.0 — Telefon alt menüsü (kullanıcıya özel) */
+if (is_post() && post('eylem') === 'alt_menu') {
+    alt_menu_kaydet((int) $me['id'], [post('slot1'), post('slot2'), post('slot3')], post('orta'));
+    flash('Telefon alt menünüz kaydedildi.');
+    redirect('profile.php#alt-menu');
+}
+
 /* 4.18.0 — "Beni hatırla": hatırlanan cihazlar */
 if (is_post() && post('eylem') === 'hatirla_unut') {
     $id = (int) post('id');
@@ -82,6 +89,37 @@ page_header('Profilim', e($me['full_name']) . ' · ' . e(roles()[$me['role']] ??
     <label class="field"><span>Yeni parola (tekrar)</span><input type="password" name="new_password_again" autocomplete="new-password" minlength="8" required></label>
     <small class="muted">En az 8 karakter, en az bir harf ve bir rakam.</small>
     <div class="form-actions"><button class="btn btn-primary"><?= icon('lock') ?> Parolayı değiştir</button></div>
+  </form>
+</section>
+
+<?php
+$menuOgeleri = $GLOBALS['__menu_ogeleri'] ?? [];
+$altSecim = alt_menu_secimi((int) $me['id']);
+$etkin = [];
+foreach ($altSecim['slotlar'] as $k) { if ($k !== '' && isset($menuOgeleri[$k])) { $etkin[] = $k; } }
+foreach (['orders', 'workshop', 'customers', 'quotes', 'kasa'] as $k) { if (count($etkin) < 3 && isset($menuOgeleri[$k]) && !in_array($k, $etkin, true)) { $etkin[] = $k; } }
+?>
+<section class="card narrow" id="alt-menu">
+  <div class="card-head"><h2><?= icon('grid') ?> Telefon alt menüsü</h2></div>
+  <p class="muted" style="margin-bottom:14px">Telefonda ekranın altındaki çubukta hangi sayfaların duracağını seçin. Ortadaki yuvarlak düğme ve en sağdaki <b>Menü</b> her zaman vardır. Seçim yalnızca sizin hesabınız içindir.</p>
+  <form method="post" class="stack">
+    <?= csrf_field() ?><input type="hidden" name="eylem" value="alt_menu">
+    <div class="grid cols-3">
+      <?php foreach ([1, 2, 3] as $n): $sec = $etkin[$n - 1] ?? ''; ?>
+        <label class="field"><span><?= $n ?>. kısayol<?= $n === 3 ? ' (ortadaki düğmenin sağı)' : '' ?></span>
+          <select name="slot<?= $n ?>">
+            <?php foreach ($menuOgeleri as $k => $m): ?>
+              <option value="<?= e($k) ?>" <?= $sec === $k ? 'selected' : '' ?>><?= e($m['ad']) ?></option>
+            <?php endforeach; ?>
+          </select></label>
+      <?php endforeach; ?>
+    </div>
+    <label class="field" style="max-width:340px"><span>Ortadaki yuvarlak düğme</span>
+      <select name="orta">
+        <option value="yeni" <?= $altSecim['orta'] === 'yeni' ? 'selected' : '' ?>>Yeni sipariş</option>
+        <?php if (isset($menuOgeleri['hizli-satis'])): ?><option value="satis" <?= $altSecim['orta'] === 'satis' ? 'selected' : '' ?>>Hızlı satış</option><?php endif; ?>
+      </select></label>
+    <div class="form-actions"><button class="btn btn-primary">Kaydet</button></div>
   </form>
 </section>
 

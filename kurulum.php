@@ -46,6 +46,22 @@ if ($state === 'okundu' && try_connect($existing['db'] + ['host' => 'localhost',
     echo '<!doctype html><meta charset="utf-8"><title>Kurulum kapalı</title><body style="font:15px system-ui;padding:40px;text-align:center"><h2>Kurulum tamamlanmış</h2><p>Sistem veritabanına bağlı. Bu sayfa güvenlik için kapalıdır.</p><p><a href="index.php">Atölyeye git →</a></p>';
     exit;
 }
+/*
+ * 4.20.1 GÜVENLİK: config.php sağlamken veritabanına o an bağlanılamıyorsa (sunucu kesintisi, bağlantı sınırı
+ * dolması…) sihirbaz eskiden HERKESE açılıyordu: biri kendi veritabanı sunucusunu ve merkez şifresini yazıp siteyi
+ * ele geçirebilirdi. Artık bu durumda yalnızca hosting'e erişimi olan kişi açabilir: Plesk Dosya Yöneticisi'nde
+ * storage/ klasörüne "kurulum-izni" adlı (boş) bir dosya oluşturulur; kayıttan sonra dosya kendiliğinden silinir.
+ * config.php hiç yoksa (ilk kurulum) ya da yazım hatalıysa sihirbaz eskisi gibi açıktır.
+ */
+$izinDosyasi = __DIR__ . '/storage/kurulum-izni';
+if ($state === 'okundu' && !is_file($izinDosyasi)) {
+    http_response_code(403);
+    echo '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><title>Kurulum kilitli</title><body style="font:15px/1.6 system-ui;padding:40px;max-width:620px;margin:auto">'
+        . '<h2>Veritabanına şu an bağlanılamıyor</h2>'
+        . '<p>Kısa süreli bir sunucu sorunu olabilir; birkaç dakika sonra <a href="index.php">tekrar deneyin</a>.</p>'
+        . '<p>Veritabanı bilgileri gerçekten değiştiyse: Plesk › Dosya Yöneticisi\'nde <b>storage</b> klasörüne <b>kurulum-izni</b> adlı boş bir dosya oluşturun ve bu sayfayı yenileyin. Güvenlik için bu sayfa o dosya olmadan açılmaz; kayıttan sonra dosya kendiliğinden silinir.</p>';
+    exit;
+}
 
 session_name('optiflow_kurulum');
 session_start();
@@ -95,6 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             if (@file_put_contents($configFile, $content, LOCK_EX) !== false) {
                 @chmod($configFile, 0640);
+                @unlink($izinDosyasi);
                 header('Location: index.php', true, 303);
                 exit;
             }

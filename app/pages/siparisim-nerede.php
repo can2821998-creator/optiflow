@@ -26,8 +26,7 @@ $_SESSION[$denemeAnahtari] ??= ['adet' => 0, 'ilk' => time()];
 
 /* IP bazlı fren: oturum sayacı çerez atılarak sıfırlanabildiği için asıl sınır burada.
    Aynı IP'den 15 dakikada 25 denemeden sonra kilitlenir. login_attempts tablosu (tenant DB)
-   yeniden kullanılır; özel kullanıcı adı işaretiyle ayrılır. */
-const SIPARIS_SORGU_ANAHTAR = '__siparis_sorgu__';
+   yeniden kullanılır; özel kullanıcı adı işaretiyle (SIPARIS_SORGU_ANAHTAR, app/auth.php) ayrılır. */
 const SIPARIS_SORGU_MAX = 25;
 
 function siparis_sorgu_kilitli(): bool

@@ -17,9 +17,13 @@ if (is_post()) {
     $adminSifre = (string) ($_POST['admin_sifre'] ?? '');
     if ($magazaSifre !== (string) ($_POST['magaza_sifre_tekrar'] ?? '')) {
         $hata = 'Mağaza şifresi ile tekrarı aynı değil.';
+    } elseif (merkez_hiz_asildi('kayit', '', KAYIT_MAX_IP_GUN, 0, 86400)) {
+        // 4.20.1: her kayıt anında yeni bir veritabanı açar; toplu sahte kayda karşı IP başına günlük sınır.
+        $hata = 'Bu bağlantıdan bugün çok sayıda mağaza açıldı. Yarın tekrar deneyin ya da bizimle iletişime geçin.';
     } else {
         try {
             $magaza = tenant_basvuru($v['isim'], $v['email'], $magazaSifre, $v['admin_ad'], $v['admin_kullanici'], $adminSifre);
+            merkez_hiz_kaydet('kayit', $v['email']);
             if ($magaza['durum'] === 'aktif') {
                 tenant_oturum_ac($magaza);
                 flash('Mağazanız oluşturuldu. 30 günlük ücretsiz deneminiz ' . date_tr($magaza['deneme_bitis']) . ' tarihine kadar sürüyor. Şimdi kendi kullanıcı bilgilerinizle giriş yapın.');

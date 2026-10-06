@@ -1,6 +1,21 @@
 OPTIFLOW
-Release: 4.20.0 (2026-10-06)
+Release: 4.20.1 (2026-10-06)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.20.1 (güvenlik denetimi; OptiFlow Pro 5.5.0 ile)
+  - GÜVENLİK (kritik): kurulum.php, config.php sağlamken veritabanına o an bağlanılamıyorsa (kesinti, bağlantı
+    sınırı) herkese açılıyordu; biri kendi veritabanını ve merkez şifresini yazıp siteyi ele geçirebilirdi. Artık bu
+    durumda yalnızca storage/kurulum-izni dosyası varken açılır (Plesk Dosya Yöneticisi); kayıttan sonra dosya silinir.
+  - GÜVENLİK: kontrol.php girişsiz olarak son hata kayıtlarını, veritabanı hata metnini ve sipariş sayısını
+    gösteriyordu → bunlar yalnızca aynı izin dosyasıyla. Dosya/sürüm denetimleri açık kalır.
+  - GÜVENLİK: mağaza girişinde deneme sınırı yoktu → IP başına 20, e-posta başına 10 hatalı deneme / 15 dk
+    (merkez_hiz_siniri tablosu). Yeni mağaza kaydı IP başına günde 3. Kayıtta veritabanı hata ayrıntısı artık
+    ziyaretçiye gösterilmez (kayda yazılır, başvuru beklemede kalır).
+  - GÜVENLİK: personel oturumu girişin yapıldığı mağazaya bağlandı (user_magaza); oturumdaki mağaza değişirse ya da
+    müşteri sayfası (?m=) başka mağazanın veritabanını seçtiyse aynı kullanıcı numarası başka mağazada geçmez.
+  - Düzeltme: "Siparişim nerede?" sorguları personel girişinin IP kilidine sayılıyordu (mağaza Wi-Fi'ındaki müşteri
+    15 sorguda personel girişini 15 dk kilitleyebiliyordu).
+  - Test: tests/guvenlik/test.php (16).
 
 DEĞİŞİKLİK NOTLARI — 4.20.0 (koyu görünüm; OptiFlow Pro 5.5.0 ile)
   - YENİ: Koyu görünüm. Menünün üstündeki ay/güneş düğmesi sırayla Otomatik → Koyu → Açık seçer (telefonda üst

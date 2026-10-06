@@ -27,7 +27,9 @@ if (is_post()) {
         }
         redirect('login.php');
     }
-    $error = 'E-posta veya şifre hatalı.';
+    $error = tenant_giris_kilitli($email)
+        ? 'Çok fazla hatalı deneme. 15 dakika sonra tekrar deneyin.'
+        : 'E-posta veya şifre hatalı.';
 }
 ?><!doctype html>
 <html lang="tr">

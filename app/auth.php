@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_WINDOW_MINUTES = 15;
+/** "Siparişim nerede?" sorguları da login_attempts'e bu işaretle yazılır (siparisim-nerede.php). */
+const SIPARIS_SORGU_ANAHTAR = '__siparis_sorgu__';
 
 /** Oturumdaki kullanıcı; her istekte veritabanından tazelenir (pasif/yetki değişikliği anında geçerli olur). */
 function current_user(): ?array
@@ -36,6 +38,15 @@ function current_user(): ?array
             flash('Uzun süre işlem yapılmadığı için oturum kapandı.', 'info');
             return null;
         }
+    }
+    // 4.20.1: personel oturumu girişin yapıldığı mağazaya bağlıdır. Oturumdaki mağaza değişirse (ya da müşteri
+    // sayfası ?m= ile başka mağazanın veritabanını seçtiyse) aynı kullanıcı numarası başka mağazada geçmez.
+    $magazaId = (int) (tenant_oturum()['id'] ?? 0);
+    if (!isset($_SESSION['user_magaza'])) {
+        $_SESSION['user_magaza'] = $magazaId;   // 4.20.1 öncesi açılmış oturumlar: bir kez bağlanır
+    }
+    if ((int) $_SESSION['user_magaza'] !== $magazaId || !empty($GLOBALS['__musteri_magaza'])) {
+        return null;
     }
     $u = row('SELECT id, full_name, username, role, is_active, password_changed_at FROM user_accounts WHERE id = ?', [$id]);
     if (!$u || !(int) $u['is_active'] || ($_SESSION['pw_stamp'] ?? '') !== (string) $u['password_changed_at']) {
@@ -75,7 +86,8 @@ function require_super(): array
 function login_locked(string $username): bool
 {
     $since = date('Y-m-d H:i:s', time() - LOGIN_WINDOW_MINUTES * 60);
-    $byIp = (int) scalar('SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND attempted_at > ?', [client_ip(), $since]);
+    // Müşteri sipariş sorguları sayılmaz: mağazanın Wi-Fi'ındaki müşteri personel girişini kilitlemesin.
+    $byIp = (int) scalar('SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND attempted_at > ? AND username <> ?', [client_ip(), $since, SIPARIS_SORGU_ANAHTAR]);
     $byUser = (int) scalar('SELECT COUNT(*) FROM login_attempts WHERE username = ? AND attempted_at > ?', [$username, $since]);
     return $byIp >= LOGIN_MAX_ATTEMPTS * 3 || $byUser >= LOGIN_MAX_ATTEMPTS;
 }
@@ -120,6 +132,7 @@ function oturum_kullanici_yaz(array $u): void
     }
     $_SESSION = [
         'user_id'   => (int) $u['id'],
+        'user_magaza' => (int) (is_array($magaza) ? ($magaza['id'] ?? 0) : 0),
         'pw_stamp'  => (string) $u['password_changed_at'],
         'last_seen' => time(),
         'csrf'      => bin2hex(random_bytes(32)),

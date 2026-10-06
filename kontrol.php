@@ -2,6 +2,10 @@
 // Kurulum kontrolü: gizli bilgi göstermez. Sorun çözülünce silebilirsiniz.
 header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-store');
+header('X-Robots-Tag: noindex');
+/* 4.20.1: hata kayıtları, veritabanı hata metni ve sipariş sayısı yalnızca hosting'e erişen kişiye:
+   storage/kurulum-izni dosyası varken (bkz. kurulum.php). Dosya/sürüm denetimleri herkese açık kalır. */
+$ayrinti = is_file(dirname(__FILE__) . '/storage/kurulum-izni');
 $rows = array();
 $ok = version_compare(PHP_VERSION, '8.0.0', '>=');
 $rows[] = array('PHP sürümü', PHP_VERSION, $ok);
@@ -79,9 +83,9 @@ if (is_array($cfg) && isset($cfg['db']) && extension_loaded('pdo_mysql')) {
         $pdo = new PDO('mysql:host=' . (isset($d['host']) ? $d['host'] : 'localhost') . ';dbname=' . $d['name'] . ';charset=utf8mb4', $d['user'], isset($d['password']) ? $d['password'] : '', array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
         $rows[] = array('Veritabanı bağlantısı', 'başarılı (' . $pdo->getAttribute(PDO::ATTR_SERVER_VERSION) . ')', true);
         $t = $pdo->query("SHOW TABLES LIKE 'orders'")->fetchColumn();
-        $rows[] = array('orders tablosu', $t ? 'var (' . $pdo->query('SELECT COUNT(*) FROM orders')->fetchColumn() . ' sipariş)' : 'YOK — yanlış veritabanı adı olabilir', (bool) $t);
+        $rows[] = array('orders tablosu', $t ? 'var' . ($ayrinti ? ' (' . $pdo->query('SELECT COUNT(*) FROM orders')->fetchColumn() . ' sipariş)' : '') : 'YOK — yanlış veritabanı adı olabilir', (bool) $t);
     } catch (Throwable $e) {
-        $rows[] = array('Veritabanı bağlantısı', 'BAŞARISIZ: ' . preg_replace('/using password: YES/i', '', $e->getMessage()), false);
+        $rows[] = array('Veritabanı bağlantısı', 'BAŞARISIZ' . ($ayrinti ? ': ' . preg_replace('/using password: YES/i', '', $e->getMessage()) : ' — ayrıntı için storage/kurulum-izni dosyasını oluşturun'), false);
     }
 }
 // Müşteri takip sayfasının gerçek adresi (alt klasör kurulumlarında da doğru)
@@ -97,7 +101,7 @@ if ($host !== '') {
 
 $logDir = $base . '/storage/logs';
 $rows[] = array('storage/logs yazılabilir', is_dir($logDir) && is_writable($logDir) ? 'evet' : 'hayır (kritik değil)', true);
-$logs = is_dir($logDir) ? glob($logDir . '/app-*.log') : array();
+$logs = $ayrinti && is_dir($logDir) ? glob($logDir . '/app-*.log') : array();
 $last = '';
 if ($logs) { rsort($logs); $lines = @file($logs[0]); if ($lines) { $last = implode('', array_slice($lines, -12)); } }
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Kurulum kontrolü</title>

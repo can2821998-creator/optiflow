@@ -116,6 +116,18 @@ function merkez_sema_hazirla(PDO $pdo): void
             INDEX idx_mh_magaza (magaza_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
+    // 4.20.1 — Mağaza girişi ve yeni kayıt için hız sınırı (bkz. merkez_hiz_asildi)
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS merkez_hiz_siniri (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            tur VARCHAR(20) NOT NULL,
+            ip VARCHAR(45) NOT NULL,
+            anahtar VARCHAR(190) NOT NULL DEFAULT '',
+            created_at DATETIME NOT NULL,
+            INDEX idx_mhs_ip (tur, ip, created_at),
+            INDEX idx_mhs_anahtar (tur, anahtar, created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
     // Sonradan eklenen kolonlar (geriye dönük uyumlu)
     merkez_kolon_ekle($pdo, 'magazalar', 'notlar', 'TEXT NULL');
     merkez_kolon_ekle($pdo, 'magazalar', 'guncelleme', 'DATETIME NULL');
@@ -231,7 +243,12 @@ function tenant_basvuru(string $isim, string $email, string $magazaSifre, string
         // 1044/1045: yetki yok — beklemede kalır, ürün sahibi merkez panelden elle etkinleştirir.
         return merkez_row('SELECT * FROM magazalar WHERE id = ?', [$magazaId]);
     }
-    tenant_etkinlestir($magazaId, (string) ($sunucu['host'] ?? 'localhost'), $dbAdi, (string) ($sunucu['user'] ?? ''), (string) ($sunucu['password'] ?? ''), (int) ($sunucu['port'] ?? 0) ?: null);
+    try {
+        tenant_etkinlestir($magazaId, (string) ($sunucu['host'] ?? 'localhost'), $dbAdi, (string) ($sunucu['user'] ?? ''), (string) ($sunucu['password'] ?? ''), (int) ($sunucu['port'] ?? 0) ?: null);
+    } catch (DomainException $e) {
+        // 4.20.1: veritabanı hata ayrıntısı ziyaretçiye gösterilmez; başvuru beklemede kalır, merkez panelden etkinleştirilir.
+        app_log('tenant_basvuru #' . $magazaId . ': ' . $e->getMessage());
+    }
     return merkez_row('SELECT * FROM magazalar WHERE id = ?', [$magazaId]);
 }
 
@@ -714,6 +731,7 @@ function merkez_magaza_gir(int $id): void
         'merkez_admin' => true,            // merkez yetkisi korunur → panele dönülebilir
         'merkez_impersonate' => (int) $id, // hangi mağazaya girildiğini işaretle
         'user_id'   => (int) $u['id'],
+        'user_magaza' => (int) $m['id'],
         'pw_stamp'  => (string) $u['password_changed_at'],
         'last_seen' => time(),
         'csrf'      => bin2hex(random_bytes(32)),
@@ -740,16 +758,65 @@ function merkez_magaza_olustur(string $isim, string $email, string $girisSifre, 
     return $m;
 }
 
-/** Mağaza girişi (1. adım). Başarılıysa oturuma yazar ve mağaza satırını döner; değilse null. */
+const MAGAZA_GIRIS_PENCERE_SN = 15 * 60;
+const MAGAZA_GIRIS_MAX_IP = 20;       // bir IP'den 15 dakikada en çok hatalı mağaza girişi
+const MAGAZA_GIRIS_MAX_EPOSTA = 10;   // bir mağaza e-postasına 15 dakikada en çok hatalı deneme
+const KAYIT_MAX_IP_GUN = 3;           // bir IP'den 24 saatte en çok yeni mağaza
+
+/**
+ * 4.20.1 — Hız sınırı: $tur için bu IP'den (ve verildiyse bu anahtardan) pencere içinde sınır aşıldı mı?
+ * Tablo/veritabanı sorunu girişleri tümden engellemesin diye hata durumunda false döner.
+ */
+function merkez_hiz_asildi(string $tur, string $anahtar, int $azamiIp, int $azamiAnahtar, int $pencereSn): bool
+{
+    try {
+        $since = date('Y-m-d H:i:s', time() - $pencereSn);
+        $ip = (int) merkez_scalar('SELECT COUNT(*) FROM merkez_hiz_siniri WHERE tur = ? AND ip = ? AND created_at > ?', [$tur, client_ip(), $since]);
+        if ($ip >= $azamiIp) {
+            return true;
+        }
+        return $azamiAnahtar > 0 && $anahtar !== ''
+            && (int) merkez_scalar('SELECT COUNT(*) FROM merkez_hiz_siniri WHERE tur = ? AND anahtar = ? AND created_at > ?', [$tur, $anahtar, $since]) >= $azamiAnahtar;
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
+function merkez_hiz_kaydet(string $tur, string $anahtar = ''): void
+{
+    try {
+        merkez_q('INSERT INTO merkez_hiz_siniri (tur, ip, anahtar, created_at) VALUES (?, ?, ?, ?)', [$tur, client_ip(), mb_substr($anahtar, 0, 190), date('Y-m-d H:i:s')]);
+        if (random_int(1, 50) === 1) {
+            merkez_q('DELETE FROM merkez_hiz_siniri WHERE created_at < ?', [date('Y-m-d H:i:s', time() - 2 * 86400)]);
+        }
+    } catch (Throwable $e) {
+        // kayıt tutulamadı: akış engellenmesin
+    }
+}
+
+/**
+ * Mağaza girişi (1. adım). Başarılıysa oturuma yazar ve mağaza satırını döner; değilse null.
+ * 4.20.1: kaba kuvvete karşı IP ve e-posta başına sınır; sınır aşıldıysa doğru şifre de kabul edilmez.
+ */
 function tenant_giris(string $email, string $sifre): ?array
 {
-    $email = trim(strtolower($email));
+    $email = mb_substr(trim(strtolower($email)), 0, 190);
+    if (merkez_hiz_asildi('magaza_giris', $email, MAGAZA_GIRIS_MAX_IP, MAGAZA_GIRIS_MAX_EPOSTA, MAGAZA_GIRIS_PENCERE_SN)) {
+        return null;
+    }
     $m = merkez_row('SELECT * FROM magazalar WHERE email = ?', [$email]);
     if (!$m || !password_verify($sifre, $m['sifre_hash'])) {
+        merkez_hiz_kaydet('magaza_giris', $email);
         return null;
     }
     tenant_oturum_ac($m);
     return $m;
+}
+
+/** Mağaza girişi şu an kilitli mi (giriş ekranında açıklayıcı mesaj için)? */
+function tenant_giris_kilitli(string $email): bool
+{
+    return merkez_hiz_asildi('magaza_giris', mb_substr(trim(strtolower($email)), 0, 190), MAGAZA_GIRIS_MAX_IP, MAGAZA_GIRIS_MAX_EPOSTA, MAGAZA_GIRIS_PENCERE_SN);
 }
 
 function tenant_oturum_ac(array $magaza): void

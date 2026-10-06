@@ -17,6 +17,9 @@ OPTIFLOW — KURULUM NOTU (optiflow.com.tr)
    - 'merkez_admin_password' alanına, merkez panele (aşağıda) girecek kendi şifrenizi yazın.
    - 'admin_username' / 'admin_password' satırlarını SİLİN — bunlar eski tek-mağazalı kuruluma
      özeldir; çok mağazalı sistemde her mağazanın yöneticisini kayıt formu kendi oluşturur.
+   Sonradan veritabanı bilgileri değişirse (4.20.1): kurulum.php güvenlik için kilitlidir. Plesk ›
+   Dosya Yöneticisi'nde storage/ klasörüne "kurulum-izni" adlı boş bir dosya oluşturun, kurulum.php'yi
+   açın; kayıttan sonra dosya kendiliğinden silinir. Aynı dosya varken kontrol.php hata kayıtlarını da gösterir.
 
 4) SAĞLAMA MODLARI (sistem hangisinin geçerli olduğunu kendi anlar)
    OTOMATİK  — MySQL kullanıcınızın CREATE DATABASE yetkisi varsa (VPS/kök erişimli sunucu):

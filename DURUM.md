@@ -1,15 +1,26 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 6 Ekim 2026 (4.20.0 / Pro 5.5.0)*
+*Son güncelleme: 6 Ekim 2026 (4.20.1 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.20.0**, şema **30**. Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.20.0, masaüstü latest.yml 5.5.0** (06.10: "Sürüm yayınla" + "Canlıya al" başarılı; VERSION.txt bu oturumdan okunamadı, Actions sonucuna göre).
+- **Sunucu 4.20.1**, şema **30**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Canlı site: 4.20.0** (4.20.1 henüz push edilmedi / canlıya alınmadı — push edilince bu satırı güncelle).
+- Çalışma ortamı (06.10): kullanıcının Windows bilgisayarı `C:\Users\TEKNOPLUS\optiflow`; Git 2.55, PHP 8.3, Node 22
+  winget ile kuruldu; commit kimliği canaydnl98 <canaydnl98@gmail.com>. Windows'ta 3 bash sayfa testi (alis, sgk-fatura
+  sayfa) ve seo testi ORTAM yüzünden düşer (`mktemp` /tmp yolu Windows PHP'ye geçmez, OpenSSL/dosya izni farkı);
+  doğrulama CI'da (Linux).
+
+## Son oturum (4.20.1 — güvenlik denetimi)
+- Genel kod/güvenlik denetimi. SQL (parametreli + beyaz liste), çıktı kaçışı, CSRF, oturum yenileme, PayTR HMAC,
+  taşıma SQL doğrulaması, Electron ayarları (sandbox, contextIsolation, dış bağlantı süzgeci) sağlam bulundu.
+- Düzeltilen: kurulum.php herkese açılabiliyordu (kritik) → `storage/kurulum-izni`; kontrol.php log/DB hatası sızıntısı;
+  mağaza girişi + kayıt hız sınırı (`merkez_hiz_siniri`); personel oturumu ↔ mağaza bağı (`user_magaza`); sipariş
+  sorgusu personel IP kilidini tetikliyordu; kayıtta DB hata metni sızıntısı. Test: `tests/guvenlik/test.php`.
 - Özellik anahtarları (hepsi varsayılan kapalı): `hizli_satis`, `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
 - Testler (05.10): sunucu tümü geçti; entegrasyon (yerel MariaDB) api 46, modüller 76, garanti 37, sgk-fatura 26,
   hizli-satis 20, tasima 18, hatirla 24; masaüstü birim 116/116; E2E 74/74.
 
-## Son oturum (4.20.0 — koyu görünüm)
+## Önceki oturum (4.20.0 — koyu görünüm)
 - Koyu görünüm (Otomatik/Koyu/Açık, menü üstündeki düğme; `assets/tema.js`, app.css "KOYU GÖRÜNÜM").
 - Tanıtım/rehber görselleri önbellekten eski geliyordu → `asset()` / `?v=filemtime`.
 
@@ -111,6 +122,13 @@
 3. Kullanıcıya sor: sıradaki modül (karar bekleyen: SGK dönem sonu paketi + kesinti defteri).
 
 ## Açık sorunlar / doğrulanmamış
+- Güvenlik denetiminden (06.10), düzeltilmedi — tasarım kararı gerekir:
+  - Otomatik sağlama modunda tüm mağaza veritabanları merkezle AYNI MySQL kullanıcısını kullanır ve şifreler
+    `magazalar.db_sifre`'de düz metin durur: tek bir SQL açığı tüm mağazalara yayılır. (Canlı Plesk "beklemede"
+    modunda; orada her mağazanın kendi kullanıcısı var.) Öneri: mağaza başına kullanıcı + db_sifre'yi şifrelemek.
+  - cron anahtarı adreste (`cron.php?anahtar=`) → sunucu erişim kayıtlarına düşer; başlıkla (X-Cron-Anahtar) çağırmak daha iyi.
+  - Personel girişinde kullanıcı adı başına kilit (5 deneme) başkasının hesabını 15 dk kilitlemeye açık (bilinen ödünleşim).
+  - Masaüstü exe imzasız (SmartScreen). Büyük tek dosyalar (merkez-panel.php 82 KB, order.php 59 KB) bakımı zorlaştırıyor.
 - Tema: her sayfa tek tek gözden geçirilmedi (ana ekranlar, giriş, site, telefon kontrol edildi). Etiket/fiş baskıları değişmedi.
 - Pro 5.4.0 Medula doldurma gerçek Medula giriş ekranında denenmedi (sentetik sayfayla E2E). Alan bulma: şifreden önceki
   yazı kutusu = kullanıcı adı, sonraki = güvenlik kodu. Kullanıcıdan ilk girişte kontrol etmesi istendi.

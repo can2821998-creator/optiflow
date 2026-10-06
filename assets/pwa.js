@@ -27,6 +27,74 @@
     });
   }
 
+  /* 4.20.3 — Telefonda çevrimdışı kopya (özellik: cevrimdisi_tel).
+     Uygulama sayfası <body data-cevrimdisi="1"> ise: en çok 15 dakikada bir api.php?action=cevrimdisi alınır,
+     WebCrypto AES-GCM ile şifrelenip IndexedDB'de saklanır. Anahtar dışa aktarılamaz (extractable: false) ve
+     yalnızca bu tarayıcıda durur. data-cevrimdisi="0" (özellik kapalı) ya da işaretsiz sayfa (giriş ekranları,
+     çıkıştan sonra) → kopya silinir. Gösterim: offline.html + assets/offline.js (24 saatten eskisi silinir). */
+  var KOPYA_DB = 'optiflow-cevrimdisi';
+  var KOPYA_SON = 'of-cevrimdisi-son';
+  function kopyaSil() {
+    try { localStorage.removeItem(KOPYA_SON); } catch (e) { /* yoksay */ }
+    try { indexedDB.deleteDatabase(KOPYA_DB); } catch (e) { /* yoksay */ }
+  }
+  function kopyaDb() {
+    return new Promise(function (ok, hata) {
+      var r = indexedDB.open(KOPYA_DB, 1);
+      r.onupgradeneeded = function () { r.result.createObjectStore('kv'); };
+      r.onsuccess = function () { ok(r.result); };
+      r.onerror = function () { hata(r.error); };
+    });
+  }
+  function kv(db, kip, islem) {
+    return new Promise(function (ok, hata) {
+      var t = db.transaction('kv', kip);
+      var r = islem(t.objectStore('kv'));
+      t.oncomplete = function () { ok(r && r.result); };
+      t.onerror = function () { hata(t.error); };
+    });
+  }
+  function kopyaKaydet() {
+    if (!window.indexedDB || !window.crypto || !crypto.subtle || !navigator.onLine) return;
+    var son = 0;
+    try { son = parseInt(localStorage.getItem(KOPYA_SON) || '0', 10); } catch (e) { /* yoksay */ }
+    if (Date.now() - son < 15 * 60 * 1000) return;
+    fetch('api.php?action=cevrimdisi', { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } })
+      .then(function (r) {
+        if (r.status === 403 || r.status === 401) { kopyaSil(); return null; }
+        return r.ok ? r.json() : null;
+      })
+      .then(function (veri) {
+        if (!veri || !veri.ok) return null;
+        return kopyaDb().then(function (db) {
+          return kv(db, 'readonly', function (s) { return s.get('anahtar'); })
+            .then(function (anahtar) {
+              return anahtar || crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt'])
+                .then(function (yeni) { return kv(db, 'readwrite', function (s) { return s.put(yeni, 'anahtar'); }).then(function () { return yeni; }); });
+            })
+            .then(function (anahtar) {
+              var iv = crypto.getRandomValues(new Uint8Array(12));
+              return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, anahtar, new TextEncoder().encode(JSON.stringify(veri)))
+                .then(function (sifreli) {
+                  var simdi = Date.now();
+                  var kayit = { iv: iv, veri: sifreli, olusturma: simdi, bitis: simdi + (veri.gecerlilik_sn || 86400) * 1000 };
+                  return kv(db, 'readwrite', function (s) { return s.put(kayit, 'kopya'); });
+                });
+            })
+            .then(function () {
+              db.close();
+              try { localStorage.setItem(KOPYA_SON, String(Date.now())); } catch (e) { /* yoksay */ }
+            });
+        });
+      })
+      .catch(function () { /* bir sonraki sayfada yeniden denenir */ });
+  }
+  addEventListener('load', function () {
+    var isaret = document.body ? document.body.getAttribute('data-cevrimdisi') : null;
+    if (isaret === '1') kopyaKaydet();
+    else kopyaSil();
+  });
+
   var ANAHTAR = 'pa-kurulum-kapat';
   var AY = 30 * 24 * 60 * 60 * 1000;
 

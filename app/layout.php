@@ -210,7 +210,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
 <link rel="stylesheet" href="<?= e(asset('app.css')) ?>">
 <script src="<?= e(asset('tema.js')) ?>"></script>
 </head>
-<body class="<?= e($opts['body'] ?? '') ?>">
+<body class="<?= e($opts['body'] ?? '') ?>" data-cevrimdisi="<?= current_user() && ozellik_acik('cevrimdisi_tel') ? '1' : '0' ?>">
 <?php if (config('ortam', '') === 'test'): ?>
 <div role="note" style="position:sticky;top:0;z-index:9999;background:#b3261e;color:#fff;text-align:center;padding:7px 12px;font:700 13px/1.35 system-ui,Arial,sans-serif">TEST ORTAMI — gerçek müşteri kaydı girmeyin, buradaki bilgiler canlı sisteme geçmez</div>
 <?php endif; ?>

@@ -84,6 +84,19 @@ if ($action === 'global_search') {
     exit;
 }
 
+/* 4.20.3 — Telefonda çevrimdışı kopya (özellik: cevrimdisi_tel). assets/pwa.js en çok 15 dakikada bir alır,
+   tarayıcıda şifreleyip saklar; internet yokken offline.html gösterir. İçerik masaüstü kopyasıyla aynı. */
+if ($action === 'cevrimdisi') {
+    if (!ozellik_acik('cevrimdisi_tel')) {
+        http_response_code(403);
+        echo json_encode(['ok' => false, 'kod' => 'ozellik_kapali']);
+        exit;
+    }
+    $magaza = tenant_oturum();
+    echo json_encode(['ok' => true, 'gecerlilik_sn' => 86400] + cevrimdisi_ozet((int) ($magaza['id'] ?? 0), current_user()), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 if ($action === 'wa_log' && is_post()) {
     $orderId = post_int('order_id');
     $name = mb_substr(post('template'), 0, 60);

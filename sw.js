@@ -5,7 +5,7 @@
    kullanıcının verisi başka bir kullanıcıya gösterilemez ve ekrandaki
    bilgiler her zaman günceldir.
    ========================================================================== */
-const SURUM = 'optiflow-v5';   // 4.20.3: yeni çevrimdışı ekranı + betikleri
+const SURUM = 'optiflow-v6';   // 4.20.3: yeni çevrimdışı ekranı + betikleri + telefonda çevrimdışı kopya
 const KABUK = `${SURUM}-kabuk`;
 const VARLIK = `${SURUM}-varlik`;
 

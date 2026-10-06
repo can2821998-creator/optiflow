@@ -58,5 +58,21 @@ $sw = (string) file_get_contents($kok . '/sw.js');
 dogru('servis çalışanı çevrimdışı betiklerini önceden saklar', str_contains($sw, "'assets/offline.js'") && str_contains($sw, "'assets/tema.js'"));
 dogru('servis çalışanı ağ yokken tüm önbelleklere bakar', str_contains($sw, '(await caches.match(istek))'));
 
+/* 4.20.3 Telefonda çevrimdışı kopya (cevrimdisi_tel) */
+$oz = (string) file_get_contents($kok . '/app/ozellik.php');
+dogru('özellik anahtarı cevrimdisi_tel (masaüstü gerekmez)', (bool) preg_match("/'cevrimdisi_tel' => \[[^\]]*'masaustu' => false/s", $oz));
+$api = (string) file_get_contents($kok . '/app/pages/api.php');
+dogru('uç nokta özellik kapalıyken 403', (bool) preg_match("/action === 'cevrimdisi'.*?ozellik_acik\('cevrimdisi_tel'\).*?http_response_code\(403\)/s", $api));
+dogru('uç nokta masaüstü özetiyle aynı içerik + 24 saat', str_contains($api, "'gecerlilik_sn' => 86400] + cevrimdisi_ozet("));
+dogru('sayfa işareti: yalnızca girişli + özellik açıkken 1', str_contains((string) file_get_contents($kok . '/app/layout.php'), "data-cevrimdisi=\"<?= current_user() && ozellik_acik('cevrimdisi_tel') ? '1' : '0' ?>\""));
+$pwa = (string) file_get_contents($kok . '/assets/pwa.js');
+dogru('kopya dışa aktarılamaz anahtarla AES-GCM şifrelenir', str_contains($pwa, "generateKey({ name: 'AES-GCM', length: 256 }, false,") && str_contains($pwa, 'crypto.subtle.encrypt('));
+dogru('işaretsiz/kapalı sayfada (giriş, çıkış sonrası) kopya silinir', str_contains($pwa, "if (isaret === '1') kopyaKaydet();") && str_contains($pwa, 'else kopyaSil();'));
+$ojs = (string) file_get_contents($kok . '/assets/offline.js');
+dogru('süresi dolan kopya gösterilmez ve silinir', str_contains($ojs, 'Date.now() > k.kopya.bitis) { kopyaSil(); return; }'));
+dogru('kopya içeriği HTML olarak yorumlanmaz (textContent)', !str_contains($ojs, '.innerHTML =') && str_contains($ojs, 'el.textContent = metin'));
+dogru('çevrimdışı ekranı körlemesine yenilemez, sunucuyu yoklar', str_contains($ojs, "fetch('manifest.php', { cache: 'no-store' })") && !str_contains($ojs, 'if (navigator.onLine) location.reload()'));
+dogru('servis çalışanı api.php\'ye dokunmaz', str_contains($sw, "url.pathname.endsWith('/api.php')) return;"));
+
 echo "Arayüz/merkez düzeltme testleri: $gecen geçti, $kalan kaldı\n";
 exit($kalan ? 1 : 0);

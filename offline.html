@@ -44,6 +44,28 @@
   .board button.matched{opacity:.35;transform:scale(.92)}
   .game-msg{margin-top:10px;font-size:13.5px;color:var(--brand);min-height:1.4em;font-weight:700}
   html.tema-koyu .game-msg{color:#ff95a6}
+  /* Çevrimdışı kopya (özellik: cevrimdisi_tel) */
+  body.kopyali{place-items:start center}
+  .kopya{margin-top:22px;text-align:left}
+  .kopya-bas{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+  .kopya-bas b{font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+  .kopya-bas small{color:var(--muted);font-size:12px}
+  .kopya input{width:100%;min-height:46px;padding:10px 14px;border:1.5px solid var(--line);border-radius:12px;
+    background:var(--surface);color:var(--ink);font:inherit;margin-bottom:10px}
+  .kopya input:focus{outline:0;border-color:var(--brand)}
+  .kopya ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .kopya li{padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+  .kopya .ust{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+  .kopya .ad{font-weight:750;color:var(--ink)}
+  .kopya .no{color:var(--muted);font-size:12.5px;white-space:nowrap}
+  .kopya .alt{margin-top:4px;font-size:13px;color:var(--ink-2)}
+  .kopya .asama{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--soft);color:var(--brand);font-size:12px;font-weight:700}
+  html.tema-koyu .kopya .asama{color:#ff95a6}
+  .kopya .kalan{color:var(--brand);font-weight:700}
+  html.tema-koyu .kopya .kalan{color:#ff95a6}
+  .kopya a.tel{display:inline-flex;align-items:center;min-height:40px;margin-top:6px;padding:6px 14px;border-radius:10px;
+    background:var(--grad);color:#fff;font-weight:700;font-size:13.5px;text-decoration:none}
+  .kopya .uyari{font-size:12px;color:var(--muted);margin:10px 2px 0}
 </style>
 </head>
 <body>
@@ -59,6 +81,12 @@
   <p>Atölye verileri canlı sunucudan geliyor, bu yüzden internet olmadan gösterilemiyor.</p>
   <span class="rule"></span>
   <button class="btn" id="yenidenBtn" type="button">Yeniden dene</button>
+  <section class="kopya" id="kopya" hidden aria-label="Çevrimdışı sipariş kopyası">
+    <div class="kopya-bas"><b>Açık siparişler · salt okunur</b><small id="kopyaZaman"></small></div>
+    <input type="search" id="kopyaAra" placeholder="Ad, telefon veya sipariş no" autocomplete="off">
+    <ul id="kopyaListe"></ul>
+    <p class="uyari" id="kopyaUyari"></p>
+  </section>
   <div class="card">
     <b>Ne yapmalı</b>
     Wi-Fi veya mobil veriyi kontrol edin. Bağlantı gelince bu ekran kendiliğinden kapanır ve kaldığınız yerden devam edersiniz.

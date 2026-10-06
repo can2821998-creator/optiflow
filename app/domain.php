@@ -394,14 +394,21 @@ function sgk_son_kullanim(int $customerId, int $haricOrderId): ?array
     kalbi budur. Dönen 'uyari', varsa "son 2 yılda kullanılmış" uyarı metnidir (yoksa null). */
 function sgk_katki_uygula(int $orderId, int $customerId, array $rx): array
 {
-    $tutar = sgk_katki_tahmini($rx);
-    q('UPDATE orders SET sgk_amount = ? WHERE id = ?', [$tutar, $orderId]);
+    // 4.21.0: sipariş katalog teklifinden geldiyse SGK payı teklifte müşteriyle anlaşılan tutarda kalır
+    // (üzerine tahmin yazılırsa bakiye, yani müşteriye söylenen tutar, değişirdi). Elle düzeltme sipariş sayfasından.
+    $teklifli = (bool) scalar("SELECT COUNT(*) FROM quotes WHERE converted_order_id = ? AND tip = 'katalog'", [$orderId]);
+    if ($teklifli) {
+        $tutar = (float) scalar('SELECT sgk_amount FROM orders WHERE id = ?', [$orderId]);
+    } else {
+        $tutar = sgk_katki_tahmini($rx);
+        q('UPDATE orders SET sgk_amount = ? WHERE id = ?', [$tutar, $orderId]);
+    }
     $onceki = sgk_son_kullanim($customerId, $orderId);
     $uyari = $onceki
         ? 'Dikkat: bu müşteri ' . date_tr($onceki['created_at']) . ' tarihli siparişte de SGK katkısı almış görünüyor '
           . '(son 2 yıl içinde). Aynı hak tekrar kullanılamayabilir — tutarı MEDULA\'dan teyit edin.'
         : null;
-    return ['tutar' => $tutar, 'uyari' => $uyari];
+    return ['tutar' => $tutar, 'uyari' => $uyari, 'korundu' => $teklifli];
 }
 
 function stock_statuses(): array
@@ -429,14 +436,55 @@ function roles(): array
     return ['super_yetkili' => 'Süper yetkili', 'personel' => 'Personel'];
 }
 
+/** Cam kaplamaları. 4.21.0: katalogda bir üründe birden çok kaplama (", " ile saklanır, bkz. lens_kaplama_listesi). */
 function coatings(): array
 {
-    return ['Antirefle', 'Blue (mavi ışık)', 'Drive (gece sürüş)', 'Fotokromik', 'Polarize', 'UV420', 'Sert kaplama'];
+    return ['Antirefle', 'Süper antirefle (hidrofobik)', 'Blue (mavi ışık)', 'UV420', 'Drive (gece sürüş)', 'Fotokromik', 'Polarize',
+        'Sert kaplama', 'Ayna (mirror)', 'Buğu önleyici'];
 }
 
 function lens_indexes(): array
 {
-    return ['1.50', '1.56', '1.59', '1.60', '1.67', '1.74'];
+    return ['1.50', '1.53', '1.56', '1.59', '1.60', '1.67', '1.74', '1.80', '1.90'];
+}
+
+/** 4.21.0 — Katalog odak tipi (lens_products.design). Destekli/miyopi tek odak sayılır (öneri asistanı, SGK). */
+function lens_odak_tipleri(): array
+{
+    return [
+        'tek_odak'          => 'Tek odak',
+        'tek_odak_destekli' => 'Tek odak · yakın destekli (yorgunluk)',
+        'miyopi_kontrol'    => 'Tek odak · miyopi kontrol',
+        'progressive'       => 'Progressive (çok odaklı)',
+        'ofis'              => 'Ofis / ara mesafe',
+        'bifokal'           => 'Bifokal',
+    ];
+}
+
+/** 4.21.0 — Cam hammaddesi (lens_products.hammadde). */
+function lens_hammaddeleri(): array
+{
+    return [
+        'organik'      => 'Organik (CR-39)',
+        'polikarbonat' => 'Polikarbonat',
+        'trivex'       => 'Trivex',
+        'mr8'          => 'MR-8 (inceltilmiş)',
+        'mr7'          => 'MR-7',
+        'mr174'        => 'MR-174 (ultra ince)',
+        'mineral'      => 'Mineral (cam)',
+    ];
+}
+
+/** 4.21.0 — Yüzey tasarımı (lens_products.yuzey). */
+function lens_yuzeyleri(): array
+{
+    return ['kuresel' => 'Küresel', 'asferik' => 'Asferik', 'cift_asferik' => 'Çift asferik', 'freeform' => 'Free-form (dijital)'];
+}
+
+/** Katalog kaydındaki kaplama metni → liste ("Antirefle, Blue (mavi ışık)"). */
+function lens_kaplama_listesi(?string $ham): array
+{
+    return array_values(array_filter(array_map('trim', explode(',', (string) $ham)), static fn($k) => $k !== ''));
 }
 
 function product_tiers(): array

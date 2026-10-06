@@ -25,7 +25,7 @@ page_start('Başarılar', 'basarilar');
 page_header(
     'Başarılar',
     e($viewName) . ' · ' . $unlockedCount . ' / ' . $totalCount . ' rozet açıldı',
-    '<form method="get" class="inline"><select name="u" onchange="this.form.submit()">'
+    '<form method="get" class="inline"><select name="u" data-auto-submit>'
         . select_options(array_column($staffList, 'full_name', 'id'), (string) $viewId)
         . '</select></form>',
     '', 'Ekip'

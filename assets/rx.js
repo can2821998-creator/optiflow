@@ -282,7 +282,9 @@
       var score = 0;
       if (p.tier === budget) score += 3;
       if (p.index === idx) score += 2; else if (!p.index) score += 1;
-      if (p.coating && coats.indexOf(p.coating) >= 0) score += p.coating === primaryCoat ? 2 : 1;
+      // 4.21.0: üründe birden çok kaplama olabilir (p.coatings); ana kaplama eşleşirse 2, diğerleri 1 puan
+      var pk = p.coatings && p.coatings.length ? p.coatings : (p.coating ? [p.coating] : []);
+      if (pk.indexOf(primaryCoat) >= 0) score += 2; else if (pk.some(function (k) { return coats.indexOf(k) >= 0; })) score += 1;
       return { p: p, score: score };
     }).sort(function (x, y) {
       if (y.score !== x.score) return y.score - x.score;

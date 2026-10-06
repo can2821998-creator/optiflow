@@ -114,7 +114,7 @@ page_start('Atölye panosu', 'workshop');
   </div>
   <div class="quick-actions">
     <a class="btn btn-primary" href="order-new.php"><?= icon('plus') ?> Yeni sipariş</a>
-    <a class="btn" href="quotes.php"><?= icon('spark') ?> Yeni teklif</a>
+    <a class="btn" href="teklif-yeni.php"><?= icon('spark') ?> Yeni teklif</a>
     <a class="btn" href="kasa.php"><?= icon('wallet') ?> Kasa<?= $kasaClosedToday ? '' : ' <span class="badge sm tone-amber">açık</span>' ?></a>
     <a class="btn" href="ekran.php" target="_blank" rel="noopener"><?= icon('chart') ?> Ayrı ekranda aç</a>
   </div>

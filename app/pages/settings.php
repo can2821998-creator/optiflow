@@ -55,6 +55,8 @@ if (is_post()) {
             'daily_summary'        => isset($_POST['daily_summary']) ? '1' : '0',
             'daily_summary_hour'   => (string) max(0, min(23, (int) post('daily_summary_hour'))),
             'sgk_lens_amount'      => number_format(max(0, min(2000, (float) str_replace(',', '.', post('sgk_lens_amount')))), 2, '.', ''),
+            // 4.21.0 — tekliflerde personelin girebileceği en yüksek iskonto (süper yetkili sınırsız)
+            'teklif_iskonto_max'   => number_format(max(0, min(100, (float) str_replace(',', '.', post('teklif_iskonto_max', '10')))), 2, '.', ''),
         ];
         $renk = post('brand_color');
         $renkKoyu = post('brand_color_deep');
@@ -215,17 +217,21 @@ if (is_post()) {
             'design'    => post('design'),
             'tier'      => post('tier'),
             'lens_index'=> post('lens_index') ?: null,
-            'coating'   => post('coating') ?: null,
+            // 4.21.0: hammadde, yüzey ve birden çok kaplama (", " ile saklanır)
+            'hammadde'  => post('hammadde') ?: null,
+            'yuzey'     => post('yuzey') ?: null,
+            'coating'   => implode(', ', array_values(array_intersect(coatings(), array_filter((array) ($_POST['kaplamalar'] ?? []), 'is_string')))) ?: null,
             'price'     => $price,
             'note'      => mb_substr(post('note'), 0, 255) ?: null,
             'is_active' => isset($_POST['is_active']) ? 1 : 0,
         ];
         $errors = [];
         if ($data['brand'] === '' || $data['name'] === '') { $errors[] = 'Marka ve ürün adı zorunlu.'; }
-        if (!in_array($data['design'], ['tek_odak', 'progressive', 'ofis', 'bifokal'], true)) { $errors[] = 'Tasarım geçersiz.'; }
+        if (!isset(lens_odak_tipleri()[$data['design']])) { $errors[] = 'Odak tipi geçersiz.'; }
+        if ($data['hammadde'] !== null && !isset(lens_hammaddeleri()[$data['hammadde']])) { $errors[] = 'Hammadde geçersiz.'; }
+        if ($data['yuzey'] !== null && !isset(lens_yuzeyleri()[$data['yuzey']])) { $errors[] = 'Yüzey tasarımı geçersiz.'; }
         if (!isset(product_tiers()[$data['tier']])) { $errors[] = 'Segment geçersiz.'; }
         if ($data['lens_index'] !== null && !in_array($data['lens_index'], lens_indexes(), true)) { $errors[] = 'İndeks geçersiz.'; }
-        if ($data['coating'] !== null && !in_array($data['coating'], coatings(), true)) { $errors[] = 'Kaplama geçersiz.'; }
         if (post('price') !== '' && ($price === null || $price < 0)) { $errors[] = 'Fiyat geçersiz.'; }
         if ($errors) {
             foreach ($errors as $err) { flash($err, 'error'); }
@@ -236,7 +242,7 @@ if (is_post()) {
         } else {
             $pid = insert('lens_products', $data);
         }
-        audit('catalog_update', 'product', $pid, ['ürün' => $data['brand'] . ' ' . $data['name'], 'fiyat' => $price]);
+        audit('catalog_update', 'product', $pid, ['ürün' => $data['brand'] . ' ' . $data['name'], 'fiyat' => $price, 'kaplama' => $data['coating']]);
         flash('Ürün kaydedildi.');
         redirect($self);
     }
@@ -396,6 +402,13 @@ page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.'
           kademeli artış var ve dönem dönem değişiyor — burada TEK bir taban tutar kullanılıyor, kesin tutarı MEDULA'dan teyit edin.
           Sık kullanılan değerler: <b>150 TL</b> (2025 ve öncesi) veya <b>160 TL</b> (17 Ocak 2026 SUT güncellemesi — teyit önerilir).</small>
       </fieldset>
+      <fieldset class="field span-all checks">
+        <legend>Teklif iskontosu</legend>
+        <label class="field" style="max-width:220px"><span>Personel için en yüksek iskonto (%)</span>
+          <input name="teklif_iskonto_max" inputmode="decimal" value="<?= e(rtrim(rtrim(number_format((float) str_replace(',', '.', setting('teklif_iskonto_max', '10')), 2, ',', ''), '0'), ',')) ?>"></label>
+        <small class="muted">Teklif hazırlarken personel bu orandan yüksek iskonto giremez; süper yetkili sınırsızdır.
+          İskonto, Medula (SGK) payı düşüldükten sonra müşterinin ödeyeceği tutara uygulanır.</small>
+      </fieldset>
       <div class="form-actions span-all"><button class="btn btn-primary">Kaydet</button></div>
     </form>
   </section>
@@ -472,38 +485,52 @@ page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.'
   </section>
 
 <?php elseif ($tab === 'katalog'):
-    $designsCat = ['tek_odak' => 'Tek odak', 'progressive' => 'Progressive', 'ofis' => 'Ofis', 'bifokal' => 'Bifokal'];
+    /* 4.21.0 — Cam kataloğu: odak tipi, hammadde, indeks, yüzey, birden çok kaplama. Teklif (teklif-yeni.php) ve
+       reçetedeki öneri asistanı bu listeden seçer. */
+    $designsCat = lens_odak_tipleri();
     $catQ = mb_substr(query('katq'), 0, 60);
     $catDesign = query('katd');
     $catTier = query('katt');
+    $catMat = query('kath');
     $catWhere = ['1=1'];
     $catParams = [];
-    if ($catQ !== '') { $catWhere[] = "(brand LIKE ? OR name LIKE ?)"; $catParams[] = "%$catQ%"; $catParams[] = "%$catQ%"; }
+    if ($catQ !== '') { $catWhere[] = "(brand LIKE ? OR name LIKE ? OR coating LIKE ?)"; array_push($catParams, "%$catQ%", "%$catQ%", "%$catQ%"); }
     if (isset($designsCat[$catDesign])) { $catWhere[] = 'design = ?'; $catParams[] = $catDesign; }
     if (isset(product_tiers()[$catTier])) { $catWhere[] = 'tier = ?'; $catParams[] = $catTier; }
+    if (isset(lens_hammaddeleri()[$catMat])) { $catWhere[] = 'hammadde = ?'; $catParams[] = $catMat; }
     $products = rows('SELECT * FROM lens_products WHERE ' . implode(' AND ', $catWhere) . ' ORDER BY is_active DESC, design, tier, brand, name', $catParams);
     $edit = query_int('edit') ? row('SELECT * FROM lens_products WHERE id = ?', [query_int('edit')]) : null;
-    $katBack = http_build_query(array_filter(['tab' => 'katalog', 'katq' => $catQ, 'katd' => $catDesign, 'katt' => $catTier])); ?>
+    $editKaplama = lens_kaplama_listesi($edit['coating'] ?? null);
+    $katFiltre = $catQ || $catDesign || $catTier || $catMat;
+    $katBack = http_build_query(array_filter(['tab' => 'katalog', 'katq' => $catQ, 'katd' => $catDesign, 'katt' => $catTier, 'kath' => $catMat])); ?>
   <div class="split">
     <section class="card split-main">
-      <div class="card-head"><h2>Ürün kataloğu</h2><small class="muted">Öneri asistanı bu listeden seçenek sunar</small></div>
+      <div class="card-head"><h2>Cam kataloğu</h2><small class="muted">Teklif ekranı ve reçetedeki öneri asistanı bu listeden seçer</small></div>
       <form method="get" class="filters">
         <input type="hidden" name="tab" value="katalog">
-        <label class="field"><span>Ara</span><input type="search" name="katq" value="<?= e($catQ) ?>" placeholder="Marka veya ürün adı"></label>
-        <label class="field"><span>Tasarım</span><select name="katd" onchange="this.form.submit()"><option value="">Tümü</option><?= select_options($designsCat, $catDesign, false) ?></select></label>
-        <label class="field"><span>Segment</span><select name="katt" onchange="this.form.submit()"><option value="">Tümü</option><?= select_options(product_tiers(), $catTier) ?></select></label>
-        <div class="filter-actions"><button class="btn">Filtrele</button><?php if ($catQ || $catDesign || $catTier): ?><a class="btn btn-ghost" href="settings.php?tab=katalog">Temizle</a><?php endif; ?></div>
+        <label class="field"><span>Ara</span><input type="search" name="katq" value="<?= e($catQ) ?>" placeholder="Marka, ürün ya da kaplama"></label>
+        <label class="field"><span>Odak tipi</span><select name="katd" data-auto-submit><option value="">Tümü</option><?= select_options($designsCat, $catDesign) ?></select></label>
+        <label class="field"><span>Hammadde</span><select name="kath" data-auto-submit><option value="">Tümü</option><?= select_options(lens_hammaddeleri(), $catMat) ?></select></label>
+        <label class="field"><span>Segment</span><select name="katt" data-auto-submit><option value="">Tümü</option><?= select_options(product_tiers(), $catTier) ?></select></label>
+        <div class="filter-actions"><button class="btn">Filtrele</button><?php if ($katFiltre): ?><a class="btn btn-ghost" href="settings.php?tab=katalog">Temizle</a><?php endif; ?></div>
       </form>
-      <?php if (!$products): ?><?= empty_state('Sonuç bulunamadı', $catQ || $catDesign || $catTier ? 'Filtreyi temizleyip tekrar deneyin.' : 'Sağdaki formdan ilk ürününüzü ekleyin.') ?><?php else: ?>
-      <div class="table-wrap"><table class="table">
-        <thead><tr><th>Ürün</th><th>Tasarım</th><th class="hide-sm">İndeks / kaplama</th><th class="num">Fiyat (çift)</th><th></th></tr></thead>
+      <?php if (!$products): ?><?= empty_state('Sonuç bulunamadı', $katFiltre ? 'Filtreyi temizleyip tekrar deneyin.' : 'Sağdaki formdan ilk camınızı ekleyin.') ?><?php else: ?>
+      <div class="table-wrap"><table class="table katalog-tablo">
+        <thead><tr><th>Cam</th><th class="hide-sm">Odak tipi</th><th class="hide-md">Hammadde · indeks · yüzey</th><th class="hide-md">Kaplamalar</th><th class="num">Fiyat (çift)</th><th></th></tr></thead>
         <tbody>
-          <?php foreach ($products as $p): ?>
+          <?php foreach ($products as $p): $kap = lens_kaplama_listesi($p['coating']); ?>
             <tr class="<?= (int) $p['is_active'] ? '' : 'row-muted' ?>">
-              <td><b><?= e($p['brand']) ?></b> <?= e($p['name']) ?><small class="block muted"><?= e(product_tiers()[$p['tier']] ?? $p['tier']) ?><?= $p['note'] ? ' · ' . e($p['note']) : '' ?></small></td>
-              <td><?= e($designsCat[$p['design']] ?? $p['design']) ?></td>
-              <td class="hide-sm"><?= e($p['lens_index'] ?: 'Tümü') ?> · <?= e($p['coating'] ?: '—') ?></td>
-              <td class="num"><?= $p['price'] !== null ? money($p['price']) : '<span class="muted">—</span>' ?></td>
+              <td><b><?= e($p['brand']) ?></b> <?= e($p['name']) ?>
+                <small class="block muted"><?= e(product_tiers()[$p['tier']] ?? $p['tier']) ?><?= (int) $p['is_active'] ? '' : ' · pasif' ?><?= $p['note'] ? ' · ' . e($p['note']) : '' ?></small>
+                <small class="muted show-sm"><?= e($designsCat[$p['design']] ?? $p['design']) ?></small></td>
+              <td class="hide-sm"><?= e($designsCat[$p['design']] ?? $p['design']) ?></td>
+              <td class="hide-md"><?= e(implode(' · ', array_filter([
+                  lens_hammaddeleri()[(string) $p['hammadde']] ?? null,
+                  $p['lens_index'] ? 'İndeks ' . $p['lens_index'] : 'Tüm indeksler',
+                  lens_yuzeyleri()[(string) $p['yuzey']] ?? null,
+              ]))) ?></td>
+              <td class="hide-md"><?php if ($kap): foreach ($kap as $k): ?><span class="badge sm tone-gray"><?= e($k) ?></span> <?php endforeach; else: ?><span class="muted">—</span><?php endif; ?></td>
+              <td class="num"><?= $p['price'] !== null ? money($p['price']) : '<span class="muted">sorulur</span>' ?></td>
               <td class="row-actions">
                 <a class="btn btn-sm" href="settings.php?<?= e($katBack) ?>&edit=<?= (int) $p['id'] ?>">Düzenle</a>
                 <form method="post" class="inline"><?= csrf_field() ?><input type="hidden" name="tab" value="katalog"><input type="hidden" name="action" value="product_copy"><input type="hidden" name="id" value="<?= (int) $p['id'] ?>"><button class="icon-btn sm" title="Kopyala"><?= icon('plus') ?></button></form>
@@ -517,19 +544,44 @@ page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.'
     </section>
     <aside class="split-side">
       <section class="card">
-        <div class="card-head"><h2><?= $edit ? 'Ürünü düzenle' : 'Yeni ürün' ?></h2><?php if ($edit): ?><a class="link" href="settings.php?<?= e($katBack) ?>">Yeni ekle</a><?php endif; ?></div>
-        <form method="post" class="grid cols-2">
+        <div class="card-head"><h2><?= $edit ? 'Camı düzenle' : 'Yeni cam' ?></h2><?php if ($edit): ?><a class="link" href="settings.php?<?= e($katBack) ?>">Yeni ekle</a><?php endif; ?></div>
+        <form method="post" class="stack katalog-form">
           <?= csrf_field() ?><input type="hidden" name="tab" value="katalog"><input type="hidden" name="action" value="product_save"><input type="hidden" name="id" value="<?= $edit ? (int) $edit['id'] : '' ?>">
-          <label class="field"><span>Marka</span><input name="brand" value="<?= e($edit['brand'] ?? '') ?>" required></label>
-          <label class="field"><span>Ürün adı</span><input name="name" value="<?= e($edit['name'] ?? '') ?>" required></label>
-          <label class="field"><span>Tasarım</span><select name="design"><?= select_options($designsCat, $edit['design'] ?? 'tek_odak') ?></select></label>
-          <label class="field"><span>Segment</span><select name="tier"><?= select_options(product_tiers(), $edit['tier'] ?? 'dengeli') ?></select></label>
-          <label class="field"><span>İndeks</span><select name="lens_index"><option value="">Tüm indeksler</option><?= select_options(lens_indexes(), $edit['lens_index'] ?? '', false) ?></select></label>
-          <label class="field"><span>Kaplama</span><select name="coating"><option value="">Belirtilmedi</option><?= select_options(coatings(), $edit['coating'] ?? '', false) ?></select></label>
-          <label class="field"><span>Fiyat (çift, ₺)</span><input name="price" inputmode="decimal" value="<?= isset($edit['price']) && $edit['price'] !== null ? e(number_format((float) $edit['price'], 2, ',', '.')) : '' ?>" placeholder="Boş: fiyat sorulur"></label>
-          <label class="field check-field"><input type="checkbox" name="is_active" <?= !$edit || (int) $edit['is_active'] ? 'checked' : '' ?>> Aktif</label>
-          <label class="field span-all"><span>Not</span><input name="note" value="<?= e($edit['note'] ?? '') ?>" maxlength="255"></label>
-          <div class="form-actions span-all">
+          <fieldset class="katalog-grup">
+            <legend>Ürün</legend>
+            <div class="grid cols-2">
+              <label class="field"><span>Marka *</span><input name="brand" value="<?= e($edit['brand'] ?? '') ?>" required placeholder="örn. Essilor"></label>
+              <label class="field"><span>Ürün / seri adı *</span><input name="name" value="<?= e($edit['name'] ?? '') ?>" required placeholder="örn. Eyezen Start"></label>
+              <label class="field"><span>Segment</span><select name="tier"><?= select_options(product_tiers(), $edit['tier'] ?? 'dengeli') ?></select></label>
+              <label class="field check-field"><input type="checkbox" name="is_active" <?= !$edit || (int) $edit['is_active'] ? 'checked' : '' ?>> Aktif (teklifte seçilebilir)</label>
+            </div>
+          </fieldset>
+          <fieldset class="katalog-grup">
+            <legend>Teknik özellikler</legend>
+            <div class="grid cols-2">
+              <label class="field"><span>Odak tipi *</span><select name="design"><?= select_options($designsCat, $edit['design'] ?? 'tek_odak') ?></select></label>
+              <label class="field"><span>Hammadde</span><select name="hammadde"><option value="">Belirtilmedi</option><?= select_options(lens_hammaddeleri(), $edit['hammadde'] ?? '') ?></select></label>
+              <label class="field"><span>Kırılma indeksi</span><select name="lens_index"><option value="">Tüm indeksler</option><?= select_options(lens_indexes(), $edit['lens_index'] ?? '', false) ?></select></label>
+              <label class="field"><span>Yüzey tasarımı</span><select name="yuzey"><option value="">Belirtilmedi</option><?= select_options(lens_yuzeyleri(), $edit['yuzey'] ?? '') ?></select></label>
+            </div>
+            <small class="muted">İndeks yükseldikçe cam incelir (1.50 standart · 1.60 ince · 1.67 çok ince · 1.74 en ince). Yakın destekli ve miyopi kontrol camları SGK'da tek odak sayılır.</small>
+          </fieldset>
+          <fieldset class="katalog-grup">
+            <legend>Kaplamalar <small class="muted">(birden çok seçilebilir)</small></legend>
+            <div class="chip-group">
+              <?php foreach (coatings() as $k): $secili = in_array($k, $editKaplama, true); ?>
+                <label class="chip"><input type="checkbox" name="kaplamalar[]" value="<?= e($k) ?>" <?= $secili ? 'checked' : '' ?> class="gizli-radyo"> <?= e($k) ?></label>
+              <?php endforeach; ?>
+            </div>
+          </fieldset>
+          <fieldset class="katalog-grup">
+            <legend>Fiyat</legend>
+            <div class="grid cols-2">
+              <label class="field"><span>Satış fiyatı (çift, ₺)</span><input name="price" inputmode="decimal" value="<?= isset($edit['price']) && $edit['price'] !== null ? e(number_format((float) $edit['price'], 2, ',', '.')) : '' ?>" placeholder="Boş: teklifte sorulur"></label>
+              <label class="field"><span>Not</span><input name="note" value="<?= e($edit['note'] ?? '') ?>" maxlength="255" placeholder="örn. 3 gün teslim"></label>
+            </div>
+          </fieldset>
+          <div class="form-actions">
             <?php if ($edit): ?><button class="btn btn-ghost danger" form="del-product">Sil</button><?php endif; ?>
             <button class="btn btn-primary">Kaydet</button>
           </div>

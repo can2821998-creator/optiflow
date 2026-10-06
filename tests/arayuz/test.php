@@ -83,5 +83,15 @@ dogru('sipariş başlığı düğmeleri yazısından dar sıkışmaz', str_conta
 dogru('atölye istatistikleri telefonda yana kayan şerit', str_contains($css, '.pano-stats > .stat { flex: 0 0 44%;'));
 dogru('mağaza telefonu alanı telefon klavyesi açar', str_contains((string) file_get_contents($kok . '/app/pages/settings.php'), 'name="shop_phone" type="tel" inputmode="tel"'));
 
+/* 4.21.0 CSP (script-src 'self'): satır içi olaylar tarayıcıda engellenir — etiket "Yazdır", kasa tarihi, sipariş
+   personel ataması, katalog filtresi bu yüzden çalışmıyordu. Hiçbir sayfada kalmamalı. */
+$olayli = [];
+foreach (array_merge(glob($kok . '/app/pages/*.php') ?: [], glob($kok . '/app/*.php') ?: [], glob($kok . '/app/partials/*.php') ?: []) as $dosya) {
+    if (preg_match('/\son(click|change|submit|input|load)=/i', (string) file_get_contents($dosya))) {
+        $olayli[] = basename($dosya);
+    }
+}
+dogru('hiçbir sayfada satır içi olay yok (CSP) ' . implode(', ', $olayli), $olayli === []);
+
 echo "Arayüz/merkez düzeltme testleri: $gecen geçti, $kalan kaldı\n";
 exit($kalan ? 1 : 0);

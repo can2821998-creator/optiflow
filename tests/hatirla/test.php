@@ -198,7 +198,7 @@ dogru('merkez şeması: magaza_hatirla tablosu', str_contains($mg, 'CREATE TABLE
 $bs = (string) file_get_contents($kok . '/app/bootstrap.php');
 dogru('bootstrap: mağaza çerezi cron/ödeme bildiriminde denenmez', str_contains($bs, "magaza_hatirla_dene();") && str_contains($bs, "['cron.php', 'odeme-bildirim.php'"));
 $mig = (string) file_get_contents($kok . '/app/migrations.php');
-dogru('göç v30', str_contains($mig, 'const SCHEMA_VERSION = 30;') && str_contains($mig, 'migrate_v30_beni_hatirla'));
+dogru('göç v30', (bool) preg_match('/const SCHEMA_VERSION = (3[0-9]);/', $mig) && str_contains($mig, 'migrate_v30_beni_hatirla'));
 $lp = (string) file_get_contents($kok . '/app/pages/login.php');
 dogru('giriş sayfası: kutu + "Farklı mağaza" POST ile', str_contains($lp, 'name="hatirla"') && str_contains($lp, 'value="farkli"') && !str_contains($lp, '<script>'));
 

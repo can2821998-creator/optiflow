@@ -1,22 +1,29 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 6 Ekim 2026 (4.20.3 / Pro 5.5.0)*
+*Son güncelleme: 6 Ekim 2026 (4.21.0 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.20.3**, şema **30**. Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.20.3** (06.10: "Sürüm yayınla" + "Canlıya al" başarılı; canlıda manifest.php oturumsuz 200 JSON).
-  Release: v4.20.3-pro5.5.0.
+- **Sunucu 4.21.0** (push bekliyor; canlıda 4.20.3), şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
   11.4 (127.0.0.1:3307, başlat: `mariadb-11.4.8-winx64\bin\mariadbd.exe --defaults-file=veri\my.ini`), şifreler ve
   uydurma veri betiği (`ornek-veri.php`) orada; depoda `config.php` (gitignore) yerel. Sunucu: `php -S 127.0.0.1:8080`.
-- **Canlı site: 4.20.1, masaüstü latest.yml 5.5.0** (06.10: "Sürüm yayınla" + "Canlıya al" başarılı; canlı VERSION.txt
-  4.20.1, kontrol.php hata kaydı göstermiyor). Release: v4.20.1-pro5.5.0. CI'da tüm sunucu testleri geçti.
 - Çalışma ortamı (06.10): kullanıcının Windows bilgisayarı `C:\Users\TEKNOPLUS\optiflow`; Git 2.55, PHP 8.3, Node 22
   winget ile kuruldu; commit kimliği canaydnl98 <canaydnl98@gmail.com>. Windows'ta 3 bash sayfa testi (alis, sgk-fatura
   sayfa) ve seo testi ORTAM yüzünden düşer (`mktemp` /tmp yolu Windows PHP'ye geçmez, OpenSSL/dosya izni farkı);
   doğrulama CI'da (Linux).
 
-## Son oturum (4.20.3 — PWA / mobil, kullanıcı sırası: 3 cila → 2 çevrimdışı → 1 kullanım turu)
+## Son oturum (4.21.0 — katalogdan teklif + detaylı cam kataloğu)
+- Kullanıcı kurgusu: müşteri → teklif → müşteri kaydı → katalogdan cam (marka, özellik, fiyat) → çerçeve → Medula payı
+  düşülür → iskonto → döküm. Kararlar: **önce SGK, sonra iskonto**; personel iskonto sınırı (Ayarlar, varsayılan %10,
+  süper sınırsız); **1–3 alternatif cam** yan yana. `app/teklif.php`, `teklif-yeni.php`, `assets/teklif.js`, göç v31.
+- Siparişe çevir: `order-new.php?quote_id=&secenek=` tutar = SGK + ödenecek, sgk_amount; reçete girilince SGK payı
+  teklif tutarında kalır (`sgk_katki_uygula`). Döküm `print.php?type=quote`, WhatsApp metni. Rehber: `docs/YENILIKLER-4.21.md`.
+- Kullanıcı isteği: cam kaydı detaylı → odak tipi (6), hammadde, indeks (1.50–1.90), yüzey, **çoklu kaplama**;
+  Ayarlar katalog sekmesi gruplu form. Öneri asistanı (rx.js) çoklu kaplamayı puanlar.
+- CSP'nin engellediği satır içi olaylar kaldırıldı (etiket Yazdır, kasa tarihi, sipariş personel ataması, filtreler).
+- Yerelde uçtan uca: teklif #4 (3 seçenek) → sipariş #50 bakiye 16.920 = teklif; döküm A4'e sığıyor. tests/teklif 78.
+
+## Önceki oturum (4.20.3 — PWA / mobil, kullanıcı sırası: 3 cila → 2 çevrimdışı → 1 kullanım turu)
 - Kurulum: mağaza girişine manifest/iPhone/pwa.js; manifest oturumsuz (bootstrap `$manifestMisafir`); siyah açılış,
   ekran görüntüleri. Çevrimdışı ekranı yeni tema + `assets/offline.js`; sw.js v6.
 - YENİ `cevrimdisi_tel` (kullanıcı kararı: masaüstüyle aynı kapsam, telefon dahil; 24 saat): `api.php?action=cevrimdisi`,

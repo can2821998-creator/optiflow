@@ -1,6 +1,23 @@
 OPTIFLOW
-Release: 4.20.3 (2026-10-06)
+Release: 4.21.0 (2026-10-06)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.21.0 (katalogdan teklif; OptiFlow Pro 5.5.0 ile) — rehber: docs/YENILIKLER-4.21.md
+  - YENİ: Teklifler › Yeni teklif. Müşteri seçilir ya da kaydedilir → çerçeve (stoktan / elle / müşterinin kendi) →
+    katalogdan 1–3 alternatif cam (marka, ad, özellikleri ve fiyatıyla) → Medula (SGK) payı (kullanım şekline göre
+    tahmin, düzeltilebilir) → iskonto %. Her seçenek için ödenecek tutar canlı hesaplanır. Hesap: önce SGK payı
+    düşülür, iskonto kalan tutara uygulanır. Döküm (yazdır / PDF) ve WhatsApp ile gönderim.
+  - "Bu seçenekle siparişe çevir": tutar (SGK + ödenecek), SGK payı, stok çerçevesi ve not siparişe dolu gelir;
+    siparişin kalan bakiyesi müşteriye söylenen tutarla aynı. Reçete girilince SGK payı teklif tutarında kalır.
+  - İskonto yetkisi: Ayarlar › Genel › Teklif iskontosu (personel için en yüksek %, varsayılan 10; süper sınırsız).
+  - Cam kataloğu detaylandırıldı: odak tipi (tek odak, yakın destekli, miyopi kontrol, progressive, ofis, bifokal),
+    hammadde (CR-39, polikarbonat, Trivex, MR-8/7/174, mineral), indeks 1.50–1.90, yüzey (küresel, asferik, çift
+    asferik, free-form), birden çok kaplama. Ayarlar formu gruplu; detaylar teklif ve dökümde görünür.
+  - Düzeltme: tarayıcı güvenlik kuralı (CSP) satır içi olayları engellediği için etiket sihirbazı "Yazdır", kasa tarih
+    seçimi, siparişte personel atama, başarılar seçimi ve katalog filtreleri çalışmıyordu.
+  - Düzeltme: sipariş ekranında hata olunca tekliften dönüştürme bağlamı kayboluyordu.
+  - Göç v31 (quotes: tip, çerçeve, SGK, iskonto, seçenek ürünleri, seçilen; lens_products: hammadde, yüzey, uzun kaplama).
+  - Test: tests/teklif/test.php (78).
 
 DEĞİŞİKLİK NOTLARI — 4.20.3 (PWA / mobil; OptiFlow Pro 5.5.0 ile)
   - Kurulum: telefonda ilk açılan mağaza girişi sayfası manifest/iPhone simgesi/pwa.js yüklemiyordu ("Ana ekrana

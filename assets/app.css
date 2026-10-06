@@ -695,6 +695,8 @@ h3.sub { margin: 22px 0 8px; font: 700 12.5px/1.2 var(--sans); color: var(--gold
 .pick small { font-size: 13px; line-height: 1.45; }
 .pick:hover { border-color: var(--brand-bright); }
 .pick:has(input:checked) { border-color: var(--brand); background: var(--brand-tint); box-shadow: 0 0 0 3px rgba(60, 14, 28, .12); }
+a.pick { color: inherit; text-decoration: none; }   /* 4.21.0 etiket kapsamı bağlantı (eski onclick CSP'de çalışmıyordu) */
+a.pick input[type="radio"] { pointer-events: none; }
 .pick-form { margin-top: 10px; }
 /* ---------- Etiket sayfası önizlemesi (mini A4) ---------- */
 .sheet-preview {
@@ -2088,6 +2090,36 @@ a.stat:hover, button.stat:hover { transform: translateY(-2px); border-color: col
 .auth-card .foot, .list-foot .muted, .pager .pager-info { font: 500 13px var(--sans); font-style: normal; }
 .page-head, .hero { background-size: 380px auto, auto, auto; background-position: right 24px center, 0 0, 0 0; }
 @media (max-width: 640px) { .page-head, .hero { background-size: 240px auto, auto, auto; background-position: right -40px bottom -30px, 0 0, 0 0; } }
+
+/* 4.21.0 — Katalogdan teklif (teklif-yeni.php, quote.php) */
+.gizli-radyo { position: absolute; opacity: 0; pointer-events: none; }
+.teklif-secenekler { display: grid; gap: 12px; }
+.teklif-secenek { display: grid; grid-template-columns: 34px minmax(140px, 1fr) minmax(0, 3fr) minmax(130px, 1fr); gap: 12px; align-items: end;
+  padding: 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); }
+.teklif-secenek-no { display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: 6px; border-radius: 10px; background: var(--grad); color: #fff; font: 750 14px/1 var(--sans); }
+.teklif-ozet-tablo td.num b { font-size: 16px; }
+input.is-invalid { border-color: var(--red) !important; box-shadow: 0 0 0 3px var(--red-bg) !important; }
+.teklif-karsilastir { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.teklif-kart { position: relative; display: flex; flex-direction: column; gap: 6px; margin: 0; }
+.teklif-kart.is-secilen { border-color: var(--green); box-shadow: 0 0 0 2px var(--green-bg); }
+.teklif-kart h3 { margin: 0; font: 750 17px/1.25 var(--sans); }
+.teklif-kart .cam { font-weight: 650; }
+.teklif-kart dl { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; margin: 8px 0; font-size: 14px; }
+.teklif-kart dt { color: var(--muted); }
+.teklif-kart dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.katalog-grup { margin: 0; padding: 14px 14px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); }
+.katalog-grup legend { padding: 0 6px; font: 700 11.5px/1.2 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.katalog-grup > small { display: block; margin-top: 8px; }
+.katalog-form .grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }   /* dar yan panelde tek sütun */
+.katalog-grup .chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.katalog-tablo .badge { margin: 1px 0; }
+.teklif-kart .odenecek { display: flex; justify-content: space-between; align-items: baseline; padding-top: 10px; margin-top: auto; border-top: 1px solid var(--line); }
+.teklif-kart .odenecek b { font: 800 24px/1 var(--sans); color: var(--brand-ink); }
+html.tema-koyu .teklif-kart .odenecek b { color: #ff95a6; }
+@media (max-width: 900px) {
+  .teklif-secenek { grid-template-columns: 34px minmax(0, 1fr); }
+  .teklif-secenek .field { grid-column: 2; }
+}
 
 /* 4.20.1 — Telefon düzeni: yukarıdaki tema katmanı (.card / .stat dolgusu) "Telefonda kartlar" bölümünü eziyordu;
    kart dolgusu ile tablo kenar payı uyuşmuyor, listelerde Durum / Tutar / Bakiye ekranın dışında kalıyordu. */

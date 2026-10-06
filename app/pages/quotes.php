@@ -51,10 +51,10 @@ $quotes = rows(
 );
 
 page_start('Teklifler', 'quotes');
-page_header('Teklifler', 'Kararsız müşteriye iyi / daha iyi / en iyi üç seçenekli fiyat teklifi hazırlayın; siparişe dönüşmesi zorunlu değildir.', '', '', 'Satış');
+page_header('Teklifler', 'Müşteriye katalogdaki camlarla 1–3 seçenekli teklif hazırlayın: çerçeve, Medula payı ve iskonto düşülür, döküm verilir.', '<a class="btn btn-primary" href="teklif-yeni.php">' . icon('plus') . ' Yeni teklif</a>', '', 'Satış');
 ?>
 <details class="card">
-  <summary class="card-head" style="cursor:pointer"><h2><?= icon('plus') ?> Yeni teklif hazırla</h2></summary>
+  <summary class="card-head" style="cursor:pointer"><h2><?= icon('plus') ?> Serbest metinle teklif</h2><small class="muted">Katalogda olmayan bir iş için; fiyatları elle yazılır</small></summary>
   <form method="post" class="stack" style="margin-top:16px">
     <?= csrf_field() ?>
     <div class="grid cols-3">
@@ -93,9 +93,9 @@ page_header('Teklifler', 'Kararsız müşteriye iyi / daha iyi / en iyi üç se�
             <tr>
               <td><a class="cell-link" href="quote.php?id=<?= (int) $q['id'] ?>"><b><?= e($q['customer_name']) ?></b><small class="block muted"><?= $q['customer_phone'] ? e(phone_display($q['customer_phone'])) : '—' ?></small></a></td>
               <td class="hide-sm">
-                <?php foreach ([1, 2, 3] as $i): if ($q["opt{$i}_name"]): ?>
-                  <span class="badge sm tone-gray"><?= e($q["opt{$i}_name"]) ?><?= $q["opt{$i}_price"] !== null ? ' · ' . money($q["opt{$i}_price"]) : '' ?></span>
-                <?php endif; endforeach; ?>
+                <?php foreach (teklif_secenekleri($q) as $s): // 4.21.0: katalog teklifinde ödenecek tutar ?>
+                  <span class="badge sm <?= (int) ($q['secilen'] ?? 0) === $s['no'] ? 'tone-green' : 'tone-gray' ?>"><?= e($s['baslik']) ?><?= isset($s['hesap']) ? ' · ' . money($s['hesap']['odenecek']) : ($s['fiyat'] !== null ? ' · ' . money($s['fiyat']) : '') ?></span>
+                <?php endforeach; ?>
                 <?php if ($q['converted_order_id']): ?><span class="badge sm tone-green">Siparişe döndü</span><?php endif; ?>
               </td>
               <td class="hide-md"><?= e($q['created_by_name'] ?: '—') ?></td>

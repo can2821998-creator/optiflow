@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 30;
+const SCHEMA_VERSION = 31;
 
 function run_migrations(): void
 {
@@ -68,6 +68,7 @@ function run_migrations(): void
         if ($current < 28) { migrate_v28_katalog_notu(); set_schema_version(28); }
         if ($current < 29) { migrate_v29_hizli_satis(); set_schema_version(29); }
         if ($current < 30) { migrate_v30_beni_hatirla(); set_schema_version(30); }
+        if ($current < 31) { migrate_v31_katalog_teklif(); set_schema_version(31); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1577,4 +1578,25 @@ function migrate_v30_beni_hatirla(): void
         INDEX idx_oh_user (user_id)
     ) " . t_opts());
     q("INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES ('beni_hatirla', '1')");
+}
+
+/** 4.21.0 — Katalogdan teklif (app/teklif.php): çerçeve, kullanım şekli, SGK payı, iskonto, seçenek başına katalog ürünü. */
+function migrate_v31_katalog_teklif(): void
+{
+    add_column('quotes', 'tip', "VARCHAR(10) NOT NULL DEFAULT 'serbest'");
+    add_column('quotes', 'frame_item_id', 'INT UNSIGNED NULL');
+    add_column('quotes', 'frame_desc', 'VARCHAR(255) NULL');
+    add_column('quotes', 'frame_price', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+    add_column('quotes', 'lens_design', 'VARCHAR(20) NULL');
+    add_column('quotes', 'sgk_amount', 'DECIMAL(12,2) NOT NULL DEFAULT 0');
+    add_column('quotes', 'discount_rate', 'DECIMAL(5,2) NOT NULL DEFAULT 0');
+    foreach ([1, 2, 3] as $i) {
+        add_column('quotes', "opt{$i}_product_id", 'INT UNSIGNED NULL');
+    }
+    add_column('quotes', 'secilen', 'TINYINT UNSIGNED NULL');
+    q("INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES ('teklif_iskonto_max', '10')");
+    // Cam kataloğu detayları: hammadde, yüzey tasarımı, birden çok kaplama (", " ile; bkz. lens_kaplama_listesi)
+    add_column('lens_products', 'hammadde', 'VARCHAR(20) NULL');
+    add_column('lens_products', 'yuzey', 'VARCHAR(20) NULL');
+    db()->exec('ALTER TABLE lens_products MODIFY coating VARCHAR(255) NULL');
 }

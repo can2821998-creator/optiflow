@@ -322,7 +322,8 @@ if (is_post()) {
                 flash('SGK hakkı: ' . $hd['mesaj'], $hd['durum'] === 'yok' ? 'warn' : 'info');
             }
         }
-        $sgkMesaj = $sonuc['sgk']['tutar'] > 0 ? ' SGK katkısı tahmini ' . money($sonuc['sgk']['tutar']) . ' olarak işlendi.' : '';
+        $sgkMesaj = !empty($sonuc['sgk']['korundu']) ? ' SGK payı teklifteki tutarda (' . money($sonuc['sgk']['tutar']) . ') bırakıldı.'
+            : ($sonuc['sgk']['tutar'] > 0 ? ' SGK katkısı tahmini ' . money($sonuc['sgk']['tutar']) . ' olarak işlendi.' : '');
         $not = $sonuc['yeni_musteri'] ? 'Yeni müşteri ve sipariş açıldı. ' : ($sonuc['yeni_siparis'] ? 'Yeni sipariş açıldı. ' : '');
         flash($not . 'SGK değerleri ' . order_no($sonuc['order']) . ' siparişine yazıldı — cam tipini seçip kaydedin.' . $sgkMesaj);
         redirect('rx.php?id=' . $sonuc['rx']);

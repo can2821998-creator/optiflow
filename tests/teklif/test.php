@@ -1,0 +1,157 @@
+<?php
+/* 4.21.0 Katalogdan teklif (app/teklif.php): hesap, iskonto yetkisi, doğrulama, müşteri kaydı, siparişe ön dolum. */
+declare(strict_types=1);
+require dirname(__DIR__) . '/uts/ortam.php';
+
+// app/domain.php'den (testte yüklenmez) gereken üçü — aynı tanımlar
+function product_tiers(): array { return ['ekonomik' => 'Ekonomik', 'dengeli' => 'Dengeli', 'premium' => 'Premium']; }
+function lens_designs(): array { return ['tek_odak_uzak' => 'Tek odak · uzak', 'tek_odak_yakin' => 'Tek odak · yakın', 'ayri_uzak_yakin' => 'Uzak + yakın', 'progressive' => 'Progressive', 'ofis' => 'Ofis', 'bifokal' => 'Bifokal']; }
+function sgk_katki_tahmini(array $rx): float { return in_array($rx['lens_design'] ?? '', ['ayri_uzak_yakin', 'progressive', 'ofis', 'bifokal'], true) ? 320.0 : 160.0; }
+
+$personel = ['id' => 2, 'full_name' => 'Personel', 'role' => 'personel'];
+$patron = ['id' => 1, 'full_name' => 'Patron', 'role' => 'super'];
+
+echo "1) Hesap kuralı: önce SGK, sonra iskonto (kullanıcı kararı)\n";
+$h = teklif_hesapla(8000, 2000, 1200, 10);
+esit(10000.0, $h['ara'], 'ara = cam + çerçeve');
+esit(8800.0, $h['kalan'], 'kalan = ara − SGK');
+esit(880.0, $h['iskonto'], 'iskonto kalan tutara uygulanır');
+esit(7920.0, $h['odenecek'], 'ödenecek = (10.000 − 1.200) × 0,90');
+esit(500.0, teklif_hesapla(300, 200, 900, 0)['sgk'], 'SGK payı ara toplamı aşamaz');
+esit(0.0, teklif_hesapla(300, 200, 900, 50)['odenecek'], 'SGK her şeyi karşılarsa ödenecek 0');
+esit(1234.57, teklif_hesapla(1234.567, 0, 0, 0)['ara'], 'kuruşa yuvarlanır');
+esit(100.0, teklif_hesapla(100, 0, 0, 150)['oran'], 'oran en çok 100');
+
+echo "2) İskonto yetkisi\n";
+$GLOBALS['__kullanici'] = $personel;
+esit(10.0, teklif_iskonto_siniri(), 'personel: varsayılan %10');
+setting_set('teklif_iskonto_max', '15');
+esit(15.0, teklif_iskonto_siniri(), 'personel: Ayarlar\'daki sınır');
+$GLOBALS['__kullanici'] = $patron;
+esit(100.0, teklif_iskonto_siniri(), 'süper yetkili sınırsız');
+
+echo "3) Katalog ve çerçeve\n";
+$ted = insert('suppliers', ['name' => 'Toptancı', 'created_at' => uts_simdi(), 'updated_at' => uts_simdi()]);
+$cam1 = insert('lens_products', ['brand' => 'Essilor', 'name' => 'Eyezen', 'design' => 'tek_odak', 'tier' => 'dengeli', 'lens_index' => '1.60', 'coating' => 'Blue (mavi ışık)', 'price' => 4200]);
+$cam2 = insert('lens_products', ['brand' => 'Zeiss', 'name' => 'SmartLife Progressive', 'design' => 'progressive', 'tier' => 'premium', 'lens_index' => '1.67', 'coating' => 'Antirefle', 'price' => 12500]);
+$fiyatsiz = insert('lens_products', ['brand' => 'Hoya', 'name' => 'Özel', 'design' => 'tek_odak', 'tier' => 'ekonomik', 'price' => null]);
+$pasif = insert('lens_products', ['brand' => 'Eski', 'name' => 'Cam', 'design' => 'tek_odak', 'tier' => 'ekonomik', 'price' => 100, 'is_active' => 0]);
+$cer = insert('frame_items', ['brand' => 'Ray-Ban', 'model' => 'RB5154', 'color' => 'Siyah', 'qty' => 2, 'price' => 3500, 'supplier_id' => $ted, 'created_at' => uts_simdi(), 'updated_at' => uts_simdi()]);
+esit(3, count(teklif_cam_urunleri()), 'pasif ürün teklifte listelenmez');
+$et = teklif_cam_etiketi(row('SELECT * FROM lens_products WHERE id = ?', [$cam1]));
+esit('Essilor Eyezen', $et['ad'], 'cam adı = marka + ad');
+esit('Tek odak · İndeks 1.60 · Blue (mavi ışık)', $et['ozellik'], 'özellik satırı');
+esit('progressive', teklif_kullanim_onerisi('progressive'), 'progressive cam → SGK uzak+yakın');
+// 4.21.0 katalog detayları: app/domain.php'deki listeler (testte yüklenmez) — aynı tanımlar
+function lens_odak_tipleri(): array { return ['tek_odak' => 'Tek odak', 'tek_odak_destekli' => 'Tek odak · yakın destekli (yorgunluk)', 'miyopi_kontrol' => 'Tek odak · miyopi kontrol', 'progressive' => 'Progressive (çok odaklı)', 'ofis' => 'Ofis / ara mesafe', 'bifokal' => 'Bifokal']; }
+function lens_hammaddeleri(): array { return ['organik' => 'Organik (CR-39)', 'polikarbonat' => 'Polikarbonat', 'mr8' => 'MR-8 (inceltilmiş)']; }
+function lens_yuzeyleri(): array { return ['kuresel' => 'Küresel', 'asferik' => 'Asferik']; }
+$detayli = ['brand' => 'Essilor', 'name' => 'Eyezen Start', 'design' => 'tek_odak_destekli', 'hammadde' => 'mr8', 'lens_index' => '1.60', 'yuzey' => 'asferik',
+    'coating' => 'Antirefle, Blue (mavi ışık)', 'note' => null];
+esit('Tek odak · yakın destekli (yorgunluk) · MR-8 (inceltilmiş) · İndeks 1.60 · Asferik · Antirefle, Blue (mavi ışık)', teklif_cam_etiketi($detayli)['ozellik'], 'detaylı cam: odak · hammadde · indeks · yüzey · kaplamalar');
+esit('tek_odak_uzak', teklif_kullanim_onerisi('tek_odak_destekli'), 'yakın destekli cam SGK\'da tek odak');
+esit('Nikon Presio First', teklif_cam_etiketi(['brand' => 'Nikon', 'name' => 'Nikon Presio First', 'design' => 'progressive', 'lens_index' => null, 'coating' => null, 'note' => null])['ad'], 'ad markayla başlıyorsa marka tekrarlanmaz');
+
+echo "4) Doğrulamalar\n";
+$GLOBALS['__kullanici'] = $personel;
+$temel = ['first_name' => 'ayşe', 'last_name' => 'YILMAZ', 'phone' => '0532 111 22 33', 'cerceve_tur' => 'stok', 'frame_item_id' => (string) $cer,
+    'urun' => [1 => (string) $cam1, 2 => (string) $cam2], 'cam_fiyat' => [1 => '', 2 => ''], 'secenek_ad' => [1 => '', 2 => 'En iyisi'],
+    'sgk_var' => '1', 'lens_design' => 'tek_odak_uzak', 'sgk_amount' => '', 'discount_rate' => '10'];
+hata_bekle(fn() => teklif_kaydet(['first_name' => '', 'last_name' => ''] + $temel, $personel), 'müşteri zorunlu', 'Müşteri seçin');
+hata_bekle(fn() => teklif_kaydet(['phone' => '12'] + $temel, $personel), 'geçersiz telefon', 'Telefon');
+hata_bekle(fn() => teklif_kaydet(['customer_id' => '999'] + $temel, $personel), 'olmayan müşteri', 'bulunamadı');
+hata_bekle(fn() => teklif_kaydet(['frame_item_id' => ''] + $temel, $personel), 'stok seçilmedi', 'Stoktan');
+hata_bekle(fn() => teklif_kaydet(['cerceve_tur' => 'elle', 'frame_desc' => ''] + $temel, $personel), 'elle çerçeve açıklaması', 'açıklamasını');
+hata_bekle(fn() => teklif_kaydet(['cerceve_tur' => 'x'] + $temel, $personel), 'geçersiz çerçeve türü', 'geçersiz');
+hata_bekle(fn() => teklif_kaydet(['urun' => []] + $temel, $personel), 'en az bir cam', 'en az bir cam');
+hata_bekle(fn() => teklif_kaydet(['urun' => [1 => (string) $pasif]] + $temel, $personel), 'pasif cam seçilemez', 'pasif');
+hata_bekle(fn() => teklif_kaydet(['urun' => [1 => (string) $fiyatsiz]] + $temel, $personel), 'fiyatsız ürün fiyat ister', 'fiyat yok');
+hata_bekle(fn() => teklif_kaydet(['cam_fiyat' => [1 => 'abc']] + $temel, $personel), 'geçersiz fiyat', 'geçersiz');
+hata_bekle(fn() => teklif_kaydet(['lens_design' => 'yok'] + $temel, $personel), 'kullanım şekli', 'Kullanım');
+hata_bekle(fn() => teklif_kaydet(['discount_rate' => '16'] + $temel, $personel), 'personel sınırı aşılamaz (%15)', 'en çok %15');
+hata_bekle(fn() => teklif_kaydet(['discount_rate' => '-5'] + $temel, $personel), 'negatif iskonto', '0 ile 100');
+hata_bekle(fn() => teklif_kaydet(['discount_rate' => 'on'] + $temel, $personel), 'sayı olmayan iskonto', '0 ile 100');
+esit(0, (int) scalar('SELECT COUNT(*) FROM quotes'), 'hatalı girişte kayıt yok');
+esit(0, (int) scalar('SELECT COUNT(*) FROM customers'), 'hatalı girişte müşteri açılmaz');
+
+echo "5) Kayıt: yeni müşteri + stok çerçeve + iki seçenek\n";
+$id = teklif_kaydet($temel, $personel);
+$q = row('SELECT * FROM quotes WHERE id = ?', [$id]);
+$mus = row('SELECT * FROM customers');
+esit('Ayşe Yılmaz', $mus['first_name'] . ' ' . $mus['last_name'], 'müşteri adı düzeltilerek kaydedildi');
+esit('905321112233', $mus['phone'], 'telefon 90… biçiminde');
+esit((int) $mus['id'], (int) $q['customer_id'], 'teklif müşteriye bağlı');
+esit('katalog', $q['tip'], 'tip katalog');
+esit(3500.0, (float) $q['frame_price'], 'çerçeve fiyatı stoktan');
+esit('Ray-Ban · RB5154 · Siyah', $q['frame_desc'], 'çerçeve adı stoktan (frame_item_label)');
+esit(160.0, (float) $q['sgk_amount'], 'SGK payı boşsa tahmin (tek odak uzak)');
+esit(10.0, (float) $q['discount_rate'], 'iskonto oranı');
+esit('Dengeli', $q['opt1_name'], 'başlık boşsa segment adı');
+esit('En iyisi', $q['opt2_name'], 'elle başlık');
+esit(4200.0, (float) $q['opt1_price'], 'cam fiyatı katalogdan');
+esit($cam2, (int) $q['opt2_product_id'], 'ürün numarası saklandı');
+esit(null, $q['opt3_name'], 'kullanılmayan seçenek boş');
+
+echo "6) Fiyat kopyası: katalog değişse de teklif değişmez\n";
+q('UPDATE lens_products SET price = 9999, name = ? WHERE id = ?', ['Değişti', $cam1]);
+$sec = teklif_secenekleri(row('SELECT * FROM quotes WHERE id = ?', [$id]));
+esit(2, count($sec), 'iki seçenek');
+esit('Essilor Eyezen', $sec[0]['cam'], 'cam adı teklif anındaki');
+esit(4200.0, $sec[0]['hesap']['cam'], 'cam fiyatı teklif anındaki');
+esit(round((4200 + 3500 - 160) * 0.9, 2), $sec[0]['hesap']['odenecek'], 'seçenek 1 ödenecek');
+esit(round((12500 + 3500 - 160) * 0.9, 2), $sec[1]['hesap']['odenecek'], 'seçenek 2 ödenecek');
+
+echo "7) Aynı müşteri tekrar gelirse yeni kayıt açılmaz; elle çerçeve, elle SGK, SGK'sız\n";
+$id2 = teklif_kaydet(['cerceve_tur' => 'elle', 'frame_desc' => 'Vogue VO5286', 'frame_price' => '2.750,50', 'sgk_amount' => '400', 'cam_fiyat' => [1 => '4.000', 2 => '']] + $temel, $personel);
+esit(1, (int) scalar('SELECT COUNT(*) FROM customers'), 'aynı ad + telefon: müşteri tekrar açılmadı');
+$q2 = row('SELECT * FROM quotes WHERE id = ?', [$id2]);
+esit(2750.5, (float) $q2['frame_price'], 'elle çerçeve fiyatı (Türkçe biçim)');
+esit(400.0, (float) $q2['sgk_amount'], 'elle SGK payı');
+esit(4000.0, (float) $q2['opt1_price'], 'elle cam fiyatı katalogdakini ezer');
+$id3 = teklif_kaydet(['customer_id' => (string) $mus['id'], 'cerceve_tur' => 'kendi', 'sgk_var' => '', 'discount_rate' => ''] + $temel, $personel);
+$q3 = row('SELECT * FROM quotes WHERE id = ?', [$id3]);
+esit(0.0, (float) $q3['sgk_amount'], 'SGK\'sız');
+esit(0.0, (float) $q3['frame_price'], 'müşterinin kendi çerçevesi: 0');
+esit(null, $q3['frame_item_id'], 'stok çerçevesi yok');
+$GLOBALS['__kullanici'] = $patron;
+$id4 = teklif_kaydet(['customer_id' => (string) $mus['id'], 'discount_rate' => '%40'] + $temel, $patron);
+esit(40.0, (float) row('SELECT discount_rate FROM quotes WHERE id = ?', [$id4])['discount_rate'], 'süper yetkili %40 girebilir ("%" işaretiyle)');
+
+echo "8) Siparişe ön dolum (seçenek 2)\n";
+$od = teklif_siparis_on_dolum(row('SELECT * FROM quotes WHERE id = ?', [$id]), 2);
+$beklenenOdenecek = round((12500 + 3500 - 160) * 0.9, 2);
+esit(round(160 + $beklenenOdenecek, 2), $od['total_amount'], 'sipariş tutarı = SGK + ödenecek');
+esit(160.0, $od['sgk_amount'], 'siparişin SGK payı');
+esit($beklenenOdenecek, round($od['total_amount'] - $od['sgk_amount'], 2), 'bakiye = müşteriye söylenen tutar');
+esit($cer, $od['frame_item_id'], 'stok çerçevesi siparişe');
+ok(str_contains($od['notes'], 'Zeiss SmartLife Progressive') && str_contains($od['notes'], 'iskonto %10'), 'not: cam ve hesap dökümü');
+esit(null, teklif_siparis_on_dolum(row('SELECT * FROM quotes WHERE id = ?', [$id]), 3), 'olmayan seçenek: ön dolum yok');
+$serbest = insert('quotes', ['customer_name' => 'Eski', 'opt1_name' => 'İyi', 'opt1_price' => 5000]);
+esit(null, teklif_siparis_on_dolum(row('SELECT * FROM quotes WHERE id = ?', [$serbest]), 1), 'eski (serbest) teklif ön dolum vermez');
+$sv = teklif_secenekleri(row('SELECT * FROM quotes WHERE id = ?', [$serbest]));
+ok(!isset($sv[0]['hesap']) && $sv[0]['fiyat'] === 5000.0, 'eski teklif: fiyat = toplam, hesap yok');
+
+echo "9) WhatsApp metni\n";
+$wa = teklif_whatsapp_metni(row('SELECT * FROM quotes WHERE id = ?', [$id]), 'Örnek Optik');
+ok(str_contains($wa, 'Merhaba Ayşe Yılmaz') && str_contains($wa, 'SGK (Medula) payı') && str_contains($wa, '*Ödenecek: ' . money($beklenenOdenecek) . '*') && str_ends_with($wa, 'Örnek Optik'), 'döküm metni');
+
+echo "10) Kaynak denetimleri\n";
+$kok = dirname(__DIR__, 2);
+$mig = (string) file_get_contents($kok . '/app/migrations.php');
+ok(str_contains($mig, 'const SCHEMA_VERSION = 31;') && str_contains($mig, 'migrate_v31_katalog_teklif'), 'göç v31');
+$dom = (string) file_get_contents($kok . '/app/domain.php');
+ok(str_contains($dom, "FROM quotes WHERE converted_order_id = ? AND tip = 'katalog'"), 'reçete kaydı teklifteki SGK payını ezmez');
+$on = (string) file_get_contents($kok . '/app/pages/order-new.php');
+ok(str_contains($on, 'teklif_siparis_on_dolum($quote, $secenek)') && str_contains($on, "'quote_id' => \$quote ? (int) \$quote['id'] : null"), 'sipariş ekranı ön dolum + hata sonrası teklif bağlamı');
+$ty = (string) file_get_contents($kok . '/app/pages/teklif-yeni.php');
+ok(!preg_match('/<script>|onclick=|onchange=/', $ty) && str_contains($ty, "page_end(['teklif.js'])"), 'teklif ekranı: satır içi betik yok (CSP)');
+$st = (string) file_get_contents($kok . '/app/pages/settings.php');
+ok(str_contains($st, "!isset(lens_odak_tipleri()[\$data['design']])") && str_contains($st, "lens_hammaddeleri()[\$data['hammadde']]") && str_contains($st, "lens_yuzeyleri()[\$data['yuzey']]"), 'katalog kaydı: odak tipi, hammadde, yüzey doğrulanır');
+ok(str_contains($st, "array_intersect(coatings(), array_filter((array) (\$_POST['kaplamalar'] ?? [])"), 'katalog kaydı: yalnızca listedeki kaplamalar, birden çok');
+ok(str_contains($mig, "add_column('lens_products', 'hammadde'") && str_contains($mig, 'MODIFY coating VARCHAR(255)'), 'göç: hammadde, yüzey, uzun kaplama alanı');
+$katalogSekme = substr($st, (int) strpos($st, "elseif (\$tab === 'katalog'):"), 9000);
+ok(!str_contains($katalogSekme, 'onchange=') && str_contains($katalogSekme, 'data-auto-submit'), 'katalog filtresi CSP uyumlu (satır içi onchange yok)');
+$rxs = (string) file_get_contents($kok . '/assets/rx.js');
+ok(str_contains($rxs, 'p.coatings && p.coatings.length'), 'öneri asistanı çoklu kaplamayı puanlar');
+
+bitir();

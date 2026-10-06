@@ -74,7 +74,8 @@ if (is_post()) {
     if ($sgk['uyari']) {
         flash($sgk['uyari'], 'warn');
     }
-    $sgkMesaj = $sgk['tutar'] > 0 ? ' SGK katkısı tahmini ' . money($sgk['tutar']) . ' olarak siparişe işlendi (kontrol edin).' : '';
+    $sgkMesaj = !empty($sgk['korundu']) ? ' SGK payı teklifteki tutarda (' . money($sgk['tutar']) . ') bırakıldı.'
+        : ($sgk['tutar'] > 0 ? ' SGK katkısı tahmini ' . money($sgk['tutar']) . ' olarak siparişe işlendi (kontrol edin).' : '');
     flash('Reçete kaydedildi.' . ($missing ? " $missing cam depo listesine eklendi." : '') . $sgkMesaj);
     redirect('order.php?id=' . $orderId);
 }
@@ -100,8 +101,10 @@ $design = $v('lens_design', 'tek_odak_uzak');
 $age = $order['c_birth_year'] ? (int) date('Y') - (int) $order['c_birth_year'] : null;
 
 $catalog = array_map(static fn($p) => [
-    'id' => (int) $p['id'], 'brand' => $p['brand'], 'name' => $p['name'], 'design' => $p['design'], 'tier' => $p['tier'],
-    'index' => $p['lens_index'], 'coating' => $p['coating'], 'price' => $p['price'] !== null ? (float) $p['price'] : null, 'note' => $p['note'],
+    // 4.21.0: yakın destekli / miyopi kontrol camları asistanda tek odak sayılır; kaplama birden çok olabilir
+    'id' => (int) $p['id'], 'brand' => $p['brand'], 'name' => $p['name'],
+    'design' => in_array($p['design'], ['tek_odak_destekli', 'miyopi_kontrol'], true) ? 'tek_odak' : $p['design'], 'tier' => $p['tier'],
+    'index' => $p['lens_index'], 'coating' => $p['coating'], 'coatings' => lens_kaplama_listesi($p['coating']), 'price' => $p['price'] !== null ? (float) $p['price'] : null, 'note' => $p['note'],
 ], rows('SELECT * FROM lens_products WHERE is_active = 1 ORDER BY design, tier, price'));
 $advisorBoot = [
     'age'         => $age,

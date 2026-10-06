@@ -63,7 +63,7 @@ function sema_kur(PDO $p): void
     $p->exec("CREATE TABLE orders (id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT DEFAULT '', last_name TEXT DEFAULT '', order_stage TEXT DEFAULT 'siparis_verildi',
         frame_item_id INTEGER NULL, frame_info TEXT NULL, sgk_erecete TEXT NULL, sgk_amount REAL NOT NULL DEFAULT 0, delivered_at TEXT NULL,
         customer_id INTEGER NULL, transaction_type TEXT DEFAULT 'gozluk', lens_type TEXT NULL, public_token TEXT NULL, total_amount REAL NOT NULL DEFAULT 0, medula_islendi_at TEXT NULL, medula_islendi_by INTEGER NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP)");
-    $p->exec("CREATE TABLE customers (id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT NOT NULL, last_name TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '', birth_year INTEGER NULL)");
+    $p->exec("CREATE TABLE customers (id INTEGER PRIMARY KEY AUTOINCREMENT, first_name TEXT NOT NULL, last_name TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '', birth_year INTEGER NULL, notes TEXT NULL, created_by INTEGER NULL, created_at TEXT NULL)");
     $p->exec("CREATE TABLE prescription_records (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NULL)");
     $p->exec("CREATE TABLE prescription_lens_items (id INTEGER PRIMARY KEY AUTOINCREMENT, prescription_id INTEGER NOT NULL, lens_no INTEGER NOT NULL DEFAULT 1, lens_label TEXT NOT NULL DEFAULT '',
         stock_status TEXT NOT NULL DEFAULT 'stokta_var', eye TEXT NOT NULL DEFAULT 'R', lens_type TEXT NOT NULL DEFAULT '', item_group TEXT NOT NULL DEFAULT 'uzak', supplier_id INTEGER NULL,
@@ -131,6 +131,16 @@ function sema_kur(PDO $p): void
         kdv INTEGER NOT NULL DEFAULT 20)");
     $p->exec("CREATE TABLE satis_odemeleri (id INTEGER PRIMARY KEY AUTOINCREMENT, satis_id INTEGER NOT NULL, method TEXT NOT NULL DEFAULT 'nakit', amount REAL NOT NULL,
         created_by INTEGER NULL, created_at TEXT NOT NULL)");
+    // migrate_v12_quotes + migrate_v31_katalog_teklif ile aynı sütunlar (4.21.0 katalogdan teklif)
+    $p->exec("CREATE TABLE quotes (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER NULL, customer_name TEXT NOT NULL, customer_phone TEXT NULL, note TEXT NULL,
+        opt1_name TEXT NULL, opt1_desc TEXT NULL, opt1_price REAL NULL, opt2_name TEXT NULL, opt2_desc TEXT NULL, opt2_price REAL NULL,
+        opt3_name TEXT NULL, opt3_desc TEXT NULL, opt3_price REAL NULL, converted_order_id INTEGER NULL, created_by INTEGER NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        tip TEXT NOT NULL DEFAULT 'serbest', frame_item_id INTEGER NULL, frame_desc TEXT NULL, frame_price REAL NOT NULL DEFAULT 0, lens_design TEXT NULL,
+        sgk_amount REAL NOT NULL DEFAULT 0, discount_rate REAL NOT NULL DEFAULT 0, opt1_product_id INTEGER NULL, opt2_product_id INTEGER NULL, opt3_product_id INTEGER NULL,
+        secilen INTEGER NULL)");
+    $p->exec("CREATE TABLE lens_products (id INTEGER PRIMARY KEY AUTOINCREMENT, brand TEXT NOT NULL, name TEXT NOT NULL, design TEXT NOT NULL DEFAULT 'tek_odak',
+        tier TEXT NOT NULL DEFAULT 'dengeli', lens_index TEXT NULL, coating TEXT NULL, price REAL NULL, note TEXT NULL, is_active INTEGER NOT NULL DEFAULT 1, updated_at TEXT NULL,
+        hammadde TEXT NULL, yuzey TEXT NULL)");
     // migrate_v23_uts ile birebir aynı sütunlar
     $p->exec("CREATE TABLE uts_urunler (id INTEGER PRIMARY KEY AUTOINCREMENT, anahtar TEXT NOT NULL UNIQUE, uno TEXT NOT NULL, lno TEXT NULL, sno TEXT NULL,
         adet INTEGER NOT NULL DEFAULT 1, kaynak TEXT NOT NULL DEFAULT 'uts', skt TEXT NULL, urt TEXT NULL, kategori TEXT NOT NULL DEFAULT 'diger', marka_model TEXT NULL,
@@ -156,6 +166,7 @@ require dirname(__DIR__, 2) . '/app/fatura.php';
 require dirname(__DIR__, 2) . '/app/sgk-mutabakat.php';
 require dirname(__DIR__, 2) . '/app/pdf-metin.php';
 require dirname(__DIR__, 2) . '/app/satis.php';
+require dirname(__DIR__, 2) . '/app/teklif.php';
 
 /* ---------- Küçük test çatısı ---------- */
 $GLOBALS['__gecen'] = 0;

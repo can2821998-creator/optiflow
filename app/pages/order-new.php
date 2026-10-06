@@ -17,6 +17,10 @@ if ($quoteId > 0) {
         $customer = find_customer((int) $quote['customer_id']);
     }
 }
+// 4.21.0: katalog teklifinin seçilen seçeneği → tutar, SGK payı, çerçeve ve not ön dolum (app/teklif.php)
+$secenek = is_post() ? post_int('secenek') : query_int('secenek');
+$onDolum = $quote ? teklif_siparis_on_dolum($quote, $secenek) : null;
+$tutarMetni = static fn(float $x): string => number_format($x, 2, ',', '.');
 
 if (is_post()) {
     $errors = [];
@@ -87,7 +91,9 @@ if (is_post()) {
         foreach ($errors as $err) {
             flash($err, 'error');
         }
-        redirect('order-new.php' . ($customer ? '?customer_id=' . (int) $customer['id'] : ''));
+        // 4.21.0: hata sonrası tekliften dönüştürme bağlamı da korunur (eskiden quote_id kayboluyordu)
+        $geri = array_filter(['customer_id' => $customer ? (int) $customer['id'] : null, 'quote_id' => $quote ? (int) $quote['id'] : null, 'secenek' => $onDolum ? $secenek : null]);
+        redirect('order-new.php' . ($geri ? '?' . http_build_query($geri) : ''));
     }
 
     $orderId = transaction(function () use ($customer, $user, $stage, $txType, $serviceType, $isFree, $lens, $promised, $amount, $deposit, $method, $orderDate) {
@@ -156,7 +162,10 @@ if (is_post()) {
     $todayCount = (int) scalar("SELECT COUNT(*) FROM orders WHERE created_by = ? AND DATE(created_at) = CURDATE()", [$user['id']]);
     flash('Sipariş ' . order_no($orderId) . ' oluşturuldu. 🎉 Bugünkü ' . $todayCount . '. siparişiniz!');
     if ($quote) {
-        update('quotes', ['converted_order_id' => $orderId], 'id = ?', [$quote['id']]);
+        update('quotes', ['converted_order_id' => $orderId] + ($onDolum ? ['secilen' => $secenek] : []), 'id = ?', [$quote['id']]);
+        if ($onDolum && $onDolum['sgk_amount'] > 0) {
+            q('UPDATE orders SET sgk_amount = ? WHERE id = ?', [$onDolum['sgk_amount'], $orderId]);   // bakiye = teklifteki ödenecek
+        }
     }
     $avgAmount = (float) scalar("SELECT AVG(total_amount) FROM orders WHERE order_stage <> 'iptal' AND created_at >= CURDATE() - INTERVAL 60 DAY AND id <> ?", [$orderId]);
     $isCritical = $avgAmount > 0 && $amount >= max(5000, $avgAmount * 2.2);
@@ -168,7 +177,13 @@ $lensTypes = lens_type_options();
 page_start('Yeni sipariş', 'orders');
 page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipariş bilgilerini girin.', '', 'index.php', 'Yeni kayıt');
 ?>
-<?php if ($quote): ?>
+<?php if ($quote && $onDolum): ?>
+  <div class="alert alert-info">
+    <b>Teklif #<?= (int) $quote['id'] ?> siparişe çevriliyor (<?= e((string) $quote["opt{$secenek}_name"]) ?>).</b>
+    Tutar, Medula payı (<?= money($onDolum['sgk_amount']) ?>), çerçeve ve not tekliften dolduruldu; müşteriden alınacak:
+    <b><?= money($onDolum['total_amount'] - $onDolum['sgk_amount']) ?></b>.
+  </div>
+<?php elseif ($quote): ?>
   <div class="alert alert-info">
     <b>“<?= e($quote['customer_name']) ?>” teklifinden dönüştürülüyor.</b>
     <?php foreach ([1, 2, 3] as $i): if ($quote["opt{$i}_name"]): ?>
@@ -180,6 +195,7 @@ page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipari�
 <form method="post" class="form-layout" data-guard>
   <?= csrf_field() ?>
   <?php if ($quote): ?><input type="hidden" name="quote_id" value="<?= (int) $quote['id'] ?>"><?php endif; ?>
+  <?php if ($onDolum): ?><input type="hidden" name="secenek" value="<?= (int) $secenek ?>"><?php endif; ?>
   <section class="card">
     <div class="card-head"><h2><span class="step">1</span> Müşteri</h2></div>
 
@@ -230,11 +246,11 @@ page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipari�
       </label>
       <label class="field"><span>Sipariş tarihi</span><input type="date" name="order_date" value="<?= e(old('order_date', date('Y-m-d'))) ?>" max="<?= date('Y-m-d') ?>"></label>
       <label class="field"><span>Söz verilen teslim</span><input type="date" name="promised_date" value="<?= e(old('promised_date')) ?>"></label>
-      <label class="field span-2" data-label-for="frame_info"><span>Çerçeve / ürün / işlem açıklaması</span><input name="frame_info" value="<?= e(old('frame_info')) ?>" placeholder="örn. Ray-Ban 5154 52□21 — ya da 'Sağ sap vidası sıkıldı' — ya da 'Uvex güneş gözlüğü'"></label>
+      <label class="field span-2" data-label-for="frame_info"><span>Çerçeve / ürün / işlem açıklaması</span><input name="frame_info" value="<?= e(old('frame_info', $onDolum['frame_info'] ?? '')) ?>" placeholder="örn. Ray-Ban 5154 52□21 — ya da 'Sağ sap vidası sıkıldı' — ya da 'Uvex güneş gözlüğü'"></label>
       <label class="field span-2" data-show-for="gozluk,gunes_gozlugu"><span>Stoktaki çerçeve <small class="muted">(seçince vitrin stoğundan düşer)</small></span>
         <select name="frame_item_id">
           <option value="">— müşterinin kendi çerçevesi / stok dışı —</option>
-          <?= select_options(frame_stock_options(), old('frame_item_id')) ?>
+          <?= select_options(frame_stock_options(), old('frame_item_id', (string) ($onDolum['frame_item_id'] ?? ''))) ?>
         </select>
       </label>
       <?php if (can_see_amounts()): ?>
@@ -242,13 +258,13 @@ page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipari�
           <span>&nbsp;</span>
           <span class="check-field" style="min-height:46px"><input type="checkbox" name="is_free" value="1" <?= old('is_free') ? 'checked' : '' ?> data-free-toggle> Ücretsiz işlem</span>
         </label>
-        <label class="field"><span>Sipariş tutarı <span data-amount-required>*</span></span><input name="total_amount" inputmode="decimal" value="<?= e(old('total_amount')) ?>" placeholder="0,00" data-money data-amount-field></label>
+        <label class="field"><span>Sipariş tutarı <span data-amount-required>*</span></span><input name="total_amount" inputmode="decimal" value="<?= e(old('total_amount', $onDolum ? $tutarMetni($onDolum['total_amount']) : '')) ?>" placeholder="0,00" data-money data-amount-field></label>
       <?php endif; ?>
       <?php if (can_take_payments()): ?>
         <label class="field" data-show-for="gozluk,gunes_gozlugu,tamir"><span>Kapora / ön ödeme</span><input name="deposit" inputmode="decimal" value="<?= e(old('deposit')) ?>" placeholder="0,00" data-money></label>
         <label class="field"><span>Ödeme yöntemi</span><select name="deposit_method"><?= select_options(payment_methods(), old('deposit_method', 'nakit')) ?></select></label>
       <?php endif; ?>
-      <label class="field span-all"><span>Not</span><textarea name="notes" rows="2" placeholder="Atölye için notlar"><?= e(old('notes')) ?></textarea></label>
+      <label class="field span-all"><span>Not</span><textarea name="notes" rows="<?= $onDolum ? 3 : 2 ?>" placeholder="Atölye için notlar"><?= e(old('notes', $onDolum['notes'] ?? '')) ?></textarea></label>
     </div>
   </section>
 

@@ -97,7 +97,7 @@ if (query('bas') === '1' || query('cetvel') === '1') {
 <body class="label-page">
 <div class="label-toolbar no-print">
   <a class="btn" href="etiket.php?<?= e(http_build_query(array_diff_key($_GET, ['bas' => 1, 'cetvel' => 1]))) ?>">← Ayarlar</a>
-  <button class="btn btn-primary" onclick="window.print()">Yazdır</button>
+  <button type="button" class="btn btn-primary" data-print>Yazdır</button>
   <span class="muted small">
     <?= $cetvel ? 'Ölçü denetim sayfası' : count($kalemler) . ' çerçeve · ' . count($hucreler ?? []) . ' etiket · ' . count($sayfalar) . ' sayfa'
         . ($kirpildi ? ' · sınır nedeniyle ' . ETIKET_SINIRI . ' etikette kesildi' : '') ?>
@@ -178,6 +178,7 @@ if (query('bas') === '1' || query('cetvel') === '1') {
     </div>
   <?php endforeach; ?>
 <?php endif; ?>
+<script src="<?= e(asset('print.js')) ?>" defer></script>
 </body></html>
     <?php
     exit;
@@ -279,21 +280,18 @@ page_header('Etiket sihirbazı', 'A4 kâğıt ve normal yazıcıyla çerçeve ba
     <section class="card">
       <div class="card-head"><h2>Hangi çerçeveler</h2></div>
       <div class="pick-list">
-        <label class="pick">
-          <input type="radio" name="kapsam-r" <?= $kapsam === 'secili' ? 'checked' : '' ?>
-                 onclick="location.href='<?= e($bag(['kapsam' => 'secili'])) ?>'">
+        <a class="pick" href="<?= e($bag(['kapsam' => 'secili'])) ?>">
+          <input type="radio" name="kapsam-r" tabindex="-1" <?= $kapsam === 'secili' ? 'checked' : '' ?>>
           <span><b>Seçilenler</b><small class="block muted"><?= count($secili) ?> çerçeve · stok listesinden gelir</small></span>
-        </label>
-        <label class="pick">
-          <input type="radio" name="kapsam-r" <?= $kapsam === 'hepsi' ? 'checked' : '' ?>
-                 onclick="location.href='<?= e($bag(['kapsam' => 'hepsi'])) ?>'">
+        </a>
+        <a class="pick" href="<?= e($bag(['kapsam' => 'hepsi'])) ?>">
+          <input type="radio" name="kapsam-r" tabindex="-1" <?= $kapsam === 'hepsi' ? 'checked' : '' ?>>
           <span><b>Vitrindeki bütün çerçeveler</b><small class="block muted">Adedi sıfırdan büyük olanlar</small></span>
-        </label>
-        <label class="pick">
-          <input type="radio" name="kapsam-r" <?= $kapsam === 'kritik' ? 'checked' : '' ?>
-                 onclick="location.href='<?= e($bag(['kapsam' => 'kritik'])) ?>'">
+        </a>
+        <a class="pick" href="<?= e($bag(['kapsam' => 'kritik'])) ?>">
+          <input type="radio" name="kapsam-r" tabindex="-1" <?= $kapsam === 'kritik' ? 'checked' : '' ?>>
           <span><b>Kritik / biten</b><small class="block muted">Yeni gelenleri etiketlerken</small></span>
-        </label>
+        </a>
       </div>
       <?php $basilacak = min(ETIKET_SINIRI, $toplamEtiket) + $atla; ?>
       <p class="hint" style="margin-top:12px">

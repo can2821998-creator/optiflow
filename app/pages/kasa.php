@@ -150,7 +150,7 @@ page_header(
     date_tr($date) . ' · ' . count($payments) . ' tahsilat' . ($isClosed ? ' · <span class="badge sm tone-green">Gün kapatıldı</span>' : ''),
     '<a class="btn" href="print.php?type=kasa&date=' . e($date) . '" target="_blank">' . icon('print') . ' Dökümü yazdır</a>'
     . '<form method="get" class="inline">'
-    . '<input type="date" name="date" value="' . e($date) . '" max="' . date('Y-m-d') . '" onchange="this.form.submit()">'
+    . '<input type="date" name="date" value="' . e($date) . '" max="' . date('Y-m-d') . '" data-auto-submit>'
     . '<button class="btn btn-primary" type="submit">Görüntüle</button>'
     . '</form>',
     '', 'Kasa'

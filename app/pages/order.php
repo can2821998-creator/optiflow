@@ -703,7 +703,7 @@ page_start($name . ' ' . order_no($id), 'orders');
     <form method="post" class="inline">
       <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="workshop_assign">
       <label class="field"><span>Kim üzerinde çalışıyor</span>
-        <select name="assigned_to" onchange="this.form.submit()">
+        <select name="assigned_to" data-auto-submit>
           <option value="">— Atanmadı —</option>
           <?= select_options(array_combine(array_column($staff, 'id'), array_column($staff, 'full_name')), $order['assigned_to'] !== null ? (string) $order['assigned_to'] : null) ?>
         </select>

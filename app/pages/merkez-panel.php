@@ -498,7 +498,7 @@ $gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yen
     <span class="badge b-<?= e($detay['plan']) ?>"><?= e($planEtiket[$detay['plan']] ?? $detay['plan']) ?></span>
     <span class="muted mini"><?= e($detay['email']) ?> · Kayıt: <?= e(date_tr($detay['created_at'])) ?><?= $detay['guncelleme'] ? ' · Güncelleme: ' . e(date_tr($detay['guncelleme'])) : '' ?></span>
     <?php if ($detay['durum'] === 'aktif'): ?>
-    <form method="post" style="margin:0 0 0 auto" onsubmit="return true">
+    <form method="post" style="margin:0 0 0 auto">
       <?= csrf_field() ?><input type="hidden" name="action" value="gir"><input type="hidden" name="id" value="<?= (int) $detay['id'] ?>">
       <button class="btn btn-primary btn-sm" title="Bu mağazanın paneline destek amacıyla girin">⇥ Mağaza paneline gir</button>
     </form>

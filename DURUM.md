@@ -4,7 +4,7 @@
 
 ## Sürüm
 - **Sunucu 4.20.0**, şema **30**. Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.19.1, masaüstü latest.yml 5.5.0** (05.10 doğrulandı; Release v4.19.0-pro5.5.0). GitHub runner kuyruğu iki kez "runner alınamadı" ile iptal etti; "Re-run failed jobs" ile geçti.
+- **Canlı site: 4.20.0, masaüstü latest.yml 5.5.0** (06.10: "Sürüm yayınla" + "Canlıya al" başarılı; VERSION.txt bu oturumdan okunamadı, Actions sonucuna göre).
 - Özellik anahtarları (hepsi varsayılan kapalı): `hizli_satis`, `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
 - Testler (05.10): sunucu tümü geçti; entegrasyon (yerel MariaDB) api 46, modüller 76, garanti 37, sgk-fatura 26,
   hizli-satis 20, tasima 18, hatirla 24; masaüstü birim 116/116; E2E 74/74.

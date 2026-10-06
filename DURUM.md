@@ -3,8 +3,9 @@
 *Son güncelleme: 6 Ekim 2026 (4.20.3 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.20.3** (push bekliyor; canlıda 4.20.2 — 06.10 "Sürüm yayınla" + "Canlıya al" başarılı), şema **30**.
-  Masaüstü **OptiFlow Pro 5.5.0**.
+- **Sunucu 4.20.3**, şema **30**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Canlı site: 4.20.3** (06.10: "Sürüm yayınla" + "Canlıya al" başarılı; canlıda manifest.php oturumsuz 200 JSON).
+  Release: v4.20.3-pro5.5.0.
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
   11.4 (127.0.0.1:3307, başlat: `mariadb-11.4.8-winx64\bin\mariadbd.exe --defaults-file=veri\my.ini`), şifreler ve
   uydurma veri betiği (`ornek-veri.php`) orada; depoda `config.php` (gitignore) yerel. Sunucu: `php -S 127.0.0.1:8080`.

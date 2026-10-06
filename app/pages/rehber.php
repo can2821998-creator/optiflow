@@ -110,7 +110,7 @@ $ilan = static function (): void { ?>
 
 $foto = static function (string $gorsel, string $alt, bool $buyuk, bool $tembel = true) { ?>
   <figure class="foto<?= $buyuk ? ' buyuk' : '' ?>">
-    <span class="foto-cerceve"><img src="assets/onizleme/<?= pz_e($gorsel) ?>.webp" alt="<?= pz_e($alt) ?>" width="1280" height="800"<?= $tembel ? ' loading="lazy"' : '' ?> decoding="async"></span>
+    <span class="foto-cerceve"><img src="assets/onizleme/<?= pz_e($gorsel) ?>.webp?v=<?= (int) @filemtime(dirname(__DIR__, 2) . '/assets/onizleme/' . $gorsel . '.webp') ?>" alt="<?= pz_e($alt) ?>" width="1280" height="800"<?= $tembel ? ' loading="lazy"' : '' ?> decoding="async"></span>
     <figcaption><?= pz_e($alt) ?>.</figcaption>
   </figure>
 <?php };

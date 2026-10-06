@@ -42,6 +42,7 @@ if (is_post()) {
 <title>Mağaza kaydı — 30 gün ücretsiz</title>
 <link rel="icon" href="<?= e(asset('favicon.svg')) ?>" type="image/svg+xml">
 <link rel="stylesheet" href="<?= e(asset('app.css')) ?>">
+<script src="<?= e(asset('tema.js')) ?>"></script>
 <style>
   .kayit .auth-card{max-width:480px;width:100%}
   .kayit fieldset{margin:0 0 6px}

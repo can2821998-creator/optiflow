@@ -610,10 +610,10 @@ h3{font-weight:750}
           <div class="sahne">
             <figure class="tarayici">
               <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">optiflow.com.tr</span></div>
-              <img src="assets/onizleme/liste.webp" width="1280" height="800" loading="lazy" alt="OptiFlow Lite, tarayıcıda sipariş listesi ve günün özeti">
+              <img src="<?= e(asset('onizleme/liste.webp')) ?>" width="1280" height="800" loading="lazy" alt="OptiFlow Lite, tarayıcıda sipariş listesi ve günün özeti">
             </figure>
             <figure class="cep">
-              <img src="assets/onizleme/telefon.webp" width="390" height="780" loading="lazy" alt="OptiFlow Lite, telefonda siparişler ekranı">
+              <img src="<?= e(asset('onizleme/telefon.webp')) ?>" width="390" height="780" loading="lazy" alt="OptiFlow Lite, telefonda siparişler ekranı">
             </figure>
           </div>
         </article>
@@ -645,7 +645,7 @@ h3{font-weight:750}
                 </div>
                 <div class="ok">Aktar</div>
               </div>
-              <img src="assets/onizleme/siparis.webp" width="1140" height="800" loading="lazy" alt="OptiFlow sipariş ekranı: aktarılan reçetenin siparişi">
+              <img src="<?= e(asset('onizleme/siparis.webp')) ?>" width="1140" height="800" loading="lazy" alt="OptiFlow sipariş ekranı: aktarılan reçetenin siparişi">
             </div>
           </figure>
         </article>
@@ -722,7 +722,7 @@ h3{font-weight:750}
         <div>
           <figure class="tarayici">
             <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">optiflow.com.tr/workshop.php</span></div>
-            <img src="assets/onizleme/atolye.webp" width="1280" height="800" loading="lazy" alt="Atölye panosu: cam bekliyor, montajda, kalite kontrol ve hazır sütunları">
+            <img src="<?= e(asset('onizleme/atolye.webp')) ?>" width="1280" height="800" loading="lazy" alt="Atölye panosu: cam bekliyor, montajda, kalite kontrol ve hazır sütunları">
           </figure>
           <p class="alt-not">Duvardaki atölye ekranında da aynı liste döner; fiyat, telefon ve reçete görünmez.</p>
         </div>
@@ -752,22 +752,22 @@ h3{font-weight:750}
     <div class="serit" tabindex="0" aria-label="Uygulama ekranları">
       <figure class="tarayici">
         <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">Sipariş #00001</span></div>
-        <img src="assets/onizleme/siparis.webp" width="1140" height="800" loading="lazy" alt="Sipariş ekranı: müşteri, aşamalar, durum değiştirme">
+        <img src="<?= e(asset('onizleme/siparis.webp')) ?>" width="1140" height="800" loading="lazy" alt="Sipariş ekranı: müşteri, aşamalar, durum değiştirme">
         <figcaption><b>Sipariş</b> Aşamalar, kim yaptı, reçete ve camlar, WhatsApp ve fiş tek ekranda.</figcaption>
       </figure>
       <figure class="tarayici">
         <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">SGK ay sonu faturası</span></div>
-        <img src="assets/onizleme/sgk.webp" width="1280" height="800" loading="lazy" alt="SGK ay sonu faturası ekranı">
+        <img src="<?= e(asset('onizleme/sgk.webp')) ?>" width="1280" height="800" loading="lazy" alt="SGK ay sonu faturası ekranı">
         <figcaption><b>SGK ay sonu</b> Faturalanacak reçeteler, Medula'ya işlenmemişler ve döküm karşılaştırması.</figcaption>
       </figure>
       <figure class="tarayici">
         <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">Garantiler</span></div>
-        <img src="assets/onizleme/garanti.webp" width="1280" height="800" loading="lazy" alt="Garantiler listesi">
+        <img src="<?= e(asset('onizleme/garanti.webp')) ?>" width="1280" height="800" loading="lazy" alt="Garantiler listesi">
         <figcaption><b>Garantiler</b> Geçerli, bitecek ve talep açılmış garantiler; karekodlu kart.</figcaption>
       </figure>
       <figure class="tarayici">
         <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">Siparişler</span></div>
-        <img src="assets/onizleme/liste.webp" width="1280" height="800" loading="lazy" alt="Siparişler ana ekranı">
+        <img src="<?= e(asset('onizleme/liste.webp')) ?>" width="1280" height="800" loading="lazy" alt="Siparişler ana ekranı">
         <figcaption><b>Günün özeti</b> Bugün teslim sözü verilen, geciken, haber verilecek ve tahsilat bekleyenler.</figcaption>
       </figure>
     </div>

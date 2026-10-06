@@ -40,6 +40,7 @@ if (is_post()) {
 <link rel="icon" href="<?= e(asset('favicon.svg')) ?>" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="<?= e(asset('app.css')) ?>">
+<script src="<?= e(asset('tema.js')) ?>"></script>
 <?= ga_head() ?>
 </head>
 <body class="auth-page magaza-giris">

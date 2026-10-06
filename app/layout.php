@@ -16,6 +16,8 @@ function icon(string $name, string $class = 'ic'): string
         'plus'     => '<path d="M12 5v14M5 12h14"/>',
         'search'   => '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
         'logout'   => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+        'moon'     => '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z"/>',
+        'sun'      => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
         'user'     => '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
         'menu'     => '<path d="M4 6h16M4 12h16M4 18h16"/>',
         'print'    => '<path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/>',
@@ -206,6 +208,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="<?= e($shop) ?>">
 <link rel="stylesheet" href="<?= e(asset('app.css')) ?>">
+<script src="<?= e(asset('tema.js')) ?>"></script>
 </head>
 <body class="<?= e($opts['body'] ?? '') ?>">
 <?php if (config('ortam', '') === 'test'): ?>
@@ -218,6 +221,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
       <?= brand_mark() ?>
       <span class="brand-text"><b><?= e($shop) ?></b><small>OptiFlow</small></span>
     </a>
+    <button type="button" class="icon-btn tema-dugme tema-dugme-ust" data-tema-dugme title="Görünüm: açık / koyu / otomatik" aria-label="Görünümü değiştir"><?= icon('moon', 'ic tema-ay') ?><?= icon('sun', 'ic tema-gunes') ?></button>
     <a class="btn btn-block new-order" href="order-new.php"><?= icon('plus') ?> Yeni sipariş</a>
     <div class="global-search" data-global-search>
       <?= icon('search') ?>
@@ -250,6 +254,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
   <div class="main-col">
     <header class="topbar">
       <a class="brand compact" href="index.php"><?= brand_mark() ?><b><?= e($shop) ?></b></a>
+      <button type="button" class="icon-btn tema-dugme" data-tema-dugme aria-label="Görünümü değiştir"><?= icon('moon', 'ic tema-ay') ?><?= icon('sun', 'ic tema-gunes') ?></button>
       <a class="icon-btn" href="profile.php" aria-label="Profilim"><?= icon('user') ?></a>
     </header>
     <main id="main" class="content">

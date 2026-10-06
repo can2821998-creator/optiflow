@@ -1,15 +1,19 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 5 Ekim 2026 (4.19.1 / Pro 5.5.0)*
+*Son güncelleme: 6 Ekim 2026 (4.20.0 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.19.1**, şema **30**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Sunucu 4.20.0**, şema **30**. Masaüstü **OptiFlow Pro 5.5.0**.
 - **Canlı site: 4.19.1, masaüstü latest.yml 5.5.0** (05.10 doğrulandı; Release v4.19.0-pro5.5.0). GitHub runner kuyruğu iki kez "runner alınamadı" ile iptal etti; "Re-run failed jobs" ile geçti.
 - Özellik anahtarları (hepsi varsayılan kapalı): `hizli_satis`, `garanti`, `uts_bildirim`, `tedarik_finans`, `cam_hata`, `sgk_hak`, `efatura` …
 - Testler (05.10): sunucu tümü geçti; entegrasyon (yerel MariaDB) api 46, modüller 76, garanti 37, sgk-fatura 26,
   hizli-satis 20, tasima 18, hatirla 24; masaüstü birim 116/116; E2E 74/74.
 
-## Son düzeltme (4.19.1)
+## Son oturum (4.20.0 — koyu görünüm)
+- Koyu görünüm (Otomatik/Koyu/Açık, menü üstündeki düğme; `assets/tema.js`, app.css "KOYU GÖRÜNÜM").
+- Tanıtım/rehber görselleri önbellekten eski geliyordu → `asset()` / `?v=filemtime`.
+
+## Önceki düzeltme (4.19.1)
 - optiflow.com.tr kökü hatırlanan cihazda Siparişler açıyordu → kök her zaman tanıtım ("Uygulamaya git"). `$kokIstek` (bootstrap).
 
 ## Son oturumda yapılanlar (4.19.0 / Pro 5.5.0 — tema "Siyah & Bordo")

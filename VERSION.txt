@@ -1,6 +1,15 @@
 OPTIFLOW
-Release: 4.19.1 (2026-10-05)
+Release: 4.20.0 (2026-10-06)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.20.0 (koyu görünüm; OptiFlow Pro 5.5.0 ile)
+  - YENİ: Koyu görünüm. Menünün üstündeki ay/güneş düğmesi sırayla Otomatik → Koyu → Açık seçer (telefonda üst
+    çubukta). Otomatik, bilgisayarın/telefonun temasını izler. Seçim o cihazda saklanır (assets/tema.js, head'de
+    ertelenmeden yüklenir: beyaz parlama yok). CSS: app.css sonunda "KOYU GÖRÜNÜM" (html.tema-koyu belirteçleri).
+    Giriş ekranları da seçimi izler; fiş/etiket baskıları ve tanıtım sitesi açık kalır.
+  - Düzeltme: tanıtım sayfası ve rehberdeki uygulama görselleri tarayıcı önbelleğinden (1 ay) eski haliyle
+    geliyordu → adreslere dosya sürümü eklendi (?v=…), yeni görseller hemen görünür.
+  - Telefonda sayfa başlığındaki düğmeler (ör. Kasa › Dökümü yazdır + tarih) alt alta, sıkışmadan.
 
 DEĞİŞİKLİK NOTLARI — 4.19.1 (düzeltme; OptiFlow Pro 5.5.0 ile)
   - Kullanıcı bildirdi: optiflow.com.tr açılınca tanıtım sayfası yerine Siparişler geliyordu ("Beni hatırla"

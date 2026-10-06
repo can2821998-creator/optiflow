@@ -169,6 +169,7 @@ SVG;
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="<?= e($shop) ?>">
 <link rel="stylesheet" href="<?= e(asset('app.css')) ?>">
+<script src="<?= e(asset('tema.js')) ?>"></script>
 <?= ga_head() ?>
 </head>
 <body class="auth-page">

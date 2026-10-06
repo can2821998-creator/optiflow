@@ -1982,10 +1982,10 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--brand); }
 .tab.active::after, .tab::before { content: none; }
 .tab.active em { color: var(--accent-bright); }
 .avatar { background: var(--brand-soft); color: var(--brand-ink); font-weight: 750; font-style: normal; }
-.table tbody tr:nth-child(5n+2) .avatar { background: #e3ecff; color: #2149c9; }
-.table tbody tr:nth-child(5n+3) .avatar { background: #dcf3e6; color: #157347; }
-.table tbody tr:nth-child(5n+4) .avatar { background: #fdefd6; color: #9a5b00; }
-.table tbody tr:nth-child(5n+5) .avatar { background: #ece6ff; color: #5b3fd1; }
+.table tbody tr:nth-child(5n+2) .avatar { background: var(--blue-bg); color: var(--blue); }
+.table tbody tr:nth-child(5n+3) .avatar { background: var(--green-bg); color: var(--green); }
+.table tbody tr:nth-child(5n+4) .avatar { background: var(--amber-bg); color: var(--amber); }
+.table tbody tr:nth-child(5n+5) .avatar { background: var(--violet-bg); color: var(--violet); }
 .rows-link tbody tr:hover .avatar { background: var(--grad); color: #fff; }
 .avatar.lg { background: var(--brand-soft); box-shadow: inset 0 0 0 2px var(--brand); }
 
@@ -1994,7 +1994,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--brand); }
   --t: var(--brand); --tb: var(--brand-soft); --ti: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 17l6-6 4 4 8-8'/%3E%3Cpath d='M15 7h6v6'/%3E%3C/svg%3E");
   border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
   padding: 20px 22px 18px;
-  background: linear-gradient(150deg, #fff 45%, color-mix(in srgb, var(--tb) 70%, #fff) 100%);
+  background: linear-gradient(150deg, var(--surface) 45%, color-mix(in srgb, var(--tb) 70%, var(--surface)) 100%);
 }
 .stat.tone-green { --t: var(--green); --tb: var(--green-bg); --ti: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M8 12.5l2.7 2.7L16 9.8'/%3E%3C/svg%3E"); }
 .stat.tone-red { --t: var(--red); --tb: var(--red-bg); --ti: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l9.5 16.5h-19z'/%3E%3Cpath d='M12 10v4'/%3E%3Cpath d='M12 17.5h.01'/%3E%3C/svg%3E"); }
@@ -2002,7 +2002,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--brand); }
 .stat.tone-teal { --t: var(--teal); --tb: var(--teal-bg); --ti: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='6.5' cy='14' r='3.5'/%3E%3Ccircle cx='17.5' cy='14' r='3.5'/%3E%3Cpath d='M10 14c.7-.8 3.3-.8 4 0'/%3E%3Cpath d='M3 14l1.5-6h2'/%3E%3Cpath d='M21 14l-1.5-6h-2'/%3E%3C/svg%3E"); }
 .stat.tone-violet { --t: var(--violet); --tb: var(--violet-bg); --ti: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l9 5-9 5-9-5z'/%3E%3Cpath d='M3 13l9 5 9-5'/%3E%3C/svg%3E"); }
 .stat.tone-blue { --t: var(--blue); --tb: var(--blue-bg); --ti: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l9 5-9 5-9-5z'/%3E%3Cpath d='M3 13l9 5 9-5'/%3E%3C/svg%3E"); }
-.stat.tone-green, .stat.tone-red, .stat.tone-amber, .stat.tone-teal, .stat.tone-violet, .stat.tone-blue { border-left: 1px solid var(--line); background: linear-gradient(150deg, #fff 45%, color-mix(in srgb, var(--tb) 70%, #fff) 100%); }
+.stat.tone-green, .stat.tone-red, .stat.tone-amber, .stat.tone-teal, .stat.tone-violet, .stat.tone-blue { border-left: 1px solid var(--line); background: linear-gradient(150deg, var(--surface) 45%, color-mix(in srgb, var(--tb) 70%, var(--surface)) 100%); }
 .stat::before { content: ""; position: absolute; top: 18px; right: 18px; width: 42px; height: 42px; border-radius: 13px; background: var(--tb); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t) 18%, transparent); }
 .stat::after { content: ""; position: absolute; top: 29px; right: 29px; width: 20px; height: 20px; border: 0; border-radius: 0; box-shadow: none; background: var(--t); -webkit-mask: var(--ti) center / contain no-repeat; mask: var(--ti) center / contain no-repeat; }
 .stat small { font: 700 11px/1.25 var(--sans); letter-spacing: .1em; color: var(--muted); padding-right: 52px; min-height: 28px; }
@@ -2040,11 +2040,11 @@ a.stat:hover, button.stat:hover { transform: translateY(-2px); border-color: col
 .progress i, .hbar .hbar-track i, .thick-row.rec .thick-bar i, .badge-progress i { background: var(--grad); }
 .bars .sales, .key.sales { background: linear-gradient(180deg, #d0334f, #8f1a2e); }
 .bars .paid, .key.paid { background: linear-gradient(180deg, #3b3033, #1b1416); }
-.advisor-note, .customer-picker .picked, .product.selected, .quote-option-card.is-best, .podium-card.rank-1, .badge-card.is-unlocked, .fortune-box { background: linear-gradient(135deg, var(--brand-tint), #fff); }
+.advisor-note, .customer-picker .picked, .product.selected, .quote-option-card.is-best, .podium-card.rank-1, .badge-card.is-unlocked, .fortune-box { background: linear-gradient(135deg, var(--brand-tint), var(--surface)); }
 .bulk-bar.has-selection { background: var(--night); }
 .pano-col { border-radius: var(--radius); box-shadow: var(--shadow); background: var(--surface-2); }
 .pano-col-head, .pano-col-head.tone-amber, .pano-col-head.tone-teal, .pano-col-head.tone-violet, .pano-col-head.tone-green { border-radius: var(--radius) var(--radius) 0 0; font: 750 14px/1.2 var(--sans); padding-top: 14px; }
-.pano-col-head b { border-radius: 99px; background: rgba(255, 255, 255, .7); }
+.pano-col-head b { border-radius: 99px; background: color-mix(in srgb, var(--surface) 70%, transparent); }
 .pano-card { border-radius: 12px; background: var(--surface); box-shadow: var(--shadow-sm); }
 
 /* ---- Pro kartı, PWA çubuğu, barkod ---- */
@@ -2082,3 +2082,99 @@ a.stat:hover, button.stat:hover { transform: translateY(-2px); border-color: col
 .auth-card .foot, .list-foot .muted, .pager .pager-info { font: 500 13px var(--sans); font-style: normal; }
 .page-head, .hero { background-size: 380px auto, auto, auto; background-position: right 24px center, 0 0, 0 0; }
 @media (max-width: 640px) { .page-head, .hero { background-size: 240px auto, auto, auto; background-position: right -40px bottom -30px, 0 0, 0 0; } }
+
+/* ==========================================================================
+   4.20.0 — KOYU GÖRÜNÜM (html.tema-koyu; assets/tema.js seçer: otomatik / koyu / açık)
+   Belirteçler yeniden tanımlanır; açık renge sabitlenmiş birkaç bileşen ayrıca düzeltilir.
+   ========================================================================== */
+html.tema-koyu {
+  color-scheme: dark;
+  --paper: #0e0b0c;
+  --paper-2: #171214;
+  --surface: #171213;
+  --surface-2: #1d1718;
+  --surface-3: #261e20;
+  --line: #2f2528;
+  --line-strong: #43363a;
+  --ink: #f4eef0;
+  --ink-2: #d9cdd0;
+  --muted: #a6999d;
+
+  --brand: #e0435f;
+  --brand-deep: #b4233c;
+  --brand-bright: #ff6b81;
+  --brand-ink: #ff95a6;
+  --brand-soft: #3a1820;
+  --brand-tint: #221417;
+  --accent: #e0435f;
+  --accent-soft: #3a1820;
+  --accent-ink: #ff95a6;
+
+  --night: #090607;
+  --night-2: #140f11;
+  --night-3: #2a181e;
+
+  --blue: #93b2ff;   --blue-bg: #1a2440;
+  --teal: #5fd3c6;   --teal-bg: #12302d;
+  --green: #66d699;  --green-bg: #12301f;
+  --amber: #f3b75c;  --amber-bg: #33240d;
+  --violet: #b8a6ff; --violet-bg: #241c40;
+  --red: #ff7d86;    --red-bg: #3a1619;
+  --gray: #b6aaad;   --gray-bg: #2a2225;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 16px 36px -24px rgba(0, 0, 0, .8);
+  --shadow-lg: 0 30px 80px -40px rgba(0, 0, 0, .9);
+  --focus: 0 0 0 3px rgba(255, 107, 129, .3);
+}
+html.tema-koyu body {
+  background:
+    radial-gradient(1100px 520px at 92% -8%, rgba(208, 51, 79, .12), transparent 62%),
+    radial-gradient(900px 420px at 10% 105%, rgba(208, 51, 79, .06), transparent 60%),
+    var(--paper);
+  background-attachment: fixed;
+}
+html.tema-koyu ::selection { background: #5a1f2c; color: #fff; }
+/* Menü ve başlık bandı zemine karışmasın */
+html.tema-koyu .sidebar { box-shadow: inset -1px 0 0 rgba(255, 255, 255, .05); }
+html.tema-koyu .page-head, html.tema-koyu .hero { box-shadow: 0 0 0 1px rgba(255, 107, 129, .12), 0 26px 50px -32px rgba(0, 0, 0, .9); }
+/* Açık renge sabitlenmiş öğeler */
+html.tema-koyu .page-head .btn-primary, html.tema-koyu .page-head .btn-primary:hover { background: #fff; }
+html.tema-koyu .page-head .btn-primary, html.tema-koyu .page-head .btn-primary:hover { color: #1b1416; }
+html.tema-koyu input:not([type="checkbox"]):not([type="radio"]), html.tema-koyu select, html.tema-koyu textarea { background: var(--surface-2); color: var(--ink); border-color: var(--line-strong); box-shadow: none; }
+html.tema-koyu input:hover, html.tema-koyu select:hover, html.tema-koyu textarea:hover { border-color: #5a4a4e; }
+html.tema-koyu input:disabled { background: var(--surface-3); }
+html.tema-koyu .page-head input:not([type="checkbox"]):not([type="radio"]), html.tema-koyu .page-head select { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .2); color: #fff; }
+html.tema-koyu select { background: var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ff95a6' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; }
+html.tema-koyu input::-webkit-calendar-picker-indicator { filter: invert(.85); }
+html.tema-koyu .chip.active, html.tema-koyu .chip:has(input:checked), html.tema-koyu .tab.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+html.tema-koyu .hero .avatar.lg { background: rgba(255, 255, 255, .08); }
+html.tema-koyu .sheet-cell { background: var(--surface-2); }
+html.tema-koyu .satis-kalan.tamam { background: var(--green-bg); }
+html.tema-koyu .satis-kalan.fazla { background: var(--red-bg); }
+html.tema-koyu .pwa-bar .pwa-yes { background: #fff; color: #8f1a2e; }
+html.tema-koyu .sticky-actions { background: linear-gradient(to top, var(--paper) 70%, rgba(14, 11, 12, 0)); }
+html.tema-koyu .alert-ok { border-color: rgba(102, 214, 153, .25); }
+html.tema-koyu .alert-error { border-color: rgba(255, 125, 134, .25); }
+html.tema-koyu .alert-warn { border-color: rgba(243, 183, 92, .25); }
+html.tema-koyu .alert-info { border-color: rgba(147, 178, 255, .25); }
+html.tema-koyu .empty .empty-art { color: var(--brand-bright); }
+html.tema-koyu .suggest, html.tema-koyu .menu-list { background: var(--surface-2); border-color: var(--line-strong); }
+html.tema-koyu .tabbar a.tabbar-fab { border-color: var(--night); }
+/* Grafik çubukları: tahsilat koyu zeminde görünür olsun */
+html.tema-koyu .bars .paid, html.tema-koyu .key.paid { background: linear-gradient(180deg, #e8dfe1, #a99ea1); }
+
+/* Görünüm düğmesi: koyuda güneş, açıkta ay */
+.tema-dugme .tema-gunes { display: none; }
+html.tema-koyu .tema-dugme .tema-gunes { display: block; }
+html.tema-koyu .tema-dugme .tema-ay { display: none; }
+
+.sidebar .tema-dugme-ust { position: absolute; top: 26px; right: 14px; width: 36px; height: 36px; color: var(--on-night-muted); border: 1px solid rgba(243, 238, 240, .1); }
+.sidebar .tema-dugme-ust:hover { color: #fff; background: rgba(255, 255, 255, .08); }
+.sidebar .brand { padding-right: 48px; }
+.page-actions form.inline { display: flex; gap: 8px; align-items: center; margin: 0; }
+@media (max-width: 640px) {
+  .page-actions { width: 100%; flex-direction: column; align-items: stretch; }
+  .page-actions > .btn, .page-actions > form { flex: none; width: 100%; }
+  .page-actions form.inline input { flex: 1; min-width: 0; }
+}

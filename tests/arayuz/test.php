@@ -39,5 +39,24 @@ dogru('db_port sütunu ve kaydı', str_contains($mg, "'magazalar', 'db_port'") &
 dogru('taşıma da aynı bağlantı ayarını kullanır', str_contains((string) file_get_contents($kok . '/app/tasima.php'), 'db_baglanti_degistir(magaza_db_ayari($m))'));
 dogru('veritabanı adında büyük Türkçe harfler küçültülür', str_contains($mg, "mb_strtolower(strtr(\$isim, ['İ' => 'i', 'I' => 'ı']))"));
 
+/* 4.20.3 PWA: mağaza girişinden kurulum, manifest oturumsuz, çevrimdışı ekranı */
+$bs = (string) file_get_contents($kok . '/app/bootstrap.php');
+dogru('manifest oturumsuz da açılır (veritabanı seçilmez)', str_contains($bs, "=== 'manifest.php' && !tenant_oturum()") && str_contains($bs, '!$anaSayfaMisafir && !$manifestMisafir'));
+$mf = (string) file_get_contents($kok . '/manifest.php');
+dogru('manifest: mağaza adı yalnızca mağaza oturumunda okunur', str_contains($mf, 'if (tenant_oturum()) {'));
+dogru('manifest: açılış rengi tema rengiyle aynı', str_contains($mf, "'background_color'  => '#141012'") && str_contains($mf, "'theme_color'       => '#141012'"));
+dogru('manifest: ortak önbelleğe alınmaz', str_contains($mf, 'Cache-Control: private'));
+foreach (['telefon.webp', 'liste.webp', 'atolye.webp'] as $g) {
+    dogru("manifest ekran görüntüsü var: $g", str_contains($mf, 'assets/onizleme/' . $g) && is_file($kok . '/assets/onizleme/' . $g));
+}
+$mgz = (string) file_get_contents($kok . '/app/pages/magaza-giris.php');
+dogru('mağaza girişi: manifest + iPhone simgesi + pwa.js', str_contains($mgz, 'rel="manifest"') && str_contains($mgz, 'apple-touch-icon') && str_contains($mgz, "asset('pwa.js')"));
+$off = (string) file_get_contents($kok . '/offline.html');
+dogru('çevrimdışı ekranı: satır içi betik/olay yok (CSP)', !preg_match('/<script>|onclick=/i', $off) && str_contains($off, 'assets/offline.js') && str_contains($off, 'assets/tema.js'));
+dogru('çevrimdışı ekranı: koyu görünümü uygulama seçimiyle izler', str_contains($off, 'html.tema-koyu{'));
+$sw = (string) file_get_contents($kok . '/sw.js');
+dogru('servis çalışanı çevrimdışı betiklerini önceden saklar', str_contains($sw, "'assets/offline.js'") && str_contains($sw, "'assets/tema.js'"));
+dogru('servis çalışanı ağ yokken tüm önbelleklere bakar', str_contains($sw, '(await caches.match(istek))'));
+
 echo "Arayüz/merkez düzeltme testleri: $gecen geçti, $kalan kaldı\n";
 exit($kalan ? 1 : 0);

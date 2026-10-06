@@ -5,12 +5,14 @@
    kullanıcının verisi başka bir kullanıcıya gösterilemez ve ekrandaki
    bilgiler her zaman günceldir.
    ========================================================================== */
-const SURUM = 'optiflow-v4';
+const SURUM = 'optiflow-v5';   // 4.20.3: yeni çevrimdışı ekranı + betikleri
 const KABUK = `${SURUM}-kabuk`;
 const VARLIK = `${SURUM}-varlik`;
 
 const ON_YUKLE = [
   'offline.html',
+  'assets/offline.js',
+  'assets/tema.js',
   'assets/icons/icon-192.png',
   'assets/icons/icon-512.png',
   'assets/favicon.svg',
@@ -57,7 +59,8 @@ self.addEventListener('fetch', (e) => {
           if (agdan && agdan.status === 200) { c.put(istek, agdan.clone()); }
           return agdan;
         } catch (_) {
-          const kayit = await c.match(istek);
+          // önce varlık önbelleği, yoksa kurulumda saklananlar (offline.js, tema.js — kabuk önbelleği)
+          const kayit = (await c.match(istek)) || (await caches.match(istek));
           if (kayit) { return kayit; }
           throw _;
         }

@@ -164,6 +164,9 @@ if (!tenant_oturum() && isset($_COOKIE[HATIRLA_MAGAZA_CEREZ]) && !$kokIstek
 
 $merkezSayfasi = in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['magaza-giris.php', 'kayit.php', 'merkez-panel.php', 'tesekkurler.php'], true);
 $anaSayfaMisafir = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'index.php' && (!tenant_oturum() || $kokIstek);
+// 4.20.3 — PWA bildirimi mağaza girişinden önce de geçerli olmalı (telefonda ilk açılan sayfa mağaza girişi):
+// oturum yoksa veritabanı seçilmez, manifest.php genel "OptiFlow" bildirimini döndürür.
+$manifestMisafir = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'manifest.php' && !tenant_oturum();
 
 /*
  * SGK köprü uç noktası, oturum çerezine değil kullanıcıya özel köprü
@@ -214,7 +217,7 @@ if ($merkezSayfasi || $sunucuUcNoktasi) {
     http_response_code(401);
     echo json_encode(['ok' => false, 'kod' => 'magaza_oturumu_yok', 'hata' => 'Mağaza oturumu yok'], JSON_UNESCAPED_UNICODE);
     exit;
-} elseif (!$anaSayfaMisafir) {
+} elseif (!$anaSayfaMisafir && !$manifestMisafir) {
     tenant_gereksin();   // config('db')'yi oturumdaki mağazanın veritabanına çevirir, yoksa magaza-giris.php'ye yönlendirir
     db();
     run_migrations();

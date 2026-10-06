@@ -40,6 +40,13 @@ if (is_post()) {
 <meta name="theme-color" content="#141012">
 <title>Mağaza girişi · OptiFlow</title>
 <link rel="icon" href="<?= e(asset('favicon.svg')) ?>" type="image/svg+xml">
+<?php /* 4.20.3: telefonda ilk açılan sayfa burası — "Ana ekrana ekle" doğru ad ve simgeyle olsun */ ?>
+<link rel="manifest" href="manifest.php">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="OptiFlow">
 <link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="<?= e(asset('app.css')) ?>">
 <script src="<?= e(asset('tema.js')) ?>"></script>
@@ -71,5 +78,6 @@ if (is_post()) {
     <?php if (!is_optiflow_desktop()): ?><small class="foot">Yeni mağazasınız? <a class="link" href="kayit.php">Ücretsiz deneyin</a></small><?php endif; ?>
   </div>
 </main>
+<script src="<?= e(asset('pwa.js')) ?>" defer></script>
 </body>
 </html>

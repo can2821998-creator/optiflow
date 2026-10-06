@@ -1,6 +1,18 @@
 OPTIFLOW
-Release: 4.20.1 (2026-10-06)
+Release: 4.20.2 (2026-10-06)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.20.2 (tasarım kayması taraması; OptiFlow Pro 5.5.0 ile)
+  - 47 sayfa yerel test kurulumunda masaüstü (1366) + telefon (390), açık + koyu görünümde ölçüldü: sayfa taşması,
+    PHP hatası yok. Bulunan kaymalar düzeltildi:
+  - Sipariş › WhatsApp menüsü açılınca başlık bandında kesiliyor, şablon adları beyaz zeminde beyaz görünüyordu.
+  - Telefonda listeler: 4.19 tema katmanı telefon kart dolgusunu eziyordu; Siparişler'de Durum/Tutar, Müşteriler'de
+    Bakiye, Ürünler'de Fiyat, müşteri kartında Tutar ekranın dışında kalıyordu (yana kaydırmak gerekiyordu). Artık
+    sığıyor (dar telefonda liste avatarı gizlenir, durum rozeti ve "Kalan" satırı kırılabilir).
+  - Hata/bilgi sayfaları ("Yetkiniz yok", "Özellik açık değil"…) koyu görünümde beyaz açılıyordu → temayı izler.
+  - Merkez: panelde girilen MySQL portu kaydedilmiyordu (standart dışı portta mağaza açılır ama bağlanamazdı) →
+    magazalar.db_port. Yeni mağaza veritabanı adında büyük Türkçe harfler atılıyordu ("Örnek" → mgz_rnek_…).
+  - Test: tests/arayuz/test.php (11).
 
 DEĞİŞİKLİK NOTLARI — 4.20.1 (güvenlik denetimi; OptiFlow Pro 5.5.0 ile)
   - GÜVENLİK (kritik): kurulum.php, config.php sağlamken veritabanına o an bağlanılamıyorsa (kesinti, bağlantı

@@ -55,6 +55,7 @@ php tests/hizli-satis/test.php && bash tests/hizli-satis/sayfa-test.sh
 php tests/tasima/test.php
 php tests/hatirla/test.php
 php tests/guvenlik/test.php
+php tests/arayuz/test.php
 ```
 Masaüstü (desktop/ içinde, Node 22): `npm ci && npm run typecheck && npm test`
 (sunucu entegrasyon: `tests/server/*.mjs`, uçtan uca: `tests/e2e/` — yerel test sunucusu ister, bkz. desktop/BUILD.md).

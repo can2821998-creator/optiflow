@@ -1,9 +1,12 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 6 Ekim 2026 (4.20.1 / Pro 5.5.0)*
+*Son güncelleme: 6 Ekim 2026 (4.20.2 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.20.1**, şema **30**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Sunucu 4.20.2** (push bekliyor), şema **30**. Masaüstü **OptiFlow Pro 5.5.0**.
+- Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
+  11.4 (127.0.0.1:3307, başlat: `mariadb-11.4.8-winx64\bin\mariadbd.exe --defaults-file=veri\my.ini`), şifreler ve
+  uydurma veri betiği (`ornek-veri.php`) orada; depoda `config.php` (gitignore) yerel. Sunucu: `php -S 127.0.0.1:8080`.
 - **Canlı site: 4.20.1, masaüstü latest.yml 5.5.0** (06.10: "Sürüm yayınla" + "Canlıya al" başarılı; canlı VERSION.txt
   4.20.1, kontrol.php hata kaydı göstermiyor). Release: v4.20.1-pro5.5.0. CI'da tüm sunucu testleri geçti.
 - Çalışma ortamı (06.10): kullanıcının Windows bilgisayarı `C:\Users\TEKNOPLUS\optiflow`; Git 2.55, PHP 8.3, Node 22
@@ -11,7 +14,14 @@
   sayfa) ve seo testi ORTAM yüzünden düşer (`mktemp` /tmp yolu Windows PHP'ye geçmez, OpenSSL/dosya izni farkı);
   doğrulama CI'da (Linux).
 
-## Son oturum (4.20.1 — güvenlik denetimi)
+## Son oturum (4.20.2 — tasarım kayması taraması)
+- 47 sayfa × (1366/390) × (açık/koyu) otomatik ölçüm (taşma, kontrast, koyu temada açık zemin) + ekran kontrolü.
+- Düzeltilen: sipariş WhatsApp menüsü (kesik + beyaz-üstüne-beyaz); telefonda liste sütunları ekran dışı (tema katmanı
+  telefon dolgusunu eziyordu); hata sayfası koyu temayı izlemiyordu; merkez db_port kaydı; db adında Türkçe büyük harf.
+- Bilerek bırakılan: Kâr raporunda 4 sayısal sütunlu tablo telefonda yana kayar; ekran.php (atölye TV) kendi teması.
+- Sıradaki (kullanıcı kararı 06.10): **PWA / mobil taraf**, sonra şube özelliği.
+
+## Önceki oturum (4.20.1 — güvenlik denetimi)
 - Genel kod/güvenlik denetimi. SQL (parametreli + beyaz liste), çıktı kaçışı, CSRF, oturum yenileme, PayTR HMAC,
   taşıma SQL doğrulaması, Electron ayarları (sandbox, contextIsolation, dış bağlantı süzgeci) sağlam bulundu.
 - Düzeltilen: kurulum.php herkese açılabiliyordu (kritik) → `storage/kurulum-izni`; kontrol.php log/DB hatası sızıntısı;

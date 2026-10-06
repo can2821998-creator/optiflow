@@ -134,6 +134,22 @@ function merkez_sema_hazirla(PDO $pdo): void
     // 4.11.0 — OptiFlow Lite / Pro paketi (bkz. app/paket.php). Varsayılan Lite.
     merkez_kolon_ekle($pdo, 'magazalar', 'surum', "VARCHAR(10) NOT NULL DEFAULT 'lite'");
     merkez_kolon_ekle($pdo, 'magazalar', 'ozellikler', 'TEXT NULL');   // 4.12.0 özellik anahtarları (JSON)
+    // 4.20.1 — standart dışı MySQL portu: panelde girilen port eskiden kaydedilmiyordu (bkz. magaza_db_ayari)
+    merkez_kolon_ekle($pdo, 'magazalar', 'db_port', 'SMALLINT UNSIGNED NULL');
+}
+
+/** Mağaza satırından db_baglanti_degistir() ayarı (port boşsa varsayılan 3306). */
+function magaza_db_ayari(array $m): array
+{
+    return ['host' => $m['db_host'] ?: 'localhost', 'port' => !empty($m['db_port']) ? (int) $m['db_port'] : null,
+        'name' => $m['db_name'], 'user' => $m['db_user'], 'password' => $m['db_sifre']];
+}
+
+/** Mağaza satırından PDO DSN'i. */
+function magaza_dsn(array $m): string
+{
+    $c = magaza_db_ayari($m);
+    return 'mysql:host=' . $c['host'] . ($c['port'] ? ';port=' . $c['port'] : '') . ';dbname=' . $c['name'] . ';charset=utf8mb4';
 }
 
 /** Bir kolon yoksa ekler (merkez veritabanı için; information_schema ile güvenli). */
@@ -183,7 +199,8 @@ function merkez_q(string $sql, array $params = []): void
 function tenant_db_adi_uret(string $isim): string
 {
     $harfler = ['ç' => 'c', 'ğ' => 'g', 'ı' => 'i', 'ö' => 'o', 'ş' => 's', 'ü' => 'u'];
-    $temel = strtolower(strtr($isim, $harfler));
+    // 4.20.1: büyük Türkçe harfler (Ö, Ç, Ş, İ…) önce küçültülür; eskiden atılıyordu ("Örnek" → "rnek")
+    $temel = strtolower(strtr(mb_strtolower(strtr($isim, ['İ' => 'i', 'I' => 'ı'])), $harfler));
     $temel = preg_replace('/[^a-z0-9]+/', '_', $temel) ?? '';
     $temel = trim($temel, '_');
     $temel = $temel !== '' ? mb_substr($temel, 0, 40) : 'magaza';
@@ -281,8 +298,8 @@ function tenant_etkinlestir(int $magazaId, string $dbHost, string $dbName, strin
         throw new DomainException('Veritabanına bağlanılamadı ya da kurulamadı: ' . $e->getMessage());
     }
     merkez_q(
-        'UPDATE magazalar SET db_host = ?, db_name = ?, db_user = ?, db_sifre = ?, durum = ? WHERE id = ?',
-        [$dbHost, $dbName, $dbUser, $dbSifre, 'aktif', $magazaId]
+        'UPDATE magazalar SET db_host = ?, db_port = ?, db_name = ?, db_user = ?, db_sifre = ?, durum = ? WHERE id = ?',
+        [$dbHost, $dbPort, $dbName, $dbUser, $dbSifre, 'aktif', $magazaId]
     );
 }
 
@@ -524,8 +541,8 @@ function merkez_db_guncelle(int $id, string $host, string $name, string $user, s
     } catch (Throwable $e) {
         throw new DomainException('Bu bilgilerle veritabanına bağlanılamadı; kontrol edip tekrar deneyin.');
     }
-    merkez_q('UPDATE magazalar SET db_host = ?, db_name = ?, db_user = ?, db_sifre = ?, guncelleme = NOW() WHERE id = ?',
-        [$host ?: 'localhost', $name, $user, $sifre, $id]);
+    merkez_q('UPDATE magazalar SET db_host = ?, db_port = ?, db_name = ?, db_user = ?, db_sifre = ?, guncelleme = NOW() WHERE id = ?',
+        [$host ?: 'localhost', $port, $name, $user, $sifre, $id]);
 }
 
 /** Mağaza kaydını siler. DİKKAT: yalnızca merkez kaydını siler; mağazanın kendi VERİTABANINI SİLMEZ. */
@@ -549,7 +566,7 @@ function merkez_saglik(array $m): array
         $sonuc['mesaj'] = 'Mağaza henüz etkinleştirilmemiş.';
         return $sonuc;
     }
-    $dsn = 'mysql:host=' . ($m['db_host'] ?: 'localhost') . ';dbname=' . $m['db_name'] . ';charset=utf8mb4';
+    $dsn = magaza_dsn($m);
     try {
         $pdo = new PDO($dsn, (string) $m['db_user'], (string) $m['db_sifre'], [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -646,7 +663,7 @@ function merkez_tenant_pdo(array $m): PDO
     if (($m['durum'] ?? '') === 'beklemede' || empty($m['db_name'])) {
         throw new DomainException('Mağaza henüz etkinleştirilmemiş.');
     }
-    $dsn = 'mysql:host=' . ($m['db_host'] ?: 'localhost') . ';dbname=' . $m['db_name'] . ';charset=utf8mb4';
+    $dsn = magaza_dsn($m);
     try {
         return new PDO($dsn, (string) $m['db_user'], (string) $m['db_sifre'], [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -881,7 +898,7 @@ function kopru_tenant_bagla(): void
         echo json_encode(['ok' => false, 'hata' => 'Medula aktarımı OptiFlow Pro paketindedir.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    db_baglanti_degistir(['host' => $m['db_host'], 'port' => null, 'name' => $m['db_name'], 'user' => $m['db_user'], 'password' => $m['db_sifre']]);
+    db_baglanti_degistir(magaza_db_ayari($m));
 }
 
 /**
@@ -915,7 +932,7 @@ function tenant_gereksin(): void
             . 'Devam etmek için bizimle iletişime geçin; verileriniz saklanmaya devam ediyor.'
         );
     }
-    db_baglanti_degistir(['host' => $guncel['db_host'], 'port' => null, 'name' => $guncel['db_name'], 'user' => $guncel['db_user'], 'password' => $guncel['db_sifre']]);
+    db_baglanti_degistir(magaza_db_ayari($guncel));
 }
 
 /**
@@ -933,6 +950,6 @@ function magaza_baglan_id(int $id, bool $sadeceAktif = true): ?array
     if (!$m || !in_array($m['durum'], $sadeceAktif ? ['aktif'] : ['aktif', 'dondu'], true) || empty($m['db_name'])) {
         return null;
     }
-    db_baglanti_degistir(['host' => $m['db_host'], 'port' => null, 'name' => $m['db_name'], 'user' => $m['db_user'], 'password' => $m['db_sifre']]);
+    db_baglanti_degistir(magaza_db_ayari($m));
     return $m;
 }

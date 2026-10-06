@@ -562,7 +562,7 @@ a.stat:hover, button.stat:hover { transform: translateY(-2px); border-color: var
 .menu { position: relative; }
 .menu summary { list-style: none; }
 .menu summary::-webkit-details-marker { display: none; }
-.menu-list { position: absolute; right: 0; top: calc(100% + 10px); z-index: 15; width: min(360px, 90vw); padding: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); animation: rise .25s var(--ease); }
+.menu-list { position: absolute; right: 0; top: calc(100% + 10px); z-index: 15; width: min(360px, 90vw); padding: 8px; background: var(--surface); color: var(--ink); text-align: left; border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); animation: rise .25s var(--ease); }
 .menu-list a { display: block; padding: 11px 13px; border-radius: 10px; text-decoration: none; }
 .menu-list a:hover { background: var(--surface-2); }
 .menu-list b { display: block; font: 700 14.5px var(--sans); }
@@ -1918,6 +1918,10 @@ h1, h2, h3, h4 { font-family: var(--sans); font-weight: 750; letter-spacing: -.0
 .page-head::before, .hero::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(255, 255, 255, .07) 1px, transparent 1px); background-size: 18px 18px; -webkit-mask-image: linear-gradient(90deg, transparent 35%, #000); mask-image: linear-gradient(90deg, transparent 35%, #000); pointer-events: none; }
 .page-head::after, .hero::after { content: none; }
 .page-head > *, .hero > * { position: relative; z-index: 1; }
+/* 4.20.1: bant içindeki açılır menü (sipariş › WhatsApp) bandın sınırında kesiliyordu → açıkken taşmaya izin ver */
+.page-head::before, .hero::before { border-radius: inherit; }
+.page-head:has(.menu[open]), .hero:has(.menu[open]) { overflow: visible; z-index: 20; }
+.hero-actions .menu-list { left: 0; right: auto; }
 .page-head .eyebrow, .page-head .kicker, .hero .eyebrow { color: var(--accent-bright); }
 .page-head .kicker::before { background: var(--accent-bright); }
 .page-head h1, .hero h1 { font: 800 clamp(30px, 3vw, 40px)/1.08 var(--sans); letter-spacing: -.03em; color: #fff; }
@@ -2082,6 +2086,24 @@ a.stat:hover, button.stat:hover { transform: translateY(-2px); border-color: col
 .auth-card .foot, .list-foot .muted, .pager .pager-info { font: 500 13px var(--sans); font-style: normal; }
 .page-head, .hero { background-size: 380px auto, auto, auto; background-position: right 24px center, 0 0, 0 0; }
 @media (max-width: 640px) { .page-head, .hero { background-size: 240px auto, auto, auto; background-position: right -40px bottom -30px, 0 0, 0 0; } }
+
+/* 4.20.1 — Telefon düzeni: yukarıdaki tema katmanı (.card / .stat dolgusu) "Telefonda kartlar" bölümünü eziyordu;
+   kart dolgusu ile tablo kenar payı uyuşmuyor, listelerde Durum / Tutar / Bakiye ekranın dışında kalıyordu. */
+@media (max-width: 640px) {
+  .card { padding: 18px 16px; border-radius: 20px; }
+  .table-wrap { margin: 0 -16px; padding: 0 16px; }
+  .stat { padding: 14px 14px 13px; }
+  .cell-main small { white-space: normal; overflow-wrap: anywhere; }
+}
+/* Dar telefonda liste tabloları: avatar gizlenir, durum rozeti ve "Kalan …" satırı kırılabilir → Durum/Tutar ekranda kalır */
+@media (max-width: 480px) {
+  .table th, .table td { padding-left: 7px; padding-right: 7px; }
+  .table th:first-child, .table td:first-child { padding-left: 0; }
+  .table th:last-child, .table td:last-child { padding-right: 0; }
+  .table .cell-link > .avatar { display: none; }
+  .table td.num small { white-space: normal; }
+  .table td .badge { white-space: normal; line-height: 1.25; }
+}
 
 /* ==========================================================================
    4.20.0 — KOYU GÖRÜNÜM (html.tema-koyu; assets/tema.js seçer: otomatik / koyu / açık)

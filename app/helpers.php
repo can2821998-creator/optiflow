@@ -218,7 +218,7 @@ function render_error_page(string $title, string $message): void
     if (!headers_sent()) {
         header('Content-Type: text/html; charset=utf-8');
     }
-    echo '<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . e($title) . '</title><link rel="stylesheet" href="assets/app.css?v=' . APP_VERSION . '"></head><body class="auth-page"><main class="auth-single"><div class="auth-card"><span class="kicker">OptiFlow</span><h1>' . e($title) . '</h1><p class="muted">' . e($message) . '</p><a class="btn btn-primary" href="index.php">Ana sayfaya dön</a></div></main></body></html>';
+    echo '<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . e($title) . '</title><link rel="stylesheet" href="assets/app.css?v=' . APP_VERSION . '"><script src="assets/tema.js?v=' . APP_VERSION . '"></script></head><body class="auth-page"><main class="auth-single"><div class="auth-card"><span class="kicker">OptiFlow</span><h1>' . e($title) . '</h1><p class="muted">' . e($message) . '</p><a class="btn btn-primary" href="index.php">Ana sayfaya dön</a></div></main></body></html>';
     exit;
 }
 

@@ -296,7 +296,7 @@ function tasima_magaza_baglan(array $m): void
     if (($m['durum'] ?? '') === 'beklemede' || empty($m['db_name'])) {
         throw new DomainException('Mağaza henüz etkinleştirilmemiş; önce veritabanını bağlayın.');
     }
-    db_baglanti_degistir(['host' => $m['db_host'] ?: 'localhost', 'port' => $m['db_port'] ?? null, 'name' => $m['db_name'], 'user' => $m['db_user'], 'password' => $m['db_sifre']]);
+    db_baglanti_degistir(magaza_db_ayari($m));
 }
 
 /** Yüklenen dosyayı doğrular ve saklar (web'e kapalı storage/tasima). Önizleme özeti döner. */

@@ -1,7 +1,7 @@
 <?php
 /* ==========================================================================
    4.21.1 — Katalog teklifi dökümü (print.php?type=quote, quotes.tip = 'katalog').
-   Kendi sayfası ve stili (assets/teklif-dokum.css): A4 tek sayfa, siyah-bordo kimlik.
+   Kendi sayfası; stil: assets/dokum.css (4.22.0 ortak döküm) + assets/teklif-dokum.css (teklife özel). A4 tek sayfa.
    Renkler print-color-adjust: exact ile tarayıcının "arka planları yazdır" ayarı kapalıyken de basılır.
    Girdi: $qt (quotes satırı), $shop. İş mantığı app/teklif.php.
    ========================================================================== */
@@ -35,6 +35,7 @@ $ikon = [
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Fiyat teklifi #<?= (int) $qt['id'] ?> · <?= e($qt['customer_name']) ?></title>
+<link rel="stylesheet" href="<?= e(asset('dokum.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset('teklif-dokum.css')) ?>">
 </head>
 <body>
@@ -76,7 +77,7 @@ $ikon = [
     <?php endif; ?>
   </section>
 
-  <section class="bilgi">
+  <section class="bilgi teklif">
     <div><span class="ic"><?= $ikon['cerceve'] ?></span><small>Çerçeve</small><b><?= e((string) $qt['frame_desc']) ?></b><?= (float) $qt['frame_price'] > 0 ? '<em>' . money($qt['frame_price']) . '</em>' : '' ?></div>
     <div><span class="ic"><?= $ikon['goz'] ?></span><small>Kullanım</small><b><?= e(lens_designs()[(string) $qt['lens_design']] ?? '—') ?></b></div>
     <div><span class="ic"><?= $ikon['sgk'] ?></span><small>Medula (SGK) payı</small><b><?= $sgk > 0 ? money($sgk) : 'Uygulanmadı' ?></b><?= $sgk > 0 ? '<em>tahmini</em>' : '' ?></div>

@@ -167,6 +167,7 @@ require dirname(__DIR__, 2) . '/app/sgk-mutabakat.php';
 require dirname(__DIR__, 2) . '/app/pdf-metin.php';
 require dirname(__DIR__, 2) . '/app/satis.php';
 require dirname(__DIR__, 2) . '/app/teklif.php';
+require dirname(__DIR__, 2) . '/app/dokum.php';
 
 /* ---------- Küçük test çatısı ---------- */
 $GLOBALS['__gecen'] = 0;

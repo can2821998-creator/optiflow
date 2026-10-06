@@ -1,9 +1,9 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 6 Ekim 2026 (4.21.1 / Pro 5.5.0)*
+*Son güncelleme: 6 Ekim 2026 (4.22.0 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.21.1**, şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Sunucu 4.22.0** (dal `oturum/dokum`, main'e birleştirilmedi), şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
 - **Canlı site: 4.21.1** (06.10: "Sürüm yayınla" + "Canlıya al" başarılı). Release: v4.21.1-pro5.5.0. Canlı veritabanı v31 göçü ilk personel girişinde.
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
   11.4 (127.0.0.1:3307, başlat: `mariadb-11.4.8-winx64\bin\mariadbd.exe --defaults-file=veri\my.ini`), şifreler ve
@@ -13,7 +13,16 @@
   sayfa) ve seo testi ORTAM yüzünden düşer (`mktemp` /tmp yolu Windows PHP'ye geçmez, OpenSSL/dosya izni farkı);
   doğrulama CI'da (Linux).
 
-## Son oturum (4.21.1 — merkez panel + teklif dökümü tasarımı)
+## Son oturum (4.22.0 — tüm dökümler teklif tasarımında; dal `oturum/dokum`)
+- Kullanıcı: "en son döküm tasarımını beğendim, tüm dökümleri baştan yaratalım". Ortak yapı taşları `app/dokum.php`
+  (dokum_ust/selam/vurgu/bilgi/kutu/imzalar/kareler/son) + `assets/dokum.css`; print.php'nin 12 türü + garanti/sgk
+  partial'ları yeniden yazıldı; teklif-dokum.css yalnızca teklife özel parçalar.
+- Bulut oturumunda yerel MariaDB + "Örnek Optik" uydurma verisiyle headless Chromium: hepsi A4 tek sayfa; 70 satırlık
+  ekstre 3 sayfa (başlık tekrar, toplam sonda). Testler + garanti/sgk-fatura/hızlı satış entegrasyonu geçti.
+- Kullanıcı "gite yükle" deyince: main'e birleştir + push (sürüm 4.22.0 → Release + canlı).
+- Park edilmiş: `oturum/pwa` (alt menü özelleştirme, çek-yenile, yükleme çizgisi, simge rozeti) — main'e taşınmadı.
+
+## Önceki oturum (4.21.1 — merkez panel + teklif dökümü tasarımı)
 - Teklif PDF'i kendi şablonuyla (`app/partials/teklif-dokum.php`, `assets/teklif-dokum.css`); print.php katalog
   teklifini oraya yönlendirir. Headless Chrome ile doğrulandı: A4 tek sayfa, renkler basılıyor (3 seçenek + sözlük).
   Özellik sözlüğü `teklif_ozellik_sozlugu()`; geçerlilik `TEKLIF_GECERLILIK_GUN` = 15.
@@ -167,7 +176,7 @@
   - cron anahtarı adreste (`cron.php?anahtar=`) → sunucu erişim kayıtlarına düşer; başlıkla (X-Cron-Anahtar) çağırmak daha iyi.
   - Personel girişinde kullanıcı adı başına kilit (5 deneme) başkasının hesabını 15 dk kilitlemeye açık (bilinen ödünleşim).
   - Masaüstü exe imzasız (SmartScreen). Büyük tek dosyalar (merkez-panel.php 82 KB, order.php 59 KB) bakımı zorlaştırıyor.
-- Tema: her sayfa tek tek gözden geçirilmedi (ana ekranlar, giriş, site, telefon kontrol edildi). Etiket/fiş baskıları değişmedi.
+- Tema: her sayfa tek tek gözden geçirilmedi (ana ekranlar, giriş, site, telefon kontrol edildi). Etiket baskıları ve senet (bono) eski görünümde.
 - Pro 5.4.0 Medula doldurma gerçek Medula giriş ekranında denenmedi (sentetik sayfayla E2E). Alan bulma: şifreden önceki
   yazı kutusu = kullanıcı adı, sonraki = güvenlik kodu. Kullanıcıdan ilk girişte kontrol etmesi istendi.
 - Hızlı satış: ürün etiketi (etiket sihirbazı yalnızca çerçeve basıyor), ürünler için Excel toplu yükleme, müşteri kartında hızlı satış geçmişi, e-Arşiv faturası taslağı henüz yok.

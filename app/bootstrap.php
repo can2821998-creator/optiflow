@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.21.1';
+const APP_VERSION = '4.22.0';
 const APP_ROOT = __DIR__ . '/..';
 
 // 4.16.8: canlıya yükleme sürerken yarım dosyalara denk gelmemek için kısa bakım ekranı (app/guncelleme.php).
@@ -128,6 +128,7 @@ require __DIR__ . '/sgk-hak.php';  // 4.15.0 SGK hak kontrolü
 require __DIR__ . '/garanti.php';  // 4.16.0 garanti kaydı ve garanti kartı
 require __DIR__ . '/satis.php';    // 4.17.0 hızlı satış ve ürün kataloğu
 require __DIR__ . '/teklif.php';   // 4.21.0 katalogdan teklif (cam + çerçeve + SGK + iskonto)
+require __DIR__ . '/dokum.php';    // 4.22.0 ortak döküm (yazdırılan belge) yapı taşları
 require __DIR__ . '/karsilama.php';
 
 set_exception_handler('handle_fatal');

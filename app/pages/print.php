@@ -3,157 +3,149 @@ declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 require_login();
 
+/* 4.22.0 — Tüm yazdırılan belgeler (dökümler) tek tasarım dilinde: app/dokum.php yapı taşları + assets/dokum.css.
+   Her tür kendi gövdesini üretir (üst bant → karşılama → bilgi şeridi → kutular → imzalar → alt bilgi);
+   sayfa iskeleti en altta. Katalog teklifi kendi şablonuyla (app/partials/teklif-dokum.php). */
+
 $type = query('type');
 $shop = setting('shop_name', 'OptiFlow');
 $title = '';
+$ekCss = [];
 ob_start();
 
 if ($type === 'order') {
     $o = find_order(query_int('id'));
     if (!$o) { render_error_page('Sipariş bulunamadı', ''); }
     $rx = row('SELECT r.*, n.lens_type AS near_lens_type, n.right_sph AS near_right_sph, n.left_sph AS near_left_sph FROM prescription_records r LEFT JOIN near_prescription_details n ON n.prescription_id = r.id WHERE r.order_id = ? ORDER BY r.prescription_date DESC, r.id DESC LIMIT 1', [$o['id']]);
-    $payments = can_see_amounts() ? rows('SELECT * FROM payments WHERE order_id = ? ORDER BY created_at', [$o['id']]) : [];
+    $tutarlar = can_see_amounts();
+    $payments = $tutarlar ? rows('SELECT * FROM payments WHERE order_id = ? ORDER BY created_at', [$o['id']]) : [];
     $isDelivered = $o['order_stage'] === 'teslim_edildi';
     $isCancelled = $o['order_stage'] === 'iptal';
-    $hasDebt = $isDelivered && can_see_amounts() && (float) $o['balance'] > 0.009;
+    $hasDebt = $isDelivered && $tutarlar && (float) $o['balance'] > 0.009;
     $custName = trim($o['c_first'] . ' ' . $o['c_last']);
+    $tur = transaction_type_label($o['transaction_type']);
 
-    // Durum şeridi: senaryoya göre ikon, renk, başlık ve kurumsal dilde açıklama.
+    // Durum: rozet tonu, ikon, kısa başlık ve kurumsal dilde açıklama.
     if ($isCancelled) {
-        $banner = ['x', 'tone-gray', 'Sipariş İptal Edilmiştir', 'İlgili sipariş kaydı iptal edilmiş olup herhangi bir işlem gerektirmemektedir.'];
+        $durum = ['gri', 'carpi', 'Sipariş iptal edildi', 'İlgili sipariş kaydı iptal edilmiş olup herhangi bir işlem gerektirmemektedir.'];
     } elseif ($hasDebt) {
-        $banner = ['wallet', 'tone-amber', 'Teslim Edilmiştir · Bakiye Mevcuttur', 'Ürün tarafınıza teslim edilmiştir. Bakiyenin ' . ($o['balance_promise_date'] ? date_tr($o['balance_promise_date']) . ' tarihine kadar' : 'en kısa sürede') . ' tarafımıza ödenmesini rica ederiz.'];
+        $durum = ['uyari', 'cuzdan', 'Teslim edildi · bakiye var', 'Ürün tarafınıza teslim edilmiştir. Kalan bakiyenin ' . ($o['balance_promise_date'] ? date_tr($o['balance_promise_date']) . ' tarihine kadar' : 'en kısa sürede') . ' ödenmesini rica ederiz.'];
     } elseif ($isDelivered) {
-        $banner = ['check', 'tone-green', 'Teslim Edilmiştir', 'Ürün eksiksiz olarak tarafınıza teslim edilmiştir. Bizi tercih ettiğiniz için teşekkür ederiz.'];
+        $durum = ['ok', 'onay', 'Teslim edildi', 'Ürün eksiksiz olarak tarafınıza teslim edilmiştir. Bizi tercih ettiğiniz için teşekkür ederiz.'];
     } elseif ($o['order_stage'] === 'hazirlandi') {
-        $banner = ['glasses', 'tone-gold', 'Hazırlanmıştır', 'Siparişiniz hazırlanmış olup mağazamızdan teslim alınabilir durumdadır.'];
+        $durum = ['ok', 'goz', 'Teslime hazır', 'Siparişiniz hazırlanmıştır; mağazamızdan teslim alabilirsiniz.'];
     } elseif ($o['order_stage'] === 'atolyede') {
-        $banner = ['settings', 'tone-teal', 'Atölyede Hazırlanmaktadır', 'Siparişiniz atölyemizde özenle hazırlanmaktadır.'];
+        $durum = ['bilgi', 'ayar', 'Atölyede hazırlanıyor', 'Siparişiniz atölyemizde özenle hazırlanmaktadır.'];
     } else {
-        $banner = ['glasses', 'tone-wine', 'Sipariş Alınmıştır', 'Siparişiniz kayıt altına alınmış olup en kısa sürede hazırlanmaya başlanacaktır.'];
+        $durum = ['', 'belge', 'Sipariş alındı', 'Siparişiniz kayıt altına alınmıştır; en kısa sürede hazırlanmaya başlanacaktır.'];
     }
 
-    $title = transaction_type_label($o['transaction_type']) . ' fişi ' . order_no((int) $o['id']);
-    ?>
-    <div class="doc-brand"><div class="brand-row"><span class="doc-brand-mark"><?= brand_mark() ?></span><div><p class="doc-kicker">SİPARİŞ BELGESİ</p><h1><?= e($shop) ?></h1><p><?= e(setting('shop_address')) ?><?= setting('shop_phone') ? ' · ' . e(setting('shop_phone')) : '' ?></p></div></div>
-      <div class="doc-ref"><b><?= e(transaction_type_label($o['transaction_type'])) ?> · <?= order_no((int) $o['id']) ?></b><?= date_tr($isDelivered ? $o['delivered_at'] : $o['created_at'], true) ?></div></div>
-
-    <div class="status-banner <?= e($banner[1]) ?>"><?= icon($banner[0]) ?><div class="txt"><b><?= e($banner[2]) ?></b><span><?= e($banner[3]) ?></span></div></div>
-
-    <table class="kv-table">
-      <tr><th>Müşteri</th><td><?= e($custName) ?></td><th>Telefon</th><td><?= e(phone_display($o['c_phone']) ?: '—') ?></td></tr>
-      <?php if ($o['transaction_type'] === 'gozluk'): ?>
-      <tr><th>Cam tipi</th><td><?= e($o['lens_type'] ?: '—') ?></td><th>Teslim tarihi</th><td><?= date_tr($o['promised_date']) ?></td></tr>
-      <tr><th>Çerçeve</th><td colspan="3"><?= e($o['frame_info'] ?: '—') ?></td></tr>
-      <?php elseif ($o['transaction_type'] === 'tamir'): ?>
-      <tr><th>Yapılan işlem</th><td><?= e(service_type_label($o['service_type'])) ?></td><th>Ücret</th><td><?= (int) $o['is_free'] ? 'Ücretsiz' : money($o['total_amount']) ?></td></tr>
-      <tr><th>Ürün açıklaması</th><td colspan="3"><?= e($o['frame_info'] ?: '—') ?></td></tr>
-      <?php else: ?>
-      <tr><th>Açıklama</th><td colspan="3"><?= e($o['frame_info'] ?: '—') ?></td></tr>
-      <?php endif; ?>
-    </table>
-    <?php if ($rx): ?>
-      <h2>Reçete · <?= date_tr($rx['prescription_date']) ?> · <?= e(lens_designs()[$rx['lens_design']] ?? '') ?></h2>
-      <?php include dirname(__DIR__, 2) . '/app/partials/rx-table.php'; ?>
-    <?php endif; ?>
-    <?php if (can_see_amounts()): ?>
-      <h2>Ödeme</h2>
-      <table class="lines">
-        <thead><tr><th>Tarih</th><th>Açıklama</th><th class="num">Tutar</th></tr></thead>
-        <tbody>
-          <tr><td><?= date_tr($o['created_at']) ?></td><td>Sipariş tutarı</td><td class="num"><?= money($o['total_amount']) ?></td></tr>
-          <?php if ((float) $o['sgk_amount'] > 0): ?><tr><td></td><td>SGK katkısı (tahmini)</td><td class="num">− <?= money($o['sgk_amount']) ?></td></tr><?php endif; ?>
-          <?php foreach ($payments as $p): ?><tr><td><?= date_tr($p['created_at']) ?></td><td>Ödeme · <?= e(payment_methods()[$p['method']] ?? $p['method']) ?><?= $p['note'] ? ' · ' . e($p['note']) : '' ?></td><td class="num">− <?= money($p['amount']) ?></td></tr><?php endforeach; ?>
-        </tbody>
-        <?php if (!$hasDebt): ?><tfoot><tr><th colspan="2">Kalan</th><th class="num"><?= money($o['balance']) ?></th></tr></tfoot><?php endif; ?>
-      </table>
-    <?php endif; ?>
-    <?php if ($hasDebt): ?>
-      <div class="due-plate">
-        <div><div class="label">Kalan bakiye</div><div class="amount"><?= money($o['balance']) ?></div></div>
-        <div class="promise"><small>Ödeme sözü</small><b><?= $o['balance_promise_date'] ? date_tr($o['balance_promise_date']) : 'Belirtilmedi' ?></b></div>
-      </div>
-    <?php endif; ?>
-    <h2>İşlemi yürütenler</h2>
-    <table class="kv-table">
-      <tr><th>Siparişi alan</th><td><?= e($o['created_by_name'] ?: '—') ?></td><th>Hazırlayan (atölye)</th><td><?= e(staff_name($o['assigned_to'])) ?></td></tr>
-      <tr><th>Kalite kontrolü yapan</th><td><?= e(staff_name($o['qc_by'])) ?></td><th>Teslim eden</th><td><?= e(staff_name($o['delivered_by'])) ?></td></tr>
-    </table>
-    <?php
-    $staffSide = $isDelivered ? staff_name($o['delivered_by']) : ($o['created_by_name'] ?: '');
-    $staffRole = $isDelivered ? 'Teslim Eden Yetkili' : 'Siparişi Alan Yetkili';
-    if ($hasDebt) {
-        $custP = 'Ürünü teslim aldım; kalan bakiyeyi yukarıda belirtilen tarihe kadar ödeyeceğimi beyan ve kabul ederim.';
-    } elseif ($isDelivered) {
-        $custP = 'Ürünü eksiksiz ve hasarsız olarak teslim aldığımı beyan ederim.';
-    } else {
-        $custP = 'Yukarıdaki sipariş bilgilerini incelediğimi ve onayladığımı beyan ederim.';
+    $title = $tur . ' fişi ' . order_no((int) $o['id']);
+    $meta = [['Fiş no', order_no((int) $o['id'])], ['Tarih', date_tr($o['created_at'])]];
+    if ($isDelivered) {
+        $meta[] = ['Teslim', date_tr($o['delivered_at'])];
+    } elseif ($o['transaction_type'] === 'gozluk' && $o['promised_date']) {
+        $meta[] = ['Söz verilen', date_tr($o['promised_date'])];
     }
-    ?>
-    <?php if (!$isCancelled): ?>
-      <div class="sign-box">
-        <div class="box"><small><?= e($staffRole) ?></small><div class="who <?= $staffSide ? '' : 'empty' ?>"><?= $staffSide ? e($staffSide) : 'Atanmadı' ?></div><p>İşbu belgeyi düzenlemiştir.</p><div class="pen-line"></div></div>
-        <div class="box"><small>Müşteri</small><div class="who"><?= e($custName) ?></div><p><?= e($custP) ?></p><div class="pen-line"></div></div>
-      </div>
-    <?php endif; ?>
-    <?php
-    /* Müşteri takip karekodu: evinde okutunca siparişinin durumunu görür. */
+    echo dokum_ust($tur . ' fişi', $meta);
+
+    $sag = '';
+    if ($tutarlar && !$isCancelled) {
+        if ($hasDebt) {
+            $sag = dokum_vurgu('Kalan bakiye', money($o['balance']), $o['balance_promise_date'] ? 'Ödeme sözü ' . date_tr($o['balance_promise_date']) : 'Ödeme sözü belirtilmedi');
+        } elseif ((float) $o['balance'] <= 0.009) {
+            $sag = dokum_vurgu('Sipariş tutarı', money($o['total_amount']), 'Tamamı ödendi', 'ok');
+        } else {
+            $sag = dokum_vurgu('Sipariş tutarı', money($o['total_amount']), 'Kalan ' . money($o['balance']));
+        }
+    }
+    echo dokum_selam('Sayın', $custName, e($durum[3]), $sag, dokum_rozet($durum[0], $durum[1], $durum[2]));
+
+    $tel = phone_display($o['c_phone']);
+    if ($o['transaction_type'] === 'gozluk') {
+        echo dokum_bilgi([
+            ['cerceve', 'Çerçeve', (string) $o['frame_info']],
+            ['goz', 'Cam tipi', (string) $o['lens_type']],
+            ['takvim', $isDelivered ? 'Teslim tarihi' : 'Söz verilen teslim', date_tr($isDelivered ? $o['delivered_at'] : $o['promised_date'])],
+            ['tel', 'Telefon', $tel],
+        ], true);
+    } elseif ($o['transaction_type'] === 'tamir') {
+        echo dokum_bilgi([
+            ['cerceve', 'Ürün', (string) $o['frame_info']],
+            ['ayar', 'Yapılan işlem', service_type_label($o['service_type'])],
+            ['cuzdan', 'Ücret', (int) $o['is_free'] ? 'Ücretsiz' : ($tutarlar ? money($o['total_amount']) : '')],
+            ['tel', 'Telefon', $tel],
+        ], true);
+    } else {
+        echo dokum_bilgi([
+            ['etiket', 'Açıklama', (string) $o['frame_info']],
+            ['takvim', 'Tarih', date_tr($o['created_at'])],
+            ['tel', 'Telefon', $tel],
+        ], true);
+    }
+
+    if ($rx) {
+        ob_start();
+        include dirname(__DIR__, 2) . '/app/partials/rx-table.php';
+        $rxHtml = (string) ob_get_clean();
+        echo '<div class="bolum">' . dokum_kutu('Reçete', $rxHtml, '', trim(date_tr($rx['prescription_date']) . ' · ' . (lens_designs()[$rx['lens_design']] ?? ''), ' ·')) . '</div>';
+    }
+
+    $yurutenler = dokum_liste([
+        ['Siparişi alan', (string) ($o['created_by_name'] ?: '')],
+        ['Hazırlayan (atölye)', staff_name($o['assigned_to'])],
+        ['Kalite kontrolü', staff_name($o['qc_by'])],
+        ['Teslim eden', staff_name($o['delivered_by'])],
+    ]);
+    if ($tutarlar) {
+        $satir = '<tr><td>' . e(date_tr($o['created_at'])) . '</td><td>Sipariş tutarı</td><td class="num">' . e(money($o['total_amount'])) . '</td></tr>';
+        if ((float) $o['sgk_amount'] > 0) {
+            $satir .= '<tr><td></td><td>SGK katkısı <small>tahmini</small></td><td class="num eksi">−' . e(money($o['sgk_amount'])) . '</td></tr>';
+        }
+        foreach ($payments as $p) {
+            $satir .= '<tr><td>' . e(date_tr($p['created_at'])) . '</td><td>Ödeme · ' . e(payment_methods()[$p['method']] ?? $p['method']) . ($p['note'] ? '<small>' . e($p['note']) . '</small>' : '') . '</td><td class="num eksi">−' . e(money($p['amount'])) . '</td></tr>';
+        }
+        $odeme = '<table class="tablo"><thead><tr><th>Tarih</th><th>Açıklama</th><th class="num">Tutar</th></tr></thead><tbody>' . $satir . '</tbody>'
+            . '<tfoot><tr class="genel"><th colspan="2">Kalan bakiye</th><th class="num">' . e(money(max(0, (float) $o['balance']))) . '</th></tr></tfoot></table>';
+        echo '<div class="iki gen-dar">' . dokum_kutu('Ödeme', $odeme) . dokum_kutu('İşlemi yürütenler', $yurutenler) . '</div>';
+    } else {
+        echo '<div class="bolum">' . dokum_kutu('İşlemi yürütenler', $yurutenler) . '</div>';
+    }
+
+    /* Karekodlar: takip (teslim öncesi), bakım kartı (teslimde), çerçeve dene. */
+    $kareler = [];
     $takipUrl = order_track_url((int) $o['id']);
-    if ($takipUrl !== '' && !$isDelivered && track_page_exists()):
-    ?>
-      <div class="track-qr">
-        <div class="track-qr-code"><?= qr_svg($takipUrl, 118, 'Q') ?></div>
-        <div class="track-qr-txt">
-          <b>Siparişinizi telefonunuzdan takip edin</b>
-          <p>Kamerayla bu karekodu okuttuğunuzda gözlüğünüzün hangi aşamada olduğunu
-             ve teslime hazır olup olmadığını anında görürsünüz.</p>
-          <small><?= e(preg_replace('#^https?://#', '', $takipUrl)) ?></small>
-        </div>
-      </div>
-    <?php endif; ?>
-    <?php
-    /* Teslim fişinde: gözlük bakım kartı karekodu (takip karekodundan ayrı, küçük).
-       Yalnızca teslim edilmiş siparişlerde ve bakım sayfası yüklüyse basılır. */
-    $bakimUrl = '';
-    if ($isDelivered && !$isCancelled && is_file(APP_ROOT . '/bakim.php') && is_file(APP_ROOT . '/app/pages/bakim.php')) {
-        $bakimUrl = musteri_url('bakim.php');
+    if ($takipUrl !== '' && !$isDelivered && !$isCancelled && track_page_exists()) {
+        $kareler[] = [$takipUrl, 'Siparişinizi telefonunuzdan takip edin', 'Karekodu okutun; gözlüğünüzün hangi aşamada olduğunu ve teslime hazır olup olmadığını anında görün.'];
     }
-    if ($bakimUrl !== ''):
-    ?>
-      <div class="care-qr">
-        <div class="care-qr-code"><?= qr_svg($bakimUrl, 96, 'M') ?></div>
-        <div class="care-qr-txt">
-          <b>Gözlüğünüzün bakım kartı</b>
-          <p>Gözlüğünüzü nasıl temizleyeceğinizi ve nelere dikkat etmeniz gerektiğini karekodu okutarak öğrenin.</p>
-          <small><?= e(preg_replace('#^https?://#', '', $bakimUrl)) ?></small>
-        </div>
-      </div>
-    <?php endif; ?>
-    <?php
-    /* Çerçeve Dene karekodu: müşteri evde telefonuyla çerçeve stillerini yüzünde dener.
-       Deneme uygulaması sunucuda yüklü değilse ya da sipariş iptalse basılmaz. */
-    $denemeUrl = '';
+    if ($isDelivered && is_file(APP_ROOT . '/bakim.php') && is_file(APP_ROOT . '/app/pages/bakim.php')) {
+        $kareler[] = [musteri_url('bakim.php'), 'Gözlüğünüzün bakım kartı', 'Temizlik ve kullanımda dikkat edilecekler; karekodu okutarak öğrenin.'];
+    }
     if (!$isCancelled) {
         try {
             require_once dirname(__DIR__) . '/deneme.php';
             $denemeUrl = deneme_url(true);
+            if ($denemeUrl !== '') {
+                $kareler[] = [$denemeUrl, 'Çerçeveleri telefonunuzda deneyin', 'Farklı çerçeve stillerini kameranızla yüzünüzde deneyin; görüntü telefonunuzdan çıkmaz.'];
+            }
         } catch (Throwable $e) {
-            $denemeUrl = '';
+            // deneme uygulaması yüklü değil
         }
     }
-    if ($denemeUrl !== ''):
-    ?>
-      <div class="try-qr">
-        <div class="try-qr-code"><?= qr_svg($denemeUrl, 96, 'M') ?></div>
-        <div class="try-qr-txt">
-          <b>Çerçeveleri telefonunuzda deneyin</b>
-          <p>Karekodu okutun, telefonunuzun kamerasıyla farklı çerçeve stillerini yüzünüzde deneyin. Görüntü telefonunuzdan çıkmaz.</p>
-          <small><?= e(preg_replace('#^https?://#', '', $denemeUrl)) ?></small>
-        </div>
-      </div>
-    <?php endif; ?>
-    <div class="foot"><span class="foot-mark"><?= brand_mark() ?></span><span><?= e($shop) ?></span><span class="foot-note">Bu fiş işlem takibi içindir, fatura yerine geçmez.</span></div>
-    <?php
+    echo dokum_kareler($kareler);
+
+    if (!$isCancelled) {
+        $personel = $isDelivered ? staff_name($o['delivered_by']) : (string) ($o['created_by_name'] ?: '');
+        $musteriBeyan = $hasDebt
+            ? 'Ürünü teslim aldım; kalan bakiyeyi belirtilen tarihe kadar ödeyeceğimi beyan ve kabul ederim.'
+            : ($isDelivered ? 'Ürünü eksiksiz ve hasarsız olarak teslim aldığımı beyan ederim.' : 'Yukarıdaki sipariş bilgilerini incelediğimi ve onayladığımı beyan ederim.');
+        echo dokum_imzalar([
+            [$isDelivered ? 'Teslim eden yetkili' : 'Siparişi alan yetkili', $personel === '—' ? '' : $personel, 'İşbu belgeyi düzenlemiştir.'],
+            ['Müşteri', $custName, $musteriBeyan],
+        ]);
+    }
+    echo dokum_son('<p>Bu fiş işlem takibi içindir, <b>fatura yerine geçmez</b>.</p><p>Sorularınız için ' . e(setting('shop_phone', '') !== '' ? setting('shop_phone', '') : 'mağazamıza') . ' · Sipariş ' . e(order_no((int) $o['id'])) . '</p>');
+
 } elseif ($type === 'garanti' && ozellik_acik('garanti')) {   // 4.16.0 garanti kartı (siparişin tüm garantileri ya da tek garanti)
     $gIdler = query_int('order')
         ? array_column(rows("SELECT id FROM garantiler WHERE order_id = ? AND durum = 'aktif' ORDER BY id", [query_int('order')]), 'id')
@@ -162,18 +154,21 @@ if ($type === 'order') {
     if (!$gBelge) { render_error_page('Garanti bulunamadı', ''); }
     $title = 'Garanti kartı ' . garanti_no((int) $gBelge[0]['id']);
     require dirname(__DIR__) . '/partials/garanti-belgesi.php';
+
 } elseif ($type === 'garanti_talep' && ozellik_acik('garanti')) {   // 4.16.0 tedarikçiye garanti talebi
     $t = row('SELECT * FROM garanti_talepleri WHERE id = ?', [query_int('id')]);
     $g = $t ? garanti_bul((int) $t['garanti_id']) : null;
     if (!$g) { render_error_page('Garanti talebi bulunamadı', ''); }
     $title = 'Garanti talebi ' . garanti_no((int) $g['id']) . '-' . (int) $t['id'];
     require dirname(__DIR__) . '/partials/garanti-talep-formu.php';
+
 } elseif ($type === 'sgk_dokum' && ozellik_acik('efatura') && can_see_amounts()) {   // 4.16.1 SGK dönem faturası reçete dökümü
     require_once dirname(__DIR__) . '/fatura.php';
     $f = row('SELECT * FROM faturalar WHERE id = ? AND sgk_donem IS NOT NULL', [query_int('id')]);
     if (!$f) { render_error_page('SGK dönem faturası bulunamadı', ''); }
     $title = 'SGK reçete dökümü ' . fatura_sgk_ay_adi((string) $f['sgk_donem']);
     require dirname(__DIR__) . '/partials/sgk-dokum.php';
+
 } elseif ($type === 'satis' && ozellik_acik('hizli_satis') && can_see_amounts()) {   // 4.17.0 hızlı satış fişi
     $s = satis_bul(query_int('id'));
     if (!$s || (!is_super() && (int) $s['created_by'] !== (int) (current_user()['id'] ?? 0))) { render_error_page('Satış bulunamadı', ''); }
@@ -181,70 +176,78 @@ if ($type === 'order') {
     $mus = $s['musteri'] ? trim($s['musteri']['first_name'] . ' ' . $s['musteri']['last_name']) : '';
     $kalemInd = array_sum(array_map(static fn($k) => (float) $k['indirim'], $s['kalemler']));
     $genelInd = round((float) $s['indirim'] - $kalemInd, 2);
-    ?>
-    <div class="ticket">
-    <div class="doc-brand"><div class="brand-row"><span class="doc-brand-mark"><?= brand_mark() ?></span><div><p class="doc-kicker">SATIŞ FİŞİ</p><h1><?= e($shop) ?></h1><p><?= e(setting('shop_address')) ?><?= setting('shop_phone') ? ' · ' . e(setting('shop_phone')) : '' ?></p></div></div>
-      <div class="doc-ref"><b>Satış #<?= (int) $s['id'] ?></b><?= date_tr($s['created_at'], true) ?></div></div>
-    <?php if ($s['durum'] === 'iptal'): ?>
-      <div class="status-banner tone-gold"><?= icon('x') ?><div class="txt"><b>İPTAL EDİLMİŞTİR</b><span><?= e(date_tr($s['iptal_at'], true)) ?> · <?= e((string) $s['iptal_sebep']) ?></span></div></div>
-    <?php endif; ?>
-    <?php if ($mus !== '' || $s['not_metni']): ?>
-    <table class="kv-table">
-      <?php if ($mus !== ''): ?><tr><th>Müşteri</th><td colspan="3"><?= e($mus) ?></td></tr><?php endif; ?>
-      <?php if ($s['not_metni']): ?><tr><th>Not</th><td colspan="3"><?= e((string) $s['not_metni']) ?></td></tr><?php endif; ?>
-    </table>
-    <?php endif; ?>
-    <table class="lines">
-      <thead><tr><th>Ürün</th><th class="num">Adet</th><th class="num">Birim</th><th class="num">Tutar</th></tr></thead>
-      <tbody>
-      <?php foreach ($s['kalemler'] as $k): ?>
-        <tr><td><?= e($k['ad']) ?><?= (float) $k['indirim'] > 0 ? '<br><small>İndirim −' . money($k['indirim']) . '</small>' : '' ?></td><td class="num"><?= (int) $k['adet'] ?></td><td class="num"><?= money($k['birim_fiyat']) ?></td><td class="num"><?= money($k['tutar']) ?></td></tr>
-      <?php endforeach; ?>
-      </tbody>
-      <tfoot>
-        <?php if ($genelInd > 0): ?><tr><th colspan="3">İndirim</th><th class="num">−<?= money($genelInd) ?></th></tr><?php endif; ?>
-        <tr><th colspan="3">Toplam</th><th class="num"><?= money($s['toplam']) ?></th></tr>
-        <?php foreach ($s['odemeler'] as $o): ?><tr><td colspan="3"><?= e(payment_methods()[$o['method']] ?? $o['method']) ?></td><td class="num"><?= money($o['amount']) ?></td></tr><?php endforeach; ?>
-      </tfoot>
-    </table>
-    <div class="foot"><span class="foot-mark"><?= brand_mark() ?></span><span><?= e($shop) ?> · <?= e((string) $s['personel']) ?></span><span class="foot-note">Bu fiş işlem takibi içindir, fatura yerine geçmez.</span></div>
-    </div>
-    <?php
+    $adet = array_sum(array_map(static fn($k) => (int) $k['adet'], $s['kalemler']));
+    $iptal = $s['durum'] === 'iptal';
+
+    echo dokum_ust('SATIŞ FİŞİ', [['Fiş no', dokum_no((int) $s['id'], 'S')], ['Tarih', date_tr($s['created_at'], true)], ['Satışı yapan', (string) ($s['personel'] ?: '—')]]);
+    echo dokum_selam($mus !== '' ? 'Sayın' : 'Perakende satış', $mus !== '' ? $mus : 'Değerli müşterimiz',
+        'Alışverişiniz için teşekkür ederiz. Ürünlerinizi faturanızla birlikte saklamanızı öneririz.',
+        dokum_vurgu('Toplam', money($s['toplam']), count($s['kalemler']) . ' kalem · ' . $adet . ' adet', $iptal ? 'koyu' : ''));
+    if ($iptal) {
+        echo dokum_durum('gri', 'carpi', 'İPTAL EDİLMİŞTİR', date_tr($s['iptal_at'], true) . ' · ' . (string) $s['iptal_sebep']);
+    }
+    $satir = '';
+    foreach ($s['kalemler'] as $i => $k) {
+        $satir .= '<tr><td><span class="sira">' . ($i + 1) . '</span></td><td><b>' . e($k['ad']) . '</b>' . ((float) $k['indirim'] > 0 ? '<small>İndirim −' . e(money($k['indirim'])) . '</small>' : '') . '</td>'
+            . '<td class="num">' . (int) $k['adet'] . '</td><td class="num">' . e(money($k['birim_fiyat'])) . '</td><td class="num"><b>' . e(money($k['tutar'])) . '</b></td></tr>';
+    }
+    $alt = '';
+    if ($genelInd > 0) {
+        $alt .= '<tr><th colspan="4">Ara toplam</th><th class="num">' . e(money((float) $s['toplam'] + $genelInd)) . '</th></tr>';
+        $alt .= '<tr><th colspan="4">İndirim</th><th class="num eksi">−' . e(money($genelInd)) . '</th></tr>';
+    }
+    $alt .= '<tr class="genel"><th colspan="4">Toplam</th><th class="num">' . e(money($s['toplam'])) . '</th></tr>';
+    echo '<div class="bolum">' . dokum_kutu('Ürünler', '<table class="tablo"><thead><tr><th>#</th><th>Ürün</th><th class="num">Adet</th><th class="num">Birim</th><th class="num">Tutar</th></tr></thead><tbody>' . $satir . '</tbody><tfoot>' . $alt . '</tfoot></table>', 'uzun') . '</div>';
+    $odemeler = array_map(static fn($od) => [payment_methods()[$od['method']] ?? $od['method'], money($od['amount'])], $s['odemeler']);
+    $sagKutu = $s['not_metni']
+        ? dokum_kutu('Not', '<p>' . e((string) $s['not_metni']) . '</p>')
+        : dokum_kutu('Değişim ve iade', '<p>Değişim ve iade için ürünü, ambalajı ve bu fişle birlikte 14 gün içinde mağazamıza getirin. Hijyen ürünlerinde (solüsyon, damla) ambalajı açılmış ürün iade alınmaz.</p>');
+    echo '<div class="iki">' . dokum_kutu('Ödeme', dokum_liste($odemeler ?: [['Ödeme', '—']])) . $sagKutu . '</div>';
+    echo dokum_son('<p>Bu fiş işlem takibi içindir, <b>fatura yerine geçmez</b>.</p><p>Satış ' . e(dokum_no((int) $s['id'], 'S')) . ' · ' . e((string) $s['personel']) . '</p>');
+
 } elseif ($type === 'payment') {
-    $p = row('SELECT p.*, o.id AS order_id, o.transaction_type, c.first_name, c.last_name, c.phone, u.full_name AS by_name
+    $p = row('SELECT p.*, o.id AS order_id, o.transaction_type, o.total_amount, o.sgk_amount, c.first_name, c.last_name, c.phone, u.full_name AS by_name
               FROM payments p JOIN orders o ON o.id = p.order_id JOIN customers c ON c.id = o.customer_id
               LEFT JOIN user_accounts u ON u.id = p.created_by
               WHERE p.id = ?', [query_int('id')]);
     if (!$p || !can_see_amounts()) { render_error_page('Makbuz bulunamadı', ''); }
-    $balanceAfter = (float) scalar(
-        "SELECT o.total_amount - COALESCE((SELECT SUM(amount) FROM payments WHERE order_id = o.id AND (created_at < ? OR (created_at = ? AND id <= ?))), 0)
-         FROM orders o WHERE o.id = ?",
-        [$p['created_at'], $p['created_at'], $p['id'], $p['order_id']]
-    );
+    // Bu ödemeye kadarki hareketler (bu ödeme dahil) ve sonrasındaki kalan.
+    $gecmis = rows('SELECT * FROM payments WHERE order_id = ? AND (created_at < ? OR (created_at = ? AND id <= ?)) ORDER BY created_at, id',
+        [$p['order_id'], $p['created_at'], $p['created_at'], $p['id']]);
+    $balanceAfter = (float) $p['total_amount'] - (float) $p['sgk_amount'] - array_sum(array_map(static fn($x) => (float) $x['amount'], $gecmis));
     $custName = trim($p['first_name'] . ' ' . $p['last_name']);
+    $yontem = payment_methods()[$p['method']] ?? $p['method'];
     $title = 'Tahsilat makbuzu ' . order_no((int) $p['order_id']);
-    ?>
-    <div class="ticket">
-    <div class="doc-brand"><div class="brand-row"><span class="doc-brand-mark"><?= brand_mark() ?></span><div><p class="doc-kicker">TAHSİLAT MAKBUZU</p><h1><?= e($shop) ?></h1><p><?= e(setting('shop_address')) ?><?= setting('shop_phone') ? ' · ' . e(setting('shop_phone')) : '' ?></p></div></div>
-      <div class="doc-ref"><b>Tahsilat · <?= order_no((int) $p['order_id']) ?></b><?= date_tr($p['created_at'], true) ?></div></div>
-    <div class="status-banner tone-gold"><?= icon('wallet') ?><div class="txt"><b>Ödeme Tahsil Edilmiştir</b><span>Aşağıda belirtilen tutar tarafımızca tahsil edilmiştir.</span></div></div>
-    <table class="kv-table">
-      <tr><th>Müşteri</th><td><?= e($custName) ?></td><th>Telefon</th><td><?= e(phone_display($p['phone']) ?: '—') ?></td></tr>
-      <tr><th>İşlem</th><td><?= e(transaction_type_label($p['transaction_type'])) ?></td><th>Ödeme yöntemi</th><td><?= e(payment_methods()[$p['method']] ?? $p['method']) ?></td></tr>
-      <?php if ($p['note']): ?><tr><th>Not</th><td colspan="3"><?= e($p['note']) ?></td></tr><?php endif; ?>
-    </table>
-    <table class="lines">
-      <thead><tr><th>Açıklama</th><th class="num">Tutar</th></tr></thead>
-      <tbody><tr><td>Tahsil edilen tutar</td><td class="num"><?= money($p['amount']) ?></td></tr></tbody>
-      <tfoot><tr><th>Kalan bakiye</th><th class="num"><?= money(max(0, $balanceAfter)) ?></th></tr></tfoot>
-    </table>
-    <div class="sign-box">
-      <div class="box"><small>Tahsilatı Yapan Yetkili</small><div class="who <?= $p['by_name'] ? '' : 'empty' ?>"><?= $p['by_name'] ? e($p['by_name']) : 'Atanmadı' ?></div><p>İşbu belgeyi düzenlemiştir.</p><div class="pen-line"></div></div>
-      <div class="box"><small>Ödemeyi Yapan</small><div class="who"><?= e($custName) ?></div><p>Belirtilen tutarı nakden/kart ile ödediğimi beyan ederim.</p><div class="pen-line"></div></div>
-    </div>
-    <div class="foot"><span class="foot-mark"><?= brand_mark() ?></span><span><?= e($shop) ?></span><span class="foot-note">Bu makbuz işlem takibi içindir, fatura yerine geçmez.</span></div>
-    </div>
-    <?php
+
+    echo dokum_ust('Tahsilat makbuzu', [['Makbuz no', dokum_no((int) $p['id'], 'M')], ['Sipariş', order_no((int) $p['order_id'])], ['Tarih', date_tr($p['created_at'], true)]]);
+    echo dokum_selam('Sayın', $custName,
+        e(transaction_type_label($p['transaction_type'])) . ' (' . e(order_no((int) $p['order_id'])) . ') için aşağıda belirtilen tutar tarafımızca <b>tahsil edilmiştir</b>. Teşekkür ederiz.',
+        dokum_vurgu('Tahsil edilen', money($p['amount']), $yontem, 'ok'),
+        dokum_rozet('ok', 'onay', 'Ödeme alındı'));
+    echo '<p class="yazi">Yalnız: <b>' . e(tutar_yaziyla((float) $p['amount'])) . '</b></p>';
+    echo dokum_bilgi([
+        ['kisi', 'Ödemeyi yapan', $custName],
+        [$p['method'] === 'kart' ? 'kart' : 'para', 'Ödeme yöntemi', $yontem],
+        ['tel', 'Telefon', phone_display($p['phone'])],
+        ['cuzdan', 'Kalan bakiye', money(max(0, $balanceAfter)), $balanceAfter <= 0.009 ? 'tamamı ödendi' : ''],
+    ], true);
+    $satir = '<tr><td>' . e(date_tr($p['created_at'])) . '</td><td>Sipariş tutarı · ' . e(order_no((int) $p['order_id'])) . '</td><td class="num">' . e(money($p['total_amount'])) . '</td></tr>';
+    if ((float) $p['sgk_amount'] > 0) {
+        $satir .= '<tr><td></td><td>SGK katkısı <small>tahmini</small></td><td class="num eksi">−' . e(money($p['sgk_amount'])) . '</td></tr>';
+    }
+    foreach ($gecmis as $x) {
+        $bu = (int) $x['id'] === (int) $p['id'];
+        $satir .= '<tr' . ($bu ? ' class="bu"' : '') . '><td>' . e(date_tr($x['created_at'])) . '</td><td>' . ($bu ? 'Bu makbuz · ' : 'Ödeme · ') . e(payment_methods()[$x['method']] ?? $x['method']) . ($x['note'] ? '<small>' . e($x['note']) . '</small>' : '') . '</td><td class="num eksi">−' . e(money($x['amount'])) . '</td></tr>';
+    }
+    $tablo = '<table class="tablo"><thead><tr><th>Tarih</th><th>Hareket</th><th class="num">Tutar</th></tr></thead><tbody>' . $satir . '</tbody>'
+        . '<tfoot><tr class="genel"><th colspan="2">Bu ödemeden sonra kalan</th><th class="num">' . e(money(max(0, $balanceAfter))) . '</th></tr></tfoot></table>';
+    echo '<div class="bolum">' . dokum_kutu('Hesap özeti', $tablo, 'uzun') . '</div>';
+    echo dokum_imzalar([
+        ['Tahsilatı yapan yetkili', (string) ($p['by_name'] ?? ''), 'İşbu makbuzu düzenlemiştir.'],
+        ['Ödemeyi yapan', $custName, 'Belirtilen tutarı ödediğimi beyan ederim.'],
+    ]);
+    echo dokum_son('<p>Bu makbuz işlem takibi içindir, <b>fatura yerine geçmez</b>.</p><p>Makbuz ' . e(dokum_no((int) $p['id'], 'M')) . ' · Sipariş ' . e(order_no((int) $p['order_id'])) . '</p>');
+
 } elseif ($type === 'quote') {
     $qt = row('SELECT * FROM quotes WHERE id = ?', [query_int('id')]);
     if (!$qt) { render_error_page('Teklif bulunamadı', ''); }
@@ -257,42 +260,66 @@ if ($type === 'order') {
     $options = [];
     foreach ([1, 2, 3] as $i) {
         if ($qt["opt{$i}_name"]) {
-            $options[] = ['name' => $qt["opt{$i}_name"], 'desc' => $qt["opt{$i}_desc"], 'price' => $qt["opt{$i}_price"]];
+            $options[] = ['name' => $qt["opt{$i}_name"], 'desc' => (string) $qt["opt{$i}_desc"], 'price' => $qt["opt{$i}_price"]];
         }
     }
     $title = 'Teklif ' . $qt['customer_name'];
-    ?>
-    <div class="doc-brand"><div class="brand-row"><span class="doc-brand-mark"><?= brand_mark() ?></span><div><p class="doc-kicker">FİYAT TEKLİFİ</p><h1><?= e($shop) ?></h1><p><?= e(setting('shop_address')) ?><?= setting('shop_phone') ? ' · ' . e(setting('shop_phone')) : '' ?></p></div></div>
-      <div class="doc-ref"><b>Fiyat teklifi</b><?= date_tr($qt['created_at'], true) ?></div></div>
-    <div class="status-banner tone-wine"><?= icon('spark') ?><div class="txt"><b>Sayın <?= e($qt['customer_name']) ?></b><span>Talebiniz doğrultusunda hazırladığımız fiyat teklifimiz aşağıda sunulmuştur.</span></div></div>
-    <?php if ($qt['note']): ?><p class="muted"><?= e($qt['note']) ?></p><?php endif; ?>
-    <div class="quote-grid">
-      <?php foreach ($options as $i => $o): $isBest = $i === count($options) - 1 && count($options) > 1; ?>
-        <div class="quote-col <?= $isBest ? 'is-best' : '' ?>">
-          <?php if ($isBest): ?><div class="quote-flag">Önerimiz</div><?php endif; ?>
-          <h3><?= e($o['name']) ?></h3>
-          <?php if ($o['price'] !== null): ?><div class="quote-amt"><?= money($o['price']) ?></div><?php endif; ?>
-          <?php if ($o['desc']): ?><p><?= nl2br(e($o['desc'])) ?></p><?php endif; ?>
-        </div>
-      <?php endforeach; ?>
-    </div>
-    <div class="foot"><span class="foot-mark"><?= brand_mark() ?></span><span><?= e($shop) ?></span><span class="foot-note">Bu teklif niteliğinde olup bağlayıcı değildir; fiyatlar önceden bildirilmeksizin değişebilir.</span></div>
-    <?php
+    $ekCss = ['teklif-dokum.css'];
+    $olusturma = strtotime((string) $qt['created_at']) ?: time();
+    $gecerlilik = date('d.m.Y', $olusturma + (defined('TEKLIF_GECERLILIK_GUN') ? TEKLIF_GECERLILIK_GUN : 15) * 86400);
+    $fiyatlar = array_values(array_filter(array_map(static fn($o) => $o['price'] !== null ? (float) $o['price'] : null, $options), static fn($v) => $v !== null));
+    $hazirlayan = $qt['created_by'] ? (string) scalar('SELECT full_name FROM user_accounts WHERE id = ?', [(int) $qt['created_by']]) : '';
+
+    echo dokum_ust('Fiyat teklifi', [['Teklif no', dokum_no((int) $qt['id'])], ['Tarih', date('d.m.Y', $olusturma)], ['Geçerlilik', $gecerlilik]]);
+    echo dokum_selam('Sayın', (string) $qt['customer_name'],
+        count($options) > 1 ? 'Talebiniz doğrultusunda hazırladığımız ' . count($options) . ' seçeneği yan yana karşılaştırabilirsiniz.' : 'Talebiniz doğrultusunda hazırladığımız teklifin ayrıntıları aşağıdadır.',
+        count($fiyatlar) > 1 ? '<div class="baslayan"><small>Başlayan fiyatlarla</small><b>' . e(money(min($fiyatlar))) . '</b></div>' : '');
+    echo '<section class="secenekler n' . max(1, count($options)) . '">';
+    foreach ($options as $i => $o) {
+        $one = $i === count($options) - 1 && count($options) > 1;
+        $satirlar = array_values(array_filter(array_map('trim', explode("\n", str_replace("\r", '', $o['desc'])))));
+        echo '<article class="kart' . ($one ? ' one' : '') . '">' . ($one ? '<span class="serit">Önerimiz</span>' : '')
+            . '<header><span class="no">Seçenek ' . ($i + 1) . '</span><h2>' . e($o['name']) . '</h2></header><div class="cam">';
+        if ($satirlar) {
+            echo '<ul class="satirlar">';
+            foreach ($satirlar as $st) { echo '<li>' . e($st) . '</li>'; }
+            echo '</ul>';
+        }
+        echo '</div><footer><small>Fiyat</small><b>' . ($o['price'] !== null ? e(money($o['price'])) : 'Sorunuz') . '</b></footer></article>';
+    }
+    echo '</section>';
+    if ($qt['note']) {
+        echo '<div class="alt-iki">' . dokum_kutu('Not', '<p>' . nl2br(e((string) $qt['note'])) . '</p>') . '</div>';
+    }
+    echo dokum_son('<p>Bu teklif <b>' . e($gecerlilik) . '</b> tarihine kadar geçerlidir ve bilgilendirme amaçlıdır; fiyatlar stok ve tedarikçi koşullarına göre değişebilir.</p>',
+        '<div class="imza"><small>Hazırlayan</small><b>' . e($hazirlayan !== '' ? $hazirlayan : $shop) . '</b><span>' . e($shop) . '</span></div>');
+
 } elseif ($type === 'rx') {
     $rx = row('SELECT r.*, n.lens_type AS near_lens_type, n.right_sph AS near_right_sph, n.left_sph AS near_left_sph, c.first_name, c.last_name, c.birth_year FROM prescription_records r JOIN customers c ON c.id = r.customer_id LEFT JOIN near_prescription_details n ON n.prescription_id = r.id WHERE r.id = ?', [query_int('id')]);
     if (!$rx) { render_error_page('Reçete bulunamadı', ''); }
-    $title = 'Reçete ' . $rx['first_name'] . ' ' . $rx['last_name'];
-    ?>
-    <div class="doc-brand"><div class="brand-row"><span class="doc-brand-mark"><?= brand_mark() ?></span><div><p class="doc-kicker">REÇETE KARTI</p><h1><?= e($shop) ?></h1><p>Reçete kartı</p></div></div>
-      <div class="doc-ref"><b><?= e($rx['first_name'] . ' ' . $rx['last_name']) ?></b><?= date_tr($rx['prescription_date']) ?> · Sipariş <?= order_no((int) $rx['order_id']) ?></div></div>
-    <table class="kv-table">
-      <tr><th>Kullanım</th><td><?= e(lens_designs()[$rx['lens_design']] ?? '') ?></td><th>Cam tipi</th><td><?= e($rx['lens_type'] ?: '—') ?></td></tr>
-      <tr><th>Doktor</th><td><?= e($rx['doctor'] ?: '—') ?></td><th>Toplam PD</th><td><?= e($rx['pd'] ?: '—') ?></td></tr>
-    </table>
-    <?php include dirname(__DIR__, 2) . '/app/partials/rx-table.php'; ?>
-    <?php if ($rx['prescription_note']): ?><p><b>Not:</b> <?= nl2br(e($rx['prescription_note'])) ?></p><?php endif; ?>
-    <p class="small muted" style="text-align:center;margin-top:28px">Atölye çalışma kartıdır; hekim reçetesinin yerine geçmez.</p>
-    <?php
+    $ad = trim($rx['first_name'] . ' ' . $rx['last_name']);
+    $title = 'Reçete ' . $ad;
+    $yas = (int) $rx['birth_year'] > 1900 ? ((int) date('Y') - (int) $rx['birth_year']) . ' yaş' : '';
+
+    echo dokum_ust('Reçete kartı', [['Sipariş', $rx['order_id'] ? order_no((int) $rx['order_id']) : '—'], ['Reçete', date_tr($rx['prescription_date'])], ['Basım', date('d.m.Y')]]);
+    echo dokum_selam('Hasta', $ad, 'Atölye çalışma kartı' . ($yas !== '' ? ' · ' . e($yas) : '') . '. Ölçüler kesim ve montajdan önce reçeteyle karşılaştırılır.',
+        isset(lens_designs()[$rx['lens_design']]) ? dokum_vurgu('Kullanım', lens_designs()[$rx['lens_design']], (string) ($rx['lens_type'] ?: ''), 'koyu')
+            : ($rx['lens_type'] ? dokum_vurgu('Cam tipi', (string) $rx['lens_type'], '', 'koyu') : ''));
+    echo dokum_bilgi([
+        ['goz', 'Cam tipi', (string) $rx['lens_type']],
+        ['kisi', 'Doktor', (string) $rx['doctor']],
+        ['etiket', 'Toplam PD', ($rx['pd'] ?? '') !== '' ? $rx['pd'] . ' mm' : ''],
+        ['takvim', 'Reçete tarihi', date_tr($rx['prescription_date'])],
+    ]);
+    ob_start();
+    include dirname(__DIR__, 2) . '/app/partials/rx-table.php';
+    echo '<div class="bolum">' . dokum_kutu('Ölçüler', (string) ob_get_clean(), '', 'Sağ (R) · Sol (L)') . '</div>';
+    $not = $rx['prescription_note'] ? dokum_kutu('Not', '<p class="buyuk">' . nl2br(e($rx['prescription_note'])) . '</p>') : '';
+    $kontrol = '<ul class="kontrol tek">' . implode('', array_map(static fn($m) => '<li>' . e($m) . '<span></span></li>', ['Cam teslim alındı', 'Eksen işaretlendi', 'Kesim', 'Montaj', 'PD / yükseklik kontrolü', 'Temizlik ve paket'])) . '</ul>';
+    echo '<div class="iki">' . dokum_kutu('Atölye kontrol listesi', $kontrol, '', 'işaretleyip paraf atın') . ($not !== '' ? $not : dokum_kutu('Atölye notu', '<div class="cizgiler"><span></span><span></span><span></span><span></span></div>')) . '</div>';
+    echo dokum_imzalar([['Hazırlayan (atölye)', '', 'Cam kesim ve montajı yapmıştır.'], ['Kalite kontrol', '', 'Ölçüleri reçeteyle karşılaştırmıştır.']]);
+    echo dokum_son('<p>Atölye çalışma kartıdır; <b>hekim reçetesinin yerine geçmez</b>.</p>');
+
 } elseif ($type === 'depot') {
     $tab = query('tab', 'eksik');
     $status = $tab === 'siparis' ? 'siparis_verildi' : 'stokta_yok';
@@ -318,21 +345,28 @@ if ($type === 'order') {
     );
     $title = 'Depo cam talebi ' . date('d.m.Y');
     $total = array_sum(array_column($list, 'cnt'));
-    ?>
-    <div class="doc-brand"><div class="brand-row"><span class="doc-brand-mark"><?= brand_mark() ?></span><div><p class="doc-kicker">DEPO TALEBİ</p><h1><?= e($shop) ?></h1><p>Depo cam talebi<?= $supplierName ? ' · ' . e($supplierName) : '' ?> · müşteri bilgisi içermez</p></div></div>
-      <div class="doc-ref"><b><?= $tab === 'siparis' ? 'Sipariş verilenler' : 'Eksik camlar' ?></b><?= date('d.m.Y H:i') ?> · <?= $total ?> cam</div></div>
-    <table class="lines">
-      <thead><tr><th>#</th><th>Cam tipi</th><th>SPH</th><th>CYL</th><th>AKS</th><th>ADD</th><th class="num">Adet</th></tr></thead>
-      <tbody>
-        <?php foreach ($list as $i => $r): ?>
-          <tr><td><?= $i + 1 ?></td><td><?= e($r['lens_type']) ?></td><td><?= e($r['sph'] ?: 'PL') ?></td><td><?= e($r['cyl'] ?: '—') ?></td><td><?= e($r['axis'] ?: '—') ?></td><td><?= e($r['add_power'] ?: '—') ?></td><td class="num"><b><?= (int) $r['cnt'] ?></b></td></tr>
-        <?php endforeach; ?>
-        <?php if (!$list): ?><tr><td colspan="7">Listede cam yok.</td></tr><?php endif; ?>
-      </tbody>
-      <tfoot><tr><th colspan="6">Toplam</th><th class="num"><?= $total ?></th></tr></tfoot>
-    </table>
-    <div class="sign-box"><div class="box"><small>Hazırlayan Yetkili</small><div class="who"><?= e((string) (current_user()['full_name'] ?? '')) ?></div><p>İşbu listeyi düzenlemiştir.</p><div class="pen-line"></div></div><div class="box"><small>Depo Onayı</small><div class="who empty">—</div><p>Bu listeye göre sipariş verilmiştir.</p><div class="pen-line"></div></div></div>
-    <?php
+    $tipler = count(array_unique(array_column($list, 'lens_type')));
+    $listeAdi = $tab === 'siparis' ? 'Sipariş verilenler' : 'Eksik camlar';
+
+    echo dokum_ust('Depo cam talebi', [['Liste', $listeAdi], ['Tarih', date('d.m.Y H:i')], ['Toplam', $total . ' cam']]);
+    echo dokum_selam($supplierName ? 'Tedarikçi' : 'Cam deposu', $supplierName ?: 'Cam talep listesi',
+        $tab === 'siparis' ? 'Siparişi verilmiş, teslimi beklenen camlar. Liste müşteri bilgisi içermez.' : 'Aşağıdaki camların temin edilmesini rica ederiz. Liste <b>müşteri bilgisi içermez</b>.',
+        dokum_vurgu('Toplam', $total . ' cam', count($list) . ' çeşit · ' . $tipler . ' cam tipi', 'acik'));
+    $satir = '';
+    foreach ($list as $i => $r) {
+        $satir .= '<tr><td><span class="sira">' . ($i + 1) . '</span></td><td><b>' . e($r['lens_type']) . '</b>' . ($r['lens_value'] ? '<small>' . e($r['lens_value']) . '</small>' : '') . '</td>'
+            . '<td class="mono">' . e($r['sph'] ?: 'PL') . '</td><td class="mono">' . e($r['cyl'] ?: '—') . '</td><td class="mono">' . e($r['axis'] ?: '—') . '</td><td class="mono">' . e($r['add_power'] ?: '—') . '</td>'
+            . '<td class="num"><b>' . (int) $r['cnt'] . '</b></td></tr>';
+    }
+    if (!$list) { $satir = '<tr><td colspan="7" class="bos">Listede cam yok.</td></tr>'; }
+    echo '<div class="bolum">' . dokum_kutu($listeAdi, '<table class="tablo"><thead><tr><th>#</th><th>Cam tipi</th><th>SPH</th><th>CYL</th><th>AKS</th><th>ADD</th><th class="num">Adet</th></tr></thead><tbody>' . $satir
+        . '</tbody><tfoot><tr class="genel"><th colspan="6">Toplam</th><th class="num">' . $total . '</th></tr></tfoot></table>', 'uzun', count($list) . ' satır') . '</div>';
+    echo dokum_imzalar([
+        ['Hazırlayan yetkili', (string) (current_user()['full_name'] ?? ''), 'İşbu listeyi düzenlemiştir.'],
+        ['Depo onayı', '', 'Bu listeye göre sipariş verilmiştir.'],
+    ]);
+    echo dokum_son('<p>Depo / tedarikçi siparişi içindir; <b>müşteri bilgisi içermez</b>.</p>');
+
 } elseif ($type === 'supplier' && is_super()) {
     $sp = row('SELECT * FROM suppliers WHERE id = ?', [query_int('id')]);
     if (!$sp) { render_error_page('Tedarikçi bulunamadı', ''); }
@@ -342,45 +376,59 @@ if ($type === 'order') {
     $payments = rows('SELECT * FROM supplier_payments WHERE supplier_id = ? ORDER BY created_at, id', [$sp['id']]);
     $ledger = [];
     foreach ($invoices as $inv) {
-        $ledger[] = ['date' => $inv['invoice_date'], 'sort' => $inv['invoice_date'] . ' 00:00:01', 'amount' => (float) $inv['amount'], 'label' => 'Fatura ' . $inv['invoice_no'], 'note' => $inv['note']];
+        $ledger[] = ['date' => $inv['invoice_date'], 'sort' => $inv['invoice_date'] . ' 00:00:01', 'amount' => (float) $inv['amount'], 'label' => 'Fatura ' . $inv['invoice_no'], 'note' => $inv['note'], 'vade' => $inv['due_date'] ?? null];
     }
     foreach ($payments as $p) {
-        $ledger[] = ['date' => substr($p['created_at'], 0, 10), 'sort' => $p['created_at'], 'amount' => -(float) $p['amount'], 'label' => 'Ödeme · ' . (tedarik_odeme_yontemleri()[$p['method']] ?? $p['method']), 'note' => $p['note']];
+        $ledger[] = ['date' => substr($p['created_at'], 0, 10), 'sort' => $p['created_at'], 'amount' => -(float) $p['amount'], 'label' => 'Ödeme · ' . (tedarik_odeme_yontemleri()[$p['method']] ?? $p['method']), 'note' => $p['note'], 'vade' => null];
     }
     usort($ledger, static fn($a, $b) => $a['sort'] <=> $b['sort']);
     $balance = 0.0;
     foreach ($ledger as &$r) { $balance += $r['amount']; $r['balance'] = $balance; }
     unset($r);
+    $devir = null;
     if ($from !== '' || $until !== '') {
+        $once = array_values(array_filter($ledger, static fn($r) => $from !== '' && $r['date'] < $from));
+        $devir = $once ? (float) end($once)['balance'] : 0.0;
         $ledger = array_values(array_filter($ledger, static function ($r) use ($from, $until) {
             if ($from !== '' && $r['date'] < $from) { return false; }
             if ($until !== '' && $r['date'] > $until) { return false; }
             return true;
         }));
     }
+    $donemFatura = array_sum(array_map(static fn($r) => max(0, $r['amount']), $ledger));
+    $donemOdeme = array_sum(array_map(static fn($r) => max(0, -$r['amount']), $ledger));
+    $donemMetni = $from || $until ? date_tr($from ?: null) . ' – ' . date_tr($until ?: null) : 'Tüm zamanlar';
     $title = 'Cari ekstre ' . $sp['name'];
-    ?>
-    <div class="doc-brand"><div class="brand-row"><span class="doc-brand-mark"><?= brand_mark() ?></span><div><p class="doc-kicker">CARİ HESAP EKSTRESİ</p><h1><?= e($shop) ?></h1><p><?= e(setting('shop_address')) ?><?= setting('shop_phone') ? ' · ' . e(setting('shop_phone')) : '' ?></p></div></div>
-      <div class="doc-ref"><b>Tedarikçi cari ekstresi</b><?= e($sp['name']) ?> · <?= date('d.m.Y') ?></div></div>
-    <table class="kv-table">
-      <tr><th>Tedarikçi</th><td><?= e($sp['name']) ?></td><th>Yetkili</th><td><?= e($sp['contact_name'] ?: '—') ?></td></tr>
-      <tr><th>Dönem</th><td colspan="3"><?= $from || $until ? date_tr($from ?: null) . ' – ' . date_tr($until ?: null) : 'Tüm zamanlar' ?></td></tr>
-    </table>
-    <table class="lines">
-      <thead><tr><th>Tarih</th><th>Hareket</th><th>Not</th><th class="num">Tutar</th><th class="num">Bakiye</th></tr></thead>
-      <tbody>
-        <?php foreach ($ledger as $r): ?>
-          <tr><td><?= date_tr($r['date']) ?></td><td><?= e($r['label']) ?></td><td><?= e($r['note'] ?: '—') ?></td>
-            <td class="num"><?= $r['amount'] > 0 ? '+' : '− ' ?><?= money(abs($r['amount'])) ?></td>
-            <td class="num"><b><?= money($r['balance']) ?></b></td></tr>
-        <?php endforeach; ?>
-        <?php if (!$ledger): ?><tr><td colspan="5">Bu dönemde hareket yok.</td></tr><?php endif; ?>
-      </tbody>
-      <tfoot><tr><th colspan="4">Güncel bakiye (borcumuz)</th><th class="num"><?= money($balance) ?></th></tr></tfoot>
-    </table>
-    <div class="sign-box"><div class="box"><small>Yetkilimiz</small><div class="who"><?= e((string) (current_user()['full_name'] ?? '')) ?></div><p>İşbu ekstreyi düzenlemiştir.</p><div class="pen-line"></div></div><div class="box"><small>Tedarikçi Yetkilisi</small><div class="who empty">—</div><p>Ekstre karşılaştırılmış ve mutabık kalınmıştır.</p><div class="pen-line"></div></div></div>
-    <p class="small muted" style="text-align:center;margin-top:28px">Bu ekstre iç kayıtlarımıza göre hazırlanmıştır, tedarikçi ekstresiyle karşılaştırma için kullanılır.</p>
-    <?php
+
+    echo dokum_ust('Cari hesap ekstresi', [['Dönem', $donemMetni], ['Hareket', (string) count($ledger)], ['Tarih', date('d.m.Y')]]);
+    echo dokum_selam('Tedarikçi', (string) $sp['name'],
+        e(trim(($sp['contact_name'] ? 'Yetkili ' . $sp['contact_name'] : '') . ($sp['phone'] ? ' · ' . phone_display($sp['phone']) : ''), ' ·')) . ($sp['contact_name'] || $sp['phone'] ? '<br>' : '') . 'İç kayıtlarımıza göre cari hesap hareketleriniz aşağıdadır.',
+        dokum_vurgu('Güncel bakiye', money($balance), $balance > 0.009 ? 'borcumuz' : ($balance < -0.009 ? 'alacağımız' : 'hesap kapalı')));
+    echo dokum_bilgi([
+        ['belge', 'Dönem faturaları', money($donemFatura)],
+        ['cuzdan', 'Dönem ödemeleri', money($donemOdeme)],
+        ['takvim', 'Dönem', $donemMetni],
+        ['tel', 'İletişim', trim((string) ($sp['email'] ?: phone_display($sp['phone'])))],
+    ]);
+    $satir = '';
+    if ($devir !== null && $from !== '') {
+        $satir .= '<tr><td>' . e(date_tr($from)) . '</td><td><b>Devir</b><small>dönem öncesi bakiye</small></td><td></td><td class="num"></td><td class="num"></td><td class="num"><b>' . e(money($devir)) . '</b></td></tr>';
+    }
+    foreach ($ledger as $r) {
+        $satir .= '<tr><td>' . e(date_tr($r['date'])) . '</td><td><b>' . e($r['label']) . '</b>' . ($r['vade'] ? '<small>Vade ' . e(date_tr($r['vade'])) . '</small>' : '') . '</td><td>' . e($r['note'] ?: '—') . '</td>'
+            . '<td class="num arti">' . ($r['amount'] > 0 ? e(money($r['amount'])) : '') . '</td><td class="num eksi">' . ($r['amount'] < 0 ? e(money(-$r['amount'])) : '') . '</td>'
+            . '<td class="num"><b>' . e(money($r['balance'])) . '</b></td></tr>';
+    }
+    if (!$ledger) { $satir .= '<tr><td colspan="6" class="bos">Bu dönemde hareket yok.</td></tr>'; }
+    echo '<div class="bolum">' . dokum_kutu('Hesap hareketleri', '<table class="tablo"><thead><tr><th>Tarih</th><th>Hareket</th><th>Not</th><th class="num">Fatura</th><th class="num">Ödeme</th><th class="num">Bakiye</th></tr></thead><tbody>' . $satir . '</tbody>'
+        . '<tfoot><tr><th colspan="3">Dönem toplamı</th><th class="num">' . e(money($donemFatura)) . '</th><th class="num">' . e(money($donemOdeme)) . '</th><th class="num"></th></tr>'
+        . '<tr class="genel"><th colspan="5">Güncel bakiye' . ($balance > 0.009 ? ' (borcumuz)' : ($balance < -0.009 ? ' (alacağımız)' : '')) . '</th><th class="num">' . e(money($balance)) . '</th></tr></tfoot></table>', 'uzun') . '</div>';
+    echo dokum_imzalar([
+        ['Yetkilimiz', (string) (current_user()['full_name'] ?? ''), 'İşbu ekstreyi düzenlemiştir.'],
+        ['Tedarikçi yetkilisi', (string) ($sp['contact_name'] ?? ''), 'Ekstre karşılaştırılmış ve mutabık kalınmıştır.'],
+    ]);
+    echo dokum_son('<p>Bu ekstre iç kayıtlarımıza göre hazırlanmıştır; <b>tedarikçi ekstresiyle karşılaştırma</b> (mutabakat) için kullanılır.</p>');
+
 } elseif ($type === 'kasa' && can_see_amounts()) {
     $date = valid_date(query('date')) ? query('date') : date('Y-m-d');
     $range = [$date . ' 00:00:00', date('Y-m-d', strtotime($date . ' +1 day')) . ' 00:00:00'];
@@ -399,55 +447,51 @@ if ($type === 'order') {
     $totalRevenues = (float) array_sum(array_column($revenues, 'amount'));
     $count = row('SELECT c.*, u.full_name AS by_name FROM cash_counts c LEFT JOIN user_accounts u ON u.id = c.created_by WHERE c.count_date = ? ORDER BY c.created_at DESC LIMIT 1', [$date]);
     $title = 'Kasa dökümü ' . $date;
-    ?>
-    <div class="doc-brand"><div class="brand-row"><span class="doc-brand-mark"><?= brand_mark() ?></span><div><p class="doc-kicker">KASA DÖKÜMÜ</p><h1><?= e($shop) ?></h1><p>Gün sonu kasa dökümü</p></div></div>
-      <div class="doc-ref"><b><?= date_tr($date) ?></b>Hazırlanma: <?= date('d.m.Y H:i') ?></div></div>
-    <?php if ($count): $ok = abs((float) $count['difference']) < 0.01; ?>
-      <div class="status-banner <?= $ok ? 'tone-green' : 'tone-amber' ?>"><?= icon($ok ? 'check' : 'wallet') ?><div class="txt"><b><?= $ok ? 'Kasa Kapatılmıştır · Mutabıktır' : 'Kasa Kapatılmıştır · Fark Tespit Edilmiştir' ?></b><span>Sayılan: <?= money($count['counted_amount']) ?> · Beklenen: <?= money($count['expected_amount']) ?><?= !$ok ? ' · Fark: ' . (((float) $count['difference'] > 0) ? '+' : '') . money($count['difference']) : '' ?></span></div></div>
-    <?php else: ?>
-      <div class="status-banner tone-gray"><?= icon('wallet') ?><div class="txt"><b>Kasa Henüz Kapatılmamıştır</b><span>Belirtilen tarih için kasa sayımı yapılmamıştır.</span></div></div>
-    <?php endif; ?>
-    <h2>Yöntem bazında tahsilat</h2>
-    <table class="lines">
-      <thead><tr><th>Yöntem</th><th class="num">Adet</th><th class="num">Tutar</th></tr></thead>
-      <tbody>
-        <?php foreach ($byMethod as $m): ?><tr><td><?= e(payment_methods()[$m['method']] ?? $m['method']) ?></td><td class="num"><?= (int) $m['cnt'] ?></td><td class="num"><?= money($m['total']) ?></td></tr><?php endforeach; ?>
-        <?php if (!$byMethod): ?><tr><td colspan="3">Tahsilat yok.</td></tr><?php endif; ?>
-      </tbody>
-      <tfoot><tr><th colspan="2">Toplam</th><th class="num"><?= money($totalIn) ?></th></tr></tfoot>
-    </table>
-    <h2>Personel bazında</h2>
-    <table class="lines">
-      <thead><tr><th>Personel</th><th class="num">Adet</th><th class="num">Tutar</th></tr></thead>
-      <tbody>
-        <?php foreach ($byStaff as $s): ?><tr><td><?= e($s['name']) ?></td><td class="num"><?= (int) $s['cnt'] ?></td><td class="num"><?= money($s['total']) ?></td></tr><?php endforeach; ?>
-        <?php if (!$byStaff): ?><tr><td colspan="3">Kayıt yok.</td></tr><?php endif; ?>
-      </tbody>
-    </table>
-    <h2>Diğer gelirler</h2>
-    <table class="lines">
-      <thead><tr><th>Açıklama</th><th>Yöntem</th><th class="num">Tutar</th></tr></thead>
-      <tbody>
-        <?php foreach ($revenues as $r): ?><tr><td><?= e($r['description']) ?></td><td><?= e(payment_methods()[$r['method']] ?? $r['method']) ?></td><td class="num"><?= money($r['amount']) ?></td></tr><?php endforeach; ?>
-        <?php if (!$revenues): ?><tr><td colspan="3">Ek gelir kaydı yok.</td></tr><?php endif; ?>
-      </tbody>
-      <tfoot><tr><th colspan="2">Toplam diğer gelir</th><th class="num"><?= money($totalRevenues) ?></th></tr></tfoot>
-    </table>
-    <h2>Günlük giderler</h2>
-    <table class="lines">
-      <thead><tr><th>Açıklama</th><th>Yöntem</th><th class="num">Tutar</th></tr></thead>
-      <tbody>
-        <?php foreach ($expenses as $e): ?><tr><td><?= e($e['description']) ?></td><td><?= e(payment_methods()[$e['method']] ?? $e['method']) ?></td><td class="num"><?= money($e['amount']) ?></td></tr><?php endforeach; ?>
-        <?php if (!$expenses): ?><tr><td colspan="3">Gider kaydı yok.</td></tr><?php endif; ?>
-      </tbody>
-      <tfoot><tr><th colspan="2">Toplam gider</th><th class="num"><?= money($totalExpenses) ?></th></tr></tfoot>
-    </table>
-    <div class="sign-box">
-      <div class="box"><small>Sayan</small><div class="who <?= ($count['by_name'] ?? '') ? '' : 'empty' ?>"><?= ($count['by_name'] ?? '') ? e($count['by_name']) : 'Atanmadı' ?></div><p>Kasayı sayan personel</p><div class="pen-line"></div></div>
-      <div class="box"><small>Onaylayan</small><div class="who empty">—</div><p>İşletme yetkilisi</p><div class="pen-line"></div></div>
-    </div>
-    <div class="foot"><span class="foot-mark"><?= brand_mark() ?></span><span><?= e($shop) ?></span><span class="foot-note">Bu döküm iç kayıt amaçlıdır, fatura yerine geçmez.</span></div>
-    <?php
+    $gunler = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+    $net = $totalIn + $totalRevenues - $totalExpenses;
+
+    echo dokum_ust('Kasa dökümü', [['Gün', date_tr($date)], ['Hazırlanma', date('d.m.Y H:i')], ['Hazırlayan', (string) (current_user()['full_name'] ?? '—')]]);
+    if ($count) {
+        $ok = abs((float) $count['difference']) < 0.01;
+        $rozet = dokum_rozet($ok ? 'ok' : 'uyari', $ok ? 'onay' : 'cuzdan', $ok ? 'Kasa kapatıldı · mutabık' : 'Kasa kapatıldı · fark var');
+        $aciklama = 'Sayılan ' . e(money($count['counted_amount'])) . ' · beklenen ' . e(money($count['expected_amount'])) . ($ok ? '' : ' · fark <b>' . (((float) $count['difference'] > 0) ? '+' : '') . e(money($count['difference'])) . '</b>');
+    } else {
+        $rozet = dokum_rozet('gri', 'kasa', 'Kasa henüz kapatılmadı');
+        $aciklama = 'Bu gün için kasa sayımı yapılmamıştır.';
+    }
+    echo dokum_selam('Gün sonu · ' . $gunler[(int) date('w', strtotime($date))], date_tr($date), $aciklama, dokum_vurgu('Toplam tahsilat', money($totalIn), array_sum(array_map(static fn($m) => (int) $m['cnt'], $byMethod)) . ' işlem'), $rozet);
+    echo dokum_bilgi([
+        ['para', 'Tahsilat', money($totalIn)],
+        ['arti', 'Diğer gelir', money($totalRevenues)],
+        ['eksi', 'Gider', money($totalExpenses)],
+        ['kasa', 'Gün neti', money($net), 'tüm yöntemler'],
+    ]);
+    $tablo3 = static function (array $baslik, array $satirlar, string $bos, ?array $toplam = null): string {
+        $h = '<table class="tablo"><thead><tr><th>' . e($baslik[0]) . '</th><th' . ($baslik[1] === 'Adet' ? ' class="num"' : '') . '>' . e($baslik[1]) . '</th><th class="num">' . e($baslik[2]) . '</th></tr></thead><tbody>';
+        foreach ($satirlar as $s) {
+            $h .= '<tr><td>' . e($s[0]) . '</td><td' . ($baslik[1] === 'Adet' ? ' class="num"' : '') . '>' . e($s[1]) . '</td><td class="num">' . e($s[2]) . '</td></tr>';
+        }
+        if (!$satirlar) { $h .= '<tr><td colspan="3" class="bos">' . e($bos) . '</td></tr>'; }
+        $h .= '</tbody>';
+        if ($toplam) { $h .= '<tfoot><tr><th colspan="2">' . e($toplam[0]) . '</th><th class="num">' . e($toplam[1]) . '</th></tr></tfoot>'; }
+        return $h . '</table>';
+    };
+    echo '<div class="iki">'
+        . dokum_kutu('Yöntem bazında tahsilat', $tablo3(['Yöntem', 'Adet', 'Tutar'], array_map(static fn($m) => [payment_methods()[$m['method']] ?? $m['method'], (string) (int) $m['cnt'], money($m['total'])], $byMethod), 'Tahsilat yok.', ['Toplam', money($totalIn)]))
+        . dokum_kutu('Personel bazında', $tablo3(['Personel', 'Adet', 'Tutar'], array_map(static fn($s) => [$s['name'], (string) (int) $s['cnt'], money($s['total'])], $byStaff), 'Kayıt yok.'))
+        . '</div><div class="iki">'
+        . dokum_kutu('Diğer gelirler', $tablo3(['Açıklama', 'Yöntem', 'Tutar'], array_map(static fn($r) => [$r['description'], payment_methods()[$r['method']] ?? $r['method'], money($r['amount'])], $revenues), 'Ek gelir kaydı yok.', ['Toplam', money($totalRevenues)]))
+        . dokum_kutu('Günlük giderler', $tablo3(['Açıklama', 'Yöntem', 'Tutar'], array_map(static fn($x) => [$x['description'], payment_methods()[$x['method']] ?? $x['method'], money($x['amount'])], $expenses), 'Gider kaydı yok.', ['Toplam', money($totalExpenses)]))
+        . '</div>';
+    if ($count && $count['note']) {
+        echo '<div class="bolum">' . dokum_kutu('Sayım notu', '<p>' . e((string) $count['note']) . '</p>') . '</div>';
+    }
+    echo dokum_imzalar([
+        ['Sayan', (string) ($count['by_name'] ?? ''), 'Kasayı sayan personel.'],
+        ['Onaylayan', '', 'İşletme yetkilisi.'],
+    ]);
+    echo dokum_son('<p>Bu döküm iç kayıt amaçlıdır, <b>fatura yerine geçmez</b>. Tahsilata hızlı satışlar dahildir.</p>');
+
 } elseif ($type === 'report' && is_super()) {
     $from = valid_date(query('from')) ? query('from') : date('Y-m-01');
     $to = valid_date(query('to')) ? query('to') : date('Y-m-d');
@@ -457,123 +501,38 @@ if ($type === 'order') {
     $lens = rows("SELECT COALESCE(NULLIF(lens_type, ''), 'Seçilmemiş') AS name, COUNT(*) AS cnt, SUM(total_amount) AS total FROM orders WHERE order_stage <> 'iptal' AND created_at >= ? AND created_at < ? GROUP BY name ORDER BY cnt DESC", $range);
     $stagesList = rows('SELECT order_stage AS name, COUNT(*) AS cnt FROM orders WHERE created_at >= ? AND created_at < ? GROUP BY order_stage ORDER BY cnt DESC', $range);
     $title = 'Rapor ' . date_tr($from) . ' – ' . date_tr($to);
-    ?>
-    <div class="doc-brand"><div class="brand-row"><span class="doc-brand-mark"><?= brand_mark() ?></span><div><p class="doc-kicker">DÖNEM RAPORU</p><h1><?= e($shop) ?></h1><p>Dönem raporu</p></div></div>
-      <div class="doc-ref"><b><?= date_tr($from) ?> – <?= date_tr($to) ?></b>Hazırlanma: <?= date('d.m.Y H:i') ?></div></div>
-    <table class="kv-table">
-      <tr><th>Sipariş (iptal hariç)</th><td><?= (int) $s['orders'] ?></td><th>Ciro</th><td><?= money($s['turnover']) ?></td></tr>
-      <tr><th>Dönem tahsilatı</th><td><?= money($collected) ?></td><th>Dönem siparişlerinin kalanı</th><td><?= money($s['bal']) ?></td></tr>
-    </table>
-    <h2>Cam tipi</h2>
-    <table class="lines"><thead><tr><th>Cam tipi</th><th class="num">Adet</th><th class="num">Tutar</th></tr></thead>
-      <tbody><?php foreach ($lens as $l): ?><tr><td><?= e($l['name']) ?></td><td class="num"><?= (int) $l['cnt'] ?></td><td class="num"><?= money($l['total']) ?></td></tr><?php endforeach; ?></tbody></table>
-    <h2>Sipariş durumları</h2>
-    <table class="lines"><thead><tr><th>Durum</th><th class="num">Adet</th></tr></thead>
-      <tbody><?php foreach ($stagesList as $st): ?><tr><td><?= e(stage_label($st['name'])) ?></td><td class="num"><?= (int) $st['cnt'] ?></td></tr><?php endforeach; ?></tbody></table>
-    <?php
+    $gun = (int) round((strtotime($to) - strtotime($from)) / 86400) + 1;
+    $ortalama = (int) $s['orders'] > 0 ? (float) $s['turnover'] / (int) $s['orders'] : 0.0;
+
+    echo dokum_ust('Dönem raporu', [['Başlangıç', date_tr($from)], ['Bitiş', date_tr($to)], ['Hazırlanma', date('d.m.Y H:i')]]);
+    echo dokum_selam('Dönem · ' . $gun . ' gün', date_tr($from) . ' – ' . date_tr($to), 'Siparişler (iptal hariç), tahsilat ve sipariş durumlarının dönem özeti.', dokum_vurgu('Ciro', money($s['turnover']), 'Sipariş başına ' . money($ortalama)));
+    echo dokum_bilgi([
+        ['belge', 'Sipariş', (string) (int) $s['orders'], 'iptal hariç'],
+        ['grafik', 'Ciro', money($s['turnover'])],
+        ['cuzdan', 'Dönem tahsilatı', money($collected)],
+        ['saat', 'Siparişlerin kalanı', money($s['bal'])],
+    ]);
+    $enCok = max(1, ...array_map(static fn($l) => (int) $l['cnt'], $lens ?: [['cnt' => 1]]));
+    $satir = '';
+    foreach ($lens as $l) {
+        $satir .= '<tr><td><b>' . e($l['name']) . '</b><span class="cubuk"><i style="width:' . round((int) $l['cnt'] / $enCok * 100) . '%"></i></span></td><td class="num">' . (int) $l['cnt'] . '</td><td class="num">' . e(money($l['total'])) . '</td></tr>';
+    }
+    if (!$lens) { $satir = '<tr><td colspan="3" class="bos">Kayıt yok.</td></tr>'; }
+    $camTablo = '<table class="tablo"><thead><tr><th>Cam tipi</th><th class="num">Adet</th><th class="num">Tutar</th></tr></thead><tbody>' . $satir . '</tbody></table>';
+    $enCokD = max(1, ...array_map(static fn($l) => (int) $l['cnt'], $stagesList ?: [['cnt' => 1]]));
+    $satir = '';
+    foreach ($stagesList as $st) {
+        $satir .= '<tr><td><b>' . e(stage_label($st['name'])) . '</b><span class="cubuk"><i style="width:' . round((int) $st['cnt'] / $enCokD * 100) . '%"></i></span></td><td class="num">' . (int) $st['cnt'] . '</td></tr>';
+    }
+    if (!$stagesList) { $satir = '<tr><td colspan="2" class="bos">Kayıt yok.</td></tr>'; }
+    $durumTablo = '<table class="tablo"><thead><tr><th>Durum</th><th class="num">Adet</th></tr></thead><tbody>' . $satir . '</tbody></table>';
+    echo '<div class="iki gen-dar">' . dokum_kutu('Cam tipi', $camTablo, 'uzun') . dokum_kutu('Sipariş durumları', $durumTablo, 'uzun') . '</div>';
+    echo dokum_son('<p>Ciro: dönemde açılan siparişlerin tutarı (iptal hariç). Tahsilat: dönemde alınan ödemeler (önceki siparişler dahil).</p>');
+
 } else {
     ob_end_clean();
     render_error_page('Belge bulunamadı', 'Yazdırılacak belge türü geçersiz veya yetkiniz yok.');
 }
 $body = ob_get_clean();
 
-/**
- * Belge süslemeleri: köşe filigranları, mercek mührü ve alt flöron.
- * Tamamı inline SVG (çizgi) — tarayıcının "arka planları yazdır" ayarı
- * kapalı olsa bile basılır, çünkü zemin değil içeriktir.
- */
-function doc_ornaments(string $shop = ''): string
-{
-    $corner = '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round">'
-        . '<path d="M0 24V9A9 9 0 0 1 9 0h15" stroke-width="1.5"/>'
-        . '<path d="M0 34V11A11 11 0 0 1 11 0h23" stroke-width=".7" opacity=".7"/>'
-        . '<path d="M6 44c12-2 21-11 23-23" stroke-width=".7" stroke-dasharray="1.5 3.5"/>'
-        . '<circle cx="27" cy="39" r="3.4" stroke-width="1.1"/>'
-        . '<circle cx="39" cy="27" r="3.4" stroke-width="1.1"/>'
-        . '<path d="M29.6 36.4 36.4 29.6" stroke-width="1.1"/>'
-        . '</svg>';
-
-    // Mühür: ışın çelengi + iç içe halkalar + çevresinde dönen mağaza adı
-    $rays = '';
-    for ($a = 0; $a < 360; $a += 7.5) {
-        $r = deg2rad($a);
-        $long = fmod($a, 30.0) < 0.1;
-        $r1 = $long ? 104 : 108;
-        $rays .= '<path d="M' . round(120 + $r1 * cos($r), 1) . ' ' . round(120 + $r1 * sin($r), 1)
-            . 'L' . round(120 + 115 * cos($r), 1) . ' ' . round(120 + 115 * sin($r), 1) . '"/>';
-    }
-    $ringText = '';
-    if ($shop !== '') {
-        $up = function_exists('mb_strtoupper') ? mb_strtoupper($shop, 'UTF-8') : strtoupper($shop);
-        $loop = htmlspecialchars(str_repeat($up . '  ·  ', 3), ENT_QUOTES, 'UTF-8');
-        $ringText = '<text font-family="Manrope,Arial,sans-serif" font-size="11" font-weight="700"'
-            . ' letter-spacing="3.4" fill="currentColor" stroke="none">'
-            . '<textPath href="#pa-ring" xlink:href="#pa-ring" startOffset="0">' . $loop . '</textPath></text>';
-    }
-
-    $seal = '<svg viewBox="0 0 240 240" fill="none" stroke="currentColor" stroke-linecap="round"'
-        . ' xmlns:xlink="http://www.w3.org/1999/xlink">'
-        . '<defs><path id="pa-ring" fill="none" d="M120 120m-86 0a86 86 0 1 1 172 0a86 86 0 1 1 -172 0"/></defs>'
-        . '<circle cx="120" cy="120" r="118" stroke-width=".8" stroke-dasharray="2 7"/>'
-        . '<g stroke-width=".8">' . $rays . '</g>'
-        . '<circle cx="120" cy="120" r="97" stroke-width="1.4"/>'
-        . '<circle cx="120" cy="120" r="74" stroke-width=".6"/>'
-        . $ringText
-        . '<circle cx="100" cy="122" r="32" stroke-width="1.6"/>'
-        . '<circle cx="140" cy="122" r="32" stroke-width="1.6"/>'
-        . '<path d="M130 118q10-8 20 0" stroke-width="1.6"/>'
-        . '<path d="M52 104h136" stroke-width=".6" opacity=".55"/>'
-        . '<path d="M84 74h72" stroke-width=".8"/>'
-        . '<path d="M90 172h60" stroke-width=".8"/>'
-        . '</svg>';
-
-    // Giyoş bandı: iç içe geçen ince dalgalar (kıymetli evrak dokusu)
-    $waves = '';
-    foreach ([[0, 1.0, '1'], [9, 1.0, '.75'], [18, 1.0, '.5'], [27, 1.0, '.32']] as [$sh, $amp, $op]) {
-        $d = 'M0 16';
-        for ($x = 0; $x <= 320; $x += 8) {
-            $y = 16 + 10 * sin(($x + $sh) / 18) * $amp + 3.2 * sin(($x + $sh) / 6.5);
-            $d .= 'L' . $x . ' ' . round($y, 1);
-        }
-        $waves .= '<path d="' . $d . '" opacity="' . $op . '"/>';
-    }
-    $band = '<svg viewBox="0 0 320 32" fill="none" stroke="currentColor" stroke-width=".7">'
-        . $waves . '</svg>';
-
-    return '<div class="doc-deco" aria-hidden="true">'
-        . '<span class="deco-corner deco-tl">' . $corner . '</span>'
-        . '<span class="deco-corner deco-tr">' . $corner . '</span>'
-        . '<span class="deco-corner deco-bl">' . $corner . '</span>'
-        . '<span class="deco-corner deco-br">' . $corner . '</span>'
-        . '<span class="deco-band deco-band-top">' . $band . '</span>'
-        . '<span class="deco-band deco-band-bottom">' . $band . '</span>'
-        . '<span class="deco-seal">' . $seal . '</span>'
-        . '</div>';
-}
-
-function doc_flourish(): string
-{
-    return '<div class="doc-flourish" aria-hidden="true"><svg viewBox="0 0 220 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.1">'
-        . '<path d="M2 8h72"/><path d="M146 8h72"/>'
-        . '<path d="M86 8q12-9 24 0-12 9-24 0Z"/><path d="M134 8q-12-9-24 0 12 9 24 0Z"/>'
-        . '<circle cx="110" cy="8" r="2.6"/>'
-        . '</svg></div>';
-}
-
-?><!doctype html>
-<html lang="tr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title><?= e($title) ?></title>
-<link rel="stylesheet" href="<?= e(asset('print.css')) ?>">
-<?= brand_style_tag() ?>
-</head>
-<body>
-<div class="toolbar"><button type="button" data-print>Yazdır / PDF kaydet</button><button type="button" class="ghost" data-close>Kapat</button></div>
-<p class="print-tip">Belge, tarayıcının &laquo;arka planları yazdır&raquo; ayarı kapalı olsa da eksiksiz basılır. Sayfanın üstündeki adres/tarih satırını kaldırmak için yazdırma penceresinde <b>Üst bilgi / Alt bilgi</b> seçeneklerini <b>&mdash;boş&mdash;</b> yapın.</p>
-<main class="doc"><?= doc_ornaments($shop) ?><?= $body ?><?= doc_flourish() ?></main>
-<script src="<?= e(asset('print.js')) ?>" defer></script>
-</body>
-</html>
+echo dokum_sayfa_bas($title, $ekCss) . $body . dokum_sayfa_son();

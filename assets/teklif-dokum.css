@@ -1,57 +1,11 @@
-/* 4.21.1 — Katalog teklifi dökümü (app/partials/teklif-dokum.php). A4 dikey, tek sayfa, siyah-bordo.
-   print-color-adjust: exact → "arka planları yazdır" kapalıyken de renkler basılır. */
-@font-face{font-family:"Manrope";font-style:normal;font-display:swap;font-weight:200 800;src:url("fonts/manrope-latin-wght-normal.woff2") format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+2000-206F,U+20AC,U+2122}
-@font-face{font-family:"Manrope";font-style:normal;font-display:swap;font-weight:200 800;src:url("fonts/manrope-latin-ext-wght-normal.woff2") format("woff2");unicode-range:U+0100-02BA,U+1E00-1E9F,U+2C60-2C7F,U+A720-A7FF}
-:root{--ink:#1b1416;--ink-2:#4a3f42;--soft:#7a6d71;--line:#eadfe1;--paper:#fff;--tint:#fbf3f4;--brand:#b4233c;--brand-deep:#8f1a2e;--bright:#ff6b81;
-  --night:#141012;--ok:#1c7a4d;--grad:linear-gradient(135deg,#d0334f 0%,#8f1a2e 100%)}
-*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-html{background:#e9e4e5}
-body{margin:0;padding:24px 16px 48px;font:400 11.5px/1.5 Manrope,"Segoe UI",Arial,sans-serif;color:var(--ink)}
-svg{display:block}
-
-/* Ekran araç çubuğu */
-.arac{max-width:210mm;margin:0 auto 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2)}
-.arac button{border:0;border-radius:10px;padding:10px 18px;font:700 13px Manrope,Arial,sans-serif;cursor:pointer;background:var(--grad);color:#fff;box-shadow:0 10px 20px -12px rgba(143,26,46,.9)}
-.arac button.ghost{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px #d9cdcf}
-
-/* Sayfa */
-.sayfa{position:relative;width:210mm;min-height:297mm;margin:0 auto;padding:0 0 4mm;background:var(--paper);box-shadow:0 30px 60px -30px rgba(40,10,20,.45);overflow:hidden;display:flex;flex-direction:column}
-
-/* Üst bant */
-.ust{position:relative;display:flex;justify-content:space-between;align-items:stretch;gap:20px;padding:8mm 12mm 7mm;color:#fff;
-  background:radial-gradient(120% 160% at 100% 0%,rgba(255,107,129,.38),transparent 55%),linear-gradient(118deg,#141012 0%,#3d0d1a 55%,#8f1a2e 100%)}
-.ust::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,#ff6b81,#d0334f 40%,transparent)}
-.marka{display:flex;gap:12px;align-items:flex-start}
-.logo{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
-.logo svg{width:30px;height:30px}
-.marka b{display:block;font:800 21px/1.15 Manrope,sans-serif;letter-spacing:-.02em;margin-bottom:5px}
-.marka small{display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.78);font-size:10.5px;line-height:1.5}
-.marka small svg{width:11px;height:11px;flex:none;color:#ff95a6}
-.belge{text-align:right;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
-.etiket{align-self:flex-end;font:800 10px/1 Manrope,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:#ff95a6;padding:6px 10px;border-radius:99px;box-shadow:inset 0 0 0 1px rgba(255,149,166,.5)}
-.belge dl{margin:0;display:grid;grid-template-columns:repeat(3,auto);gap:4px 16px}
-.belge dl div{display:flex;flex-direction:column}
-.belge dt{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);font-weight:700}
-.belge dd{margin:1px 0 0;font:800 12.5px Manrope,sans-serif}
-
-/* Karşılama */
-.selam{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding:6mm 12mm 3mm}
-.kucuk{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--brand);font-weight:800}
-.selam h1{margin:2px 0 4px;font:800 24px/1.15 Manrope,sans-serif;letter-spacing:-.025em}
-.selam p{margin:0;max-width:120mm;color:var(--ink-2);font-size:11.5px}
+/* 4.21.1 — Katalog teklifi dökümü (app/partials/teklif-dokum.php) ve serbest teklif (print.php?type=quote).
+   4.22.0: ortak sayfa, üst bant, bilgi şeridi, kutu ve baskı kuralları assets/dokum.css'e taşındı; burada
+   yalnızca teklife özel parçalar (başlayan fiyat, seçenek kartları, hesap/sözlük kutuları, hazırlayan imzası) var.
+   Önce dokum.css, sonra bu dosya yüklenir. */
 .baslayan{flex:none;text-align:right;padding:8px 14px;border-radius:12px;background:var(--tint);box-shadow:inset 0 0 0 1px var(--line)}
 .baslayan small{display:block;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);font-weight:700}
 .baslayan b{font:800 18px Manrope,sans-serif;color:var(--brand-deep)}
-
-/* Bilgi şeridi */
-.bilgi{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:0;margin:1mm 12mm 4.5mm;border-radius:14px;background:var(--tint);box-shadow:inset 0 0 0 1px var(--line)}
-.bilgi>div{position:relative;display:flex;flex-direction:column;padding:10px 12px 10px 44px;min-width:0}
-.bilgi>div+div{border-left:1px dashed #e2cfd3}
-.bilgi .ic{position:absolute;left:12px;top:11px;display:grid;place-items:center;width:24px;height:24px;border-radius:8px;background:#fff;color:var(--brand);box-shadow:0 4px 10px -6px rgba(143,26,46,.6)}
-.bilgi .ic svg{width:14px;height:14px}
-.bilgi small{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);font-weight:800}
-.bilgi b{font-weight:800;font-size:11.5px;line-height:1.3;overflow-wrap:anywhere}
-.bilgi em{font-style:normal;color:var(--brand-deep);font-size:10px;font-weight:700}
+.bilgi.teklif{grid-template-columns:1.6fr 1fr 1fr 1fr;margin-top:1mm}
 
 /* Seçenek kartları */
 .secenekler{display:grid;gap:4mm;margin:0 12mm;align-items:stretch}
@@ -100,29 +54,19 @@ svg{display:block}
 .sozluk dt{font-weight:800;color:var(--brand-deep);font-size:9.3px}
 .sozluk dd{margin:0;color:var(--ink-2)}
 
-.son{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin:auto 12mm 0;padding-top:4mm;border-top:1px solid var(--line);margin-top:4.5mm}
-.son p{margin:0 0 3px;max-width:125mm;font-size:9px;color:var(--soft)}
 .son .musteri-not{color:var(--ink-2);font-size:10px}
 .imza{flex:none;min-width:52mm;text-align:center;padding-top:12px;border-top:1.5px solid var(--ink);margin-bottom:2px}
 .imza small{display:block;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);font-weight:800}
 .imza b{display:block;font-size:12px}
 .imza span{font-size:9px;color:var(--soft)}
 
-/* Ekran: dar pencerede okunabilir */
+/* Serbest teklif: açıklama satırları */
+.satirlar{list-style:none;margin:0;padding:0;display:grid;gap:3px}
+.satirlar li{position:relative;padding-left:14px;font-size:10px;color:var(--ink-2);line-height:1.4}
+.satirlar li::before{content:"";position:absolute;left:2px;top:5px;width:6px;height:6px;border-radius:2px;background:var(--grad)}
+
 @media screen and (max-width:840px){
-  body{padding:12px 0 32px}
-  .sayfa{width:100%;min-height:0}
-  .ust,.selam{flex-direction:column;align-items:flex-start}
-  .belge{text-align:left}.etiket{align-self:flex-start}
-  .bilgi{grid-template-columns:1fr 1fr}.bilgi>div+div{border-left:0}
   .secenekler.n2,.secenekler.n3,.alt-iki{grid-template-columns:1fr}
   .sozluk dl{grid-template-columns:1fr}
-}
-
-/* Baskı */
-@page{size:A4;margin:0}
-@media print{
-  html,body{background:#fff;padding:0}
-  .no-print{display:none !important}
-  .sayfa{box-shadow:none;width:210mm;min-height:297mm}
+  .bilgi.teklif{grid-template-columns:1fr 1fr}
 }

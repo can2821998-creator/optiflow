@@ -1,6 +1,18 @@
 OPTIFLOW
-Release: 4.21.1 (2026-10-06)
+Release: 4.22.0 (2026-10-06)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.22.0 (tüm dökümler yeni tasarımda; OptiFlow Pro 5.5.0 ile)
+  - Kullanıcı isteği: teklif dökümünün tasarımı tüm belgelere. Ortak yapı taşları app/dokum.php + assets/dokum.css:
+    koyu-bordo üst bant (mağaza, belge etiketi, numara/tarih), "Sayın …" karşılama + durum rozeti + öne çıkan tutar,
+    ikonlu bilgi şeridi, başlıklı kutular, karekod kartları, imza kutuları, alt bilgi (basım zamanı).
+  - Yeniden yapılan: sipariş fişi, tahsilat makbuzu (tutar yazıyla + hesap özeti), hızlı satış fişi, serbest teklif,
+    reçete kartı (atölye kontrol listesi), depo cam talebi, tedarikçi cari ekstresi (fatura/ödeme sütunları, devir),
+    kasa dökümü, dönem raporu (çubuk grafik), garanti belgesi (karekodlu kalem kartları), garanti talep formu
+    (tedarikçi değerlendirme alanı), SGK reçete dökümü. Katalog teklifi aynı ortak stile bağlandı.
+  - Çok sayfalı belgeler: tablo başlığı her sayfada tekrar eder, toplam yalnızca sonda; renkler "arka planları
+    yazdır" kapalıyken de basılır. Makbuzdaki kalan bakiye artık SGK payını da düşüyor (fişle tutarlı).
+  - assets/print.css yalnızca çerçeve etiketleri için kaldı. Senet (bono) resmî biçimi korunduğu için değişmedi.
 
 DEĞİŞİKLİK NOTLARI — 4.21.1 (merkez panel + teklif dökümü tasarımı; OptiFlow Pro 5.5.0 ile)
   - Teklif dökümü (PDF) baştan tasarlandı (app/partials/teklif-dokum.php, assets/teklif-dokum.css): siyah-bordo üst

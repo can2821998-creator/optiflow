@@ -147,8 +147,10 @@ $sn = teklif_secenekleri(row('SELECT * FROM quotes WHERE id = ?', [$idN]))[0];
 ok($sn['not'] === '3 gün teslim' && !str_contains($sn['ozellik'], 'teslim'), 'katalog notu ayrı satır, özellik etiketi sayılmaz');
 $pr = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/print.php');
 ok(str_contains($pr, "require dirname(__DIR__) . '/partials/teklif-dokum.php';"), 'katalog teklifi kendi döküm şablonuyla basılır');
-$dk = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/teklif-dokum.css');
-ok(str_contains($dk, 'print-color-adjust:exact') && str_contains($dk, '@page{size:A4;margin:0}'), 'döküm: A4 ve renkler arka plan ayarından bağımsız basılır');
+$dk = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/dokum.css');
+ok(str_contains($dk, 'print-color-adjust:exact') && str_contains($dk, '@page{size:A4;') && str_contains($dk, '@page :first{margin-top:0}'), 'döküm: A4 ve renkler arka plan ayarından bağımsız basılır');
+$td = (string) file_get_contents(dirname(__DIR__, 2) . '/app/partials/teklif-dokum.php');
+ok(str_contains($td, "asset('dokum.css')") && str_contains($td, "asset('teklif-dokum.css')"), 'teklif dökümü ortak stil + teklife özel stil');
 
 echo "10) Kaynak denetimleri\n";
 $kok = dirname(__DIR__, 2);

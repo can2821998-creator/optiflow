@@ -165,7 +165,7 @@ console.log('Liste, arama, kart');
   const det = await a.html(`garantiler.php?id=${gid}`);
   check('ayrıntı: geçerli + karekod adresi mağaza no ile', det.includes('<b>Geçerli</b>') && det.includes(`garanti.php?m=${iS.id}&amp;k=${token}`));
   const kart = await a.html(`print.php?type=garanti&order=${orderId}`);
-  check('garanti kartı: iki kalem, karekod, koşullar', kart.includes('GARANTİ BELGESİ') && (kart.match(/class="track-qr garanti-kalem"/g) || []).length === 2 && kart.includes('<svg') && kart.includes('yetkisiz müdahale'));
+  check('garanti kartı: iki kalem, karekod, koşullar', kart.includes('GARANTİ BELGESİ') && (kart.match(/class="garanti-kalem[ "]/g) || []).length === 2 && kart.includes('<svg') && kart.includes('yetkisiz müdahale'));
   check('başka mağaza bu garantiyi göremez', (await b.html(`garantiler.php?id=${gid}`)).includes('henüz açılmamış'));
 }
 

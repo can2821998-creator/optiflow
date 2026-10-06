@@ -350,7 +350,7 @@ page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.'
     <form method="post" class="grid cols-2" data-guard>
       <?= csrf_field() ?><input type="hidden" name="tab" value="genel"><input type="hidden" name="action" value="general">
       <label class="field"><span>Mağaza adı</span><input name="shop_name" value="<?= e(setting('shop_name', 'OptiFlow')) ?>"></label>
-      <label class="field"><span>Mağaza telefonu</span><input name="shop_phone" value="<?= e(setting('shop_phone')) ?>"></label>
+      <label class="field"><span>Mağaza telefonu</span><input name="shop_phone" type="tel" inputmode="tel" autocomplete="tel" value="<?= e(setting('shop_phone')) ?>"></label>
       <label class="field span-all"><span>Adres (fişlerde ve müşteri sayfasında görünür)</span><input name="shop_address" value="<?= e(setting('shop_address')) ?>"></label>
       <label class="field span-all"><span>Harita bağlantısı (isteğe bağlı)</span><input name="shop_map_url" inputmode="url" placeholder="https://maps.app.goo.gl/…" value="<?= e(setting('shop_map_url')) ?>"><small class="muted">Müşterinin “Yol tarifi” düğmesi buraya gider. Google Haritalar’da mağazanızı açın › Paylaş › Bağlantıyı kopyala ile alıp yapıştırın. Boş bırakırsanız yukarıdaki adres aranır.</small></label>
       <label class="field span-all"><span>Çalışma saatleri (müşteri sayfasında görünür)</span><textarea name="shop_hours" rows="3" maxlength="300" placeholder="Pazartesi – Cuma: 09:00 – 18:00&#10;Cumartesi: 09:00 – 14:00"><?= e(setting('shop_hours')) ?></textarea><small class="muted">Her satır ayrı gösterilir. Boş bırakırsanız müşteri sayfasında saat görünmez.</small></label>

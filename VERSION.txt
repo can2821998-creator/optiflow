@@ -1,6 +1,21 @@
 OPTIFLOW
-Release: 4.20.2 (2026-10-06)
+Release: 4.20.3 (2026-10-06)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.20.3 (PWA / mobil; OptiFlow Pro 5.5.0 ile)
+  - Kurulum: telefonda ilk açılan mağaza girişi sayfası manifest/iPhone simgesi/pwa.js yüklemiyordu ("Ana ekrana
+    ekle" yanlış ad ve simgeyle), manifest.php oturumsuz 303 dönüyordu → düzeltildi. Açılış rengi siyah, Android
+    kurulum penceresinde ekran görüntüleri.
+  - Çevrimdışı ekranı yeni temada, açık/koyu seçimini izler; satır içi betik kaldırıldı (assets/offline.js). Sunucu
+    kapalıyken 5 sn'de bir körlemesine yenilenmiyor, sunucuyu yokluyor.
+  - YENİ (merkezden açılır, varsayılan kapalı): "Telefonda çevrimdışı kopya" (cevrimdisi_tel). İnternet yokken açık
+    siparişler, müşteri telefonu (dokununca arar), aşama, söz tarihi ve kalan bakiye telefonda aranabilir listede.
+    Tarayıcıda dışa aktarılamaz anahtarla şifreli; 24 saatten eskisi silinir; çıkışta ve giriş ekranında silinir.
+  - Telefon kullanım turu: kaydet çubuğu alt menünün altında kalıyordu (body overflow-x: hidden tüm sticky öğeleri
+    bozuyordu → clip); "Kaydet ve reçete ekle" yazısı kesiliyordu; sipariş başlığında "Müşteri kartı" kesiliyordu;
+    çip/sekme/küçük düğmeler 31–32 px'ti (atölyede Başla/Hazır dahil) → dokunmatikte 40 px; atölye panosu ekranın
+    1081 px altındaydı → istatistikler yana kayan şerit (742 px); mağaza telefonu alanı telefon klavyesi açar.
+  - Test: tests/arayuz/test.php (39).
 
 DEĞİŞİKLİK NOTLARI — 4.20.2 (tasarım kayması taraması; OptiFlow Pro 5.5.0 ile)
   - 47 sayfa yerel test kurulumunda masaüstü (1366) + telefon (390), açık + koyu görünümde ölçüldü: sayfa taşması,

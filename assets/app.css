@@ -1275,7 +1275,9 @@ a.pano-card:hover { transform: translateY(-3px) rotate(-.3deg); box-shadow: var(
 
 /* Yatay taşmayı kesin olarak önle: hiçbir öğe ekrandan taşmasın. */
 @media (max-width: 1023px) {
-  html, body { max-width: 100%; overflow-x: hidden; }
+  /* 4.20.3: "hidden" body'yi kaydırma kabına çevirip telefonda tüm position:sticky öğeleri (kaydet çubuğu…)
+     bozuyordu; "clip" aynı şekilde keser ama kap oluşturmaz. Desteklemeyen eski tarayıcıda "hidden" kalır. */
+  html, body { max-width: 100%; overflow-x: hidden; overflow-x: clip; }
   img, svg, table, pre { max-width: 100%; }
   .page-head, .hero, .card, .stat, .pano-col { min-width: 0; }
 }
@@ -2103,6 +2105,31 @@ a.stat:hover, button.stat:hover { transform: translateY(-2px); border-color: col
   .table .cell-link > .avatar { display: none; }
   .table td.num small { white-space: normal; }
   .table td .badge { white-space: normal; line-height: 1.25; }
+  /* kaydet çubuğu: ana düğme üstte tam genişlik (yazısı sığsın), diğerleri altta yan yana */
+  .sticky-actions { gap: 8px; }
+  .sticky-actions .btn-primary { flex: 1 1 100%; order: -1; }
+  .sticky-actions .btn:not(.btn-primary) { flex: 1 1 0; }
+  /* sipariş başlığındaki düğmeler: yazısından dar sıkışmasın, sığmayan alt satıra geçsin */
+  .hero-actions > * { flex: 1 1 auto; min-width: max-content; }
+  .hero-actions > .btn { width: auto; }
+  .hero-actions > form .btn, .hero-actions > details > summary.btn { width: 100%; }
+  /* atölye panosu: 8 istatistik kartı ~570 px tutuyor, pano ekranın altına iniyordu → yana kayan tek satır */
+  .pano-stats { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+    margin-left: -16px; margin-right: -16px; padding: 0 16px 4px; margin-bottom: 12px; }
+  .pano-stats::-webkit-scrollbar { display: none; }
+  .pano-stats > .stat { flex: 0 0 44%; scroll-snap-align: start; }
+  .quick-actions a[href="ekran.php"] { display: none; }   /* TV ekranını telefonda açmanın anlamı yok */
+}
+/* 4.20.3 — Dokunmatik ekranda parmak hedefleri: tema katmanı çip/sekme/küçük düğmeyi 31–32 px'e indiriyordu
+   (atölye panosundaki "Başla / Hazır" dahil). Fare kullanılan masaüstünde sıkı düzen aynen kalır. */
+@media (pointer: coarse) {
+  .btn-sm { min-height: 40px; }
+  .chip, .tab { min-height: 40px; }
+  details > summary:not(.btn) { padding-top: 9px; padding-bottom: 9px; }
+  .rem-more > summary:not(.btn) { width: 40px; height: 40px; padding: 0; }
+  .icon-btn { min-width: 40px; min-height: 40px; }
+  input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; }
+  label:has(> input[type="checkbox"]), label:has(> input[type="radio"]) { padding-top: 8px; padding-bottom: 8px; }
 }
 
 /* ==========================================================================

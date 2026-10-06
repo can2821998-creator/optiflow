@@ -1,9 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 6 Ekim 2026 (4.20.2 / Pro 5.5.0)*
+*Son güncelleme: 6 Ekim 2026 (4.20.3 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.20.2** (push bekliyor), şema **30**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Sunucu 4.20.3** (push bekliyor; canlıda 4.20.2 — 06.10 "Sürüm yayınla" + "Canlıya al" başarılı), şema **30**.
+  Masaüstü **OptiFlow Pro 5.5.0**.
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
   11.4 (127.0.0.1:3307, başlat: `mariadb-11.4.8-winx64\bin\mariadbd.exe --defaults-file=veri\my.ini`), şifreler ve
   uydurma veri betiği (`ornek-veri.php`) orada; depoda `config.php` (gitignore) yerel. Sunucu: `php -S 127.0.0.1:8080`.
@@ -14,7 +15,17 @@
   sayfa) ve seo testi ORTAM yüzünden düşer (`mktemp` /tmp yolu Windows PHP'ye geçmez, OpenSSL/dosya izni farkı);
   doğrulama CI'da (Linux).
 
-## Son oturum (4.20.2 — tasarım kayması taraması)
+## Son oturum (4.20.3 — PWA / mobil, kullanıcı sırası: 3 cila → 2 çevrimdışı → 1 kullanım turu)
+- Kurulum: mağaza girişine manifest/iPhone/pwa.js; manifest oturumsuz (bootstrap `$manifestMisafir`); siyah açılış,
+  ekran görüntüleri. Çevrimdışı ekranı yeni tema + `assets/offline.js`; sw.js v6.
+- YENİ `cevrimdisi_tel` (kullanıcı kararı: masaüstüyle aynı kapsam, telefon dahil; 24 saat): `api.php?action=cevrimdisi`,
+  pwa.js AES-GCM (extractable:false) → IndexedDB `optiflow-cevrimdisi`; offline.html listeler. Yerelde uçtan uca denendi
+  (şifreli kayıt, çevrimdışı liste + arama, süre dolunca silme, çıkışta silme). Canlıda hiçbir mağazada açık değil.
+- Kullanım turu (375 px, dokunmatik): sipariş aç → durum → tahsilat, atölye, hızlı satış. Düzeltilen: sticky kaydet
+  çubuğu (body overflow-x clip), kesik düğme yazıları, 31–32 px dokunma hedefleri, atölye panosuna ulaşma.
+- Açık: iPhone açılış ekranı görselleri (apple-touch-startup-image) yok; gerçek iPhone/Android cihazda denenmedi.
+
+## Önceki oturum (4.20.2 — tasarım kayması taraması)
 - 47 sayfa × (1366/390) × (açık/koyu) otomatik ölçüm (taşma, kontrast, koyu temada açık zemin) + ekran kontrolü.
 - Düzeltilen: sipariş WhatsApp menüsü (kesik + beyaz-üstüne-beyaz); telefonda liste sütunları ekran dışı (tema katmanı
   telefon dolgusunu eziyordu); hata sayfası koyu temayı izlemiyordu; merkez db_port kaydı; db adında Türkçe büyük harf.

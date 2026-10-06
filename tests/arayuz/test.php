@@ -74,5 +74,14 @@ dogru('kopya içeriği HTML olarak yorumlanmaz (textContent)', !str_contains($oj
 dogru('çevrimdışı ekranı körlemesine yenilemez, sunucuyu yoklar', str_contains($ojs, "fetch('manifest.php', { cache: 'no-store' })") && !str_contains($ojs, 'if (navigator.onLine) location.reload()'));
 dogru('servis çalışanı api.php\'ye dokunmaz', str_contains($sw, "url.pathname.endsWith('/api.php')) return;"));
 
+/* 4.20.3 Telefonda kullanım turu bulguları */
+$css = (string) file_get_contents($kok . '/assets/app.css');
+dogru('telefonda sticky öğeler çalışır (body overflow-x: clip)', str_contains($css, 'html, body { max-width: 100%; overflow-x: hidden; overflow-x: clip; }'));
+dogru('dokunmatikte küçük düğme/çip/sekme 40 px', (bool) preg_match('/@media \(pointer: coarse\) \{\s*\.btn-sm \{ min-height: 40px; \}\s*\.chip, \.tab \{ min-height: 40px; \}/', $css));
+dogru('kaydet çubuğu: ana düğme tam genişlik', str_contains($css, '.sticky-actions .btn-primary { flex: 1 1 100%; order: -1; }'));
+dogru('sipariş başlığı düğmeleri yazısından dar sıkışmaz', str_contains($css, '.hero-actions > * { flex: 1 1 auto; min-width: max-content; }') && str_contains($css, '.hero-actions > .btn { width: auto; }'));
+dogru('atölye istatistikleri telefonda yana kayan şerit', str_contains($css, '.pano-stats > .stat { flex: 0 0 44%;'));
+dogru('mağaza telefonu alanı telefon klavyesi açar', str_contains((string) file_get_contents($kok . '/app/pages/settings.php'), 'name="shop_phone" type="tel" inputmode="tel"'));
+
 echo "Arayüz/merkez düzeltme testleri: $gecen geçti, $kalan kaldı\n";
 exit($kalan ? 1 : 0);

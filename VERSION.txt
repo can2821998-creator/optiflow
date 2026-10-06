@@ -1,6 +1,17 @@
 OPTIFLOW
-Release: 4.21.0 (2026-10-06)
+Release: 4.21.1 (2026-10-06)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.21.1 (merkez panel + teklif dökümü tasarımı; OptiFlow Pro 5.5.0 ile)
+  - Teklif dökümü (PDF) baştan tasarlandı (app/partials/teklif-dokum.php, assets/teklif-dokum.css): siyah-bordo üst
+    bant (mağaza, teklif no, tarih, 15 gün geçerlilik), "başlayan fiyatlarla", çerçeve/kullanım/SGK/iskonto şeridi,
+    yan yana seçenek kartları (özellik etiketleri, fiyat dökümü, renkli "ödeyeceğiniz tutar" ve avantaj, "Önerimiz"
+    / "Seçiminiz" şeridi), "Hesap nasıl yapıldı?", teklifte geçen kaplama/hammadde/odak/indeks için müşteri dilinde
+    açıklamalar, not, hazırlayan. A4 tek sayfa; renkler "arka planları yazdır" kapalıyken de basılır.
+  - Katalog notu (örn. "3 gün teslim") artık ayrı satır; özellik etiketi sayılmıyor.
+  - Merkez panel yenilendi: siyah üst çubuk, bordo başlık bandı, simgeli tonlu özet kartları (ana 4 + dikkat 5),
+    mağaza avatarları, bordo düğmeler (eski mavi tema kalıntıları kaldırıldı), toplu işlem çubuğu yalnızca mağaza
+    seçilince, açık/koyu görünüm (uygulamayla ortak seçim), yenilenen giriş ekranı.
 
 DEĞİŞİKLİK NOTLARI — 4.21.0 (katalogdan teklif; OptiFlow Pro 5.5.0 ile) — rehber: docs/YENILIKLER-4.21.md
   - YENİ: Teklifler › Yeni teklif. Müşteri seçilir ya da kaydedilir → çerçeve (stoktan / elle / müşterinin kendi) →

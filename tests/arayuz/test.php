@@ -93,5 +93,12 @@ foreach (array_merge(glob($kok . '/app/pages/*.php') ?: [], glob($kok . '/app/*.
 }
 dogru('hiçbir sayfada satır içi olay yok (CSP) ' . implode(', ', $olayli), $olayli === []);
 
+/* 4.21.1 Merkez panel görsel yenileme */
+$mp = (string) file_get_contents($kok . '/app/pages/merkez-panel.php');
+dogru('merkez: eski mavi tema renkleri kalmadı', !preg_match('/4a5aff|1c2ecc|51,\s*70,\s*255|eef1ff|ececf5/i', $mp));
+dogru('merkez: açık/koyu görünüm (tema.js + html.tema-koyu)', str_contains($mp, "asset('tema.js')") && str_contains($mp, 'html.tema-koyu{') && str_contains($mp, 'data-tema-dugme'));
+dogru('merkez: toplu işlem çubuğu yalnızca seçimde', str_contains($mp, 'body:has(.selbox:checked) #bulkform{display:flex') && !str_contains($mp, 'class="bulkbar" style="display:flex"'));
+dogru('merkez: başlık bandı ve iki gruplu özet kartları', str_contains($mp, '<section class="band">') && str_contains($mp, '<div class="kpis ikincil">'));
+
 echo "Arayüz/merkez düzeltme testleri: $gecen geçti, $kalan kaldı\n";
 exit($kalan ? 1 : 0);

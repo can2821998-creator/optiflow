@@ -1,9 +1,9 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 6 Ekim 2026 (4.21.0 / Pro 5.5.0)*
+*Son güncelleme: 6 Ekim 2026 (4.21.1 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.21.0**, şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Sunucu 4.21.1** (push bekliyor), şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
 - **Canlı site: 4.21.0** (06.10: "Sürüm yayınla" + "Canlıya al" başarılı). Release: v4.21.0-pro5.5.0. Canlı veritabanı v31 göçü ilk personel girişinde.
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
   11.4 (127.0.0.1:3307, başlat: `mariadb-11.4.8-winx64\bin\mariadbd.exe --defaults-file=veri\my.ini`), şifreler ve
@@ -13,7 +13,14 @@
   sayfa) ve seo testi ORTAM yüzünden düşer (`mktemp` /tmp yolu Windows PHP'ye geçmez, OpenSSL/dosya izni farkı);
   doğrulama CI'da (Linux).
 
-## Son oturum (4.21.0 — katalogdan teklif + detaylı cam kataloğu)
+## Son oturum (4.21.1 — merkez panel + teklif dökümü tasarımı)
+- Teklif PDF'i kendi şablonuyla (`app/partials/teklif-dokum.php`, `assets/teklif-dokum.css`); print.php katalog
+  teklifini oraya yönlendirir. Headless Chrome ile doğrulandı: A4 tek sayfa, renkler basılıyor (3 seçenek + sözlük).
+  Özellik sözlüğü `teklif_ozellik_sozlugu()`; geçerlilik `TEKLIF_GECERLILIK_GUN` = 15.
+- Merkez panel stili baştan (`$stil`), koyu görünüm, band/KPI/avatar; diğer sekmeler aynı sınıflarla yeni görünümde.
+- Yerelde ayrıca: `optiflow-yerel/pdf-al.php` (giriş yapıp döküm HTML'ini alır) + Chrome `--print-to-pdf` ile sayfa sayımı.
+
+## Önceki oturum (4.21.0 — katalogdan teklif + detaylı cam kataloğu)
 - Kullanıcı kurgusu: müşteri → teklif → müşteri kaydı → katalogdan cam (marka, özellik, fiyat) → çerçeve → Medula payı
   düşülür → iskonto → döküm. Kararlar: **önce SGK, sonra iskonto**; personel iskonto sınırı (Ayarlar, varsayılan %10,
   süper sınırsız); **1–3 alternatif cam** yan yana. `app/teklif.php`, `teklif-yeni.php`, `assets/teklif.js`, göç v31.

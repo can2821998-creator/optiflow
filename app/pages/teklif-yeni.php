@@ -116,7 +116,7 @@ page_header('Yeni teklif', 'Müşteriyi seçin, çerçeveyi ve 1–3 cam seçene
               <?php foreach ($urunGruplu as $grup => $liste): ?>
                 <optgroup label="<?= e($grup) ?>">
                   <?php foreach ($liste as $u): $et = teklif_cam_etiketi($u); ?>
-                    <option value="<?= (int) $u['id'] ?>" data-fiyat="<?= $u['price'] !== null ? e((string) (float) $u['price']) : '' ?>" data-tasarim="<?= e((string) $u['design']) ?>" data-segment="<?= e(product_tiers()[$u['tier']] ?? '') ?>" <?= $secili === (int) $u['id'] ? 'selected' : '' ?>><?= e($et['ad']) ?> — <?= e($et['ozellik']) ?><?= $u['price'] !== null ? ' — ' . e(money($u['price'])) : ' — fiyat sorulur' ?></option>
+                    <option value="<?= (int) $u['id'] ?>" data-fiyat="<?= $u['price'] !== null ? e((string) (float) $u['price']) : '' ?>" data-tasarim="<?= e((string) $u['design']) ?>" data-segment="<?= e(product_tiers()[$u['tier']] ?? '') ?>" <?= $secili === (int) $u['id'] ? 'selected' : '' ?>><?= e($et['ad']) ?> — <?= e($et['ozellik']) ?><?= $et['not'] !== '' ? ' · ' . e($et['not']) : '' ?><?= $u['price'] !== null ? ' — ' . e(money($u['price'])) : ' — fiyat sorulur' ?></option>
                   <?php endforeach; ?>
                 </optgroup>
               <?php endforeach; ?>

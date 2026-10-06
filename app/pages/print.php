@@ -248,6 +248,12 @@ if ($type === 'order') {
 } elseif ($type === 'quote') {
     $qt = row('SELECT * FROM quotes WHERE id = ?', [query_int('id')]);
     if (!$qt) { render_error_page('Teklif bulunamadı', ''); }
+    // 4.21.1: katalog teklifi kendine özel döküm tasarımıyla (app/partials/teklif-dokum.php, assets/teklif-dokum.css)
+    if (($qt['tip'] ?? 'serbest') === 'katalog') {
+        ob_end_clean();
+        require dirname(__DIR__) . '/partials/teklif-dokum.php';
+        exit;
+    }
     $options = [];
     foreach ([1, 2, 3] as $i) {
         if ($qt["opt{$i}_name"]) {
@@ -260,29 +266,6 @@ if ($type === 'order') {
       <div class="doc-ref"><b>Fiyat teklifi</b><?= date_tr($qt['created_at'], true) ?></div></div>
     <div class="status-banner tone-wine"><?= icon('spark') ?><div class="txt"><b>Sayın <?= e($qt['customer_name']) ?></b><span>Talebiniz doğrultusunda hazırladığımız fiyat teklifimiz aşağıda sunulmuştur.</span></div></div>
     <?php if ($qt['note']): ?><p class="muted"><?= e($qt['note']) ?></p><?php endif; ?>
-    <?php if (($qt['tip'] ?? 'serbest') === 'katalog'):   // 4.21.0 katalogdan teklif dökümü
-        $secenekler = teklif_secenekleri($qt);
-        $oranMetni = static fn(float $o): string => rtrim(rtrim(number_format($o, 2, ',', ''), '0'), ',');
-        $sgkVar = (float) $qt['sgk_amount'] > 0;
-        $iskVar = (float) $qt['discount_rate'] > 0; ?>
-      <table class="kv-table">
-        <tr><th>Müşteri</th><td><?= e($qt['customer_name']) ?><?= $qt['customer_phone'] ? ' · ' . e(phone_display($qt['customer_phone'])) : '' ?></td><th>Teklif no</th><td>#<?= (int) $qt['id'] ?></td></tr>
-        <tr><th>Çerçeve</th><td><?= e((string) $qt['frame_desc']) ?></td><th>Kullanım</th><td><?= e(lens_designs()[(string) $qt['lens_design']] ?? '—') ?></td></tr>
-      </table>
-      <table class="lines teklif-dokum">
-        <thead><tr><th></th><?php foreach ($secenekler as $s): ?><th class="num"><?= e($s['baslik']) ?></th><?php endforeach; ?></tr></thead>
-        <tbody>
-          <tr><th>Cam</th><?php foreach ($secenekler as $s): ?><td class="num"><b><?= e($s['cam']) ?></b><?php if ($s['ozellik'] !== ''): ?><br><small><?= e($s['ozellik']) ?></small><?php endif; ?></td><?php endforeach; ?></tr>
-          <tr><th>Cam (çift)</th><?php foreach ($secenekler as $s): ?><td class="num"><?= money($s['hesap']['cam']) ?></td><?php endforeach; ?></tr>
-          <tr><th>Çerçeve</th><?php foreach ($secenekler as $s): ?><td class="num"><?= money($s['hesap']['cerceve']) ?></td><?php endforeach; ?></tr>
-          <tr><th>Ara toplam</th><?php foreach ($secenekler as $s): ?><td class="num"><?= money($s['hesap']['ara']) ?></td><?php endforeach; ?></tr>
-          <?php if ($sgkVar): ?><tr><th>Medula (SGK) payı</th><?php foreach ($secenekler as $s): ?><td class="num">−<?= money($s['hesap']['sgk']) ?></td><?php endforeach; ?></tr><?php endif; ?>
-          <?php if ($iskVar): ?><tr><th>İskonto %<?= e($oranMetni((float) $qt['discount_rate'])) ?></th><?php foreach ($secenekler as $s): ?><td class="num">−<?= money($s['hesap']['iskonto']) ?></td><?php endforeach; ?></tr><?php endif; ?>
-          <tr class="total"><th>Ödenecek</th><?php foreach ($secenekler as $s): ?><td class="num"><b><?= money($s['hesap']['odenecek']) ?></b></td><?php endforeach; ?></tr>
-        </tbody>
-      </table>
-      <?php if ($sgkVar): ?><p class="small muted">Medula (SGK) payı tahminidir; kesin tutar reçete Medula'da işlenince belli olur.<?= $iskVar ? ' İskonto, SGK payı düşüldükten sonra kalan tutara uygulanmıştır.' : '' ?></p><?php endif; ?>
-    <?php else: ?>
     <div class="quote-grid">
       <?php foreach ($options as $i => $o): $isBest = $i === count($options) - 1 && count($options) > 1; ?>
         <div class="quote-col <?= $isBest ? 'is-best' : '' ?>">
@@ -293,7 +276,6 @@ if ($type === 'order') {
         </div>
       <?php endforeach; ?>
     </div>
-    <?php endif; ?>
     <div class="foot"><span class="foot-mark"><?= brand_mark() ?></span><span><?= e($shop) ?></span><span class="foot-note">Bu teklif niteliğinde olup bağlayıcı değildir; fiyatlar önceden bildirilmeksizin değişebilir.</span></div>
     <?php
 } elseif ($type === 'rx') {

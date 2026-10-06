@@ -135,6 +135,21 @@ echo "9) WhatsApp metni\n";
 $wa = teklif_whatsapp_metni(row('SELECT * FROM quotes WHERE id = ?', [$id]), 'Örnek Optik');
 ok(str_contains($wa, 'Merhaba Ayşe Yılmaz') && str_contains($wa, 'SGK (Medula) payı') && str_contains($wa, '*Ödenecek: ' . money($beklenenOdenecek) . '*') && str_ends_with($wa, 'Örnek Optik'), 'döküm metni');
 
+echo "9b) Döküm (4.21.1): etiketler, sözlük, not ayrımı\n";
+esit(['Tek odak · yakın destekli (yorgunluk)', 'MR-8 (inceltilmiş)', 'İndeks 1.60', 'Asferik', 'Antirefle', 'Blue (mavi ışık)'],
+    teklif_ozellik_etiketleri('Tek odak · yakın destekli (yorgunluk) · MR-8 (inceltilmiş) · İndeks 1.60 · Asferik · Antirefle, Blue (mavi ışık)'),
+    'birleşik odak adı bölünmez, kaplamalar ayrı etiket');
+$sz = teklif_dokum_sozluk([['ozellik' => 'Progressive (çok odaklı) · İndeks 1.67 · Fotokromik'], ['ozellik' => 'Tek odak · Fotokromik']]);
+esit(['Progressive (çok odaklı)', 'Fotokromik', 'Tek odak', 'Kırılma indeksi'], array_keys($sz), 'sözlük: yalnızca teklifte geçenler, tekrarsız, indeks açıklaması');
+$notlu = insert('lens_products', ['brand' => 'Hoya', 'name' => 'Nulux', 'design' => 'tek_odak', 'tier' => 'premium', 'price' => 6000, 'note' => '3 gün teslim']);
+$idN = teklif_kaydet(['customer_id' => (string) $mus['id'], 'urun' => [1 => (string) $notlu]] + $temel, $patron);
+$sn = teklif_secenekleri(row('SELECT * FROM quotes WHERE id = ?', [$idN]))[0];
+ok($sn['not'] === '3 gün teslim' && !str_contains($sn['ozellik'], 'teslim'), 'katalog notu ayrı satır, özellik etiketi sayılmaz');
+$pr = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/print.php');
+ok(str_contains($pr, "require dirname(__DIR__) . '/partials/teklif-dokum.php';"), 'katalog teklifi kendi döküm şablonuyla basılır');
+$dk = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/teklif-dokum.css');
+ok(str_contains($dk, 'print-color-adjust:exact') && str_contains($dk, '@page{size:A4;margin:0}'), 'döküm: A4 ve renkler arka plan ayarından bağımsız basılır');
+
 echo "10) Kaynak denetimleri\n";
 $kok = dirname(__DIR__, 2);
 $mig = (string) file_get_contents($kok . '/app/migrations.php');

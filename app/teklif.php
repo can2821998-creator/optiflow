@@ -62,14 +62,13 @@ function teklif_cam_urunleri(): array
 /** Ürünün teklifte görünen adı ve özellik satırı. */
 function teklif_cam_etiketi(array $p): array
 {
-    // Odak tipi · hammadde · indeks · yüzey · kaplamalar · not (4.21.0 katalog detayları)
+    // Odak tipi · hammadde · indeks · yüzey · kaplamalar (4.21.0 katalog detayları); not ayrı (4.21.1)
     $ozellik = array_values(array_filter([
         teklif_tasarim_adi((string) $p['design']),
         function_exists('lens_hammaddeleri') ? (lens_hammaddeleri()[(string) ($p['hammadde'] ?? '')] ?? null) : null,
         $p['lens_index'] ? 'İndeks ' . $p['lens_index'] : null,
         function_exists('lens_yuzeyleri') ? (lens_yuzeyleri()[(string) ($p['yuzey'] ?? '')] ?? null) : null,
         $p['coating'] ?: null,
-        $p['note'] ?: null,
     ]));
     // Katalogda ad çoğu zaman markayla başlıyor ("Nikon" + "Nikon Presio First"): marka tekrar yazılmaz
     $marka = trim((string) $p['brand']);
@@ -77,6 +76,7 @@ function teklif_cam_etiketi(array $p): array
     return [
         'ad'      => $marka !== '' && !str_starts_with(mb_strtolower($urunAd), mb_strtolower($marka)) ? $marka . ' ' . $urunAd : $urunAd,
         'ozellik' => implode(' · ', $ozellik),
+        'not'     => trim((string) ($p['note'] ?? '')),   // dökümde özellik etiketi sayılmaz
     ];
 }
 
@@ -204,7 +204,8 @@ function teklif_kaydet(array $g, array $kullanici): int
             'baslik' => $baslik !== '' ? $baslik : (product_tiers()[$u['tier']] ?? 'Seçenek ' . (count($secenekler) + 1)),
             'urun'   => $u,
             'ad'     => mb_substr($et['ad'], 0, 160),
-            'desc'   => mb_substr($et['ozellik'], 0, 500),
+            'desc'   => mb_substr($et['ozellik'], 0, 400),
+            'not'    => mb_substr($et['not'], 0, 90),
             'fiyat'  => $fiyat,
         ];
     }
@@ -266,7 +267,8 @@ function teklif_kaydet(array $g, array $kullanici): int
         foreach (range(1, TEKLIF_SECENEK_SAYISI) as $i) {
             $s = $secenekler[$i - 1] ?? null;
             $veri["opt{$i}_name"] = $s['baslik'] ?? null;
-            $veri["opt{$i}_desc"] = $s ? $s['ad'] . ($s['desc'] !== '' ? "\n" . $s['desc'] : '') : null;
+            // satır 1: cam adı · satır 2: özellikler · satır 3: katalog notu (varsa)
+            $veri["opt{$i}_desc"] = $s ? $s['ad'] . "\n" . $s['desc'] . ($s['not'] !== '' ? "\n" . $s['not'] : '') : null;
             $veri["opt{$i}_price"] = $s ? round($s['fiyat'], 2) : null;
             $veri["opt{$i}_product_id"] = $s ? (int) $s['urun']['id'] : null;
         }
@@ -285,12 +287,13 @@ function teklif_secenekleri(array $q): array
         if (empty($q["opt{$i}_name"])) {
             continue;
         }
-        $satirlar = explode("\n", (string) ($q["opt{$i}_desc"] ?? ''), 2);
+        $satirlar = explode("\n", (string) ($q["opt{$i}_desc"] ?? ''), 3);
         $s = [
             'no'      => $i,
             'baslik'  => (string) $q["opt{$i}_name"],
             'cam'     => $katalog ? $satirlar[0] : '',
             'ozellik' => $katalog ? ($satirlar[1] ?? '') : (string) ($q["opt{$i}_desc"] ?? ''),
+            'not'     => $katalog ? ($satirlar[2] ?? '') : '',
             'fiyat'   => $q["opt{$i}_price"] !== null ? (float) $q["opt{$i}_price"] : null,
         ];
         if ($katalog) {
@@ -351,4 +354,94 @@ function teklif_whatsapp_metni(array $q, string $magaza): string
         }
     }
     return $m . "\n" . $magaza;
+}
+
+/* ---------- 4.21.1 Teklif dökümü (app/partials/teklif-dokum.php) ---------- */
+
+const TEKLIF_GECERLILIK_GUN = 15;
+
+/** Seçeneğin özellik satırı ("Tek odak · MR-8 · İndeks 1.60 · Antirefle, Blue") → etiketler (kaplamalar ayrı ayrı). */
+function teklif_ozellik_etiketleri(string $ozellik): array
+{
+    $etiket = [];
+    // Adında " · " geçen odak tipleri ("Tek odak · yakın destekli (yorgunluk)") bölünmeden tek etiket kalır
+    $bilesik = array_filter(
+        array_merge(array_keys(teklif_ozellik_sozlugu()), function_exists('lens_odak_tipleri') ? array_values(lens_odak_tipleri()) : []),
+        static fn($ad) => str_contains($ad, ' · ')
+    );
+    $koru = [];
+    foreach ($bilesik as $k => $ad) {
+        if (str_contains($ozellik, $ad)) {
+            $koru["\x01$k\x01"] = $ad;
+            $ozellik = str_replace($ad, "\x01$k\x01", $ozellik);
+        }
+    }
+    foreach (array_filter(array_map(static fn($p) => strtr(trim($p), $koru), explode(' · ', $ozellik))) as $parca) {
+        if (in_array($parca, $koru, true)) {
+            $etiket[] = $parca;   // bileşik ad: kaplama listesi gibi virgülle bölünmez
+            continue;
+        }
+        foreach (array_filter(array_map('trim', explode(',', $parca))) as $p) {
+            $etiket[] = $p;
+        }
+    }
+    return array_values(array_unique($etiket));
+}
+
+/** Müşterinin anlayacağı dilde kısa açıklamalar (dökümde yalnızca teklifte geçenler gösterilir). */
+function teklif_ozellik_sozlugu(): array
+{
+    return [
+        // Kaplamalar
+        'Antirefle'                    => 'Camdaki yansımaları azaltır; gece araba farları ve ekranlarda parlama olmaz, gözleriniz daha net görünür.',
+        'Süper antirefle (hidrofobik)' => 'Yansıma önlemenin yanında su, yağ ve tozu iter; cam daha az kirlenir, kolay silinir.',
+        'Blue (mavi ışık)'             => 'Bilgisayar, telefon ve LED ışığındaki mavi ışığın bir kısmını süzer; uzun ekran kullanımında göz yorgunluğunu azaltır.',
+        'UV420'                        => 'Güneşin zararlı UV ışınlarını ve yüksek enerjili mavi ışığı 420 nm\'ye kadar keser.',
+        'Drive (gece sürüş)'           => 'Gece karşıdan gelen far parlamasını azaltır; araç kullananlar için daha konforlu görüş sağlar.',
+        'Fotokromik'                   => 'Güneşte koyulaşır, kapalı alanda şeffaflaşır; ayrı güneş gözlüğü taşıma ihtiyacını azaltır.',
+        'Polarize'                     => 'Yol, su ve kar yüzeyinden yansıyan parlamayı keser; güneş altında kontrast artar.',
+        'Sert kaplama'                 => 'Cam yüzeyini çizilmelere karşı güçlendirir; gözlük daha uzun süre yeni gibi kalır.',
+        'Ayna (mirror)'                => 'Dış yüzeyde ayna etkisi verir; güneşte göz konforunu artırır ve şık bir görünüm sağlar.',
+        'Buğu önleyici'                => 'Maske takarken ya da sıcak-soğuk ortam değişiminde camın buğulanmasını azaltır.',
+        // Odak tipleri
+        'Tek odak'                              => 'Tek bir mesafe (uzak ya da yakın) için net görüş sağlayan klasik cam.',
+        'Tek odak · yakın destekli (yorgunluk)' => 'Uzağı net gösterirken alt kısmındaki hafif destekle yakın çalışmada gözü dinlendirir.',
+        'Tek odak · miyopi kontrol'             => 'Çocuklarda miyopinin ilerleme hızını yavaşlatmaya yardımcı özel tasarım.',
+        'Progressive (çok odaklı)'              => 'Tek camda uzak, ara ve yakın mesafeyi kesintisiz birleştirir; gözlük değiştirmeye gerek kalmaz.',
+        'Ofis / ara mesafe'                     => 'Masa başı ve ekran mesafesine (ara mesafe) özel geniş görüş alanı sunar.',
+        'Bifokal'                               => 'Üst kısmı uzak, alt kısmı yakın için iki ayrı bölgeli cam.',
+        // Hammaddeler
+        'Organik (CR-39)'     => 'Hafif ve optik kalitesi yüksek standart plastik cam.',
+        'Polikarbonat'        => 'Darbeye çok dayanıklı ve hafif; çocuk ve spor gözlükleri için idealdir.',
+        'Trivex'              => 'Hem çok hafif hem darbeye dayanıklı; netlik kalitesi yüksektir.',
+        'MR-8 (inceltilmiş)'  => 'İnce, hafif ve dayanıklı; orta ve yüksek numaralarda estetik sonuç verir.',
+        'MR-7'                => 'Yüksek numaralarda daha ince cam sağlayan dayanıklı hammadde.',
+        'MR-174 (ultra ince)' => 'En ince plastik cam hammaddesi; çok yüksek numaralar için.',
+        'Mineral (cam)'       => 'Çizilmeye çok dayanıklı gerçek cam; plastik camlara göre daha ağırdır.',
+        // Yüzeyler
+        'Asferik'             => 'Daha düz yüzey tasarımı; cam daha ince görünür, kenarlarda bozulma azalır.',
+        'Çift asferik'        => 'İki yüzü de asferik; en geniş net görüş alanı ve en ince görünüm.',
+        'Free-form (dijital)' => 'Bilgisayarla noktasal işlenmiş kişisel yüzey; kenarlara kadar keskin görüş.',
+    ];
+}
+
+/** Teklifte geçen özelliklerin açıklamaları (indeks ayrıca): [etiket => açıklama]. */
+function teklif_dokum_sozluk(array $secenekler): array
+{
+    $sozluk = teklif_ozellik_sozlugu();
+    $cikti = [];
+    $indeksVar = false;
+    foreach ($secenekler as $s) {
+        foreach (teklif_ozellik_etiketleri((string) $s['ozellik']) as $e) {
+            if (isset($sozluk[$e])) {
+                $cikti[$e] = $sozluk[$e];
+            } elseif (str_starts_with($e, 'İndeks ')) {
+                $indeksVar = true;
+            }
+        }
+    }
+    if ($indeksVar) {
+        $cikti['Kırılma indeksi'] = 'Sayı büyüdükçe cam incelir ve hafifler: 1.50 standart · 1.60 ince · 1.67 çok ince · 1.74 en ince.';
+    }
+    return $cikti;
 }

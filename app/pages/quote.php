@@ -66,7 +66,7 @@ page_start('Teklif · ' . $quote['customer_name'], 'quotes');
       <section class="card teklif-kart <?= $secilen === $o['no'] ? 'is-secilen' : '' ?>">
         <h3><?= e($o['baslik']) ?><?php if ($secilen === $o['no']): ?> <span class="badge sm tone-green">Seçildi</span><?php endif; ?></h3>
         <span class="cam"><?= e($o['cam']) ?></span>
-        <?php if ($o['ozellik'] !== ''): ?><small class="muted"><?= e($o['ozellik']) ?></small><?php endif; ?>
+        <?php if ($o['ozellik'] !== ''): ?><small class="muted"><?= e($o['ozellik']) ?></small><?php endif; ?><?php if ($o['not'] !== ''): ?><small class="muted"><i><?= e($o['not']) ?></i></small><?php endif; ?>
         <dl>
           <dt>Cam (çift)</dt><dd><?= money($h['cam']) ?></dd>
           <dt>Çerçeve</dt><dd><?= money($h['cerceve']) ?></dd>

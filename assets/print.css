@@ -160,13 +160,6 @@ tr{page-break-inside:avoid}
 .quote-col.is-best{border-color:#a8690c;border-width:2px;background:#fdf1d9}
 .quote-flag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#3772a6;color:#fff;font:700 10px Manrope;letter-spacing:.05em;text-transform:uppercase;padding:4px 12px;border-radius:99px;white-space:nowrap}
 @media screen and (max-width:800px){.quote-grid{grid-template-columns:1fr}}
-/* 4.21.0 katalog teklifi dökümü: seçenekler sütun, kalemler satır */
-.teklif-dokum{width:100%;margin-top:10px;table-layout:fixed}
-.teklif-dokum th,.teklif-dokum td{white-space:normal;overflow-wrap:anywhere}
-.teklif-dokum th:first-child{width:24%;color:#3b454d}
-.teklif-dokum td.num,.teklif-dokum th.num{text-align:right;vertical-align:top}
-.teklif-dokum td small{color:#5a6168;font-size:10px}
-.teklif-dokum tr.total th,.teklif-dokum tr.total td{border-top:3px double #171d23;border-bottom:0;font:800 14px Manrope,Arial,sans-serif;padding-top:7px}
 
 /* ==========================================================================
    YAZDIRMA — "her yazı okunsun" kuralı

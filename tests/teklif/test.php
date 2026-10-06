@@ -150,7 +150,7 @@ ok(str_contains($pr, "require dirname(__DIR__) . '/partials/teklif-dokum.php';")
 $dk = (string) file_get_contents(dirname(__DIR__, 2) . '/assets/dokum.css');
 ok(str_contains($dk, 'print-color-adjust:exact') && str_contains($dk, '@page{size:A4;') && str_contains($dk, '@page :first{margin-top:0}'), 'döküm: A4 ve renkler arka plan ayarından bağımsız basılır');
 $td = (string) file_get_contents(dirname(__DIR__, 2) . '/app/partials/teklif-dokum.php');
-ok(str_contains($td, "asset('dokum.css')") && str_contains($td, "asset('teklif-dokum.css')"), 'teklif dökümü ortak stil + teklife özel stil');
+ok(str_contains($td, "dokum_sayfa_bas(") && str_contains($td, "'teklif-dokum.css'") && str_contains($td, 'dokum_bas(['), 'teklif dökümü ortak başlık/stil + teklife özel stil');
 
 echo "10) Kaynak denetimleri\n";
 $kok = dirname(__DIR__, 2);

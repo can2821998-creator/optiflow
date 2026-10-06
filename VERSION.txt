@@ -2,17 +2,19 @@ OPTIFLOW
 Release: 4.22.0 (2026-10-06)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
 
-DEĞİŞİKLİK NOTLARI — 4.22.0 (tüm dökümler yeni tasarımda; OptiFlow Pro 5.5.0 ile)
-  - Kullanıcı isteği: teklif dökümünün tasarımı tüm belgelere. Ortak yapı taşları app/dokum.php + assets/dokum.css:
-    koyu-bordo üst bant (mağaza, belge etiketi, numara/tarih), "Sayın …" karşılama + durum rozeti + öne çıkan tutar,
-    ikonlu bilgi şeridi, başlıklı kutular, karekod kartları, imza kutuları, alt bilgi (basım zamanı).
-  - Yeniden yapılan: sipariş fişi, tahsilat makbuzu (tutar yazıyla + hesap özeti), hızlı satış fişi, serbest teklif,
-    reçete kartı (atölye kontrol listesi), depo cam talebi, tedarikçi cari ekstresi (fatura/ödeme sütunları, devir),
-    kasa dökümü, dönem raporu (çubuk grafik), garanti belgesi (karekodlu kalem kartları), garanti talep formu
-    (tedarikçi değerlendirme alanı), SGK reçete dökümü. Katalog teklifi aynı ortak stile bağlandı.
-  - Çok sayfalı belgeler: tablo başlığı her sayfada tekrar eder, toplam yalnızca sonda; renkler "arka planları
-    yazdır" kapalıyken de basılır. Makbuzdaki kalan bakiye artık SGK payını da düşüyor (fişle tutarlı).
-  - assets/print.css yalnızca çerçeve etiketleri için kaldı. Senet (bono) resmî biçimi korunduğu için değişmedi.
+DEĞİŞİKLİK NOTLARI — 4.22.0 (tüm dökümler yeniden; iki tasarım; OptiFlow Pro 5.5.0 ile)
+  - Tüm yazdırılan belgeler baştan tasarlandı, İKİ seçenekle: "Gözlük" (koyu-bordo büyük başlık, arkada dev belge
+    numarası, aşama çizgisi, reçete iki mercek olarak — aks açısı iletki üzerinde çizili, köprüde PD) ve "Bilet"
+    (koçanlı bilet: tarih → tarih rotası, koparılan koçanda belge no + karekod / tutar). Seçim: Ayarlar › Genel ›
+    "Belge tasarımı"; belge açıkken üstteki Gözlük / Bilet düğmesiyle anında.
+  - Belgeye göre gösteri parçaları: makbuzda ödeme halkası + tutar yazıyla, kasada yöntem halkası, ekstrede bakiye
+    eğrisi, raporda durum halkası ve çubuklar, depoda cam tipi halkası, garantide süre çubuğu ve karekodlu kalem
+    kartları, reçete kartında atölye kontrol listesi, garanti talebinde tedarikçi değerlendirme alanı.
+  - Kapsam: sipariş fişi, tahsilat makbuzu, hızlı satış fişi, teklif (katalog + serbest), reçete kartı, depo cam
+    talebi, cari ekstre, kasa dökümü, dönem raporu, garanti belgesi, garanti talebi, SGK reçete dökümü.
+  - Ortak yapı: app/dokum.php + assets/dokum.css (+ teklif-dokum.css). Yeni yazı tipleri (OFL): Unbounded, Bricolage
+    Grotesque. Hepsi A4 tek sayfaya sığar; uzun listeler çok sayfaya yayılır (başlık tekrar eder, toplam sonda).
+    Makbuzdaki kalan bakiye artık SGK payını da düşüyor. Senet (bono) ve çerçeve etiketleri değişmedi.
 
 DEĞİŞİKLİK NOTLARI — 4.21.1 (merkez panel + teklif dökümü tasarımı; OptiFlow Pro 5.5.0 ile)
   - Teklif dökümü (PDF) baştan tasarlandı (app/partials/teklif-dokum.php, assets/teklif-dokum.css): siyah-bordo üst

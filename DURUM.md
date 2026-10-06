@@ -13,13 +13,14 @@
   sayfa) ve seo testi ORTAM yüzünden düşer (`mktemp` /tmp yolu Windows PHP'ye geçmez, OpenSSL/dosya izni farkı);
   doğrulama CI'da (Linux).
 
-## Son oturum (4.22.0 — tüm dökümler teklif tasarımında; dal `oturum/dokum`)
-- Kullanıcı: "en son döküm tasarımını beğendim, tüm dökümleri baştan yaratalım". Ortak yapı taşları `app/dokum.php`
-  (dokum_ust/selam/vurgu/bilgi/kutu/imzalar/kareler/son) + `assets/dokum.css`; print.php'nin 12 türü + garanti/sgk
-  partial'ları yeniden yazıldı; teklif-dokum.css yalnızca teklife özel parçalar.
-- Bulut oturumunda yerel MariaDB + "Örnek Optik" uydurma verisiyle headless Chromium: hepsi A4 tek sayfa; 70 satırlık
-  ekstre 3 sayfa (başlık tekrar, toplam sonda). Testler + garanti/sgk-fatura/hızlı satış entegrasyonu geçti.
-- Kullanıcı "gite yükle" deyince: main'e birleştir + push (sürüm 4.22.0 → Release + canlı).
+## Son oturum (4.22.0 — tüm dökümler, iki tasarım; dal `oturum/dokum`)
+- Kullanıcı ilk taslağı (teklif stilinin kopyası) beğenmedi: "daha dolu, şovlu, yaratıcı". İki prototip gösterildi
+  (Gözlük / Bilet), kullanıcı "ikisinde de yap" dedi → `setting dokum_tema` (Ayarlar › Genel) + belgede `?tema=` düğmesi.
+- `app/dokum.php`: dokum_bas (iki tasarımın başı), dokum_yol, dokum_recete/dokum_mercek (SVG iletki), dokum_halka,
+  dokum_egri, dokum_ilerleme, dokum_hesap/buyuk, kartlar, imzalar, son. print.php 12 tür + garanti/sgk/teklif partial'ları.
+- Bulutta yerel MariaDB + "Örnek Optik" uydurma verisi, headless Chromium: 15 belge × 2 tasarım A4 tek sayfa
+  (taşma ölçümü betikle). Tüm PHP testleri + garanti/sgk-fatura/hızlı satış entegrasyonu geçti.
+- Kullanıcı "gite yükle" deyince: main'e birleştir + push (4.22.0 → Release + canlı).
 - Park edilmiş: `oturum/pwa` (alt menü özelleştirme, çek-yenile, yükleme çizgisi, simge rozeti) — main'e taşınmadı.
 
 ## Önceki oturum (4.21.1 — merkez panel + teklif dökümü tasarımı)

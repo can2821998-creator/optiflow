@@ -56,6 +56,8 @@ if (is_post()) {
             'daily_summary_hour'   => (string) max(0, min(23, (int) post('daily_summary_hour'))),
             'sgk_lens_amount'      => number_format(max(0, min(2000, (float) str_replace(',', '.', post('sgk_lens_amount')))), 2, '.', ''),
             // 4.21.0 — tekliflerde personelin girebileceği en yüksek iskonto (süper yetkili sınırsız)
+            // 4.22.0 — yazdırılan belgelerin (fiş, makbuz, döküm…) tasarımı
+            'dokum_tema'           => isset(DOKUM_TEMALARI[post('dokum_tema')]) ? post('dokum_tema') : 'gozluk',
             'teklif_iskonto_max'   => number_format(max(0, min(100, (float) str_replace(',', '.', post('teklif_iskonto_max', '10')))), 2, '.', ''),
         ];
         $renk = post('brand_color');
@@ -367,6 +369,7 @@ page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.'
         <label><input type="checkbox" name="staff_take_payments" <?= setting('staff_take_payments', '0') === '1' ? 'checked' : '' ?>> Personel tahsilat / kapora girebilir</label>
         <small class="muted">Raporlar, toplam açık bakiye, tutar değiştirme, silme ve iptal her zaman yalnızca süper yetkilidedir.</small>
       </fieldset>
+      <label class="field"><span>Belge tasarımı (fiş, makbuz, döküm)</span><select name="dokum_tema"><?php foreach (DOKUM_TEMALARI as $k => $ad): ?><option value="<?= e($k) ?>" <?= setting('dokum_tema', 'gozluk') === $k ? 'selected' : '' ?>><?= e($ad) ?></option><?php endforeach; ?></select><small class="muted">Gözlük: koyu başlık, reçete iki mercekle. Bilet: koçanlı bilet görünümü. Belge açıkken üstteki düğmeyle de değiştirilebilir.</small></label>
       <label class="field"><span>Oturum zaman aşımı (dakika)</span><input type="number" min="15" max="1440" name="session_idle_minutes" value="<?= e(setting('session_idle_minutes', '480')) ?>"></label>
       <fieldset class="field checks">
         <legend>Beni hatırla</legend>

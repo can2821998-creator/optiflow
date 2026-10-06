@@ -4,7 +4,8 @@
 
 ## Sürüm
 - **Sunucu 4.20.1**, şema **30**. Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.20.0** (4.20.1 henüz push edilmedi / canlıya alınmadı — push edilince bu satırı güncelle).
+- **Canlı site: 4.20.1, masaüstü latest.yml 5.5.0** (06.10: "Sürüm yayınla" + "Canlıya al" başarılı; canlı VERSION.txt
+  4.20.1, kontrol.php hata kaydı göstermiyor). Release: v4.20.1-pro5.5.0. CI'da tüm sunucu testleri geçti.
 - Çalışma ortamı (06.10): kullanıcının Windows bilgisayarı `C:\Users\TEKNOPLUS\optiflow`; Git 2.55, PHP 8.3, Node 22
   winget ile kuruldu; commit kimliği canaydnl98 <canaydnl98@gmail.com>. Windows'ta 3 bash sayfa testi (alis, sgk-fatura
   sayfa) ve seo testi ORTAM yüzünden düşer (`mktemp` /tmp yolu Windows PHP'ye geçmez, OpenSSL/dosya izni farkı);

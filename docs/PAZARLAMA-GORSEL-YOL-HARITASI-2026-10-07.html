@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OptiFlow Görsel Pazarlama Planı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Unbounded:wght@600;700&display=swap">
+<style>
+/* Düzen: tek sütun okuma akışı (≈72ch), aşamalar dikey zaman çizgisi, takvim ve sütunlar tablo/ölçekli çubuk. Marka: OptiFlow bordo. */
+:root{
+  --zemin:#faf6f7; --kagit:#ffffff; --yazi:#1d1417; --soluk:#6e5d63; --cizgi:#ead9de;
+  --bordo:#b8283f; --bordo-koyu:#8f1a2e; --pembe:#ff6b81; --yesil:#1e8c5a; --vurgu-zemin:#fdeaee;
+  --f-baslik:"Unbounded","Manrope",system-ui,sans-serif; --f-govde:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --zemin:#141012; --kagit:#1d1619; --yazi:#f3ecee; --soluk:#b3a2a8; --cizgi:#3a2b30;
+  --bordo:#ff6b81; --bordo-koyu:#d0334f; --pembe:#ff95a6; --yesil:#4cc58d; --vurgu-zemin:#2c1a20; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --zemin:#141012; --kagit:#1d1619; --yazi:#f3ecee; --soluk:#b3a2a8; --cizgi:#3a2b30;
+  --bordo:#ff6b81; --bordo-koyu:#d0334f; --pembe:#ff95a6; --yesil:#4cc58d; --vurgu-zemin:#2c1a20; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--zemin);color:var(--yazi);font-family:var(--f-govde);font-size:16.5px;line-height:1.6;padding-inline:20px;padding-block:0 64px}
+.sayfa{max-width:980px;margin:0 auto}
+.dar{max-width:72ch}
+h1,h2,h3{text-wrap:balance;line-height:1.15;margin:0}
+h1{font-family:var(--f-baslik);font-weight:700;font-size:clamp(30px,5.2vw,52px);letter-spacing:-.02em}
+h1 em,h2 em{font-style:normal;color:var(--bordo)}
+h2{font-family:var(--f-baslik);font-weight:600;font-size:clamp(22px,3.2vw,30px);letter-spacing:-.01em}
+h3{font-size:18px;font-weight:800}
+p{margin:0}
+.ust{padding-block:48px 28px;display:grid;gap:18px;border-bottom:1px solid var(--cizgi)}
+.etiket{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--bordo)}
+.giris{font-size:19px;color:var(--soluk);max-width:62ch}
+section{padding-block:44px 8px;display:grid;gap:20px}
+.not{font-size:14px;color:var(--soluk)}
+
+/* huni */
+.huni{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.adim{position:relative;background:var(--kagit);border:1px solid var(--cizgi);border-radius:14px;padding:14px 14px 16px;display:grid;gap:4px;min-width:0}
+.adim b{font-size:15px}
+.adim span{font-size:13px;color:var(--soluk);line-height:1.4}
+.adim small{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--bordo)}
+.adim.son{background:var(--bordo-koyu);border-color:var(--bordo-koyu);color:#fff}
+.adim.son span,.adim.son small{color:rgba(255,255,255,.85)}
+@media (max-width:760px){.huni{grid-template-columns:1fr 1fr}.adim.son{grid-column:1/-1}}
+
+/* varlıklar */
+.varlik{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.varlik div{background:var(--kagit);border:1px solid var(--cizgi);border-radius:12px;padding:14px 16px;display:grid;gap:2px;min-width:0}
+.varlik b{font-size:15px}.varlik span{font-size:14px;color:var(--soluk);line-height:1.45}
+.durum{justify-self:start;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:99px;margin-bottom:4px}
+.durum.var{background:color-mix(in srgb,var(--yesil) 16%,transparent);color:var(--yesil)}
+.durum.eksik{background:var(--vurgu-zemin);color:var(--bordo)}
+
+/* biçimler */
+.bicimler{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end}
+.bicim{display:grid;gap:8px;justify-items:center;font-size:13px;color:var(--soluk);text-align:center}
+.bicim i{display:block;border:2px solid var(--bordo);border-radius:8px;background:var(--vurgu-zemin)}
+.bicim b{color:var(--yazi);font-size:14px}
+
+/* aşamalar */
+.cizelge{display:grid;gap:0;border-left:2px solid var(--cizgi);margin-left:10px}
+.asama{position:relative;padding:0 0 34px 30px;display:grid;gap:12px}
+.asama::before{content:"";position:absolute;left:-9px;top:4px;width:16px;height:16px;border-radius:50%;background:var(--zemin);border:3px solid var(--bordo)}
+.asama .zaman{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--bordo)}
+.asama h3{font-size:21px}
+.asama .hedef{font-size:15px;color:var(--soluk)}
+.isler{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.kanal{background:var(--kagit);border:1px solid var(--cizgi);border-radius:12px;padding:14px 16px;min-width:0}
+.kanal h4{margin:0 0 6px;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--soluk)}
+.kanal ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:15px;line-height:1.45}
+.olcut{font-size:14px;border-top:1px dashed var(--cizgi);padding-top:10px}
+.olcut b{color:var(--bordo)}
+
+/* sütunlar */
+.sutunlar{display:grid;gap:10px}
+.sutun{display:grid;grid-template-columns:minmax(150px,230px) 1fr;gap:16px;align-items:center}
+.sutun .ad{display:grid}
+.sutun .ad b{font-size:15px}.sutun .ad span{font-size:13px;color:var(--soluk)}
+.cubuk{position:relative;height:30px;background:var(--vurgu-zemin);border-radius:8px;overflow:hidden}
+.cubuk i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--bordo-koyu),var(--bordo));border-radius:8px}
+.cubuk em{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-style:normal;font-size:13px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums}
+.sutun p{grid-column:2;font-size:14px;color:var(--soluk);margin-top:-4px}
+@media (max-width:600px){.sutun{grid-template-columns:1fr}.sutun p{grid-column:1}}
+
+/* takvim */
+.tablo-kap{overflow-x:auto;border:1px solid var(--cizgi);border-radius:12px;background:var(--kagit)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:12px 14px;border-bottom:1px solid var(--cizgi)}
+th{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--soluk);background:var(--zemin)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:800;white-space:nowrap}
+.tur{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:1px 7px;border-radius:6px;margin-right:6px;vertical-align:1px}
+.tur.r{background:var(--bordo-koyu);color:#fff}.tur.c{background:var(--vurgu-zemin);color:var(--bordo)}.tur.s{border:1px solid var(--cizgi);color:var(--soluk)}
+
+/* üretim */
+.uretim{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;counter-reset:u}
+.uretim div{background:var(--kagit);border:1px solid var(--cizgi);border-radius:12px;padding:14px 16px;display:grid;gap:4px}
+.uretim b{font-size:15px}.uretim span{font-size:14px;color:var(--soluk);line-height:1.45}
+.siradaki{background:var(--bordo-koyu);color:#fff;border-radius:18px;padding:24px;display:grid;gap:14px}
+.siradaki h2{color:#fff}
+.siradaki ol{margin:0;padding-left:22px;display:grid;gap:10px;font-size:16px}
+.siradaki ol b{font-weight:800}
+.kural{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;font-size:15px}
+.kural div{border-left:3px solid var(--bordo);padding:4px 0 4px 12px}
+a{color:var(--bordo)}
+:focus-visible{outline:3px solid var(--pembe);outline-offset:2px}
+</style>
+
+</head>
+<body>
+<div class="sayfa">
+  <header class="ust">
+    <span class="etiket">OptiFlow · pazarlama · Ekim 2026 → Ocak 2027</span>
+    <h1>Görsel pazarlama planı: <em>izle, kaydet, dene.</em></h1>
+    <p class="giris">İki kanalımız var: Instagram vitrin, Google'da sıralanan ana sayfa da kasa. Bu plan 12 haftada Instagram'daki her videoyu siteye, sitedeki her ziyareti 30 günlük ücretsiz denemeye bağlamayı hedefliyor. Ağırlık ekran kaydı değil; hareketli, yazı odaklı, sessiz izlenebilen görsellerde.</p>
+  </header>
+
+  <section>
+    <h2>Yolculuk</h2>
+    <div class="huni" role="list">
+      <div class="adim" role="listitem"><small>Instagram</small><b>Görür</b><span>Reels, keşfet, paylaşılan video</span></div>
+      <div class="adim" role="listitem"><small>Instagram</small><b>Kaydeder</b><span>Carousel "nasıl yapılır" içerikleri</span></div>
+      <div class="adim" role="listitem"><small>Profil</small><b>Bağlantıya dokunur</b><span>Bio, öne çıkanlar, sabit 3 gönderi</span></div>
+      <div class="adim" role="listitem"><small>optiflow.com.tr</small><b>İkna olur</b><span>Hero videosu, cihaz görselleri, SSS</span></div>
+      <div class="adim son" role="listitem"><small>Hedef</small><b>30 gün ücretsiz</b><span>Kart bilgisi yok, WhatsApp'tan demo</span></div>
+    </div>
+    <p class="not">Google'dan gelen ziyaretçi 4. adıma doğrudan düşer. Bu yüzden sitedeki görseller Instagram'dakilerle aynı dili konuşmalı.</p>
+  </section>
+
+  <section>
+    <h2>Elimizdekiler</h2>
+    <div class="varlik">
+      <div><span class="durum var">var</span><b>Tanıtım videosu</b><span>Drum &amp; Bass, 16:9 ve 9:16, 57 sn. Web, Windows ve telefon görüntüleri yan yana.</span></div>
+      <div><span class="durum var">var</span><b>"Op-ti-Flow" ses logosu</b><span>Sol–Do–Mi, brass. Her videonun son saniyesi olacak.</span></div>
+      <div><span class="durum var">var</span><b>Video üretim hattı</b><span>HTML sahne + müzik → MP4. Yeni Reels birkaç dakikada, iki biçimde.</span></div>
+      <div><span class="durum var">var</span><b>Google'da ana sayfa</b><span>Galeri, SSS, fiyat bölümleri hazır. Görseller statik; video yok.</span></div>
+      <div><span class="durum var">var</span><b>Rehber (blog)</b><span>rehber.php. Görselli yazılarla uzun kuyruk aramalar için kullanılacak.</span></div>
+      <div><span class="durum var">var</span><b>WhatsApp + telefon</b><span>0546 743 82 99 sitede. Demo isteği hazır mesajla geliyor.</span></div>
+      <div><span class="durum eksik">eksik</span><b>Site ↔ Instagram bağı</b><span>Sitede Instagram bağlantısı yok; bio'daki bağlantıda kaynak etiketi (UTM) yok.</span></div>
+      <div><span class="durum eksik">eksik</span><b>Gerçek mağaza kanıtı</b><span>Kullanım görüntüsü, vaka hikâyesi, mağaza sahibi yorumu yok.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Görsel dil</h2>
+    <div class="kural">
+      <div><b>Sessiz izlenir.</b> Her mesaj ekranda yazı olarak var; ses yalnızca enerji katar.</div>
+      <div><b>İlk 2 saniye bir acı.</b> "Gözlüğüm hazır mı?" telefonu, kaybolan defter, Excel'de SGK.</div>
+      <div><b>Cihaz çerçevesi şart.</b> Ekran görüntüsü çıplak değil; telefon, dizüstü ya da OptiFlow Pro penceresi içinde, yakınlaşarak.</div>
+      <div><b>Tek renk sistemi.</b> Bordo + koyu zemin; vurgu kelime pembe. Kapanış kartı ve ses logosu hep aynı.</div>
+      <div><b>Uydurma veri.</b> Hasta adı, reçete ve telefon gerçek olmaz (KVKK). "Örnek Optik" verisiyle çekilir.</div>
+      <div><b>Tek çağrı.</b> "30 gün ücretsiz deneyin · optiflow.com.tr". Her gönderide aynı cümle.</div>
+    </div>
+    <div class="bicimler" aria-label="Biçimler">
+      <div class="bicim"><i style="width:45px;height:80px"></i><b>Reels</b>9:16 · 1080×1920<br>15–30 sn</div>
+      <div class="bicim"><i style="width:64px;height:80px"></i><b>Carousel</b>4:5 · 1080×1350<br>6–8 kare</div>
+      <div class="bicim"><i style="width:45px;height:80px"></i><b>Story</b>9:16 · anket, soru</div>
+      <div class="bicim"><i style="width:142px;height:80px"></i><b>Site hero</b>16:9 · 10 sn döngü<br>sessiz, otomatik</div>
+      <div class="bicim"><i style="width:56px;height:56px;border-radius:50%"></i><b>Öne çıkan</b>kapak simgesi</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>12 haftalık yol haritası</h2>
+    <div class="cizelge">
+      <div class="asama">
+        <span class="zaman">Hafta 1–2</span>
+        <h3>Vitrini kur</h3>
+        <p class="hedef">Profile gelen biri 5 saniyede ne sattığımızı ve nereye tıklayacağını anlasın.</p>
+        <div class="isler">
+          <div class="kanal"><h4>Instagram</h4><ul>
+            <li>Bio: "Gözlükçüler için reçeteden teslimata program · Medula, SGK, atölye · 30 gün ücretsiz ↓"</li>
+            <li>6 öne çıkan: Teklif, Atölye, SGK, Takip, Kasa, Dene. Bordo kapak simgeleri.</li>
+            <li>İlk 9 gönderi tek ızgara: tanıtım videosu + 7 özellik Reels'i + deneme kartı.</li>
+            <li>Sabitlenen 3: tanıtım videosu, "Teklif 3 adımda" carousel, "30 gün ücretsiz".</li>
+          </ul></div>
+          <div class="kanal"><h4>Site</h4><ul>
+            <li>Ana sayfa üstüne 10 sn'lik sessiz döngü video (Reels'ten kesit).</li>
+            <li>Statik galeriyi cihaz çerçeveli görsellerle yenile.</li>
+            <li>Alt bilgiye ve iletişime Instagram bağlantısı; "Videoyu izleyin" düğmesi.</li>
+            <li>Paylaşım görseli (og) videodan bir kare.</li>
+          </ul></div>
+          <div class="kanal"><h4>Ölçüm</h4><ul>
+            <li>Bio bağlantısı: <code>?utm_source=instagram&amp;utm_medium=bio</code>; Reels ve story için ayrı.</li>
+            <li>GA4'te "kayıt tamamlandı" dönüşümü.</li>
+          </ul></div>
+        </div>
+        <p class="olcut"><b>Bitti sayılır:</b> 9 gönderi yayında, site videolu, bio bağlantısı GA4'te görünüyor.</p>
+      </div>
+
+      <div class="asama">
+        <span class="zaman">Hafta 3–6</span>
+        <h3>İçerik ritmi</h3>
+        <p class="hedef">Haftada 2 Reels, 1 carousel, 3–5 story. Hep aynı gün ve saat (Pzt / Çar / Cum, 20:30).</p>
+        <div class="isler">
+          <div class="kanal"><h4>Instagram</h4><ul>
+            <li>Reels: bir özellik, bir acı, 15–20 sn, sonu ses logosu.</li>
+            <li>Carousel: kaydedilecek "nasıl yapılır" içerik.</li>
+            <li>Story: anket ve soru kutusu. Yanıtlar sonraki Reels'in konusu olur.</li>
+          </ul></div>
+          <div class="kanal"><h4>Site + Google</h4><ul>
+            <li>Her carousel rehbere görselli bir yazı olarak da girer (aynı görseller, alt metinli).</li>
+            <li>Rehber yazısının sonunda ilgili Reels bağlantısı ve deneme çağrısı.</li>
+          </ul></div>
+        </div>
+        <p class="olcut"><b>İzlenecek:</b> Reels'te 3 sn tutma ve izlenme süresi, carousel'de kaydetme, profilden bağlantı tıklaması.</p>
+      </div>
+
+      <div class="asama">
+        <span class="zaman">Hafta 7–9</span>
+        <h3>Güven ve kanıt</h3>
+        <p class="hedef">"Gerçek bir dükkânda çalışıyor mu?" sorusuna görüntüyle cevap.</p>
+        <div class="isler">
+          <div class="kanal"><h4>Instagram</h4><ul>
+            <li>Poyraz Optik'te bir gün: sabah açılış → teklif → atölye → teslim. 30 sn, yazılı anlatım.</li>
+            <li>Önce / sonra: defter ve Excel karşısında aynı iş OptiFlow'da.</li>
+            <li>Ayda bir canlı demo (Instagram Live), kaydı öne çıkanlara.</li>
+          </ul></div>
+          <div class="kanal"><h4>Site</h4><ul>
+            <li>"Gerçek mağazadan" bölümü: kısa vaka videosu + mağaza sahibinin bir cümlesi.</li>
+            <li>Yalnızca gerçek ölçülmüş rakamlar (ör. ay sonu fatura süresi). Ölçülmemişse yazılmaz.</li>
+          </ul></div>
+        </div>
+        <p class="olcut"><b>İzlenecek:</b> siteden WhatsApp demo isteği ve deneme kaydı sayısı.</p>
+      </div>
+
+      <div class="asama">
+        <span class="zaman">Hafta 10–12</span>
+        <h3>Büyüt</h3>
+        <p class="hedef">İşe yarayan içeriği küçük bütçeyle daha çok gözlükçüye göster.</p>
+        <div class="isler">
+          <div class="kanal"><h4>Reklam</h4><ul>
+            <li>En iyi 2 Reels'i Meta reklamı yap: Türkiye, optik/gözlük ilgisi, küçük günlük bütçe.</li>
+            <li>A/B: ilk 2 saniye kancası (acı mı, sonuç mu).</li>
+            <li>Siteyi ziyaret edip kaydolmayanlara deneme kartı (piksel yalnız genel sayfalarda, GA4 gibi).</li>
+          </ul></div>
+          <div class="kanal"><h4>Google + dağıtım</h4><ul>
+            <li>Aynı Reels'ler YouTube Shorts'a; açıklamada site bağlantısı.</li>
+            <li>Cam/çerçeve tedarikçi temsilcilerinin ve optisyen gruplarının WhatsApp'ta paylaşabileceği 30 sn video.</li>
+          </ul></div>
+        </div>
+        <p class="olcut"><b>İzlenecek:</b> reklamdan deneme kaydı başına maliyet; denemeden ücretliye geçiş.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>İçerik sütunları</h2>
+    <p class="not dar">Her hafta bu dağılıma yakın kalın. Çubuk boyu, gönderilerin yüzde kaçının o sütundan geleceğini gösterir.</p>
+    <div class="sutunlar">
+      <div class="sutun"><div class="ad"><b>"Hâlâ böyle mi?"</b><span>Acı → çözüm Reels</span></div><div class="cubuk"><i style="width:30%"></i><em>%30</em></div><p>Kaybolan sipariş, "hazır mı" telefonu, ay sonu SGK telaşı.</p></div>
+      <div class="sutun"><div class="ad"><b>15 saniyede özellik</b><span>Tek özellik Reels</span></div><div class="cubuk"><i style="width:25%"></i><em>%25</em></div><p>Teklif, atölye panosu, takip sayfası, kasa. Cihaz çerçevesi + yakınlaşma.</p></div>
+      <div class="sutun"><div class="ad"><b>Nasıl yapılır</b><span>Kaydedilen carousel</span></div><div class="cubuk"><i style="width:20%"></i><em>%20</em></div><p>SGK gözlük faturası, Medula aktarımı, cam indeks/kaplama sözlüğü.</p></div>
+      <div class="sutun"><div class="ad"><b>Dükkân hayatı</b><span>Mizah, tanıdık anlar</span></div><div class="cubuk"><i style="width:15%"></i><em>%15</em></div><p>Optisyenlerin "aynen" diyeceği kısa sahneler; paylaşılma için.</p></div>
+      <div class="sutun"><div class="ad"><b>Kanıt ve kampanya</b><span>Vaka, deneme çağrısı</span></div><div class="cubuk"><i style="width:10%"></i><em>%10</em></div><p>Poyraz Optik, 30 gün ücretsiz, canlı demo duyurusu.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>İlk 4 haftanın takvimi (hafta 3–6)</h2>
+    <div class="tablo-kap">
+      <table>
+        <thead><tr><th>Hafta</th><th>Pazartesi</th><th>Çarşamba</th><th>Cuma</th><th>Story</th></tr></thead>
+        <tbody>
+          <tr><td>3</td><td><span class="tur r">Reels</span>"Gözlüğüm hazır mı?" telefonu → müşteri takip sayfası</td><td><span class="tur c">Carousel</span>Teklif 3 adımda: müşteri, çerçeve + cam, SGK ve iskonto</td><td><span class="tur r">Reels</span>Atölye panosu: cam bekliyor → hazır</td><td><span class="tur s">Anket</span>Günde kaç kez "hazır mı" diye aranıyorsunuz?</td></tr>
+          <tr><td>4</td><td><span class="tur r">Reels</span>Ay sonu SGK faturası: Excel'e karşı OptiFlow</td><td><span class="tur c">Carousel</span>SGK gözlük faturası 5 adımda</td><td><span class="tur r">Reels</span>Gün sonu kasa 10 saniyede</td><td><span class="tur s">Soru</span>SGK'da en çok neyle uğraşıyorsunuz?</td></tr>
+          <tr><td>5</td><td><span class="tur r">Reels</span>Defterde kaybolan sipariş (mizah)</td><td><span class="tur c">Carousel</span>Müşteriye cam anlatma rehberi: indeks, kaplama, odak tipi</td><td><span class="tur r">Reels</span>Web'de, Windows'ta, telefonda</td><td><span class="tur s">Arka plan</span>Videonun yapılışı</td></tr>
+          <tr><td>6</td><td><span class="tur r">Reels</span>Poyraz Optik'ten bir sabah</td><td><span class="tur c">Carousel</span>30 gün ücretsiz: 4 adımda başlayın</td><td><span class="tur r">Reels</span>Tanıtım videosu (yeniden, kısaltılmış)</td><td><span class="tur s">Duyuru</span>Canlı demo tarihi</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Üretim listesi</h2>
+    <p class="not dar">Hepsi mevcut video hattından çıkar: aynı renkler, aynı cihaz çerçeveleri, aynı ses logosu.</p>
+    <div class="uretim">
+      <div><b>7 özellik Reels'i</b><span>Sipariş, teklif, döküm, atölye, SGK, takip, kasa. 15–20 sn, 9:16.</span></div>
+      <div><b>Carousel şablonu</b><span>1080×1350 kapak + adım kareleri + kapanış. HTML'den PNG olarak çıkar.</span></div>
+      <div><b>Story şablonları</b><span>Anket, soru, duyuru, "bugün ne yaptık". Bordo çerçeve.</span></div>
+      <div><b>Öne çıkan kapakları</b><span>6 simge: Teklif, Atölye, SGK, Takip, Kasa, Dene.</span></div>
+      <div><b>Site hero döngüsü</b><span>10 sn, sessiz, MP4 + WebM + poster görseli. Sayfa hızını korur.</span></div>
+      <div><b>Rehber görselleri</b><span>Her carousel'in yatay (16:9) hâli; yazı içi ve Google Görseller için.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="siradaki">
+      <h2>Bu hafta</h2>
+      <ol>
+        <li><b>7 özellik Reels'i</b>ni tanıtım videosundaki sahnelerden üret (her biri kendi kancası ve ses logosuyla).</li>
+        <li><b>Siteye hero döngüsü</b> ve Instagram bağlantısını ekle, galeriyi cihaz çerçeveli görsellerle yenile.</li>
+        <li><b>Öne çıkan kapakları</b> ve ilk 9 gönderinin ızgara düzenini hazırla.</li>
+      </ol>
+      <p>Gereken tek bilgi: Instagram kullanıcı adı (site bağlantısı ve UTM için).</p>
+    </div>
+  </section>
+</div>
+</body>
+</html>

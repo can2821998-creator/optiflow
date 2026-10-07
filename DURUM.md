@@ -20,6 +20,9 @@
 - Tanıtım videosu (depo dışı: optiflow-yerel/video/): hareketli grafik, kare kare Chrome + ffmpeg; seçilen sürüm
   Drum & Bass 172 BPM, marimba + brass slogan ezgisi ("Op-ti-Flow" = Sol–Do–Mi), cihazlar yan yana. 16:9 + 9:16.
   Videolar/betikler henüz git'te değil (öneri: betikler docs/tanitim-video/, mp4 → Releases). Instagram caption verildi.
+- Görsel pazarlama yol haritası (12 hafta): docs/PAZARLAMA-GORSEL-YOL-HARITASI-2026-10-07.html
+  (claude.ai artifact olarak da yayında). Sıradaki: 7 özellik Reels'i, siteye hero video döngüsü + Instagram
+  bağlantısı, öne çıkan kapakları. Instagram kullanıcı adı bekleniyor.
 
 ## Önceki oturum (4.22.0 — tüm dökümler, iki tasarım; dal `oturum/dokum`)
 - Kullanıcı ilk taslağı (teklif stilinin kopyası) beğenmedi: "daha dolu, şovlu, yaratıcı". İki prototip gösterildi

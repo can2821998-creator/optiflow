@@ -1,6 +1,17 @@
 OPTIFLOW
-Release: 4.22.2 (2026-10-07)
+Release: 4.23.1 (2026-10-07)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.23.1 (sürüm notu düzeltmesi)
+  - 4.23.0 paketi VERSION.txt güncellenmeden yayınlandı; kod aynı, bu sürüm notları ve kontrol.php eşleşmesini düzeltir.
+
+DEĞİŞİKLİK NOTLARI — 4.23.0 (karşılama: mercekten açılan tanıtım videosu)
+  - "Bir dakikada OptiFlow" bölümü baştan: koyu sinema bandı; kaydırdıkça video küçük, bulanık bir mercekten
+    geniş ekrana açılıp netleşir, lensmetre gibi dioptri halkası döner ve kaybolur, gösterge −2,75 D → 0,00 D · net.
+  - Videonun renkleriyle canlı ışık halesi (ambilight), çevresinde sırayla beliren yüzen özellik etiketleri,
+    nabız gibi atan "Sesli izle · 57 sn" düğmesi; tam video sayfa içi pencerede (dialog) sesli açılır.
+  - assets/karsilama-film.js (tek dış betik, CSP self). JS yoksa video açık, düğme videoyu yeni sekmede açar;
+    hareket azaltma tercihinde animasyon yok. Mobilde etiketler videonun altında.
 
 DEĞİŞİKLİK NOTLARI — 4.22.2 (karşılama: tanıtım videosu + Instagram)
   - Ana sayfada hero altına "Bir dakikada OptiFlow" bölümü: sessiz, kendiliğinden dönen 10 sn kesit

@@ -229,6 +229,20 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .nav-links a:not(.btn):hover{color:var(--ink)}
 .nav-links .btn{padding:10px 16px;font-size:14px}
 
+/* ---------- Tanıtım videosu (4.22.2): JS yok — sessiz döngü kesit + tam videoya bağlantı ---------- */
+.film{padding-block:0 72px}
+.film-kare{margin:0 auto;max-width:1040px;aspect-ratio:16/9;border-radius:22px;overflow:hidden;background:var(--night) center/cover no-repeat;
+  box-shadow:0 40px 80px -40px rgba(27,20,22,.55),0 0 0 1px rgba(27,20,22,.08)}
+.film-kare video{display:block;width:100%;height:100%;object-fit:cover}
+.film-alt{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 28px;max-width:1040px;margin:22px auto 0}
+.film-alt h2{font-size:clamp(1.4rem,2.6vw,1.9rem);max-width:none}
+.film-eylem{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px}
+.film-insta{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--ink-2);text-decoration:none}
+.film-insta:hover{color:var(--ink)}
+.film-insta svg{width:20px;height:20px}
+@media (prefers-reduced-motion:reduce){.film-kare video{display:none}}
+@media (max-width:640px){.film{padding-block:0 52px}.film-kare{border-radius:16px}.film-alt,.film-eylem{justify-content:center;text-align:center}}
+
 /* ---------- Göz eşeli (hero) ---------- */
 .hero{padding-block:56px 72px;overflow:hidden}
 .esel{position:relative;margin:0 auto;max-width:980px;text-align:center}
@@ -589,6 +603,21 @@ h3{font-weight:750}
       </div>
     </div>
   </div>
+
+  <section id="film" class="film" aria-labelledby="film-baslik">
+    <div class="wrap">
+      <figure class="film-kare" style="background-image:url('<?= e(asset('video/optiflow-kesit.webp')) ?>')">
+        <video src="<?= e(asset('video/optiflow-kesit.mp4')) ?>" poster="<?= e(asset('video/optiflow-kesit.webp')) ?>" width="1280" height="720" autoplay muted loop playsinline preload="auto" aria-label="OptiFlow tanıtım videosundan kesit: sipariş listesi ve üç adımda teklif"></video>
+      </figure>
+      <div class="film-alt">
+        <h2 id="film-baslik">Bir dakikada OptiFlow.</h2>
+        <div class="film-eylem">
+          <a class="btn btn-line" href="<?= e(asset('video/optiflow-tanitim.mp4')) ?>" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Tanıtımı sesli izleyin · 57 sn</a>
+          <?php if ($p['instagram'] !== ''): ?><a class="film-insta" href="https://instagram.com/<?= pz_e($p['instagram']) ?>" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>@<?= pz_e($p['instagram']) ?></a><?php endif; ?>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section id="surumler" class="gece on-night">
     <div class="wrap">

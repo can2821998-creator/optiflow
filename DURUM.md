@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 7 Ekim 2026 (4.22.1 / Pro 5.5.0)*
+*Son güncelleme: 7 Ekim 2026 (4.22.2 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.22.1**, şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.22.1** bekleniyor (07.10 push; Actions "Sürüm yayınla" → "Canlıya al"). Önceki: v4.22.0-pro5.5.0.
+- **Sunucu 4.22.2**, şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Canlı site: 4.22.2** bekleniyor (07.10 push). 4.22.1 canlıda doğrulandı (iletişim bilgileri).
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
   11.4 (127.0.0.1:3307, başlat: `mariadb-11.4.8-winx64\bin\mariadbd.exe --defaults-file=veri\my.ini`), şifreler ve
   uydurma veri betiği (`ornek-veri.php`) orada; depoda `config.php` (gitignore) yerel. Sunucu: `php -S 127.0.0.1:8080`.
@@ -22,7 +22,9 @@
   Videolar/betikler henüz git'te değil (öneri: betikler docs/tanitim-video/, mp4 → Releases). Instagram caption verildi.
 - Görsel pazarlama yol haritası (12 hafta): docs/PAZARLAMA-GORSEL-YOL-HARITASI-2026-10-07.html
   (claude.ai artifact olarak da yayında). Sıradaki: 7 özellik Reels'i, siteye hero video döngüsü + Instagram
-  bağlantısı, öne çıkan kapakları. Instagram kullanıcı adı bekleniyor.
+  bağlantısı, öne çıkan kapakları. Instagram: @optiflowtr (pazarlama.php).
+- 4.22.2: ana sayfaya tanıtım videosu bölümü (#film, assets/video/). 7 özellik Reels'i üretildi (depo dışı,
+  optiflow-yerel/video/cikti/reels/; video hattında SIRA/KANCA/AD ortam değişkenleriyle Reels kipi).
 
 ## Önceki oturum (4.22.0 — tüm dökümler, iki tasarım; dal `oturum/dokum`)
 - Kullanıcı ilk taslağı (teklif stilinin kopyası) beğenmedi: "daha dolu, şovlu, yaratıcı". İki prototip gösterildi

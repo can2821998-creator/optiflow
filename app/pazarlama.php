@@ -25,7 +25,7 @@ function optiflow_pazarlama(): array
         'whatsapp'      => '905467438299',     // Yalnızca rakam, ülke koduyla. Örn: '905321112233'
         'eposta'        => '',                 // Örn: 'merhaba@optiflow.com.tr'
         'kvkk_eposta'   => '',                 // KVKK başvuruları için (boşsa 'eposta' kullanılır)
-        'instagram'     => '',                 // Kullanıcı adı, @ olmadan. Örn: 'optiflow.tr'
+        'instagram'     => 'optiflowtr',       // Kullanıcı adı, @ olmadan. Örn: 'optiflow.tr'
         'demo_video'    => '',                 // YouTube vb. tam bağlantı. Boşsa "Videoyu izleyin" düğmesi çıkmaz.
 
         // --- ÖLÇÜMLEME -------------------------------------------------------

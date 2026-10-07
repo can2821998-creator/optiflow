@@ -1,6 +1,12 @@
 OPTIFLOW
-Release: 4.22.1 (2026-10-07)
+Release: 4.22.2 (2026-10-07)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.22.2 (karşılama: tanıtım videosu + Instagram)
+  - Ana sayfada hero altına "Bir dakikada OptiFlow" bölümü: sessiz, kendiliğinden dönen 10 sn kesit
+    (assets/video/optiflow-kesit.mp4, 400 KB, poster .webp) + 57 sn sesli tanıtıma bağlantı (optiflow-tanitim.mp4,
+    720p, 4,4 MB). JavaScript yok; hareket azaltma tercihinde video gizlenir, poster görünür.
+  - Instagram @optiflowtr: bölümde ve alt bilgide bağlantı, kurum şemasında sameAs (app/pazarlama.php).
 
 DEĞİŞİKLİK NOTLARI — 4.22.1 (pazarlama: iletişim bilgileri)
   - Karşılama sayfası ve KVKK: telefon 0546 743 82 99, WhatsApp düğmeleri (wa.me/905467438299), veri sorumlusu

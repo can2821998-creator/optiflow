@@ -1,9 +1,9 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 6 Ekim 2026 (4.22.0 / Pro 5.5.0)*
+*Son güncelleme: 7 Ekim 2026 (4.22.0 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.22.0** (dal `oturum/dokum`, main'e birleştirilmedi), şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Sunucu 4.22.0**, şema **31** (07.10: main'e birleştirildi; Sürüm yayınla + Canlıya al Actions ile). Masaüstü **OptiFlow Pro 5.5.0**.
 - **Canlı site: 4.21.1** (06.10: "Sürüm yayınla" + "Canlıya al" başarılı). Release: v4.21.1-pro5.5.0. Canlı veritabanı v31 göçü ilk personel girişinde.
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
   11.4 (127.0.0.1:3307, başlat: `mariadb-11.4.8-winx64\bin\mariadbd.exe --defaults-file=veri\my.ini`), şifreler ve
@@ -20,7 +20,7 @@
   dokum_egri, dokum_ilerleme, dokum_hesap/buyuk, kartlar, imzalar, son. print.php 12 tür + garanti/sgk/teklif partial'ları.
 - Bulutta yerel MariaDB + "Örnek Optik" uydurma verisi, headless Chromium: 15 belge × 2 tasarım A4 tek sayfa
   (taşma ölçümü betikle). Tüm PHP testleri + garanti/sgk-fatura/hızlı satış entegrasyonu geçti.
-- Kullanıcı "gite yükle" deyince: main'e birleştir + push (4.22.0 → Release + canlı).
+- 07.10 "gite yükle": main'e birleştirildi (4.22.0 → Release + canlı; Actions sonucunu kontrol et).
 - Park edilmiş: `oturum/pwa` (alt menü özelleştirme, çek-yenile, yükleme çizgisi, simge rozeti) — main'e taşınmadı.
 
 ## Önceki oturum (4.21.1 — merkez panel + teklif dökümü tasarımı)

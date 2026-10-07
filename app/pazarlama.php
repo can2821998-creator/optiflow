@@ -19,10 +19,10 @@ function optiflow_pazarlama(): array
     }
     $ayar = [
         // --- İLETİŞİM --------------------------------------------------------
-        'sirket_unvani' => '',                 // Yasal unvan — KVKK sayfasında "veri sorumlusu" olarak geçer. Örn: 'OptiFlow Yazılım Ltd. Şti.'
-        'adres'         => '',                 // Açık adres (KVKK sayfası ve alt bilgi)
-        'telefon'       => '',                 // Görünen biçim. Örn: '0850 000 00 00'
-        'whatsapp'      => '',                 // Yalnızca rakam, ülke koduyla. Örn: '905321112233'
+        'sirket_unvani' => 'Poyraz Optik',     // Yasal unvan — KVKK sayfasında "veri sorumlusu" olarak geçer. Örn: 'OptiFlow Yazılım Ltd. Şti.'
+        'adres'         => 'Dumlupınar Mahallesi, Ulucami Caddesi No: 2/B', // Açık adres (KVKK sayfası ve alt bilgi)
+        'telefon'       => '0546 743 82 99',   // Görünen biçim. Örn: '0850 000 00 00'
+        'whatsapp'      => '905467438299',     // Yalnızca rakam, ülke koduyla. Örn: '905321112233'
         'eposta'        => '',                 // Örn: 'merhaba@optiflow.com.tr'
         'kvkk_eposta'   => '',                 // KVKK başvuruları için (boşsa 'eposta' kullanılır)
         'instagram'     => '',                 // Kullanıcı adı, @ olmadan. Örn: 'optiflow.tr'

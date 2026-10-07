@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 7 Ekim 2026 (4.22.0 / Pro 5.5.0)*
+*Son güncelleme: 7 Ekim 2026 (4.22.1 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.22.0**, şema **31** (07.10: main'e birleştirildi; Sürüm yayınla + Canlıya al Actions ile). Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.22.0** (07.10: "Sürüm yayınla" + "Canlıya al" başarılı). Release: v4.22.0-pro5.5.0.
+- **Sunucu 4.22.1**, şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Canlı site: 4.22.1** bekleniyor (07.10 push; Actions "Sürüm yayınla" → "Canlıya al"). Önceki: v4.22.0-pro5.5.0.
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
   11.4 (127.0.0.1:3307, başlat: `mariadb-11.4.8-winx64\bin\mariadbd.exe --defaults-file=veri\my.ini`), şifreler ve
   uydurma veri betiği (`ornek-veri.php`) orada; depoda `config.php` (gitignore) yerel. Sunucu: `php -S 127.0.0.1:8080`.
@@ -13,7 +13,15 @@
   sayfa) ve seo testi ORTAM yüzünden düşer (`mktemp` /tmp yolu Windows PHP'ye geçmez, OpenSSL/dosya izni farkı);
   doğrulama CI'da (Linux).
 
-## Son oturum (4.22.0 — tüm dökümler, iki tasarım; dal `oturum/dokum`)
+## Son oturum (4.22.1 — pazarlama: tanıtım videosu + iletişim bilgileri)
+- app/pazarlama.php: telefon/WhatsApp 0546 743 82 99, unvan Poyraz Optik, adres Dumlupınar Mah. Ulucami Cad. 2/B
+  (adreste ilçe/il yok — kullanıcıdan istenebilir). Boş kalanlar: e-posta, instagram, demo_video, fiyatlar,
+  google_dogrulama (site Google'da yok → Search Console), kampanya kapalı.
+- Tanıtım videosu (depo dışı: optiflow-yerel/video/): hareketli grafik, kare kare Chrome + ffmpeg; seçilen sürüm
+  Drum & Bass 172 BPM, marimba + brass slogan ezgisi ("Op-ti-Flow" = Sol–Do–Mi), cihazlar yan yana. 16:9 + 9:16.
+  Videolar/betikler henüz git'te değil (öneri: betikler docs/tanitim-video/, mp4 → Releases). Instagram caption verildi.
+
+## Önceki oturum (4.22.0 — tüm dökümler, iki tasarım; dal `oturum/dokum`)
 - Kullanıcı ilk taslağı (teklif stilinin kopyası) beğenmedi: "daha dolu, şovlu, yaratıcı". İki prototip gösterildi
   (Gözlük / Bilet), kullanıcı "ikisinde de yap" dedi → `setting dokum_tema` (Ayarlar › Genel) + belgede `?tema=` düğmesi.
 - `app/dokum.php`: dokum_bas (iki tasarımın başı), dokum_yol, dokum_recete/dokum_mercek (SVG iletki), dokum_halka,

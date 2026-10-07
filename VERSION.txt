@@ -1,6 +1,10 @@
 OPTIFLOW
-Release: 4.22.0 (2026-10-06)
+Release: 4.22.1 (2026-10-07)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.22.1 (pazarlama: iletişim bilgileri)
+  - Karşılama sayfası ve KVKK: telefon 0546 743 82 99, WhatsApp düğmeleri (wa.me/905467438299), veri sorumlusu
+    Poyraz Optik, adres Dumlupınar Mah. Ulucami Cad. No: 2/B (app/pazarlama.php).
 
 DEĞİŞİKLİK NOTLARI — 4.22.0 (tüm dökümler yeniden; iki tasarım; OptiFlow Pro 5.5.0 ile)
   - Tüm yazdırılan belgeler baştan tasarlandı, İKİ seçenekle: "Gözlük" (koyu-bordo büyük başlık, arkada dev belge

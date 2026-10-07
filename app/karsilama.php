@@ -12,6 +12,7 @@ require_once __DIR__ . '/indir.php';
  * Tenant/veritabanı bağlamı yoktur (oturumu olmayan herkes görür) — DB fonksiyonu çağırmaz.
  * İletişim, fiyat ve kampanya bilgileri app/pazarlama.php'den gelir; boş alanlar sayfada görünmez.
  * CSP 'script-src self': satır içi JavaScript YOK (SSS <details> ile çalışır, netleşme CSS animasyonudur).
+ * Tek dış betik: assets/karsilama-film.js (tanıtım videosunun mercek animasyonu ve sesli izleme penceresi).
  */
 function render_karsilama(): void
 {
@@ -229,19 +230,88 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .nav-links a:not(.btn):hover{color:var(--ink)}
 .nav-links .btn{padding:10px 16px;font-size:14px}
 
-/* ---------- Tanıtım videosu (4.22.2): JS yok — sessiz döngü kesit + tam videoya bağlantı ---------- */
-.film{padding-block:0 72px}
-.film-kare{margin:0 auto;max-width:1040px;aspect-ratio:16/9;border-radius:22px;overflow:hidden;background:var(--night) center/cover no-repeat;
-  box-shadow:0 40px 80px -40px rgba(27,20,22,.55),0 0 0 1px rgba(27,20,22,.08)}
+/* ---------- Tanıtım videosu (4.23.0): mercekten açılan sinema perdesi ----------
+   --p (0 → 1) kaydırmayla JS'ten gelir (assets/karsilama-film.js); JS yoksa 1 = video açık.
+   p=0: küçük, bulanık bir mercek + lensmetre halkası; p=1: geniş ekran, net, çevresinde etiketler. */
+.film{--p:1;position:relative;isolation:isolate;overflow:hidden;background:var(--night);color:#fff;padding-block:104px 120px}
+.film::before{content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;
+  background:radial-gradient(60% 55% at 50% 58%,rgba(208,51,79,calc(.10 + var(--p) * .22)),transparent 70%),
+             radial-gradient(40% 40% at 12% 0%,rgba(143,26,46,.35),transparent 70%),
+             radial-gradient(40% 40% at 90% 100%,rgba(143,26,46,.3),transparent 70%)}
+.film::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:28px 28px;
+  -webkit-mask-image:radial-gradient(70% 60% at 50% 50%,#000,transparent);mask-image:radial-gradient(70% 60% at 50% 50%,#000,transparent)}
+.film-bas{display:grid;justify-items:center;gap:16px;text-align:center;margin-bottom:64px}
+.film-etiket{display:inline-flex;align-items:center;gap:12px;font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#ff95a6}
+.film-etiket b{font-weight:500;letter-spacing:.04em;color:#fff;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,149,166,.35);padding:5px 12px;border-radius:99px;font-variant-numeric:tabular-nums;min-width:12ch}
+.film h2{color:#fff;max-width:none;font-size:clamp(2.3rem,6vw,4.6rem);letter-spacing:-.035em;line-height:1;
+  filter:blur(calc((1 - var(--p)) * 7px));opacity:calc(.35 + var(--p) * .65)}
+.film h2 em{font-style:normal;background:linear-gradient(90deg,#ff95a6,#ff6b81 55%,#e0405c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.film-lead{color:var(--night-ink);font-size:1.08rem;max-width:52ch}
+.film-sahne{position:relative;max-width:1100px;margin:0 auto}
+.film-ekran{position:relative;aspect-ratio:16/9;max-width:100%}
+.film-isik{position:absolute;inset:-4%;z-index:-1;pointer-events:none;filter:blur(64px) saturate(1.5);
+  opacity:calc(.12 + var(--p) * .55);transform:scale(calc(.55 + var(--p) * .5))}
+.film-isik video{width:100%;height:100%;object-fit:cover;border-radius:40%}
+.film-kare{position:absolute;inset:0;margin:0;border-radius:26px;overflow:hidden;background:#0b0809 center/cover no-repeat;
+  clip-path:inset(calc((1 - var(--p)) * 27%) calc((1 - var(--p)) * 36%) round calc(26px + (1 - var(--p)) * 320px));
+  filter:blur(calc((1 - var(--p)) * 12px)) saturate(calc(.55 + var(--p) * .45));
+  transform:scale(calc(.9 + var(--p) * .1))}
 .film-kare video{display:block;width:100%;height:100%;object-fit:cover}
-.film-alt{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 28px;max-width:1040px;margin:22px auto 0}
-.film-alt h2{font-size:clamp(1.4rem,2.6vw,1.9rem);max-width:none}
-.film-eylem{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px}
-.film-insta{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--ink-2);text-decoration:none}
-.film-insta:hover{color:var(--ink)}
+.film-kenar{position:absolute;inset:0;border-radius:26px;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);opacity:calc((var(--p) - .8) * 5)}
+.film-halka{position:absolute;left:50%;top:50%;width:min(46%,420px);aspect-ratio:1;pointer-events:none;color:#fff;
+  transform:translate(-50%,-50%) rotate(calc(var(--p) * 150deg)) scale(calc(1 + var(--p) * .9));opacity:calc(1 - var(--p) * 1.5)}
+.film-halka text{font-family:var(--mono);font-size:11px;fill:rgba(255,255,255,.7)}
+.film-cipler{position:absolute;inset:0;margin:0;padding:0;list-style:none;pointer-events:none}
+.film-cipler li{position:absolute;--g:clamp(0,calc((var(--p) - var(--e)) * 7),1);opacity:var(--g);
+  transform:translateY(calc((1 - var(--g)) * 26px)) scale(calc(.85 + var(--g) * .15))}
+.film-cipler span{display:inline-flex;align-items:center;gap:10px;padding:11px 18px 11px 11px;border-radius:16px;background:#fff;color:var(--ink);
+  font-weight:800;font-size:15px;white-space:nowrap;box-shadow:0 22px 40px -18px rgba(0,0,0,.75);animation:film-yuz 5s ease-in-out infinite alternate}
+.film-cipler i{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#fdeaee;color:#b4233c;flex:none}
+.film-cipler i svg{width:19px;height:19px}
+.film-cipler .c1{left:-2%;top:9%}.film-cipler .c2{right:-2%;top:4%}.film-cipler .c2 span{animation-delay:-1.2s}
+.film-cipler .c3{left:-2.5%;top:56%}.film-cipler .c3 span{animation-delay:-2.4s}
+.film-cipler .c4{right:-2.5%;top:50%}.film-cipler .c4 span{animation-delay:-3.1s}
+.film-cipler .c5{left:9%;bottom:-5%}.film-cipler .c5 span{animation-delay:-.6s}
+@keyframes film-yuz{0%{transform:translateY(-6px) rotate(-.6deg)}100%{transform:translateY(6px) rotate(.6deg)}}
+.film-oynat{position:absolute;left:50%;bottom:-30px;z-index:3;display:inline-flex;align-items:center;gap:14px;padding:12px 26px 12px 12px;border-radius:99px;
+  background:linear-gradient(135deg,#ff6b81,#d0334f 45%,#8f1a2e);color:#fff;font-weight:800;font-size:16px;text-decoration:none;white-space:nowrap;
+  box-shadow:0 24px 50px -16px rgba(208,51,79,.95);--g:clamp(0,calc((var(--p) - .86) * 8),1);opacity:var(--g);transform:translate(-50%,calc((1 - var(--g)) * 20px))}
+.film-oynat i{position:relative;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:#fff;color:#b4233c}
+.film-oynat i svg{width:18px;height:18px;margin-left:3px}
+.film-oynat i::before,.film-oynat i::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.7);animation:film-nabiz 2.2s ease-out infinite}
+.film-oynat i::after{animation-delay:1.1s}
+.film-oynat:hover{filter:brightness(1.08)}
+.film-oynat:focus-visible{outline:3px solid #fff;outline-offset:4px}
+@keyframes film-nabiz{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.9);opacity:0}}
+.film-alt{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 18px;margin-top:72px;color:var(--night-ink);font-size:15px}
+.film-insta{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:#fff;text-decoration:none}
+.film-insta:hover{color:#ff95a6}
 .film-insta svg{width:20px;height:20px}
-@media (prefers-reduced-motion:reduce){.film-kare video{display:none}}
-@media (max-width:640px){.film{padding-block:0 52px}.film-kare{border-radius:16px}.film-alt,.film-eylem{justify-content:center;text-align:center}}
+.film-dialog{padding:0;border:0;background:transparent;width:min(1100px,94vw);max-width:none;overflow:visible}
+.film-dialog::backdrop{background:rgba(12,8,10,.86);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.film-dialog video{display:block;width:100%;border-radius:18px;background:#000;box-shadow:0 40px 90px -30px rgba(0,0,0,.9)}
+.film-kapat{position:absolute;right:0;top:-52px;width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:24px;line-height:1;cursor:pointer}
+.film-kapat:hover{background:rgba(255,255,255,.26)}
+@media (max-width:860px){
+  .film{padding-block:72px 84px}
+  .film-bas{margin-bottom:44px}
+  .film-cipler{position:static;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:62px}
+  .film-cipler li{position:static}
+  .film-cipler{gap:8px;margin-top:54px}
+  .film-cipler span{font-size:13px;padding:6px 12px 6px 6px;border-radius:12px;gap:8px;animation:none}
+  .film-cipler i{width:26px;height:26px;border-radius:8px}
+  .film-cipler i svg{width:15px;height:15px}
+  .film-oynat{bottom:-24px;gap:10px;padding:7px 18px 7px 7px;font-size:14px}
+  .film-oynat i{width:34px;height:34px}
+  .film-oynat i svg{width:14px;height:14px}
+  .film-alt{margin-top:36px}
+  .film-kare,.film-kenar{border-radius:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  .film-cipler span,.film-oynat i::before,.film-oynat i::after{animation:none}
+  .film-halka{display:none}
+}
 
 /* ---------- Göz eşeli (hero) ---------- */
 .hero{padding-block:56px 72px;overflow:hidden}
@@ -604,20 +674,50 @@ h3{font-weight:750}
     </div>
   </div>
 
-  <section id="film" class="film" aria-labelledby="film-baslik">
+  <section id="film" class="film on-night" data-film aria-labelledby="film-baslik">
     <div class="wrap">
-      <figure class="film-kare" style="background-image:url('<?= e(asset('video/optiflow-kesit.webp')) ?>')">
-        <video src="<?= e(asset('video/optiflow-kesit.mp4')) ?>" poster="<?= e(asset('video/optiflow-kesit.webp')) ?>" width="1280" height="720" autoplay muted loop playsinline preload="auto" aria-label="OptiFlow tanıtım videosundan kesit: sipariş listesi ve üç adımda teklif"></video>
-      </figure>
-      <div class="film-alt">
-        <h2 id="film-baslik">Bir dakikada OptiFlow.</h2>
-        <div class="film-eylem">
-          <a class="btn btn-line" href="<?= e(asset('video/optiflow-tanitim.mp4')) ?>" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>Tanıtımı sesli izleyin · 57 sn</a>
-          <?php if ($p['instagram'] !== ''): ?><a class="film-insta" href="https://instagram.com/<?= pz_e($p['instagram']) ?>" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>@<?= pz_e($p['instagram']) ?></a><?php endif; ?>
-        </div>
+      <div class="film-bas">
+        <span class="film-etiket">Tanıtım · 57 sn <b data-diyopter aria-hidden="true">0,00 D · net</b></span>
+        <h2 id="film-baslik">Bir dakikada <em>OptiFlow</em>.</h2>
+        <p class="film-lead">Reçeteden teslime, bir gözlüğün dükkândaki yolu. Sessiz izleyin ya da sesi açın.</p>
       </div>
+      <div class="film-sahne">
+        <div class="film-ekran">
+          <div class="film-isik" aria-hidden="true"><video src="<?= e(asset('video/optiflow-kesit.mp4')) ?>" autoplay muted loop playsinline preload="auto" tabindex="-1"></video></div>
+          <figure class="film-kare" style="background-image:url('<?= e(asset('video/optiflow-kesit.webp')) ?>')">
+            <video src="<?= e(asset('video/optiflow-kesit.mp4')) ?>" poster="<?= e(asset('video/optiflow-kesit.webp')) ?>" width="1280" height="720" autoplay muted loop playsinline preload="auto" aria-label="OptiFlow tanıtım videosundan kesit: sipariş listesi ve üç adımda teklif"></video>
+          </figure>
+          <div class="film-kenar" aria-hidden="true"></div>
+          <svg class="film-halka" viewBox="-110 -110 220 220" aria-hidden="true">
+            <circle r="100" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="1"/>
+            <circle r="84" fill="none" stroke="currentColor" stroke-opacity=".18" stroke-width="1" stroke-dasharray="2 4"/>
+            <?php for ($a = 0; $a < 360; $a += 5): $uzun = $a % 30 === 0; $r1 = $uzun ? 88 : 93; ?>
+            <line x1="<?= round(cos(deg2rad($a)) * $r1, 2) ?>" y1="<?= round(sin(deg2rad($a)) * $r1, 2) ?>" x2="<?= round(cos(deg2rad($a)) * 100, 2) ?>" y2="<?= round(sin(deg2rad($a)) * 100, 2) ?>" stroke="currentColor" stroke-opacity="<?= $uzun ? '.8' : '.4' ?>" stroke-width="<?= $uzun ? '1.4' : '.8' ?>"/>
+            <?php endfor; ?>
+            <?php foreach (['0', '+1', '+2', '+3', '+4', '+5', '±6', '−5', '−4', '−3', '−2', '−1'] as $i => $d): $a = deg2rad($i * 30 - 90); ?>
+            <text x="<?= round(cos($a) * 74, 2) ?>" y="<?= round(sin($a) * 74 + 4, 2) ?>" text-anchor="middle"><?= $d ?></text>
+            <?php endforeach; ?>
+            <path d="M-12 0H12M0 -12V12" stroke="currentColor" stroke-opacity=".6" stroke-width="1"/>
+          </svg>
+          <a class="film-oynat" href="<?= e(asset('video/optiflow-tanitim.mp4')) ?>" target="_blank" rel="noopener" data-film-ac><i><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg></i>Sesli izle · 57 sn</a>
+        </div>
+        <ul class="film-cipler" aria-label="Videoda neler var">
+          <li class="c1" style="--e:.50"><span><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></i>Tüm siparişler tek listede</span></li>
+          <li class="c2" style="--e:.58"><span><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2h14a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM8 6h8v4H8zM8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg></i>Teklif 3 adımda</span></li>
+          <li class="c3" style="--e:.66"><span><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM12 8v6M9 11h6"/></svg></i>Ay sonu SGK faturası</span></li>
+          <li class="c4" style="--e:.74"><span><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></svg></i>Atölye panosu</span></li>
+          <li class="c5" style="--e:.82"><span><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2"/></svg></i>Müşteri telefondan izler</span></li>
+        </ul>
+      </div>
+      <?php if ($p['instagram'] !== ''): ?>
+      <p class="film-alt"><a class="film-insta" href="https://instagram.com/<?= pz_e($p['instagram']) ?>" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>@<?= pz_e($p['instagram']) ?></a><span>Her hafta yeni kısa video</span></p>
+      <?php endif; ?>
     </div>
   </section>
+  <dialog class="film-dialog" data-film-dialog aria-label="OptiFlow tanıtım videosu">
+    <button type="button" class="film-kapat" data-film-kapat aria-label="Kapat">&times;</button>
+    <video controls playsinline preload="none" data-src="<?= e(asset('video/optiflow-tanitim.mp4')) ?>" poster="<?= e(asset('video/optiflow-kesit.webp')) ?>"></video>
+  </dialog>
 
   <section id="surumler" class="gece on-night">
     <div class="wrap">
@@ -988,6 +1088,7 @@ h3{font-weight:750}
   <a class="btn btn-line btn-wa" href="<?= pz_e($iletisimUrl) ?>" target="_blank" rel="noopener"><?= $wa ? $ico['wa'] . 'WhatsApp' : 'Bize ulaşın' ?></a>
 </div>
 <?php endif; ?>
+<script src="<?= e(asset('karsilama-film.js')) ?>" defer></script>
 </body>
 </html><?php
     exit;

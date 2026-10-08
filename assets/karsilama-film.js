@@ -1,12 +1,13 @@
 /* Karşılama sayfası — tanıtım videosu: foropter sahnesi (4.24.0).
    Bölüm uzundur, sahne ekrana yapışır (sticky). Kaydırma ilerlemesi --p (0 → 1) olarak yazılır; CSS sahneyi çizer.
    Kademeli kısımlar (kadran tıkları, bulanıklık, dioptri ve keskinlik göstergeleri) burada hesaplanır.
-   JS yoksa veya hareket azaltma tercihinde: sınıf eklenmez, bölüm son hâliyle (net video + ekranlar) görünür. */
+   Sahne kendiliğinden oynamaz, yalnız kullanıcının kaydırmasıyla ilerler; bu yüzden hareket azaltma tercihinde de çalışır
+   (o tercihte yalnız kendiliğinden hareket eden süsler — yaylanan tık, yüzen/nabız animasyonları — CSS'te kapanır).
+   JS yoksa: sınıf eklenmez, bölüm son hâliyle (net video + ekranlar) görünür. */
 (function () {
   'use strict';
   var bolum = document.querySelector('[data-film]');
   if (!bolum) return;
-  var azHareket = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // ---- sesli tam video penceresi (her durumda) ----
   var ac = bolum.querySelector('[data-film-ac]');
@@ -29,8 +30,6 @@
     var kapat = pencere.querySelector('[data-film-kapat]');
     if (kapat) kapat.addEventListener('click', kapatPencere);
   }
-
-  if (azHareket) return;
 
   // ---- sahne ----
   var BULANIK = [16, 11, 7, 4, 1.5, 0];                         // tık başına bulanıklık (px)

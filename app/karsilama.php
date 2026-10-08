@@ -235,7 +235,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
    0–0,40 : video iki merceğin ardında bulanık; kadranlar tık tık döner (--kl 0…5), bulanıklık --b iner.
    0,46–0,74 : mercekler büyür, foropter gövdesi açılır, ekran 3B eğimden düzleşir (--a).
    0,70–0,95 : uygulama ekranları videodan fırlayıp yörüngeye oturur (--c).  0,86+ : sesli izle düğmesi.
-   JS yoksa / hareket azaltmada: --p = 1, bölüm kısa ve son hâlinde. */
+   JS yoksa: --p = 1, bölüm kısa ve son hâlinde. Hareket azaltmada sahne kaydırmayla yine ilerler, süsler sakinleşir. */
 .film{--p:1;--kl:5;--b:0;position:relative;isolation:isolate;background:var(--night);color:#fff;
   --a:clamp(0,calc((var(--p) - .46) * 3.6),1);
   --c:clamp(0,calc((var(--p) - .70) * 4),1);
@@ -340,7 +340,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
   .film-sahneli .film-sahne{padding-block:84px 100px}
   .film-govde::after{display:none}
 }
-@media (prefers-reduced-motion:reduce){.film-oynat i::before,.film-oynat i::after{animation:none}.film-ekran video{transition:none}}
+@media (prefers-reduced-motion:reduce){.film-oynat i::before,.film-oynat i::after{animation:none}.kd-ic{transition:transform .25s ease}.film-olcek li{transition:color .2s ease}}
 
 /* ---------- Göz eşeli (hero) ---------- */
 .hero{padding-block:56px 72px;overflow:hidden}

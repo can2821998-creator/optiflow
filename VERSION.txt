@@ -1,6 +1,11 @@
 OPTIFLOW
-Release: 4.24.0 (2026-10-08)
+Release: 4.24.1 (2026-10-08)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.24.1 (foropter sahnesi herkeste çalışır)
+  - Windows'ta "Animasyon efektleri" kapalıyken (tarayıcıda prefers-reduced-motion) sahne hiç başlamıyor, bölüm
+    son hâliyle duruyordu. Sahne yalnız kullanıcının kaydırmasıyla ilerlediği için artık bu tercihte de çalışır;
+    o tercihte yalnız kendiliğinden hareket eden süsler (yaylanan tık, nabız halkaları) sakinleşir.
 
 DEĞİŞİKLİK NOTLARI — 4.24.0 (karşılama: foropter sahnesi)
   - Tanıtım videosu bölümü kaydırmayla ilerleyen sahneye dönüştü (bölüm uzun, sahne ekrana yapışık):

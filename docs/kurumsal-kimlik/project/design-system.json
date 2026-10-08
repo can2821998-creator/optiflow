@@ -1,0 +1,164 @@
+{
+    "v": 3,
+    "layout": "files",
+    "createdOnFiles": {
+        "v": 1,
+        "at": "2026-10-08T18:42:56Z"
+    },
+    "title": "OptiFlow Kurumsal Kimlik",
+    "namespace": "OptiFlow",
+    "libraries": [],
+    "sections": {},
+    "groups": [
+        "Logolar",
+        "Instagram"
+    ],
+    "assetGroups": {
+        "Logolar": {
+            "name": "Logolar",
+            "tile": "m",
+            "order": [
+                "optiflow-isaret.svg",
+                "optiflow-isaret-gece.svg",
+                "optiflow-isaret-beyaz.svg",
+                "optiflow-uygulama-simgesi.svg",
+                "logo-acik.png",
+                "logo-koyu.png"
+            ],
+            "files": {
+                "optiflow-isaret.svg": {
+                    "name": "optiflow-isaret.svg",
+                    "blob": "5571e92e598ee3760d9948a4b0232ab3",
+                    "size": 595,
+                    "type": "image/svg+xml"
+                },
+                "optiflow-isaret-gece.svg": {
+                    "name": "optiflow-isaret-gece.svg",
+                    "blob": "8d26c71dd453730e0433bc3be60a18bc",
+                    "size": 343,
+                    "type": "image/svg+xml"
+                },
+                "optiflow-isaret-beyaz.svg": {
+                    "name": "optiflow-isaret-beyaz.svg",
+                    "blob": "56505fadfeca7e6c4d2d1bb0f6f640d7",
+                    "size": 343,
+                    "type": "image/svg+xml"
+                },
+                "optiflow-uygulama-simgesi.svg": {
+                    "name": "optiflow-uygulama-simgesi.svg",
+                    "blob": "d279fb28dfa3146a74d4da80221d9f3d",
+                    "size": 622,
+                    "type": "image/svg+xml"
+                },
+                "logo-acik.png": {
+                    "name": "logo-acik.png",
+                    "blob": "aa1e0f7a5b2eb7957e978709bc7a7aa2",
+                    "size": 43944,
+                    "type": "image/png"
+                },
+                "logo-koyu.png": {
+                    "name": "logo-koyu.png",
+                    "blob": "a49719fcf9e45215429573bbdb62f152",
+                    "size": 236663,
+                    "type": "image/png"
+                }
+            }
+        },
+        "Instagram": {
+            "name": "Instagram",
+            "tile": "l",
+            "order": [
+                "bilgi.png",
+                "ozellik.png",
+                "koken.png",
+                "muayene.png",
+                "story.png",
+                "profil.png",
+                "kapak-sgk.png",
+                "kapak-atolye.png",
+                "kapak-fiyat.png",
+                "kapak-rehber.png",
+                "kapak-demo.png"
+            ],
+            "files": {
+                "bilgi.png": {
+                    "name": "bilgi.png",
+                    "blob": "c14650b37fc2135b96e6442bece67c50",
+                    "size": 158435,
+                    "type": "image/png"
+                },
+                "ozellik.png": {
+                    "name": "ozellik.png",
+                    "blob": "a4778a18b19448f36bc537d254b3e6f8",
+                    "size": 87032,
+                    "type": "image/png"
+                },
+                "koken.png": {
+                    "name": "koken.png",
+                    "blob": "e88b88f26e51510ae4606455b60ad756",
+                    "size": 156947,
+                    "type": "image/png"
+                },
+                "muayene.png": {
+                    "name": "muayene.png",
+                    "blob": "793299db8d5b720ff5dfbc7768284f30",
+                    "size": 299003,
+                    "type": "image/png"
+                },
+                "story.png": {
+                    "name": "story.png",
+                    "blob": "a2382a4bb7ab0bf9785905e04c935fdb",
+                    "size": 434262,
+                    "type": "image/png"
+                },
+                "profil.png": {
+                    "name": "profil.png",
+                    "blob": "c0cc9722bc00c3f336abd9356036b6e0",
+                    "size": 282741,
+                    "type": "image/png"
+                },
+                "kapak-sgk.png": {
+                    "name": "kapak-sgk.png",
+                    "blob": "d6ad73b7afc9d91faeef814e5a77cd83",
+                    "size": 67795,
+                    "type": "image/png"
+                },
+                "kapak-atolye.png": {
+                    "name": "kapak-atolye.png",
+                    "blob": "89210e97b94b96f431bb0880715060b8",
+                    "size": 68119,
+                    "type": "image/png"
+                },
+                "kapak-fiyat.png": {
+                    "name": "kapak-fiyat.png",
+                    "blob": "0da5716df3cdb2109b08ae7a46672ea1",
+                    "size": 65674,
+                    "type": "image/png"
+                },
+                "kapak-rehber.png": {
+                    "name": "kapak-rehber.png",
+                    "blob": "3e02c55fa85ff74f49aafe538b08ccae",
+                    "size": 65922,
+                    "type": "image/png"
+                },
+                "kapak-demo.png": {
+                    "name": "kapak-demo.png",
+                    "blob": "9c2f0679855dc4e8540634e38dfc9b28",
+                    "size": 66521,
+                    "type": "image/png"
+                }
+            }
+        }
+    },
+    "blobs": {},
+    "docs": {
+        "readme": "project/README.md",
+        "sections": []
+    },
+    "lastChange": {
+        "by": "can",
+        "at": "2026-10-08T18:42:56Z",
+        "via": "Claude Code",
+        "note": "İlk sürüm: optiflow deposundaki tema, logo ve sitedeki motiflerden kurumsal kimlik + Instagram şablonları"
+    }
+}

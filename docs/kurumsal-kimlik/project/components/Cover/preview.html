@@ -1,0 +1,56 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>OptiFlow</title>
+<style>
+  html, body { margin:0; height:100%; }
+  body { background:var(--paper); color:var(--ink); font-family:var(--font-sans); overflow:hidden; }
+  .cover { position:relative; height:288px; overflow:hidden; }
+  .art { position:absolute; top:0; left:480px; width:480px; height:288px; overflow:hidden; }
+  .art svg { display:block; width:480px; height:288px; }
+  .night { fill:var(--night); }
+  .brand { fill:var(--brand); }
+  .bright { fill:var(--brand-bright); }
+  .soft { fill:var(--brand-soft); }
+  .deep { fill:var(--brand-deep); }
+  .blk { rx:var(--radius-lg); }
+  .ring { fill:none; stroke:var(--coral); stroke-width:1.5; opacity:.6; }
+  .cross { stroke:var(--coral); stroke-width:1; opacity:.45; }
+  .pupil { fill:var(--coral); }
+  .words { position:absolute; left:var(--space-6); bottom:var(--space-6); max-width:440px; }
+  .name { margin:0; font-size:88px; line-height:.92; font-weight:800; letter-spacing:-.03em; color:var(--ink); }
+  .tag { margin:var(--space-2) 0 0 4px; font-size:14px; line-height:20px; color:var(--ink-2); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks      night 232×288 bled off top+bottom (the second face of the brand, the dark band) · brand 168×176 radius-lg · brand-bright disc r=56 (the lens) · brand-soft 96×64 radius-lg (the tint) · brand-deep 48×48 radius-lg — ≈40% of 960×288
+  arrangement one tall night slab at the right edge with satellites stepping left and down, gutters space-4 (16px), bottoms on one line space-6 above the edge
+  pattern     literal motif row (lens): the lensmeter reticle — three concentric rings + a cross in coral, cut over the night slab, centred on the bright lens disc; chosen because the brand is built from optician instruments (göz eşeli, foropter, lensmetre)
+  scales      space-4 16 · space-6 24 · radius-lg 18 · disc r 56 = 3.5 × space-4
+-->
+  <rect class="night" x="248" y="0" width="232" height="288"/>
+  <rect class="brand blk" x="64" y="88" width="168" height="176"/>
+  <rect class="soft blk" x="152" y="24" width="96" height="48"/>
+  <rect class="deep blk" x="88" y="24" width="48" height="48"/>
+  <circle class="bright" cx="364" cy="144" r="56"/>
+  <circle class="ring" cx="364" cy="144" r="80"/>
+  <circle class="ring" cx="364" cy="144" r="104"/>
+  <circle class="ring" cx="364" cy="144" r="128"/>
+  <line class="cross" x1="364" y1="0" x2="364" y2="288"/>
+  <line class="cross" x1="248" y1="144" x2="480" y2="144"/>
+  <circle class="pupil" cx="364" cy="144" r="10"/>
+</svg>
+</div>
+<div class="words">
+  <p class="name">OptiFlow</p>
+  <p class="tag">Bir yazılım ofisinde değil, bir optik atölyesinde doğdu.</p>
+</div>
+</div>
+</body>
+</html>

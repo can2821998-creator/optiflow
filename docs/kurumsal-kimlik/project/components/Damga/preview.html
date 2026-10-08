@@ -1,0 +1,20 @@
+<!-- @dsCard group="Marka" height=230 subtitle="Kırmızı kalem, değil damgası, TAMAM" -->
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><style>
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-sans);padding:16px}
+.kart{display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;padding:18px 20px;border-radius:var(--radius-md);background:#1d1719;font-family:var(--font-mono);font-size:22px;color:#e9e2e4}
+.cizik{position:relative;color:rgba(233,226,228,.5)}
+.cizik::after{content:"";position:absolute;left:-3%;right:-3%;top:52%;height:4px;border-radius:2px;background:#ff3d5e;transform:rotate(-2.5deg);box-shadow:0 0 12px rgba(255,61,94,.7)}
+.degil{display:inline-block;padding:0 10px 3px;border:3px solid #ff3d5e;border-radius:8px;color:#ff6b81;font-family:var(--font-sans);font-weight:800;transform:rotate(-7deg)}
+.adimlar{display:flex;flex-wrap:wrap;gap:22px;margin-top:22px}
+.tamam{display:inline-block;padding:2px 8px;border:2px solid var(--brand-bright);border-radius:6px;color:var(--brand-ink);background:var(--paper);font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.14em;transform:rotate(-9deg)}
+.adim{display:flex;align-items:center;gap:10px;font-weight:700}
+.no{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--brand-bright);color:#fff;font-size:13px}
+</style></head>
+<body>
+<div class="kart"><span>OptiFlow bir <span class="cizik">yazılım ofisinde</span></span><span class="degil">değil,</span></div>
+<div class="adimlar"><div class="adim"><span class="no">1</span>Reçete gelir <span class="tamam">TAMAM</span></div><div class="adim"><span class="no">2</span>Sipariş açılır <span class="tamam">TAMAM</span></div></div>
+</body>
+</html>

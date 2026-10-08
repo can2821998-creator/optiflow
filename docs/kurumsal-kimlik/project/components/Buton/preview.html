@@ -1,0 +1,20 @@
+<!-- @dsCard group="Arayüz" height=170 subtitle="Dolu, çizgili, gece üstünde" -->
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><style>
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-sans);padding:16px}
+.sira{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:15px 26px;border-radius:var(--radius-btn);font-weight:800;font-size:15.5px;text-decoration:none;border:2px solid transparent;white-space:nowrap;cursor:pointer}
+.btn:focus-visible{outline:3px solid var(--brand-ink);outline-offset:3px}
+.dolu{background:linear-gradient(135deg,var(--brand-bright),var(--brand-deep));color:var(--on-brand);box-shadow:var(--shadow-brand)}
+.cizgi{border-color:var(--ink);color:var(--ink);background:none}
+.gece{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;padding:18px;border-radius:var(--radius-lg);background:var(--night)}
+.gece .cizgi{border-color:var(--on-night);color:var(--on-night)}
+.not{font-size:12.5px;color:var(--ink-2);margin-top:8px}
+</style></head>
+<body>
+<div class="sira"><a class="btn dolu" href="#">30 gün ücretsiz deneyin</a><a class="btn cizgi" href="#">WhatsApp'tan demo isteyin</a></div>
+<div class="gece"><a class="btn dolu" href="#">Mağazamı oluştur</a><a class="btn cizgi" href="#">Giriş yap</a></div>
+</body>
+</html>

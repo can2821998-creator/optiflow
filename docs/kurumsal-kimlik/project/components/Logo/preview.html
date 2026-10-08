@@ -1,0 +1,33 @@
+<!-- @dsCard group="Marka" height=330 subtitle="Kilit, varyantlar, boşluk" -->
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><style>
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-sans);padding:16px}
+.satir{display:flex;flex-wrap:wrap;gap:16px}
+.pano{flex:1 1 260px;min-width:0;display:grid;place-items:center;height:132px;border-radius:var(--radius-lg);border:1px solid var(--line)}
+.pano.acik{background:#f5f3f3}.pano.gece{background:#141012;border-color:#141012}
+.kilit{display:flex;align-items:center;gap:12px;font-weight:800;font-size:32px;letter-spacing:-.02em}
+.kilit svg{width:48px;height:48px}
+.acik .kilit{color:#1b1416}.gece .kilit{color:#fff}
+.alt{display:flex;flex-wrap:wrap;gap:16px;margin-top:16px;align-items:center}
+.alt figure{margin:0;display:grid;justify-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--ink-2)}
+.kutu{display:grid;place-items:center;width:84px;height:84px;border-radius:var(--radius-md);border:1px solid var(--line);background:var(--surface)}
+.kutu svg{width:52px;height:52px}
+.kutu.gece{background:#141012;border-color:#141012}
+.bosluk{position:relative;display:grid;place-items:center;width:150px;height:84px;border:1px dashed var(--brand-ink);border-radius:6px}
+.bosluk svg{width:36px;height:36px}
+.bosluk span{position:absolute;font-family:var(--font-mono);font-size:10px;color:var(--brand-ink)}
+.bosluk .u{top:4px}.bosluk .s{left:6px}
+</style></head>
+<body>
+<div class="satir"><div class="pano acik"><div class="kilit"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="l1" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6b81"/><stop offset=".55" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/></linearGradient></defs><g transform="rotate(-10 50 50)" fill="url(#l1)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z"/><circle cx="50" cy="50" r="7"/></g></svg>OptiFlow</div></div><div class="pano gece"><div class="kilit"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="l2" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6b81"/><stop offset=".55" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/></linearGradient></defs><g transform="rotate(-10 50 50)" fill="url(#l2)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z"/><circle cx="50" cy="50" r="7"/></g></svg>OptiFlow</div></div></div>
+<div class="alt">
+<figure><div class="kutu"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="l3" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6b81"/><stop offset=".55" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/></linearGradient></defs><g transform="rotate(-10 50 50)" fill="url(#l3)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z"/><circle cx="50" cy="50" r="7"/></g></svg></div>Renkli işaret</figure>
+<figure><div class="kutu"><svg viewBox="0 0 100 100" aria-hidden="true"><g transform="rotate(-10 50 50)" fill="#141012"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z"/><circle cx="50" cy="50" r="7"/></g></svg></div>Tek renk · gece</figure>
+<figure><div class="kutu gece"><svg viewBox="0 0 100 100" aria-hidden="true"><g transform="rotate(-10 50 50)" fill="#ffffff"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z"/><circle cx="50" cy="50" r="7"/></g></svg></div>Tek renk · beyaz</figure>
+<figure><div class="kutu" style="border:0;background:none"><svg viewBox="0 0 100 100" style="width:72px;height:72px"><defs><linearGradient id="ua" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6b81"/><stop offset="1" stop-color="#b4233c"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="#141012"/><g transform="translate(14 14) scale(.72)"><g transform="rotate(-10 50 50)" fill="url(#ua)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z"/><circle cx="50" cy="50" r="7"/></g></g></svg></div>Uygulama simgesi</figure>
+<figure><div class="bosluk"><span class="u">½ çap</span><span class="s">½</span><svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="l4" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6b81"/><stop offset=".55" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/></linearGradient></defs><g transform="rotate(-10 50 50)" fill="url(#l4)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z"/><circle cx="50" cy="50" r="7"/></g></svg></div>Boş alan</figure>
+</div>
+</body>
+</html>

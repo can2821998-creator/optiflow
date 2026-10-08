@@ -34,6 +34,10 @@
   kişiselleştirme (+ kayit.php?isim=), lensmetre kazanç hesabı (#hesap), Ishihara "30" levhası, saate göre selam,
   ay sonu bandı (assets/karsilama-deneyim.js). Kazanç varsayımları sayfada yazılı; değiştirilecekse JS'teki dakikalar.
 - 4.28.1: üst menü 981–1300 px arasında kırılmıyor (az gereken bağlantılar daralınca gizlenir).
+- Kurumsal kimlik (08.10): docs/kurumsal-kimlik/ — project/ = claude.ai Design System artifact'inin dosyaları (README marka kitabı,
+  tokens.json app.css'ten birebir, logolar SVG, bileşen önizlemeleri), png/ = Instagram şablonları (1080²/1080×1920),
+  render/*.html = düzenlenebilir şablon kaynakları; yeniden üretmek: `php docs/kurumsal-kimlik/uret.php` + başsız Chrome ile
+  render/*.html ekran görüntüsü. docs/ hosting paketine girmez (surum-yayinla.yml siler).
 - Strateji sıradakiler: ROI hesaplayıcı, kayıtta "Bizi nereden duydunuz?", tavsiye programı.
 
 ## Önceki oturum (4.22.1 — pazarlama: tanıtım videosu + iletişim bilgileri)

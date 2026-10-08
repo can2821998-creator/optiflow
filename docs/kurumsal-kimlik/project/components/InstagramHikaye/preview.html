@@ -1,0 +1,81 @@
+<!-- @dsCard group="Instagram" height=560 subtitle="Hikâye şablonu, 1080 × 1920" -->
+<!doctype html><html lang="tr"><meta charset="utf-8"><style>body{margin:0;padding:16px;background:var(--paper);font-family:var(--font-sans)}
+.ig{--paper:#f5f3f3;--ink:#1b1416;--ink-2:#463b3e;--line:#e8e1e2;--brand:#b4233c;--brand-bright:#d0334f;--brand-deep:#8f1a2e;--coral:#ff6b81;--night:#141012;--night-2:#221a1d;--on-night:#f3eef0;--on-night-muted:#ab9fa3;--lens:#fbe4e8;
+  position:relative;overflow:hidden;box-sizing:border-box;font-family:Manrope,"Manrope Fallback",Arial,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+.ig *{box-sizing:border-box}
+.ig.kare{width:1080px;height:1080px}
+.ig.dikey{width:1080px;height:1920px}
+.ig .mono{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-weight:500}
+.ig .etiket{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-weight:500;font-size:26px;letter-spacing:.14em;text-transform:uppercase}
+.ig .logo{position:absolute;left:80px;bottom:72px;display:flex;align-items:center;gap:18px;font-weight:800;font-size:40px;letter-spacing:-.02em}
+.ig .logo svg{width:60px;height:60px;display:block}
+.ig.gece{background:radial-gradient(900px 700px at 100% 0%,rgba(208,51,79,.34),transparent 65%),var(--night);color:var(--on-night)}
+.ig .nisan{position:absolute;pointer-events:none;color:rgba(255,107,129,.22)}
+.ig .nisan circle,.ig .nisan path{fill:none;stroke:currentColor}
+.t-bilgi{padding:88px 80px}
+.t-bilgi .ust{display:flex;justify-content:space-between;color:var(--coral)}
+.t-bilgi h2{margin:120px 0 0;max-width:880px;font-size:104px;line-height:1.02;font-weight:800;letter-spacing:-.035em;color:#fff}
+.t-bilgi h2 em{font-style:normal;color:var(--coral)}
+.t-bilgi .alt{margin-top:44px;max-width:760px;font-size:34px;line-height:1.4;font-weight:600;color:var(--on-night-muted)}
+.t-bilgi .kaydir{position:absolute;right:80px;bottom:84px;display:flex;align-items:center;gap:14px;color:#fff}
+.t-bilgi .kaydir b{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:50%;background:var(--brand-bright);font-size:34px}
+.t-ozellik{background:var(--paper);padding:96px 80px}
+.t-ozellik .esel{border-top:8px solid var(--ink)}
+.t-ozellik .satir{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:20px;border-bottom:2px solid var(--line);padding:6px 0 10px}
+.t-ozellik .satir b{font-weight:800;letter-spacing:.02em;line-height:1;white-space:nowrap}
+.t-ozellik .satir i{font-style:normal;font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:24px;color:var(--ink-2)}
+.t-ozellik .s1 b{font-size:200px;background:linear-gradient(135deg,#d0334f,#8f1a2e);-webkit-background-clip:text;background-clip:text;color:transparent}
+.t-ozellik .s2 b{font-size:132px}.t-ozellik .s3 b{font-size:92px}.t-ozellik .s4 b{font-size:62px}
+.t-ozellik .s4 i{color:var(--brand-bright)}
+.t-ozellik .not{position:absolute;right:80px;bottom:88px;color:var(--ink-2);text-transform:none}
+.t-koken{padding:100px 80px}
+.t-koken .editor{border-radius:22px;background:#1d1719;border:1.5px solid rgba(255,255,255,.12);box-shadow:0 40px 80px -40px rgba(0,0,0,.9)}
+.t-koken .sekme{display:flex;align-items:center;gap:10px;padding:18px 24px;border-bottom:1.5px solid rgba(255,255,255,.08);font-size:22px;color:rgba(255,255,255,.45)}
+.t-koken .sekme i{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.18)}
+.t-koken .kod{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px;padding:30px 30px 36px;font-size:46px;color:#e9e2e4}
+.t-koken .kod s{text-decoration:none;position:relative;color:rgba(233,226,228,.5)}
+.t-koken .kod s::after{content:"";position:absolute;left:-3%;right:-3%;top:52%;height:7px;border-radius:4px;background:#ff3d5e;rotate:-2.5deg;box-shadow:0 0 18px rgba(255,61,94,.7)}
+.t-koken .degil{display:inline-block;padding:2px 16px 6px;border:4px solid #ff3d5e;border-radius:12px;color:var(--coral);font-family:Manrope,sans-serif;font-weight:800;rotate:-7deg}
+.t-koken h2{margin:70px 0 0;max-width:900px;font-size:84px;line-height:1.08;font-weight:800;letter-spacing:-.03em;color:#fff}
+.t-koken h2 em{font-style:normal;color:var(--coral)}
+.t-koken .imza{position:absolute;right:80px;bottom:88px;color:var(--on-night-muted)}
+.t-muayene{padding:96px 70px;text-align:center}
+.t-muayene h2{margin:0;font-size:80px;line-height:1.05;font-weight:800;letter-spacing:-.03em;color:#fff}
+.t-muayene h2 b{display:inline-grid;place-items:center;width:1.2em;height:1.2em;border:5px solid var(--coral);border-radius:50%;color:var(--coral);font-size:.78em;vertical-align:.08em}
+.t-muayene .is{margin:22px 0 0;color:var(--coral)}
+.t-muayene .foropter{display:grid;grid-template-columns:1fr 60px 1fr;align-items:center;margin:54px 0 0;padding:34px 40px;border-radius:200px;background:linear-gradient(180deg,#2a2124,#120e10);box-shadow:inset 0 2px 0 rgba(255,255,255,.08)}
+.t-muayene .kopru{height:22px;border-radius:11px;background:#3a2f33}
+.t-muayene .cam{display:grid;place-items:center;aspect-ratio:1;border-radius:50%;padding:15%;background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.9),transparent 30%),radial-gradient(circle,#f7f3f4 0 58%,#e1d7da 72%);border:22px solid #0c0909;box-shadow:0 0 0 4px #3b3134;color:var(--ink);font-weight:750;font-size:36px;line-height:1.25}
+.t-muayene .bulanik span{filter:blur(4px)}
+.t-muayene .net{box-shadow:0 0 0 4px var(--coral),0 0 70px 10px rgba(255,107,129,.5)}
+.t-muayene .no{display:flex;justify-content:space-around;margin-top:26px;color:#fff}
+.t-logo{display:grid;place-items:center}
+.t-logo .kilit{display:flex;align-items:center;gap:44px;font-weight:800;font-size:150px;letter-spacing:-.025em}
+.t-logo .kilit svg{width:220px;height:220px}
+.t-logo .alt{position:absolute;left:0;right:0;bottom:120px;text-align:center}
+
+.t-story{padding:150px 80px;background:linear-gradient(170deg,#8f1a2e 0%,#b4233c 45%,#141012 100%);color:#fff}
+.t-story .gun{display:inline-block;padding:12px 26px;border-radius:999px;background:rgba(0,0,0,.28)}
+.t-story .esel{margin-top:80px;border-top:8px solid #fff}
+.t-story .satir{display:grid;grid-template-columns:1fr auto;align-items:baseline;border-bottom:2px solid rgba(255,255,255,.25);padding:8px 0 12px}
+.t-story .satir b{font-weight:800;line-height:1;letter-spacing:.01em}
+.t-story .satir i{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:26px;color:rgba(255,255,255,.7)}
+.t-story .s1 b{font-size:230px;letter-spacing:.04em}.t-story .s2 b{font-size:150px}.t-story .s3 b{font-size:110px}.t-story .s4 b{font-size:110px;color:#ffd0d8}
+.t-story .fis{margin:70px auto 0;width:720px;padding:34px 40px 48px;background:#fffdf9;color:var(--ink);border-radius:6px 6px 0 0;rotate:-2deg;box-shadow:0 40px 80px -30px rgba(0,0,0,.7);
+  -webkit-mask:radial-gradient(14px at 50% 100%,#0000 98%,#000) 0 0/42px 100% repeat-x;mask:radial-gradient(14px at 50% 100%,#0000 98%,#000) 0 0/42px 100% repeat-x}
+.t-story .fis .mono{display:flex;justify-content:space-between;padding:12px 0;border-bottom:2px dashed #e1d7da;font-size:30px}
+.t-story .fis .fark{color:var(--brand);font-weight:700}
+.t-story .fis small{display:block;margin-bottom:10px;font-size:22px;letter-spacing:.14em;color:var(--brand)}
+.t-story .cta{position:absolute;left:80px;right:80px;bottom:220px;display:grid;place-items:center;padding:34px;border-radius:26px;background:#fff;color:var(--brand-deep);font-size:44px;font-weight:800}
+.t-story .cta small{display:block;margin-top:6px;font-size:26px;font-weight:600;color:var(--ink-2)}
+.t-story .logo{bottom:100px}
+.t-profil{display:grid;place-items:center;background:radial-gradient(60% 60% at 50% 40%,#2a161c,#141012 70%)}
+.t-profil svg.isaret{width:600px;height:600px;filter:drop-shadow(0 30px 60px rgba(208,51,79,.45))}
+.t-kapak{display:grid;place-items:center;background:var(--night);color:#fff}
+.t-kapak .nisan{width:760px;left:160px;top:160px;color:rgba(255,107,129,.5)}
+.t-kapak .ic{position:relative;display:grid;justify-items:center;gap:26px}
+.t-kapak .ic i{width:34px;height:34px;border-radius:50%;background:var(--coral);box-shadow:0 0 30px rgba(255,107,129,.8)}
+.t-kapak .ic b{font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:92px;letter-spacing:.08em}
+.olc{position:relative;overflow:hidden;border-radius:10px;box-shadow:0 10px 30px -18px rgba(0,0,0,.5)}.olc>.ig{transform:scale(var(--s));transform-origin:0 0;position:absolute;left:0;top:0}
+.izgara{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}.izgara figure{margin:0;display:grid;gap:6px}.izgara figcaption{font-size:12.5px;font-weight:700;color:var(--ink-2)}</style>
+<div class="izgara"><figure><div class="olc" style="--s:0.26;width:281px;height:499px"><div class="ig dikey t-story"><span class="gun etiket">Ay sonuna 2 gün</span><div class="esel"><div class="satir s1"><b>SGK</b><i>0,1</i></div><div class="satir s2"><b>faturası</b><i>0,2</i></div><div class="satir s3"><b>bu akşam</b><i>0,6</i></div><div class="satir s4"><b>3 dakika.</b><i>1,0</i></div></div><div class="fis"><small class="mono">EYLÜL · SGK DÖKÜMÜ</small><div class="mono"><span>Medula dökümü</span><b>48</b></div><div class="mono"><span>OptiFlow'da işaretli</span><b>47</b></div><div class="mono fark"><span>Fark</span><b>1</b></div></div><div class="cta">30 gün ücretsiz deneyin<small>Bağlantı profilde · kart gerekmez</small></div><div class="logo" style="color:#fff"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gs" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6b81"/><stop offset=".55" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/></linearGradient></defs><g transform="rotate(-10 50 50)" fill="url(#gs)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z"/><circle cx="50" cy="50" r="7"/></g></svg>OptiFlow</div></div></div><figcaption>Hikâye (ay sonu) · 1080 × 1920</figcaption></figure></div>

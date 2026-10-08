@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 8 Ekim 2026 (4.24.1 / Pro 5.5.0)*
+*Son güncelleme: 8 Ekim 2026 (4.25.0 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.24.1**, şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.24.1** bekleniyor (08.10 push). 4.24.0 canlıda doğrulandı. 4.22.2 canlıda doğrulandı (video + Instagram).
+- **Sunucu 4.25.0**, şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Canlı site: 4.25.0** bekleniyor (08.10 push). 4.24.1 canlıda doğrulandı. 4.22.2 canlıda doğrulandı (video + Instagram).
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
   11.4 (127.0.0.1:3307, başlat: `mariadb-11.4.8-winx64\bin\mariadbd.exe --defaults-file=veri\my.ini`), şifreler ve
   uydurma veri betiği (`ornek-veri.php`) orada; depoda `config.php` (gitignore) yerel. Sunucu: `php -S 127.0.0.1:8080`.
@@ -26,7 +26,10 @@
 - 4.22.2: ana sayfaya tanıtım videosu bölümü (#film, assets/video/). 4.23.x: mercekten açılan perde.
   4.24.0: foropter sahnesi (yapışkan kaydırma, tık tık netleşen kadranlar, fırlayan ekranlar; assets/karsilama-film.js).
   4.24.1: sahne hareket azaltma tercihinde de çalışır (kullanıcının PC'sinde Windows animasyonları kapalı: MinAnimate=0;
-  uygulama içi tarayıcı da bu yüzden reduced-motion bildiriyor — kaydırma animasyonunu orada izlemek için bunu bil). 7 özellik Reels'i üretildi (depo dışı,
+  uygulama içi tarayıcı da bu yüzden reduced-motion bildiriyor — kaydırma animasyonunu orada izlemek için bunu bil).
+  4.25.0: sayfanın tamamına sahne sistemi (assets/karsilama-sahne.js). Test: optiflow-yerel/video/sayfa-test.mjs
+  (başsız Chrome, gerçek kaydırma, bölüm ekran görüntüleri + kare süresi ölçümü; uygulama içi panel arka planda
+  rAF/IntersectionObserver çalıştırmadığı için animasyon testine uygun değil). 7 özellik Reels'i üretildi (depo dışı,
   optiflow-yerel/video/cikti/reels/; video hattında SIRA/KANCA/AD ortam değişkenleriyle Reels kipi).
 
 ## Önceki oturum (4.22.0 — tüm dökümler, iki tasarım; dal `oturum/dokum`)

@@ -1,6 +1,21 @@
 OPTIFLOW
-Release: 4.24.1 (2026-10-08)
+Release: 4.25.0 (2026-10-08)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.25.0 (karşılama sayfasının tamamı hareketli)
+  - Ortak sahne sistemi (assets/karsilama-sahne.js; karsilama-film.js'in yerini aldı): başlıklar bulanıktan netleşerek,
+    kartlar/satırlar/listeler sırayla yükselerek, dönerek ya da büyüyerek gelir; sayfa üstünde ilerleme çizgisi.
+  - Bölüm sahneleri: Lite/Pro cihazları kaydırmayla katmanlı kayar, Pro penceresi 3B döner; "Bugüne kadar / OptiFlow ile"
+    tablosunda eski yöntemin üstü çizilir, OptiFlow hücresi dolar; gözlüğün yolu boyunca gözlük simgesi ilerler, geçtiği
+    adımlar yanar; telefona WhatsApp "Gözlüğünüz hazır" bildirimi düşer, adım çubukları sırayla dolar; galeri şeridi
+    kaydırmayla akar; ay sonunda sayaçlar sayar, tarama çizgisi geçer, eksik reçete yanıp söner; hikâye metni kelime
+    kelime koyulaşır; öne çıkan pakette dönen ışık kenarı; güven simgeleri çizilerek gelir; hero ve son çağrıda imleci
+    izleyen ışık, son çağrının arkasında dev gözlük çizgisi.
+  - Foropter sahnesi akıcılaştı: ışık halesi ikinci video yerine durağan görselden, harfler yalnız kayar (her karede
+    bulanıklık hesabı yok); kaydırma güncellemeleri tek rAF döngüsünde ve yalnız ekranda görünen bölümler için;
+    tembel görseller decoding="async". Başsız Chrome ölçümü: kaydırmada kare süresi p95 8,5 ms (masaüstü ve mobil).
+  - Hepsi kullanıcının kaydırmasıyla ilerler; hareket azaltma tercihinde de çalışır (yalnız kendiliğinden dönen süsler
+    durur). Hero netleşmesi artık her tercihte. JS yoksa hiçbir öğe gizlenmez.
 
 DEĞİŞİKLİK NOTLARI — 4.24.1 (foropter sahnesi herkeste çalışır)
   - Windows'ta "Animasyon efektleri" kapalıyken (tarayıcıda prefers-reduced-motion) sahne hiç başlamıyor, bölüm

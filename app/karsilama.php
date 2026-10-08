@@ -12,7 +12,7 @@ require_once __DIR__ . '/indir.php';
  * Tenant/veritabanı bağlamı yoktur (oturumu olmayan herkes görür) — DB fonksiyonu çağırmaz.
  * İletişim, fiyat ve kampanya bilgileri app/pazarlama.php'den gelir; boş alanlar sayfada görünmez.
  * CSP 'script-src self': satır içi JavaScript YOK (SSS <details> ile çalışır, netleşme CSS animasyonudur).
- * Tek dış betik: assets/karsilama-film.js (tanıtım videosunun foropter sahnesi ve sesli izleme penceresi).
+ * Tek dış betik: assets/karsilama-sahne.js (giriş efektleri, kaydırmaya bağlı bölümler, foropter sahnesi, sesli izleme).
  */
 function render_karsilama(): void
 {
@@ -231,7 +231,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .nav-links .btn{padding:10px 16px;font-size:14px}
 
 /* ---------- Tanıtım videosu (4.24.0): foropter sahnesi ----------
-   Bölüm uzun, sahne yapışkan; kaydırma ilerlemesi --p (0 → 1) assets/karsilama-film.js'ten gelir.
+   Bölüm uzun, sahne yapışkan; kaydırma ilerlemesi --p (0 → 1) assets/karsilama-sahne.js'ten gelir.
    0–0,40 : video iki merceğin ardında bulanık; kadranlar tık tık döner (--kl 0…5), bulanıklık --b iner.
    0,46–0,74 : mercekler büyür, foropter gövdesi açılır, ekran 3B eğimden düzleşir (--a).
    0,70–0,95 : uygulama ekranları videodan fırlayıp yörüngeye oturur (--c).  0,86+ : sesli izle düğmesi.
@@ -251,7 +251,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 /* göz eşeli harfleri */
 .film-harfler{position:absolute;inset:0;z-index:-1;pointer-events:none}
 .film-harfler span{position:absolute;left:var(--x);top:var(--y);font-weight:800;line-height:1;font-size:calc(var(--s) * 1vmin);color:rgba(255,255,255,.045);
-  filter:blur(calc((1 - var(--p)) * 5px + .5px));transform:translateY(calc(var(--p) * var(--d) * -140px))}
+  filter:blur(1px);translate:0 calc(var(--p) * var(--d) * -140px);will-change:translate}
 /* keskinlik ölçeği */
 .film-olcek{position:absolute;left:clamp(16px,3vw,48px);top:50%;transform:translateY(-50%);margin:0;padding:0;list-style:none;display:grid;gap:14px;
   font-family:var(--mono);font-size:13px;color:rgba(255,255,255,.28);font-variant-numeric:tabular-nums}
@@ -268,12 +268,12 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .fb em{font-style:normal;background:linear-gradient(90deg,#ff95a6,#ff6b81 55%,#e0405c);-webkit-background-clip:text;background-clip:text;color:transparent}
 .fb span{color:var(--night-ink);font-size:clamp(.98rem,1.4vw,1.12rem)}
 /* foropter + ekran */
-.film-kutu{position:relative;width:var(--kw);max-width:100%;aspect-ratio:16/9;container-type:inline-size;
+.film-kutu{position:relative;width:var(--kw);max-width:100%;aspect-ratio:16/9;container-type:inline-size;will-change:transform;
   transform:perspective(1400px) rotateX(calc((1 - var(--a)) * 16deg)) scale(calc(.88 + var(--a) * .12))}
 .film-isik{position:absolute;inset:-6%;z-index:-1;pointer-events:none;filter:blur(60px) saturate(1.6);opacity:calc(var(--a) * .62)}
-.film-isik video{width:100%;height:100%;object-fit:cover;border-radius:40%}
+.film-isik img{display:block;width:100%;height:100%;object-fit:cover;border-radius:40%}
 .film-ekran{position:absolute;inset:0;margin:0;border-radius:28px;overflow:hidden;background:#0b0809 center/cover no-repeat}
-.film-ekran video{display:block;width:100%;height:100%;object-fit:cover;filter:blur(calc(var(--b) * 1px)) saturate(calc(.7 + var(--a) * .3));transition:filter .45s ease}
+.film-ekran video{display:block;width:100%;height:100%;object-fit:cover;filter:blur(calc(var(--b) * 1px));transition:filter .45s ease}
 .film-govde{position:absolute;inset:-1px;border-radius:28px;pointer-events:none;
   background:radial-gradient(120% 150% at 50% -10%,#43363b,#1a1316 55%,#0f0b0d);
   box-shadow:inset 0 2px 0 rgba(255,255,255,.1),inset 0 -24px 50px rgba(0,0,0,.55);
@@ -299,7 +299,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .film-lcd b{font-weight:500;color:#ff95a6;font-variant-numeric:tabular-nums;min-width:5ch;text-align:right}
 .film-lcd.l-sag{left:28%}.film-lcd.l-sol{left:72%}
 /* videodan fırlayan ekranlar */
-.film-kart{position:absolute;z-index:4;margin:0;padding:.55cqw;border-radius:1.4cqw;background:#fff;box-shadow:0 30px 60px -24px rgba(0,0,0,.85);
+.film-kart{position:absolute;z-index:4;will-change:transform,opacity;margin:0;padding:.55cqw;border-radius:1.4cqw;background:#fff;box-shadow:0 30px 60px -24px rgba(0,0,0,.85);
   --g:clamp(0,calc((var(--c) - var(--e)) * 2.6),1);opacity:var(--g);
   transform:translate(calc((1 - var(--g)) * var(--dx) * 1cqw),calc((1 - var(--g)) * var(--dy) * 1cqw)) rotate(calc(var(--g) * var(--rot) * 1deg)) scale(calc(.2 + var(--g) * .8))}
 .film-kart img{display:block;width:100%;height:auto;border-radius:1cqw}
@@ -342,6 +342,108 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 }
 @media (prefers-reduced-motion:reduce){.film-oynat i::before,.film-oynat i::after{animation:none}.kd-ic{transition:transform .25s ease}.film-olcek li{transition:color .2s ease}}
 
+/* ---------- Sahne sistemi (4.25.0): giriş efektleri + kaydırmaya bağlı bölümler ----------
+   assets/karsilama-sahne.js öğelere data-gir / .gorunur ve bölümlere --i (0 → 1) yazar. JS yoksa hiçbir şey gizlenmez.
+   Kaydırmaya bağlı her şey transform/opacity ile (akıcı); kendiliğinden dönen süsler hareket azaltmada durur. */
+.sayfa-ilerleme{position:fixed;left:0;right:0;top:0;height:3px;z-index:60;pointer-events:none;transform-origin:left center;transform:scaleX(0);
+  background:linear-gradient(90deg,#8f1a2e,#d0334f 55%,#ff6b81);box-shadow:0 0 12px rgba(208,51,79,.6)}
+.js-sahne [data-gir]{transition:opacity .8s cubic-bezier(.2,.7,.2,1),translate .9s cubic-bezier(.2,.8,.2,1),scale .9s cubic-bezier(.2,.8,.2,1),rotate .9s cubic-bezier(.2,.8,.2,1),filter .9s ease;
+  transition-delay:calc(var(--sira,0) * 90ms)}
+.js-sahne [data-gir]:not(.gorunur){opacity:0}
+.js-sahne [data-gir="yukari"]:not(.gorunur){translate:0 42px}
+.js-sahne [data-gir="soldan"]:not(.gorunur){translate:-56px 0}
+.js-sahne [data-gir="olcek"]:not(.gorunur){scale:.86;translate:0 30px}
+.js-sahne [data-gir="netles"]:not(.gorunur){filter:blur(14px);scale:1.04}
+.js-sahne [data-gir="dondur"]:not(.gorunur){translate:0 70px;rotate:x 24deg}
+.js-sahne [data-gir="satir"]:not(.gorunur){translate:-30px 0}
+/* hero ve son çağrı: imleci izleyen ışık */
+.hero{position:relative;isolation:isolate}
+.hero::before,.son::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .5s ease;
+  background:radial-gradient(380px circle at var(--mx,50%) var(--my,40%),rgba(208,51,79,.14),transparent 70%)}
+.son::before{background:radial-gradient(460px circle at var(--mx,50%) var(--my,50%),rgba(208,51,79,.38),transparent 70%)}
+.hero.isikli::before,.son.isikli::before{opacity:1}
+/* Lite / Pro: katmanlı derinlik */
+#surumler{--i:.5}
+.surum-grid{perspective:1400px}
+.sahne .tarayici{transform:translateY(calc((.5 - var(--i)) * 34px))}
+.sahne .cep{transform:translateY(calc((.5 - var(--i)) * -96px)) rotate(calc((.5 - var(--i)) * 10deg))}
+.masaustu{transform:perspective(1200px) rotateY(calc((.5 - var(--i)) * -16deg)) rotateX(calc((.5 - var(--i)) * 6deg))}
+/* fark tablosu: eski yöntemin üstü çizilir, OptiFlow hücresi dolar */
+.fark td.once{transition:text-decoration-color .6s ease calc(var(--sira,0) * 90ms + .4s),color .6s ease calc(var(--sira,0) * 90ms + .4s)}
+.js-sahne .fark tr:not(.gorunur) td.once{text-decoration-color:transparent;color:var(--ink)}
+.fark td.ile{padding-left:12px;background:linear-gradient(90deg,rgba(208,51,79,.12),rgba(208,51,79,0)) no-repeat 0 0/100% 100%}
+.js-sahne .fark td.ile{background-size:0% 100%;transition:background-size 1s cubic-bezier(.2,.8,.2,1) calc(var(--sira,0) * 90ms + .6s)}
+.js-sahne .fark tr.gorunur td.ile{background-size:100% 100%}
+/* gözlüğün yolu: çizgi dolar, gözlük ilerler, geçilen adımlar yanar */
+#yol{--i:1}
+.yol-kap{position:relative}
+.yol li{--on:clamp(0,calc((var(--i) * 1.3 - .06 - var(--k) / var(--n)) * 9),1)}
+#yol .yol li::before{background:color-mix(in srgb,var(--magenta) calc(var(--on) * 100%),var(--paper));color:color-mix(in srgb,#fff calc(var(--on) * 100%),var(--ink));
+  border-color:color-mix(in srgb,var(--magenta) calc(var(--on) * 100%),var(--ink));scale:calc(1 + var(--on) * .2);
+  box-shadow:0 0 0 calc(var(--on) * 6px) rgba(208,51,79,.15)}
+.yol-dolum{position:absolute;left:0;top:-1px;height:3px;width:calc(var(--i) * 100%);border-radius:3px;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,#8f1a2e,#d0334f 60%,#ff6b81);box-shadow:0 0 12px rgba(208,51,79,.55)}
+.yol-gezgin{position:absolute;top:-58px;left:calc(var(--i) * 100%);translate:-50% 0;z-index:2;display:grid;place-items:center;width:52px;height:34px;border-radius:12px;
+  background:linear-gradient(135deg,#d0334f,#8f1a2e);color:#fff;box-shadow:0 12px 24px -10px rgba(143,26,46,.9);pointer-events:none}
+.yol-gezgin::after{content:"";position:absolute;left:50%;bottom:-6px;width:12px;height:12px;margin-left:-6px;background:#8f1a2e;rotate:45deg;border-radius:2px;z-index:-1}
+.yol-gezgin svg{width:30px;height:30px}
+/* atölye + telefon */
+#icerde{--i:.5}
+.telefon{position:relative;transform:translateY(calc((.5 - var(--i)) * 50px))}
+.tel-bildirim{position:absolute;left:-34px;right:-34px;top:-30px;z-index:2;display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:16px;background:#fff;color:var(--ink);
+  box-shadow:0 22px 40px -14px rgba(27,20,22,.55),0 0 0 1px rgba(27,20,22,.06);font-size:12.5px;line-height:1.35;
+  transition:opacity .5s ease 1.1s,translate .7s cubic-bezier(.3,1.7,.5,1) 1.1s,scale .7s cubic-bezier(.3,1.7,.5,1) 1.1s}
+.tel-bildirim i{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#1faa53;color:#fff;flex:none}
+.tel-bildirim i svg{width:20px;height:20px}
+.tel-bildirim b{display:block;font-size:12px}
+.js-sahne .telefon:not(.gorunur) .tel-bildirim{opacity:0;translate:0 -24px;scale:.88}
+.adimlar span.on{transition:background-color .4s ease}
+.adimlar span:nth-child(1){transition-delay:.45s}.adimlar span:nth-child(2){transition-delay:.7s}.adimlar span:nth-child(3){transition-delay:.95s}
+.js-sahne .telefon:not(.gorunur) .adimlar span.on{background:var(--line)}
+/* galeri: şerit kaydırmayla yana akar */
+#galeri{--i:.5}
+.serit{perspective:1400px}
+.serit figure{transform:translateX(calc((.5 - var(--i)) * 180px))}
+/* ay sonu: tarama çizgisi, eksik reçete yanar, satırlar sırayla */
+.kontrol{position:relative}
+.kontrol::after{content:"";position:absolute;left:0;right:0;top:0;height:3px;opacity:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent,#ff6b81 30%,#ff6b81 70%,transparent);box-shadow:0 0 18px 4px rgba(255,107,129,.5)}
+.js-sahne .kontrol.gorunur::after{animation:tara 1.7s cubic-bezier(.45,0,.2,1) .6s 1 both}
+@keyframes tara{0%{top:24%;opacity:0}12%{opacity:1}88%{opacity:1}100%{top:100%;opacity:0}}
+.js-sahne .kontrol.gorunur tr.eksik td{animation:eksik-yan .9s ease 2.3s 3}
+@keyframes eksik-yan{0%,100%{background:#fbe4e8}50%{background:#ffb3c1}}
+.dokum tr{transition:opacity .5s ease,translate .5s ease}
+.dokum tr:nth-child(1){transition-delay:.35s}.dokum tr:nth-child(2){transition-delay:.5s}.dokum tr:nth-child(3){transition-delay:.65s}.dokum tr:nth-child(4){transition-delay:.8s}
+.js-sahne .kontrol:not(.gorunur) .dokum tr{opacity:0;translate:-14px 0}
+/* hikâye: kelime kelime koyulaşır */
+.hikaye{--i:1}
+.hikaye .kl{opacity:clamp(.16,calc((var(--i) * 1.55 - .2 - var(--k) / var(--n)) * 5 + .16),1)}
+/* neler: grup başlığının altı çizilir */
+.grup h3::after{content:"";display:block;width:56px;height:3px;margin-top:12px;border-radius:3px;background:linear-gradient(90deg,#d0334f,#ff6b81);transform-origin:left;transition:scale .8s cubic-bezier(.2,.8,.2,1) .4s}
+.js-sahne .grup h3:not(.gorunur)::after{scale:0 1}
+/* fiyatlar: öne çıkan pakette dönen ışık kenarı */
+@property --aci{syntax:"<angle>";inherits:false;initial-value:0deg}
+#fiyatlar .paket.vurgu{position:relative;isolation:isolate;border-color:transparent;box-shadow:0 34px 80px -34px rgba(208,51,79,.75)}
+.paket.vurgu::before{content:"";position:absolute;inset:-2px;border-radius:18px;z-index:-1;
+  background:conic-gradient(from var(--aci),#ff6b81,#8f1a2e 25%,#141012 45%,#141012 60%,#d0334f 80%,#ff6b81);animation:aci-don 6s linear infinite}
+.paket.vurgu::after{content:"";position:absolute;inset:0;border-radius:16px;z-index:-1;background:var(--night)}
+@keyframes aci-don{to{--aci:360deg}}
+/* güven: simgeler çizilerek gelir */
+.guven svg *{stroke-dasharray:120;stroke-dashoffset:0;transition:stroke-dashoffset 1.5s cubic-bezier(.6,0,.2,1) calc(var(--sira,0) * 90ms + .25s)}
+.js-sahne .guven > div:not(.gorunur) svg *{stroke-dashoffset:120}
+/* son çağrı: dev gözlük çizgisi */
+.son{position:relative;overflow:hidden;isolation:isolate;--i:.5}
+.son-gozluk{position:absolute;left:50%;top:50%;width:min(1100px,130vw);translate:-50% -50%;z-index:-1;pointer-events:none;color:rgba(255,107,129,.16);
+  scale:calc(.85 + var(--i) * .3)}
+.son-gozluk path,.son-gozluk circle{stroke-dasharray:6 10;animation:yuru 14s linear infinite}
+@keyframes yuru{to{stroke-dashoffset:-320}}
+@media (max-width:980px){
+  .yol-dolum{top:0;left:-1px;width:3px;height:calc(var(--i) * 100%)}
+  .yol-gezgin{display:none}
+  .tel-bildirim{left:-14px;right:-14px}
+}
+@media (prefers-reduced-motion:reduce){.paket.vurgu::before,.son-gozluk path,.son-gozluk circle{animation:none}}
+
 /* ---------- Göz eşeli (hero) ---------- */
 .hero{padding-block:56px 72px;overflow:hidden}
 .esel{position:relative;margin:0 auto;max-width:980px;text-align:center}
@@ -361,11 +463,9 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .e6 .keskin{color:var(--magenta)}
 .esel-satir{border-bottom-color:var(--line)}
 .esel h1 .esel-satir:first-child{border-top:3px solid var(--ink)}
-@media (prefers-reduced-motion:no-preference){
-  .esel-satir .harf{animation:netles 1.1s cubic-bezier(.2,.7,.2,1) both}
-  .e1 .harf{animation-delay:.05s}.e2 .harf{animation-delay:.2s}.e3 .harf{animation-delay:.35s}
-  .e4 .harf{animation-delay:.5s}.e5 .harf{animation-delay:.65s}.e6 .harf{animation-delay:.8s}
-}
+.esel-satir .harf{animation:netles 1.1s cubic-bezier(.2,.7,.2,1) both}
+.e1 .harf{animation-delay:.05s}.e2 .harf{animation-delay:.2s}.e3 .harf{animation-delay:.35s}
+.e4 .harf{animation-delay:.5s}.e5 .harf{animation-delay:.65s}.e6 .harf{animation-delay:.8s}
 @keyframes netles{from{filter:blur(9px);opacity:.35}to{filter:blur(0);opacity:1}}
 .hero-alt{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:34px;text-align:center}
 .hero-ctas{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
@@ -713,7 +813,7 @@ h3{font-weight:750}
         <div class="fb fb3"><h2 id="film-baslik">Bir dakikada <em>OptiFlow</em>.</h2><span>Reçeteden teslime, bir gözlüğün dükkândaki yolu. Sessiz izleyin ya da sesi açın.</span></div>
       </div>
       <div class="film-kutu">
-        <div class="film-isik" aria-hidden="true"><video src="<?= e(asset('video/optiflow-kesit.mp4')) ?>" autoplay muted loop playsinline preload="auto" tabindex="-1"></video></div>
+        <div class="film-isik" aria-hidden="true"><img src="<?= e(asset('video/optiflow-kesit.webp')) ?>" width="1280" height="720" alt=""></div>
         <figure class="film-ekran" style="background-image:url('<?= e(asset('video/optiflow-kesit.webp')) ?>')">
           <video src="<?= e(asset('video/optiflow-kesit.mp4')) ?>" poster="<?= e(asset('video/optiflow-kesit.webp')) ?>" width="1280" height="720" autoplay muted loop playsinline preload="auto" aria-label="OptiFlow tanıtım videosundan kesit: sipariş listesi ve üç adımda teklif"></video>
         </figure>
@@ -723,10 +823,10 @@ h3{font-weight:750}
         <div class="film-kadran k-sol" aria-hidden="true"><div class="kd-ic"><svg viewBox="-100 -100 200 200" aria-hidden="true"><circle r="80.5" fill="none" stroke="#5c4b52" stroke-width="3"/><circle r="99" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="1"/><line x1="95.0" y1="0.0" x2="99.0" y2="0.0" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="94.9" y1="5.0" x2="98.9" y2="5.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="94.5" y1="9.9" x2="98.5" y2="10.3" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="93.8" y1="14.9" x2="97.8" y2="15.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="92.9" y1="19.8" x2="96.8" y2="20.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="91.8" y1="24.6" x2="95.6" y2="25.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="90.4" y1="29.4" x2="94.2" y2="30.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="88.7" y1="34.0" x2="92.4" y2="35.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="86.8" y1="38.6" x2="90.4" y2="40.3" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="84.6" y1="43.1" x2="88.2" y2="44.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="82.3" y1="47.5" x2="85.7" y2="49.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="79.7" y1="51.7" x2="83.0" y2="53.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="76.9" y1="55.8" x2="80.1" y2="58.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="73.8" y1="59.8" x2="76.9" y2="62.3" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="70.6" y1="63.6" x2="73.6" y2="66.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="67.2" y1="67.2" x2="70.0" y2="70.0" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="63.6" y1="70.6" x2="66.2" y2="73.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="59.8" y1="73.8" x2="62.3" y2="76.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="55.8" y1="76.9" x2="58.2" y2="80.1" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="51.7" y1="79.7" x2="53.9" y2="83.0" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="47.5" y1="82.3" x2="49.5" y2="85.7" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="43.1" y1="84.6" x2="44.9" y2="88.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="38.6" y1="86.8" x2="40.3" y2="90.4" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="34.0" y1="88.7" x2="35.5" y2="92.4" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="29.4" y1="90.4" x2="30.6" y2="94.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="24.6" y1="91.8" x2="25.6" y2="95.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="19.8" y1="92.9" x2="20.6" y2="96.8" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="14.9" y1="93.8" x2="15.5" y2="97.8" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="9.9" y1="94.5" x2="10.3" y2="98.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="5.0" y1="94.9" x2="5.2" y2="98.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="0.0" y1="95.0" x2="0.0" y2="99.0" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-5.0" y1="94.9" x2="-5.2" y2="98.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-9.9" y1="94.5" x2="-10.3" y2="98.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-14.9" y1="93.8" x2="-15.5" y2="97.8" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-19.8" y1="92.9" x2="-20.6" y2="96.8" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-24.6" y1="91.8" x2="-25.6" y2="95.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-29.4" y1="90.4" x2="-30.6" y2="94.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-34.0" y1="88.7" x2="-35.5" y2="92.4" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-38.6" y1="86.8" x2="-40.3" y2="90.4" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-43.1" y1="84.6" x2="-44.9" y2="88.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-47.5" y1="82.3" x2="-49.5" y2="85.7" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-51.7" y1="79.7" x2="-53.9" y2="83.0" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-55.8" y1="76.9" x2="-58.2" y2="80.1" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-59.8" y1="73.8" x2="-62.3" y2="76.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-63.6" y1="70.6" x2="-66.2" y2="73.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-67.2" y1="67.2" x2="-70.0" y2="70.0" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-70.6" y1="63.6" x2="-73.6" y2="66.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-73.8" y1="59.8" x2="-76.9" y2="62.3" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-76.9" y1="55.8" x2="-80.1" y2="58.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-79.7" y1="51.7" x2="-83.0" y2="53.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-82.3" y1="47.5" x2="-85.7" y2="49.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-84.6" y1="43.1" x2="-88.2" y2="44.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-86.8" y1="38.6" x2="-90.4" y2="40.3" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-88.7" y1="34.0" x2="-92.4" y2="35.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-90.4" y1="29.4" x2="-94.2" y2="30.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-91.8" y1="24.6" x2="-95.6" y2="25.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-92.9" y1="19.8" x2="-96.8" y2="20.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-93.8" y1="14.9" x2="-97.8" y2="15.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-94.5" y1="9.9" x2="-98.5" y2="10.3" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-94.9" y1="5.0" x2="-98.9" y2="5.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-95.0" y1="0.0" x2="-99.0" y2="0.0" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-94.9" y1="-5.0" x2="-98.9" y2="-5.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-94.5" y1="-9.9" x2="-98.5" y2="-10.3" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-93.8" y1="-14.9" x2="-97.8" y2="-15.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-92.9" y1="-19.8" x2="-96.8" y2="-20.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-91.8" y1="-24.6" x2="-95.6" y2="-25.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-90.4" y1="-29.4" x2="-94.2" y2="-30.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-88.7" y1="-34.0" x2="-92.4" y2="-35.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-86.8" y1="-38.6" x2="-90.4" y2="-40.3" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-84.6" y1="-43.1" x2="-88.2" y2="-44.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-82.3" y1="-47.5" x2="-85.7" y2="-49.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-79.7" y1="-51.7" x2="-83.0" y2="-53.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-76.9" y1="-55.8" x2="-80.1" y2="-58.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-73.8" y1="-59.8" x2="-76.9" y2="-62.3" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-70.6" y1="-63.6" x2="-73.6" y2="-66.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-67.2" y1="-67.2" x2="-70.0" y2="-70.0" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-63.6" y1="-70.6" x2="-66.2" y2="-73.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-59.8" y1="-73.8" x2="-62.3" y2="-76.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-55.8" y1="-76.9" x2="-58.2" y2="-80.1" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-51.7" y1="-79.7" x2="-53.9" y2="-83.0" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-47.5" y1="-82.3" x2="-49.5" y2="-85.7" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-43.1" y1="-84.6" x2="-44.9" y2="-88.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-38.6" y1="-86.8" x2="-40.3" y2="-90.4" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-34.0" y1="-88.7" x2="-35.5" y2="-92.4" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-29.4" y1="-90.4" x2="-30.6" y2="-94.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-24.6" y1="-91.8" x2="-25.6" y2="-95.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-19.8" y1="-92.9" x2="-20.6" y2="-96.8" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-14.9" y1="-93.8" x2="-15.5" y2="-97.8" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-9.9" y1="-94.5" x2="-10.3" y2="-98.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-5.0" y1="-94.9" x2="-5.2" y2="-98.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="-0.0" y1="-95.0" x2="-0.0" y2="-99.0" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="5.0" y1="-94.9" x2="5.2" y2="-98.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="9.9" y1="-94.5" x2="10.3" y2="-98.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="14.9" y1="-93.8" x2="15.5" y2="-97.8" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="19.8" y1="-92.9" x2="20.6" y2="-96.8" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="24.6" y1="-91.8" x2="25.6" y2="-95.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="29.4" y1="-90.4" x2="30.6" y2="-94.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="34.0" y1="-88.7" x2="35.5" y2="-92.4" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="38.6" y1="-86.8" x2="40.3" y2="-90.4" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="43.1" y1="-84.6" x2="44.9" y2="-88.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="47.5" y1="-82.3" x2="49.5" y2="-85.7" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="51.7" y1="-79.7" x2="53.9" y2="-83.0" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="55.8" y1="-76.9" x2="58.2" y2="-80.1" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="59.8" y1="-73.8" x2="62.3" y2="-76.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="63.6" y1="-70.6" x2="66.2" y2="-73.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="67.2" y1="-67.2" x2="70.0" y2="-70.0" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="70.6" y1="-63.6" x2="73.6" y2="-66.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="73.8" y1="-59.8" x2="76.9" y2="-62.3" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="76.9" y1="-55.8" x2="80.1" y2="-58.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="79.7" y1="-51.7" x2="83.0" y2="-53.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="82.3" y1="-47.5" x2="85.7" y2="-49.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="84.6" y1="-43.1" x2="88.2" y2="-44.9" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="86.8" y1="-38.6" x2="90.4" y2="-40.3" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="88.7" y1="-34.0" x2="92.4" y2="-35.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="90.4" y1="-29.4" x2="94.2" y2="-30.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="91.8" y1="-24.6" x2="95.6" y2="-25.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="92.9" y1="-19.8" x2="96.8" y2="-20.6" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="93.8" y1="-14.9" x2="97.8" y2="-15.5" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="94.5" y1="-9.9" x2="98.5" y2="-10.3" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="94.9" y1="-5.0" x2="98.9" y2="-5.2" stroke="currentColor" stroke-opacity=".22" stroke-width=".8"/><line x1="83.0" y1="0.0" x2="91.0" y2="0.0" stroke="currentColor" stroke-opacity="0.85" stroke-width="1.2"/><line x1="82.5" y1="8.7" x2="86.5" y2="9.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="81.2" y1="17.3" x2="85.1" y2="18.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="78.9" y1="25.6" x2="82.7" y2="26.9" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="75.8" y1="33.8" x2="79.5" y2="35.4" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="71.9" y1="41.5" x2="78.8" y2="45.5" stroke="currentColor" stroke-opacity="0.85" stroke-width="1.2"/><line x1="67.1" y1="48.8" x2="70.4" y2="51.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="61.7" y1="55.5" x2="64.7" y2="58.2" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="55.5" y1="61.7" x2="58.2" y2="64.7" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="48.8" y1="67.1" x2="51.1" y2="70.4" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="41.5" y1="71.9" x2="45.5" y2="78.8" stroke="currentColor" stroke-opacity="0.85" stroke-width="1.2"/><line x1="33.8" y1="75.8" x2="35.4" y2="79.5" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="25.6" y1="78.9" x2="26.9" y2="82.7" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="17.3" y1="81.2" x2="18.1" y2="85.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="8.7" y1="82.5" x2="9.1" y2="86.5" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="0.0" y1="83.0" x2="0.0" y2="91.0" stroke="currentColor" stroke-opacity="0.85" stroke-width="1.2"/><line x1="-8.7" y1="82.5" x2="-9.1" y2="86.5" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-17.3" y1="81.2" x2="-18.1" y2="85.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-25.6" y1="78.9" x2="-26.9" y2="82.7" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-33.8" y1="75.8" x2="-35.4" y2="79.5" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-41.5" y1="71.9" x2="-45.5" y2="78.8" stroke="currentColor" stroke-opacity="0.85" stroke-width="1.2"/><line x1="-48.8" y1="67.1" x2="-51.1" y2="70.4" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-55.5" y1="61.7" x2="-58.2" y2="64.7" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-61.7" y1="55.5" x2="-64.7" y2="58.2" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-67.1" y1="48.8" x2="-70.4" y2="51.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-71.9" y1="41.5" x2="-78.8" y2="45.5" stroke="currentColor" stroke-opacity="0.85" stroke-width="1.2"/><line x1="-75.8" y1="33.8" x2="-79.5" y2="35.4" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-78.9" y1="25.6" x2="-82.7" y2="26.9" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-81.2" y1="17.3" x2="-85.1" y2="18.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-82.5" y1="8.7" x2="-86.5" y2="9.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-83.0" y1="0.0" x2="-91.0" y2="0.0" stroke="currentColor" stroke-opacity="0.85" stroke-width="1.2"/><line x1="-82.5" y1="-8.7" x2="-86.5" y2="-9.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-81.2" y1="-17.3" x2="-85.1" y2="-18.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-78.9" y1="-25.6" x2="-82.7" y2="-26.9" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-75.8" y1="-33.8" x2="-79.5" y2="-35.4" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-71.9" y1="-41.5" x2="-78.8" y2="-45.5" stroke="currentColor" stroke-opacity="0.85" stroke-width="1.2"/><line x1="-67.1" y1="-48.8" x2="-70.4" y2="-51.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-61.7" y1="-55.5" x2="-64.7" y2="-58.2" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-55.5" y1="-61.7" x2="-58.2" y2="-64.7" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-48.8" y1="-67.1" x2="-51.1" y2="-70.4" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-41.5" y1="-71.9" x2="-45.5" y2="-78.8" stroke="currentColor" stroke-opacity="0.85" stroke-width="1.2"/><line x1="-33.8" y1="-75.8" x2="-35.4" y2="-79.5" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-25.6" y1="-78.9" x2="-26.9" y2="-82.7" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-17.3" y1="-81.2" x2="-18.1" y2="-85.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-8.7" y1="-82.5" x2="-9.1" y2="-86.5" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="-0.0" y1="-83.0" x2="-0.0" y2="-91.0" stroke="currentColor" stroke-opacity="0.85" stroke-width="1.2"/><line x1="8.7" y1="-82.5" x2="9.1" y2="-86.5" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="17.3" y1="-81.2" x2="18.1" y2="-85.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="25.6" y1="-78.9" x2="26.9" y2="-82.7" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="33.8" y1="-75.8" x2="35.4" y2="-79.5" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="41.5" y1="-71.9" x2="45.5" y2="-78.8" stroke="currentColor" stroke-opacity="0.85" stroke-width="1.2"/><line x1="48.8" y1="-67.1" x2="51.1" y2="-70.4" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="55.5" y1="-61.7" x2="58.2" y2="-64.7" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="61.7" y1="-55.5" x2="64.7" y2="-58.2" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="67.1" y1="-48.8" x2="70.4" y2="-51.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="71.9" y1="-41.5" x2="78.8" y2="-45.5" stroke="currentColor" stroke-opacity="0.85" stroke-width="1.2"/><line x1="75.8" y1="-33.8" x2="79.5" y2="-35.4" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="78.9" y1="-25.6" x2="82.7" y2="-26.9" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="81.2" y1="-17.3" x2="85.1" y2="-18.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><line x1="82.5" y1="-8.7" x2="86.5" y2="-9.1" stroke="currentColor" stroke-opacity="0.45" stroke-width="0.7"/><text x="22.9" y="-83.3" text-anchor="middle">0</text><text x="62.6" y="-60.4" text-anchor="middle">+1</text><text x="85.5" y="-20.7" text-anchor="middle">+2</text><text x="85.5" y="25.1" text-anchor="middle">+3</text><text x="62.6" y="64.8" text-anchor="middle">+4</text><text x="22.9" y="87.7" text-anchor="middle">+5</text><text x="-22.9" y="87.7" text-anchor="middle">±6</text><text x="-62.6" y="64.8" text-anchor="middle">−5</text><text x="-85.5" y="25.1" text-anchor="middle">−4</text><text x="-85.5" y="-20.7" text-anchor="middle">−3</text><text x="-62.6" y="-60.4" text-anchor="middle">−2</text><text x="-22.9" y="-83.3" text-anchor="middle">−1</text></svg></div></div>
         <span class="film-lcd l-sag" aria-hidden="true">SAĞ <b data-diyopter-sag>NET</b></span>
         <span class="film-lcd l-sol" aria-hidden="true">SOL <b data-diyopter-sol>NET</b></span>
-            <figure class="film-kart k1"><img src="<?= e(asset('onizleme/siparis.webp')) ?>" width="1140" height="800" loading="lazy" alt=""><figcaption>Sipariş listesi</figcaption></figure>
-            <figure class="film-kart k2"><img src="<?= e(asset('onizleme/atolye.webp')) ?>" width="1280" height="800" loading="lazy" alt=""><figcaption>Atölye panosu</figcaption></figure>
-            <figure class="film-kart k3"><img src="<?= e(asset('onizleme/sgk.webp')) ?>" width="1280" height="800" loading="lazy" alt=""><figcaption>SGK faturası</figcaption></figure>
-            <figure class="film-kart k4"><img src="<?= e(asset('onizleme/telefon.webp')) ?>" width="780" height="1560" loading="lazy" alt=""><figcaption>Telefonda takip</figcaption></figure>
+            <figure class="film-kart k1"><img src="<?= e(asset('onizleme/siparis.webp')) ?>" width="1140" height="800" loading="lazy" decoding="async" alt=""><figcaption>Sipariş listesi</figcaption></figure>
+            <figure class="film-kart k2"><img src="<?= e(asset('onizleme/atolye.webp')) ?>" width="1280" height="800" loading="lazy" decoding="async" alt=""><figcaption>Atölye panosu</figcaption></figure>
+            <figure class="film-kart k3"><img src="<?= e(asset('onizleme/sgk.webp')) ?>" width="1280" height="800" loading="lazy" decoding="async" alt=""><figcaption>SGK faturası</figcaption></figure>
+            <figure class="film-kart k4"><img src="<?= e(asset('onizleme/telefon.webp')) ?>" width="780" height="1560" loading="lazy" decoding="async" alt=""><figcaption>Telefonda takip</figcaption></figure>
       </div>
       <div class="film-son">
         <a class="film-oynat" href="<?= e(asset('video/optiflow-tanitim.mp4')) ?>" target="_blank" rel="noopener" data-film-ac><i><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg></i>Sesli izle · 57 sn</a>
@@ -759,10 +859,10 @@ h3{font-weight:750}
           <div class="sahne">
             <figure class="tarayici">
               <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">optiflow.com.tr</span></div>
-              <img src="<?= e(asset('onizleme/liste.webp')) ?>" width="1280" height="800" loading="lazy" alt="OptiFlow Lite, tarayıcıda sipariş listesi ve günün özeti">
+              <img src="<?= e(asset('onizleme/liste.webp')) ?>" width="1280" height="800" loading="lazy" decoding="async" alt="OptiFlow Lite, tarayıcıda sipariş listesi ve günün özeti">
             </figure>
             <figure class="cep">
-              <img src="<?= e(asset('onizleme/telefon.webp')) ?>" width="390" height="780" loading="lazy" alt="OptiFlow Lite, telefonda siparişler ekranı">
+              <img src="<?= e(asset('onizleme/telefon.webp')) ?>" width="390" height="780" loading="lazy" decoding="async" alt="OptiFlow Lite, telefonda siparişler ekranı">
             </figure>
           </div>
         </article>
@@ -794,7 +894,7 @@ h3{font-weight:750}
                 </div>
                 <div class="ok">Aktar</div>
               </div>
-              <img src="<?= e(asset('onizleme/siparis.webp')) ?>" width="1140" height="800" loading="lazy" alt="OptiFlow sipariş ekranı: aktarılan reçetenin siparişi">
+              <img src="<?= e(asset('onizleme/siparis.webp')) ?>" width="1140" height="800" loading="lazy" decoding="async" alt="OptiFlow sipariş ekranı: aktarılan reçetenin siparişi">
             </div>
           </figure>
         </article>
@@ -853,11 +953,15 @@ h3{font-weight:750}
         <h2>Bir gözlüğün dükkândaki yolu, baştan sona tek ekranda.</h2>
         <p class="lead">Hiçbir adımda değer yeniden yazılmaz, hesap elle yapılmaz.</p>
       </div>
-      <ol class="yol">
-        <?php foreach ($yol as [$b, $t]): ?>
-          <li><h3><?= pz_e($b) ?></h3><p><?= pz_e($t) ?></p></li>
+      <div class="yol-kap">
+      <span class="yol-dolum" aria-hidden="true"></span>
+      <span class="yol-gezgin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="14" r="3.6"/><circle cx="17.5" cy="14" r="3.6"/><path d="M10.1 14c1.2-1 2.6-1 3.8 0M2.9 14 4.5 8.5M21.1 14 19.5 8.5"/></svg></span>
+      <ol class="yol" style="--n:<?= count($yol) ?>">
+        <?php foreach ($yol as $k => [$b, $t]): ?>
+          <li style="--k:<?= (int) $k ?>"><h3><?= pz_e($b) ?></h3><p><?= pz_e($t) ?></p></li>
         <?php endforeach; ?>
       </ol>
+      </div>
     </div>
   </section>
 
@@ -871,11 +975,12 @@ h3{font-weight:750}
         <div>
           <figure class="tarayici">
             <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">optiflow.com.tr/workshop.php</span></div>
-            <img src="<?= e(asset('onizleme/atolye.webp')) ?>" width="1280" height="800" loading="lazy" alt="Atölye panosu: cam bekliyor, montajda, kalite kontrol ve hazır sütunları">
+            <img src="<?= e(asset('onizleme/atolye.webp')) ?>" width="1280" height="800" loading="lazy" decoding="async" alt="Atölye panosu: cam bekliyor, montajda, kalite kontrol ve hazır sütunları">
           </figure>
           <p class="alt-not">Duvardaki atölye ekranında da aynı liste döner; fiyat, telefon ve reçete görünmez.</p>
         </div>
         <div class="telefon" role="img" aria-label="Müşterinin telefonunda sipariş durumu ve garanti bilgisi örneği">
+          <div class="tel-bildirim" aria-hidden="true"><i><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.3.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.4z"/></svg></i><span><b>Örnek Optik · WhatsApp</b>Gözlüğünüz hazır, teslim alabilirsiniz.</span></div>
           <div class="tel-ust"><i></i>Örnek Optik</div>
           <div class="tel-kart">
             <small>#01270</small>
@@ -901,22 +1006,22 @@ h3{font-weight:750}
     <div class="serit" tabindex="0" aria-label="Uygulama ekranları">
       <figure class="tarayici">
         <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">Sipariş #00001</span></div>
-        <img src="<?= e(asset('onizleme/siparis.webp')) ?>" width="1140" height="800" loading="lazy" alt="Sipariş ekranı: müşteri, aşamalar, durum değiştirme">
+        <img src="<?= e(asset('onizleme/siparis.webp')) ?>" width="1140" height="800" loading="lazy" decoding="async" alt="Sipariş ekranı: müşteri, aşamalar, durum değiştirme">
         <figcaption><b>Sipariş</b> Aşamalar, kim yaptı, reçete ve camlar, WhatsApp ve fiş tek ekranda.</figcaption>
       </figure>
       <figure class="tarayici">
         <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">SGK ay sonu faturası</span></div>
-        <img src="<?= e(asset('onizleme/sgk.webp')) ?>" width="1280" height="800" loading="lazy" alt="SGK ay sonu faturası ekranı">
+        <img src="<?= e(asset('onizleme/sgk.webp')) ?>" width="1280" height="800" loading="lazy" decoding="async" alt="SGK ay sonu faturası ekranı">
         <figcaption><b>SGK ay sonu</b> Faturalanacak reçeteler, Medula'ya işlenmemişler ve döküm karşılaştırması.</figcaption>
       </figure>
       <figure class="tarayici">
         <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">Garantiler</span></div>
-        <img src="<?= e(asset('onizleme/garanti.webp')) ?>" width="1280" height="800" loading="lazy" alt="Garantiler listesi">
+        <img src="<?= e(asset('onizleme/garanti.webp')) ?>" width="1280" height="800" loading="lazy" decoding="async" alt="Garantiler listesi">
         <figcaption><b>Garantiler</b> Geçerli, bitecek ve talep açılmış garantiler; karekodlu kart.</figcaption>
       </figure>
       <figure class="tarayici">
         <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">Siparişler</span></div>
-        <img src="<?= e(asset('onizleme/liste.webp')) ?>" width="1280" height="800" loading="lazy" alt="Siparişler ana ekranı">
+        <img src="<?= e(asset('onizleme/liste.webp')) ?>" width="1280" height="800" loading="lazy" decoding="async" alt="Siparişler ana ekranı">
         <figcaption><b>Günün özeti</b> Bugün teslim sözü verilen, geciken, haber verilecek ve tahsilat bekleyenler.</figcaption>
       </figure>
     </div>
@@ -985,7 +1090,7 @@ h3{font-weight:750}
 
   <div class="hikaye">
     <div class="wrap">
-      <p class="buyuk">OptiFlow bir yazılım ofisinde değil, her gün reçete girilen, cam beklenen ve "gözlüğüm hazır mı?" diye aranan bir optik atölyesinde doğdu.</p>
+      <p class="buyuk" data-kelime>OptiFlow bir yazılım ofisinde değil, her gün reçete girilen, cam beklenen ve "gözlüğüm hazır mı?" diye aranan bir optik atölyesinde doğdu.</p>
       <p class="ek">Medula aktarımından kasa sayımına kadar her özellik, o tezgâhta yaşanmış bir soruna verilmiş cevaptır. Şimdi aynı sistemi sizin mağazanız için açıyoruz.</p>
     </div>
   </div>
@@ -1057,6 +1162,7 @@ h3{font-weight:750}
 </main>
 
 <div class="son on-night">
+  <svg class="son-gozluk" viewBox="0 0 400 160" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="110" cy="92" r="62"/><circle cx="290" cy="92" r="62"/><path d="M172 86c16-14 40-14 56 0M48 86 26 40M352 86l22-46"/></svg>
   <div class="wrap">
     <h2>Yarın sabah dükkânı OptiFlow ile açın.</h2>
     <p><?= $p['kurulum_destegi'] ? 'Başvurunuzu bırakın; mağazanızı açıp sizi arayalım, ilk ayarları birlikte yapalım. Kredi kartı istemiyoruz.' : 'Mağazanızı birkaç dakikada kurun; kredi kartı istemiyoruz.' ?></p>
@@ -1108,7 +1214,7 @@ h3{font-weight:750}
   <a class="btn btn-line btn-wa" href="<?= pz_e($iletisimUrl) ?>" target="_blank" rel="noopener"><?= $wa ? $ico['wa'] . 'WhatsApp' : 'Bize ulaşın' ?></a>
 </div>
 <?php endif; ?>
-<script src="<?= e(asset('karsilama-film.js')) ?>" defer></script>
+<script src="<?= e(asset('karsilama-sahne.js')) ?>" defer></script>
 </body>
 </html><?php
     exit;

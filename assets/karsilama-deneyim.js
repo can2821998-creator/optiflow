@@ -62,19 +62,16 @@
       if (!goster) return;
       not.textContent = '';
       if (ad) {
-        not.appendChild(document.createTextNode('Tamam. Aşağıdaki ekranlarda artık '));
+        not.appendChild(document.createTextNode('Tamam. Aşağı kaydırdıkça ekranlarda '));
         not.appendChild(yap('b', '', ad));
-        not.appendChild(document.createTextNode(' yazıyor; kayıt formu da bu adla hazır.'));
+        not.appendChild(document.createTextNode(' göreceksiniz; kayıt formu da bu adla hazır.'));
       }
     }
     kutu.addEventListener('input', function () { window.clearTimeout(zaman); zaman = window.setTimeout(function () { onayla(false); }, 250); });
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       onayla(true);
-      var hedef = document.querySelector('#dene') || document.querySelector('#surumler');
-      if (temizAd(kutu.value) && hedef) {
-        window.setTimeout(function () { hedef.scrollIntoView({ behavior: azHareket ? 'auto' : 'smooth', block: 'start' }); }, 700);
-      }
+      kutu.blur();   // 4.28.2: sayfa kaydırılmaz; ziyaretçi kendi hızında iner (telefonda klavye kapanır)
     });
   }
 

@@ -1,6 +1,10 @@
 OPTIFLOW
-Release: 4.28.1 (2026-10-08)
+Release: 4.28.2 (2026-10-08)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.28.2 (karşılama: dükkân adı sonrası kaydırma yok)
+  - Dükkân adı yazılıp "Göster"e basılınca sayfa artık simülatöre atlamıyor; ziyaretçi kendi hızında iner.
+    Not: "Aşağı kaydırdıkça ekranlarda <ad> göreceksiniz"; telefonda klavye kapanır.
 
 DEĞİŞİKLİK NOTLARI — 4.28.1 (karşılama: üst menü)
   - 981–1300 px arasında menü bağlantıları iki satıra kırılıyordu. Artık kırılmaz; daraldıkça boşluk azalır, 1200 altında

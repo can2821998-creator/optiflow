@@ -1,6 +1,23 @@
 OPTIFLOW
-Release: 4.26.1 (2026-10-08)
+Release: 4.27.0 (2026-10-08)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.27.0 (karşılama: imza anları — tekdüze giriş efektleri yerine)
+  - Kök hikâyesi (#koken, tanıtım videosunun hemen ardında, yapışkan sahne): kod editöründe "OptiFlow bir yazılım
+    ofisinde" yazılır, kırmızı kalemle çizilir, "değil," damgası vurulur; sahne bordo atölye ışığına döner, lensmetre
+    nişangâhı çizilir, "…bir optik atölyesinde doğdu." kelime kelime netleşir; imza: Poyraz Optik atölyesi.
+    Sayfanın sonlarındaki eski hikâye bandı kaldırıldı.
+  - "1 mi, 2 mi?" muayenesi (#fark): karşılaştırma tablosu foropter oyununa döndü; ziyaretçi her iş için net merceği
+    seçer (bulanığı seçerse mercek sallanır), bitince reçete kartı + "30 gün ücretsiz deneyin". Tablo DOM'da duruyor
+    (arama motoru, ekran okuyucu) ve tek tuşla görünür.
+  - Büyüteç: ekran görüntülerinde (galeri, atölye, Lite) nabız atan noktalar; fareyle mercek gezer, noktaya yaklaşınca
+    açıklama balonu; dokunmatikte noktaya dokunulur. Noktalar karsilama.php $buyutecNot (görüntüye oranla x, y).
+  - Atölye hareketleri: fiyat kartları mercek gibi bilenerek açılır + kenarda kıvılcım; SGK dökümü termal yazıcıdan
+    satır satır basılır; sipariş yolunda iş emri fişi ilerler, geçilen adıma "TAMAM" damgası.
+  - Kapanış göz eşeli: "YARIN / SABAH / DÜKKÂNI / OPTIFLOW İLE / AÇIN." kaydırdıkça yukarıdan aşağı netleşir;
+    1,0 satırı kayıt düğmesi.
+  - assets/karsilama-imza.js (yeni, CSP self). JS yoksa hepsi son hâlinde, tablo görünür. Başsız Chrome ile masaüstü
+    (1366) ve telefon (375) kaydırma testleri; yatay taşma yok.
 
 DEĞİŞİKLİK NOTLARI — 4.26.1 (karşılama: yatay taşma düzeltmeleri)
   - ~800 px genişlikte "Lite ve Pro" kartları giriş animasyonunda (3B yatık, perspektif) sayfadan taşıp yatay kaydırma

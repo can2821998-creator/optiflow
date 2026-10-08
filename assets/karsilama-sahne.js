@@ -13,8 +13,8 @@
 
   /* ---------- 1) giriş efektleri ---------- */
   var GIRIS = [
-    ['.bas h2, #ay-sonu h2, .son h2, .rehber h3', 'netles'],
-    ['.bas .lead, #ay-sonu .lead, .son p, .alt-not, .hikaye .ek', 'yukari'],
+    ['.bas h2, #ay-sonu h2, .rehber h3', 'netles'],
+    ['.bas .lead, #ay-sonu .lead, .son p, .alt-not', 'yukari'],
     ['.surum', 'dondur'],
     ['.fark tbody tr', 'satir'],
     ['.yol li', 'yukari'],
@@ -22,14 +22,13 @@
     ['.telefon', 'olcek'],
     ['.serit figure', 'dondur'],
     ['.ay-liste li', 'soldan'],
-    ['.kontrol', 'olcek'],
+    ['.kontrol', 'yazdir'],   // 4.27.0 termal yazıcıdan basılır
     ['.grup h3', 'netles'],
     ['.grup dl > div', 'yukari'],
-    ['.paket', 'olcek'],
+    ['.paket', 'bileme'],    // 4.27.0 mercek gibi bilenerek açılır
     ['.dahil span', 'yukari'],
     ['.guven > div', 'yukari'],
     ['.sss details', 'yukari'],
-    ['.son .hero-ctas', 'olcek'],
     ['.rehber', 'yukari'],
   ];
   var girenler = [];
@@ -91,7 +90,7 @@
   });
 
   /* ---------- 2) kaydırma ilerlemesi ---------- */
-  var ILERLE = ['#surumler', '#yol', '#icerde', '#galeri', '.hikaye', '.son', '#fiyatlar'];
+  var ILERLE = ['#surumler', '#yol', '#icerde', '#galeri', '.son', '#fiyatlar'];
   var gorunenler = new Set();
   var izlenen = [];
   ILERLE.forEach(function (s) { var el = document.querySelector(s); if (el) { el.setAttribute('data-ilerle', ''); izlenen.push(el); } });

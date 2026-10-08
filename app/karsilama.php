@@ -12,7 +12,8 @@ require_once __DIR__ . '/indir.php';
  * Tenant/veritabanı bağlamı yoktur (oturumu olmayan herkes görür) — DB fonksiyonu çağırmaz.
  * İletişim, fiyat ve kampanya bilgileri app/pazarlama.php'den gelir; boş alanlar sayfada görünmez.
  * CSP 'script-src self': satır içi JavaScript YOK (SSS <details> ile çalışır, netleşme CSS animasyonudur).
- * Tek dış betik: assets/karsilama-sahne.js (giriş efektleri, kaydırmaya bağlı bölümler, foropter sahnesi, sesli izleme).
+ * Dış betikler: assets/karsilama-sahne.js (giriş efektleri, kaydırmaya bağlı bölümler, foropter sahnesi, sesli izleme),
+ * assets/karsilama-imza.js (4.27.0: kök hikâyesi, "1 mi 2 mi?" muayenesi, büyüteç, bileme / yazıcı).
  */
 function render_karsilama(): void
 {
@@ -111,6 +112,17 @@ function render_karsilama(): void
     ];
 
     // Neler yapar: işe göre gruplar
+    // 4.27.0 büyüteç: ekran görüntüsündeki noktalar [x, y (görüntüye oranla 0–1), açıklama]. Görüntü değişirse güncelleyin.
+    $buyutecNot = [
+        'siparis' => [[.36, .29, "Tek tuşla WhatsApp: \"Gözlüğünüz hazır\" mesajı yazılı gelir."], [.61, .45, 'Siparişin beş aşaması; her adımı kimin ilerlettiği kayıtlı.'], [.71, .29, 'Fatura taslağı siparişten hazır çıkar.'], [.62, .71, 'Her değişiklikte kimin yaptığı fişe de yazılır.']],
+        'sgk'     => [[.33, .46, 'Ayın faturalanacak reçeteleri ve tutarı kendiliğinden toplanır.'], [.51, .46, "Medula'ya işlemeyi unuttuğunuz SGK'lı siparişler yakalanır."], [.43, .81, 'Medula dökümünü yükleyin; adetler e-reçete numarasıyla karşılaştırılır.']],
+        'garanti' => [[.30, .56, 'Her garantinin karekodlu kartı var; müşteri kalan süreyi telefonundan görür.'], [.77, .57, 'Bitmesine az kalan garantiler sarıyla uyarır.'], [.43, .41, 'Bitecek, talep açılmış, tedarikçide: tek tıkla süzün.']],
+        'liste'   => [[.52, .63, 'Teslimi geciken siparişler kendiliğinden öne çıkar.'], [.69, .64, 'Hazır olup haber verilmemiş gözlük unutulmaz.'], [.86, .65, 'Kimden ne kadar alacağınız tek bakışta.'], [.61, .34, 'Ayın takım hedefi: personel birlikte ilerler.']],
+        'atolye'  => [[.59, .84, 'Cam bekliyor → montaj → kontrol → hazır. Sürükleyip bırakın.'], [.50, .49, 'Günün kasası anlık.'], [.68, .29, 'Duvardaki ekranda atölye listesi; kişisel veri göstermez.']],
+    ];
+    $buyutec = static fn (string $ad): string => isset($buyutecNot[$ad])
+        ? ' data-buyutec="' . pz_e((string) json_encode($buyutecNot[$ad], JSON_UNESCAPED_UNICODE)) . '"' : '';
+
     $gruplar = [
         ['SGK ve mevzuat', [
             ['Medula aktarımı', 'Reçete OptiFlow Pro ile tek tuşla siparişe gelir; elle yazım yok.'],
@@ -441,8 +453,6 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .dokum tr:nth-child(1){transition-delay:.35s}.dokum tr:nth-child(2){transition-delay:.5s}.dokum tr:nth-child(3){transition-delay:.65s}.dokum tr:nth-child(4){transition-delay:.8s}
 .js-sahne .kontrol:not(.gorunur) .dokum tr{opacity:0;translate:-14px 0}
 /* hikâye: kelime kelime koyulaşır */
-.hikaye{--i:1}
-.hikaye .kl{opacity:clamp(.16,calc((var(--i) * 1.55 - .2 - var(--k) / var(--n)) * 5 + .16),1)}
 /* neler: grup başlığının altı çizilir */
 .grup h3::after{content:"";display:block;width:56px;height:3px;margin-top:12px;border-radius:3px;background:linear-gradient(90deg,#d0334f,#ff6b81);transform-origin:left;transition:scale .8s cubic-bezier(.2,.8,.2,1) .4s}
 .js-sahne .grup h3:not(.gorunur)::after{scale:0 1}
@@ -468,6 +478,190 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
   .tel-bildirim{left:-14px;right:-14px}
 }
 @media (prefers-reduced-motion:reduce){.paket.vurgu::before,.son-gozluk path,.son-gozluk circle{animation:none}}
+
+/* ========== 4.27.0 İMZA ANLARI (assets/karsilama-imza.js) ==========
+   Kök hikâyesi, "1 mi 2 mi?" muayenesi, büyüteç, bileme, termal yazıcı, iş emri + damga, kapanış göz eşeli.
+   JS yoksa: --p ve --i varsayılanları son hâli gösterir, oyun/büyüteç kurulmaz, tablo görünür. */
+
+/* --- kök hikâyesi: kod editörü → kırmızı kalem → atölye --- */
+.koken{--p:1;position:relative;background:var(--night);color:#fff}
+.koken-sahne{position:relative;display:grid;place-items:center;padding-block:96px;overflow:hidden;isolation:isolate}
+.js-sahne .koken{height:300vh}
+.js-sahne .koken-sahne{position:sticky;top:0;height:100vh;height:100svh;padding-block:72px 24px}
+.koken-sahne::before{content:"";position:absolute;inset:0;z-index:-1;opacity:clamp(0,calc((var(--p) - .36) / .16),1);
+  background:radial-gradient(70% 60% at 50% 58%,rgba(208,51,79,.42),rgba(143,26,46,.16) 45%,transparent 75%),radial-gradient(50% 30% at 50% 100%,rgba(255,180,120,.14),transparent)}
+.koken-nisan{position:absolute;left:50%;top:50%;width:min(88vmin,760px);translate:-50% -50%;z-index:-1;color:rgba(255,107,129,.3);
+  rotate:calc(var(--p) * 30deg);--ciz:clamp(0,calc((var(--p) - .38) / .24),1)}
+.koken-nisan *{stroke-dasharray:1;stroke-dashoffset:calc(1 - var(--ciz))}
+.koken-ic{display:grid;justify-items:center;text-align:center;gap:clamp(18px,3.4vh,30px)}
+.koken-editor{width:min(640px,100%);border-radius:14px;background:#1d1719;border:1px solid rgba(255,255,255,.1);box-shadow:0 40px 80px -40px rgba(0,0,0,.85);text-align:left;
+  --soluk:clamp(0,calc((var(--p) - .44) / .16),1);opacity:calc(1 - var(--soluk) * .5);translate:0 calc(var(--soluk) * -14px);scale:calc(1 - var(--soluk) * .12)}
+.koken-sekme{display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.08);font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.45)}
+.koken-sekme i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.18)}
+.koken-sekme span{margin-left:8px}
+.koken-kod{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:20px 20px 24px;font-family:var(--mono);font-size:clamp(1rem,2.5vw,1.65rem);color:#e9e2e4}
+.koken-no{color:rgba(255,255,255,.28);font-size:.65em}
+.koken-yazi{position:relative;--yaz:clamp(0,calc(var(--p) / .2),1)}
+.koken-yaz{display:inline-block;white-space:nowrap;clip-path:inset(0 calc((1 - var(--yaz)) * 100%) -.4em 0)}
+.koken-imlec{position:absolute;top:.08em;bottom:.04em;left:calc(var(--yaz) * 100%);width:.5em;margin-left:3px;opacity:calc(1 - clamp(0,calc((var(--p) - .3) / .04),1))}
+.koken-imlec::after{content:"";position:absolute;inset:0;background:#ff6b81;animation:imlec 1s steps(1) infinite}
+@keyframes imlec{50%{opacity:0}}
+.koken-cizik{position:relative;color:rgb(233 226 228 / calc(1 - clamp(0,calc((var(--p) - .26) / .06),1) * .55))}
+.koken-cizik::after{content:"";position:absolute;left:-4%;right:-4%;top:50%;height:.14em;border-radius:.1em;background:#ff3d5e;box-shadow:0 0 14px rgba(255,61,94,.75);
+  transform-origin:left center;scale:clamp(0,calc((var(--p) - .22) / .09),1) 1;rotate:-2.5deg}
+.koken-degil{display:inline-block;padding:.04em .42em .08em;border:2px solid #ff3d5e;border-radius:7px;color:#ff6b81;font-family:var(--serif);font-weight:800;rotate:-7deg;
+  --d:clamp(0,calc((var(--p) - .32) / .05),1);opacity:var(--d);scale:calc(2.3 - var(--d) * 1.3)}
+.koken-baslik{margin:0 auto;max-width:23ch;font-family:var(--serif);font-weight:800;font-size:clamp(1.6rem,4.2vw,3.3rem);line-height:1.12;letter-spacing:-.02em;color:#fff;text-wrap:balance}
+.koken-baslik .kl{display:inline-block;--o:clamp(.05,calc(((var(--p) - .48) / .28 * 1.25 - var(--k) / var(--n)) * 6 + .05),1);
+  opacity:var(--o);translate:0 calc((1 - var(--o)) * 16px);filter:blur(calc((1 - var(--o)) * 5px))}
+.koken-baslik .kl.vurgu{color:#ff6b81}
+.koken-ek{max-width:56ch;margin:0 auto;color:var(--night-ink);--e:clamp(0,calc((var(--p) - .8) / .08),1);opacity:var(--e);translate:0 calc((1 - var(--e)) * 14px)}
+.koken-imza{margin:0;display:block;font-family:var(--serif);font-weight:800;font-size:1.15rem;color:#fff;--e:clamp(0,calc((var(--p) - .87) / .08),1);opacity:var(--e);scale:calc(.9 + var(--e) * .1)}
+.koken-imza span{color:#ff6b81}
+.koken-imza small{display:block;margin-top:4px;font-family:var(--mono);font-weight:500;font-size:11.5px;letter-spacing:.12em;color:rgba(255,255,255,.5);text-transform:uppercase}
+@media (max-width:640px){.js-sahne .koken{height:260vh}.koken-kod{padding:16px 14px 20px}.koken-ek{font-size:15px}}
+@media (prefers-reduced-motion:reduce){.koken-imlec::after{animation:none}}
+
+/* --- "1 mi, 2 mi?" muayenesi --- */
+.muayene-acik .tablo-kap,.muayene [hidden]{display:none}
+.muayene-acik.tablo-goster .tablo-kap{display:block;margin-top:28px}
+.muayene{display:grid;justify-items:center;gap:16px;padding:34px 20px 28px;border-radius:24px;color:#fff;text-align:center;
+  background:radial-gradient(60% 80% at 50% 0%,rgba(208,51,79,.3),transparent 70%),var(--night)}
+.muayene-ust{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:6px 18px}
+.muayene-soru{margin:0;font-family:var(--serif);font-weight:800;font-size:clamp(1.4rem,3vw,2rem)}
+.muayene-soru b{display:inline-grid;place-items:center;width:1.45em;height:1.45em;border-radius:50%;border:2px solid #ff6b81;color:#ff6b81;font-size:.8em;vertical-align:.08em}
+.muayene-sayac{font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:rgba(255,255,255,.55);font-variant-numeric:tabular-nums}
+.muayene-is{margin:0;font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#ff6b81}
+.foropter{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;width:min(760px,100%);padding:22px clamp(14px,3vw,30px) 18px;border-radius:120px;
+  background:linear-gradient(180deg,#2a2124,#120e10);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 30px 60px -30px rgba(0,0,0,.9)}
+.foropter-kopru{width:clamp(14px,4vw,46px);height:14px;border-radius:7px;background:linear-gradient(180deg,#3a2f33,#1b1517);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.mercek{appearance:none;border:0;background:none;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;display:grid;justify-items:center;gap:10px;min-width:0}
+.mercek-cam{display:grid;place-items:center;width:100%;max-width:300px;aspect-ratio:1;border-radius:50%;padding:14%;box-sizing:border-box;color:var(--ink);
+  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.9),transparent 30%),radial-gradient(circle,#f7f3f4 0 58%,#e1d7da 72%);
+  border:clamp(7px,1.5vw,13px) solid #0c0909;box-shadow:0 0 0 2px #3b3134,0 0 0 clamp(5px,1vw,8px) #191315,inset 0 0 30px rgba(0,0,0,.22);
+  transition:scale .35s cubic-bezier(.3,1.6,.5,1),box-shadow .35s ease}
+.mercek:hover .mercek-cam{scale:1.03}
+.mercek:focus-visible{outline:none}
+.mercek:focus-visible .mercek-cam{box-shadow:0 0 0 3px #ff6b81,0 0 0 clamp(5px,1vw,8px) #191315}
+.mercek-metin{font-weight:750;font-size:clamp(.74rem,1.65vw,1.06rem);line-height:1.3;transition:filter .5s ease,opacity .5s ease}
+.mercek.bulanik .mercek-metin{filter:blur(2.4px);text-shadow:4px 0 0 rgba(27,20,22,.3),-3px 2px 0 rgba(208,51,79,.25)}
+.mercek.eski .mercek-metin{filter:none;text-shadow:none;opacity:.5;text-decoration:line-through;text-decoration-color:#d0334f;text-decoration-thickness:2px}
+.mercek-no{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#2a2124;border:1px solid rgba(255,255,255,.2);font-family:var(--mono);font-weight:700;transition:background .3s}
+.mercek.dogru .mercek-cam{box-shadow:0 0 0 2px #ff6b81,0 0 0 clamp(5px,1vw,8px) #191315,0 0 54px 8px rgba(255,107,129,.55)}
+.mercek.dogru .mercek-no{background:#d0334f;border-color:#ff6b81}
+.mercek.salla .mercek-cam{animation:salla .45s ease}
+@keyframes salla{20%{translate:-8px 0}40%{translate:7px 0}60%{translate:-5px 0}80%{translate:3px 0}}
+.foropter.degis .mercek-cam{animation:mercek-cevir .55s cubic-bezier(.3,1.4,.5,1)}
+@keyframes mercek-cevir{from{rotate:-40deg;scale:.9;opacity:.35}}
+.muayene-olcek{display:flex;gap:6px;margin:0;padding:0;list-style:none}
+.muayene-olcek li{width:28px;height:5px;border-radius:3px;background:rgba(255,255,255,.15);transition:background .4s ease}
+.muayene-olcek li.simdi{background:rgba(255,107,129,.5)}
+.muayene-olcek li.tamam{background:#ff6b81}
+.muayene-ipucu{margin:0;min-height:1.5em;font-size:14.5px;color:var(--night-ink);max-width:60ch}
+.muayene-tablo{appearance:none;border:0;background:none;padding:2px 4px;font:inherit;font-size:13.5px;font-weight:700;color:rgba(255,255,255,.62);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.muayene-tablo:focus-visible{outline:2px solid #ff6b81;outline-offset:3px;border-radius:4px}
+.muayene-sonuc{width:100%;display:grid;justify-items:center}
+.recete-kart{width:min(520px,100%);text-align:left;color:var(--ink);border-radius:14px;padding:24px 24px 22px;rotate:-1.2deg;box-shadow:0 30px 60px -30px rgba(0,0,0,.9);
+  background:repeating-linear-gradient(0deg,transparent 0 27px,rgba(208,51,79,.07) 27px 28px),#fffdf9;animation:recete-gel .7s cubic-bezier(.3,1.4,.5,1)}
+@keyframes recete-gel{from{translate:0 40px;rotate:6deg;opacity:0}}
+.recete-ust{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;color:var(--red)}
+.recete-kart h3{margin:8px 0 14px;font-family:var(--serif);font-size:1.35rem;line-height:1.2}
+.recete-deger{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1.5px solid var(--ink);border-radius:8px;overflow:hidden}
+.recete-deger div{padding:8px 10px;display:grid;gap:2px;min-width:0}
+.recete-deger div + div{border-left:1.5px solid var(--ink)}
+.recete-deger small{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink-2)}
+.recete-deger b{font-family:var(--mono);font-size:1.12rem;font-variant-numeric:tabular-nums}
+.recete-tedavi{margin:14px 0 18px;color:var(--ink-2)}
+.recete-tedavi b{color:var(--ink)}
+.recete-eylem{display:flex;flex-wrap:wrap;gap:10px}
+@media (max-width:640px){
+  .muayene{padding:26px 12px 22px;border-radius:20px}
+  .foropter{padding:16px 10px 14px;border-radius:44px}
+  .mercek-cam{padding:8%}
+  .muayene-soru{font-size:1.22rem}
+  .recete-kart{padding:20px 16px 18px}
+}
+@media (prefers-reduced-motion:reduce){.foropter.degis .mercek-cam,.mercek.salla .mercek-cam{animation:none}}
+
+/* --- büyüteç --- */
+.buyutecli{position:relative}
+.buyutec-nokta{appearance:none;border:0;padding:0;position:absolute;z-index:3;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;cursor:pointer;
+  background:radial-gradient(circle,#fff 0 3px,#d0334f 3.5px 6px,rgba(208,51,79,.35) 6.5px);animation:nokta-nabiz 2.2s ease-out infinite;transition:scale .2s ease}
+@keyframes nokta-nabiz{0%{box-shadow:0 0 0 0 rgba(208,51,79,.55)}70%,100%{box-shadow:0 0 0 14px rgba(208,51,79,0)}}
+.buyutec-nokta:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.buyutec-nokta.yakin{scale:1.35}
+.buyutecli.buyutec-aktif,.buyutecli.buyutec-aktif .buyutec-nokta{cursor:none}
+.buyutec-mercek{position:fixed;left:0;top:0;z-index:70;width:190px;height:190px;border-radius:50%;pointer-events:none;background-color:#fff;background-repeat:no-repeat;
+  border:5px solid #141012;box-shadow:0 0 0 2px rgba(255,255,255,.75),0 18px 40px -10px rgba(0,0,0,.55),inset 0 0 24px rgba(0,0,0,.18);opacity:0;scale:.6;
+  transition:opacity .18s ease,scale .25s cubic-bezier(.3,1.5,.5,1)}
+.buyutec-mercek::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 30% 24%,rgba(255,255,255,.35),transparent 30%)}
+.buyutec-mercek.acik{opacity:1;scale:1}
+.buyutec-not{position:fixed;left:0;top:0;z-index:71;pointer-events:none;padding:10px 13px;border-radius:12px;background:#141012;color:#fff;font-size:13.5px;font-weight:650;line-height:1.4;
+  border-left:3px solid #ff6b81;box-shadow:0 16px 30px -12px rgba(0,0,0,.6);opacity:0;transition:opacity .2s ease}
+.buyutec-not.acik{opacity:1}
+@media (max-width:640px){.buyutec-mercek{width:150px;height:150px}}
+@media (prefers-reduced-motion:reduce){.buyutec-nokta{animation:none;box-shadow:0 0 0 4px rgba(208,51,79,.25)}}
+
+/* --- atölye: fiyat kartı mercek gibi bilenir --- */
+@property --kv{syntax:"<angle>";inherits:false;initial-value:0deg}
+#fiyatlar .paket{position:relative}
+.js-sahne [data-gir="bileme"]{transition:clip-path 1.25s cubic-bezier(.65,0,.25,1) calc(var(--sira,0) * 180ms + .15s),opacity .45s ease calc(var(--sira,0) * 180ms)}
+.js-sahne [data-gir="bileme"]:not(.gorunur){opacity:0;clip-path:inset(30% 22% round 50%)}
+.js-sahne [data-gir="bileme"].gorunur{clip-path:inset(-90px round 16px)}
+.js-sahne [data-gir="bileme"].kesildi{clip-path:none}
+.bileme-kivilcim{position:absolute;inset:-2px;border-radius:18px;pointer-events:none;z-index:2;padding:2px;opacity:0;
+  background:conic-gradient(from var(--kv),transparent 0 72%,#ffd59a 86%,#fff 89%,transparent 91%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.paket.gorunur .bileme-kivilcim{animation:kivilcim 1.4s cubic-bezier(.5,0,.3,1) calc(var(--sira,0) * 180ms + .85s) 1 both}
+@keyframes kivilcim{0%{opacity:0;--kv:0deg}15%,80%{opacity:1}100%{opacity:0;--kv:720deg}}
+@media (prefers-reduced-motion:reduce){.paket.gorunur .bileme-kivilcim{animation:none}}
+
+/* --- atölye: SGK dökümü termal yazıcıdan basılır --- */
+.yazici-kap{min-width:0;display:grid}
+.yazici{position:relative;z-index:2;display:flex;align-items:center;gap:10px;margin:0 -8px -6px;padding:12px 18px 20px;border-radius:16px 16px 10px 10px;
+  background:linear-gradient(180deg,#2c2427,#151012);color:rgba(255,255,255,.6);font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;box-shadow:0 18px 30px -18px rgba(0,0,0,.6)}
+.yazici-isik{width:8px;height:8px;border-radius:50%;background:#3c3235;flex:none}
+.yazici-kap:has(.kontrol.gorunur) .yazici-isik{animation:yazici-isik .3s steps(1) 7 .2s;background:#2bd46b;box-shadow:0 0 8px #2bd46b}
+@keyframes yazici-isik{50%{background:#3c3235;box-shadow:none}}
+.yazici-agiz{position:absolute;left:14px;right:14px;bottom:6px;height:5px;border-radius:3px;background:#050404;box-shadow:inset 0 1px 2px rgba(0,0,0,.9)}
+.yazici-kap .kontrol{margin-inline:6px;border-top-left-radius:0;border-top-right-radius:0}
+.js-sahne [data-gir="yazdir"]{transition:clip-path 2s steps(16,end) .2s,opacity .01s linear .2s}
+/* tamamen kırpılı öğe IntersectionObserver için "görünmez" sayılır: ilk satır basılmış başlar */
+.js-sahne [data-gir="yazdir"]:not(.gorunur){opacity:0;clip-path:inset(0 0 84% 0)}
+.js-sahne [data-gir="yazdir"].gorunur{clip-path:inset(0 0 0 0)}
+.js-sahne .kontrol.gorunur::after{animation-delay:2.3s}
+.js-sahne .kontrol.gorunur tr.eksik td{animation-delay:3.9s}
+
+/* --- atölye: sipariş yolunda iş emri fişi, geçilen adıma damga --- */
+.yol-gezgin{top:-66px;width:auto;height:auto;display:grid;gap:1px;padding:6px 12px 7px;border-radius:6px;text-align:left;font-family:var(--mono);line-height:1.15;color:var(--ink);
+  background:radial-gradient(circle at 0 50%,var(--paper) 4px,transparent 4.5px),radial-gradient(circle at 100% 50%,var(--paper) 4px,transparent 4.5px),#fffdf8;
+  border:1px solid rgba(27,20,22,.14);box-shadow:0 12px 24px -12px rgba(27,20,22,.55);rotate:calc((var(--i) * 8 - 4) * 1deg)}
+.yol-gezgin::after{background:#fffdf8;border-right:1px solid rgba(27,20,22,.14);border-bottom:1px solid rgba(27,20,22,.14)}
+.yol-gezgin small{font-size:9.5px;letter-spacing:.16em;color:var(--red)}
+.yol-gezgin b{font-size:14px;font-weight:700}
+.yol li::after{content:"TAMAM";position:absolute;top:-13px;left:40px;padding:2px 8px;border:2px solid var(--magenta);border-radius:6px;background:var(--paper);color:var(--magenta);
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;rotate:-9deg;pointer-events:none;
+  --dm:clamp(0,calc((var(--on) - .7) / .3),1);opacity:var(--dm);scale:calc(2.4 - var(--dm) * 1.4)}
+@media (max-width:980px){.yol li::after{top:-4px;left:auto;right:0}}
+
+/* --- kapanış göz eşeli: kaydırdıkça satırlar netleşir, 1,0 satırı kayıt düğmesi --- */
+.son-esel{max-width:880px;margin:0 auto}
+.son .son-esel h2{max-width:none;margin:0;font-size:inherit}
+.son-satir{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:18px;border-bottom:1px solid rgba(255,255,255,.14);padding-block:.12em .18em}
+.son-esel h2 .son-satir:first-child{border-top:3px solid #fff}
+.son-satir .harf{font-family:var(--serif);font-weight:800;letter-spacing:.06em;line-height:1.02;white-space:nowrap;text-align:center}
+.son-satir:nth-child(1) .harf{font-size:clamp(3rem,11vw,8.4rem);color:#ff6b81}
+.son-satir:nth-child(2) .harf{font-size:clamp(2.3rem,8vw,6rem)}
+.son-satir:nth-child(3) .harf{font-size:clamp(1.7rem,5.6vw,4.2rem)}
+.son-satir:nth-child(4) .harf{font-size:clamp(1.3rem,3.8vw,2.9rem)}
+.son-satir:nth-child(5) .harf{font-size:clamp(1.05rem,2.6vw,2rem)}
+.son-satir .keskin{font-size:13px;font-weight:700;color:rgba(255,255,255,.5);min-width:2.8em;text-align:right;font-variant-numeric:tabular-nums}
+.son-cta{border-bottom:0;padding-top:22px;align-items:center}
+.son .son-cta .hero-ctas{margin-top:0}
+.son-cta .keskin{color:#ff6b81}
+.js-sahne .son-satir{--b:clamp(0,calc((var(--k) * .085 + .1 - var(--i)) * 34 + 1),9)}
+.js-sahne .son-satir .harf,.js-sahne .son-cta .hero-ctas{filter:blur(calc(var(--b) * 1px));opacity:calc(1 - var(--b) / 14)}
+.son-esel + p{margin-top:24px}
 
 /* ---------- Göz eşeli (hero) ---------- */
 .hero{padding-block:56px 72px;overflow:hidden}
@@ -663,9 +857,6 @@ section{padding-block:96px}
 .grup dd{margin:4px 0 0;color:var(--ink-2);font-size:15px}
 
 /* Hikâye */
-.hikaye{padding-block:88px;background:var(--lens)}
-.hikaye p.buyuk{font-family:var(--serif);font-weight:800;font-size:clamp(1.5rem,2.8vw,2.2rem);line-height:1.3;max-width:34ch;letter-spacing:-.01em}
-.hikaye p.ek{margin-top:20px;color:var(--ink-2);max-width:60ch}
 
 /* Fiyatlar */
 .kamp{display:flex;flex-wrap:wrap;gap:6px 14px;padding:14px 18px;border:2px dashed var(--blue);border-radius:12px;margin-bottom:24px}
@@ -880,6 +1071,27 @@ h3{font-weight:750}
     <video controls playsinline preload="none" data-src="<?= e(asset('video/optiflow-tanitim.mp4')) ?>" poster="<?= e(asset('video/optiflow-kesit.webp')) ?>"></video>
   </dialog>
 
+  <?php /* 4.27.0 — kök hikâyesi: kod editöründe yazılan "yazılım ofisinde" kırmızı kalemle çizilir, sahne atölyeye döner.
+           JS yoksa bölüm kısa ve son hâlinde (tüm metin okunur). İlerleme --p assets/karsilama-imza.js'ten. */ ?>
+  <section id="koken" class="koken on-night" data-koken aria-labelledby="koken-baslik">
+    <div class="koken-sahne">
+      <svg class="koken-nisan" viewBox="0 0 400 400" fill="none" stroke="currentColor" aria-hidden="true">
+        <circle pathLength="1" cx="200" cy="200" r="190" stroke-width="1.5"/><circle pathLength="1" cx="200" cy="200" r="130" stroke-width="1"/><circle pathLength="1" cx="200" cy="200" r="70" stroke-width="1"/>
+        <path pathLength="1" d="M200 0v400M0 200h400" stroke-width="1"/>
+        <path pathLength="1" d="M200 60v16M200 324v16M60 200h16M324 200h16M101 101l11 11M288 288l11 11M299 101l-11 11M112 288l-11 11" stroke-width="2"/>
+      </svg>
+      <div class="wrap koken-ic">
+        <div class="koken-editor" aria-hidden="true">
+          <div class="koken-sekme"><i></i><i></i><i></i><span>hikaye.php</span></div>
+          <div class="koken-kod"><span class="koken-no">01</span><span class="koken-yazi"><span class="koken-yaz">OptiFlow bir <span class="koken-cizik">yazılım ofisinde</span></span><span class="koken-imlec"></span></span><span class="koken-degil">değil,</span></div>
+        </div>
+        <h2 id="koken-baslik" class="koken-baslik" data-kelime aria-label="OptiFlow bir yazılım ofisinde değil; her gün reçete girilen, cam beklenen ve gözlüğüm hazır mı diye aranan bir optik atölyesinde doğdu.">her gün reçete girilen, cam beklenen ve "gözlüğüm hazır mı?" diye aranan bir optik atölyesinde doğdu.</h2>
+        <p class="koken-ek">Medula aktarımından kasa sayımına kadar her özellik, o tezgâhta yaşanmış bir soruna verilmiş cevaptır. Şimdi aynı sistemi sizin mağazanız için açıyoruz.</p>
+        <p class="koken-imza"><span>—</span> <?= pz_e($p['sirket_unvani'] !== '' ? $p['sirket_unvani'] . ' atölyesi' : 'Bir optik atölyesi') ?><small>OptiFlow'un doğduğu tezgâh</small></p>
+      </div>
+    </div>
+  </section>
+
   <section id="surumler" class="gece on-night">
     <div class="wrap">
       <div class="bas">
@@ -898,7 +1110,7 @@ h3{font-weight:750}
             </div>
           </div>
           <div class="sahne">
-            <figure class="tarayici">
+            <figure class="tarayici"<?= $buyutec('liste') ?>>
               <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">optiflow.com.tr</span></div>
               <img src="<?= e(asset('onizleme/liste.webp')) ?>" width="1280" height="800" loading="lazy" decoding="async" alt="OptiFlow Lite, tarayıcıda sipariş listesi ve günün özeti">
             </figure>
@@ -967,7 +1179,7 @@ h3{font-weight:750}
     </div>
   </section>
 
-  <section id="fark" style="padding-bottom:0">
+  <section id="fark" style="padding-bottom:0" data-muayene>
     <div class="wrap">
       <div class="bas">
         <h2>Tezgâhta her gün tekrar eden işler, artık kendiliğinden.</h2>
@@ -996,7 +1208,7 @@ h3{font-weight:750}
       </div>
       <div class="yol-kap">
       <span class="yol-dolum" aria-hidden="true"></span>
-      <span class="yol-gezgin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="14" r="3.6"/><circle cx="17.5" cy="14" r="3.6"/><path d="M10.1 14c1.2-1 2.6-1 3.8 0M2.9 14 4.5 8.5M21.1 14 19.5 8.5"/></svg></span>
+      <span class="yol-gezgin" aria-hidden="true"><small>İŞ EMRİ</small><b>#01270</b></span>
       <ol class="yol" style="--n:<?= count($yol) ?>">
         <?php foreach ($yol as $k => [$b, $t]): ?>
           <li style="--k:<?= (int) $k ?>"><h3><?= pz_e($b) ?></h3><p><?= pz_e($t) ?></p></li>
@@ -1014,7 +1226,7 @@ h3{font-weight:750}
       </div>
       <div class="iki">
         <div>
-          <figure class="tarayici">
+          <figure class="tarayici"<?= $buyutec('atolye') ?>>
             <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">optiflow.com.tr/workshop.php</span></div>
             <img src="<?= e(asset('onizleme/atolye.webp')) ?>" width="1280" height="800" loading="lazy" decoding="async" alt="Atölye panosu: cam bekliyor, montajda, kalite kontrol ve hazır sütunları">
           </figure>
@@ -1045,22 +1257,22 @@ h3{font-weight:750}
       </div>
     </div>
     <div class="serit" tabindex="0" aria-label="Uygulama ekranları">
-      <figure class="tarayici">
+      <figure class="tarayici"<?= $buyutec('siparis') ?>>
         <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">Sipariş #00001</span></div>
         <img src="<?= e(asset('onizleme/siparis.webp')) ?>" width="1140" height="800" loading="lazy" decoding="async" alt="Sipariş ekranı: müşteri, aşamalar, durum değiştirme">
         <figcaption><b>Sipariş</b> Aşamalar, kim yaptı, reçete ve camlar, WhatsApp ve fiş tek ekranda.</figcaption>
       </figure>
-      <figure class="tarayici">
+      <figure class="tarayici"<?= $buyutec('sgk') ?>>
         <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">SGK ay sonu faturası</span></div>
         <img src="<?= e(asset('onizleme/sgk.webp')) ?>" width="1280" height="800" loading="lazy" decoding="async" alt="SGK ay sonu faturası ekranı">
         <figcaption><b>SGK ay sonu</b> Faturalanacak reçeteler, Medula'ya işlenmemişler ve döküm karşılaştırması.</figcaption>
       </figure>
-      <figure class="tarayici">
+      <figure class="tarayici"<?= $buyutec('garanti') ?>>
         <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">Garantiler</span></div>
         <img src="<?= e(asset('onizleme/garanti.webp')) ?>" width="1280" height="800" loading="lazy" decoding="async" alt="Garantiler listesi">
         <figcaption><b>Garantiler</b> Geçerli, bitecek ve talep açılmış garantiler; karekodlu kart.</figcaption>
       </figure>
-      <figure class="tarayici">
+      <figure class="tarayici"<?= $buyutec('liste') ?>>
         <div class="tarayici-ust"><span class="nokta"></span><span class="nokta"></span><span class="nokta"></span><span class="adres">Siparişler</span></div>
         <img src="<?= e(asset('onizleme/liste.webp')) ?>" width="1280" height="800" loading="lazy" decoding="async" alt="Siparişler ana ekranı">
         <figcaption><b>Günün özeti</b> Bugün teslim sözü verilen, geciken, haber verilecek ve tahsilat bekleyenler.</figcaption>
@@ -1128,13 +1340,6 @@ h3{font-weight:750}
       </div>
     </div>
   </section>
-
-  <div class="hikaye">
-    <div class="wrap">
-      <p class="buyuk" data-kelime>OptiFlow bir yazılım ofisinde değil, her gün reçete girilen, cam beklenen ve "gözlüğüm hazır mı?" diye aranan bir optik atölyesinde doğdu.</p>
-      <p class="ek">Medula aktarımından kasa sayımına kadar her özellik, o tezgâhta yaşanmış bir soruna verilmiş cevaptır. Şimdi aynı sistemi sizin mağazanız için açıyoruz.</p>
-    </div>
-  </div>
 
   <section id="fiyatlar">
     <div class="wrap">
@@ -1211,12 +1416,22 @@ h3{font-weight:750}
 <div class="son on-night">
   <svg class="son-gozluk" viewBox="0 0 400 160" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="110" cy="92" r="62"/><circle cx="290" cy="92" r="62"/><path d="M172 86c16-14 40-14 56 0M48 86 26 40M352 86l22-46"/></svg>
   <div class="wrap">
-    <h2>Yarın sabah dükkânı OptiFlow ile açın.</h2>
-    <p><?= $p['kurulum_destegi'] ? 'Başvurunuzu bırakın; mağazanızı açıp sizi arayalım, ilk ayarları birlikte yapalım. Kredi kartı istemiyoruz.' : 'Mağazanızı birkaç dakikada kurun; kredi kartı istemiyoruz.' ?></p>
-    <div class="hero-ctas">
-      <a class="btn btn-red" href="kayit.php">Mağazamı oluştur</a>
-      <?php if ($iletisimUrl !== ''): ?><a class="btn btn-line" href="<?= pz_e($iletisimUrl) ?>" target="_blank" rel="noopener"><?= pz_e($iletisimAd) ?></a><?php endif; ?>
+    <?php /* 4.27.0 — kapanış göz eşeli: kaydırdıkça satırlar yukarıdan aşağı netleşir, 1,0 satırı kayıt düğmesidir. */ ?>
+    <div class="son-esel">
+      <h2 aria-label="Yarın sabah dükkânı OptiFlow ile açın.">
+        <?php foreach ([['YARIN', '0,1'], ['SABAH', '0,2'], ['DÜKKÂNI', '0,4'], ['OPTIFLOW İLE', '0,6'], ['AÇIN.', '0,8']] as $k => [$m, $ks]): ?>
+          <span class="son-satir" style="--k:<?= (int) $k ?>" aria-hidden="true"><span class="harf"><?= pz_e($m) ?></span><span class="keskin"><?= pz_e($ks) ?></span></span>
+        <?php endforeach; ?>
+      </h2>
+      <div class="son-satir son-cta" style="--k:5">
+        <div class="hero-ctas">
+          <a class="btn btn-red" href="kayit.php">30 gün ücretsiz deneyin</a>
+          <?php if ($iletisimUrl !== ''): ?><a class="btn btn-line" href="<?= pz_e($iletisimUrl) ?>" target="_blank" rel="noopener"><?= pz_e($iletisimAd) ?></a><?php endif; ?>
+        </div>
+        <span class="keskin" aria-hidden="true">1,0</span>
+      </div>
     </div>
+    <p><?= $p['kurulum_destegi'] ? 'Başvurunuzu bırakın; mağazanızı açıp sizi arayalım, ilk ayarları birlikte yapalım. Kredi kartı istemiyoruz.' : 'Mağazanızı birkaç dakikada kurun; kredi kartı istemiyoruz.' ?></p>
   </div>
 </div>
 
@@ -1262,6 +1477,7 @@ h3{font-weight:750}
 </div>
 <?php endif; ?>
 <script src="<?= e(asset('karsilama-sahne.js')) ?>" defer></script>
+<script src="<?= e(asset('karsilama-imza.js')) ?>" defer></script>
 </body>
 </html><?php
     exit;

@@ -1,6 +1,16 @@
 OPTIFLOW
-Release: 4.23.1 (2026-10-07)
+Release: 4.24.0 (2026-10-08)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.24.0 (karşılama: foropter sahnesi)
+  - Tanıtım videosu bölümü kaydırmayla ilerleyen sahneye dönüştü (bölüm uzun, sahne ekrana yapışık):
+    1) video bir foropterin iki merceğinin ardında bulanık oynar, arkada göz eşeli harfleri süzülür;
+    2) kaydırdıkça dioptri kadranları tık tık döner, her tıkta görüntü netleşir, SAĞ/SOL göstergeleri
+       −2,00 → 0,00 iner, yandaki keskinlik ölçeği 0,1 → 1,0 çıkar;
+    3) mercekler büyüyüp gövdeyi yutar, ekran 3B eğimden düzleşir, ambilight yanar;
+    4) sipariş, atölye, SGK ve telefon ekranları videodan fırlayıp çevresine oturur;
+    5) "Bir dakikada OptiFlow." ve "Sesli izle · 57 sn" (sayfa içi pencere).
+  - JS yoksa / hareket azaltma tercihinde bölüm kısa ve son hâlinde. Mobilde iki ekran videonun altında.
 
 DEĞİŞİKLİK NOTLARI — 4.23.1 (sürüm notu düzeltmesi)
   - 4.23.0 paketi VERSION.txt güncellenmeden yayınlandı; kod aynı, bu sürüm notları ve kontrol.php eşleşmesini düzeltir.

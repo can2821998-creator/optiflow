@@ -1,0 +1,259 @@
+<title>OptiFlow Pazarlama Planı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: tek sütunlu belge + geniş ekranda yapışkan içindekiler; bölümler reçete formu gibi etiketli */
+:root {
+  --bg: #f5f7f8;
+  --surface: #ffffff;
+  --fg: #16232a;
+  --muted: #5a6b73;
+  --line: #d9e1e5;
+  --accent: #0f6e7c;
+  --accent-soft: #e2f0f2;
+  --good: #2f7d4a;
+  --warn: #a5631a;
+  --bad: #b03a3a;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f171b; --surface: #16222827; --fg: #e3ebee; --muted: #93a6ae; --line: #2a3a41;
+    --accent: #5cc1cf; --accent-soft: #15333a; --good: #6cc48a; --warn: #e0a35a; --bad: #ec7f7f;
+    --surface: #162228; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f171b; --surface: #162228; --fg: #e3ebee; --muted: #93a6ae; --line: #2a3a41;
+  --accent: #5cc1cf; --accent-soft: #15333a; --good: #6cc48a; --warn: #e0a35a; --bad: #ec7f7f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 16px; line-height: 1.6; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 56px; }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0,1fr); gap: 24px; padding-block: 24px 56px; } nav.toc { position: static !important; } }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-size: 14px; }
+nav.toc .lbl { font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+nav.toc a { display: flex; gap: 10px; color: var(--fg); text-decoration: none; padding: 5px 8px; border-radius: 6px; }
+nav.toc a span { font-family: var(--f-mono); font-size: 12px; color: var(--muted); min-width: 1.6em; }
+nav.toc a:hover, nav.toc a:focus-visible { background: var(--accent-soft); outline: none; }
+main { min-width: 0; }
+header.hero { padding-bottom: 28px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(32px, 5vw, 48px); line-height: 1.08; margin: 10px 0 14px; text-wrap: balance; letter-spacing: -.01em; }
+.lede { font-size: 18px; color: var(--muted); max-width: 62ch; margin: 0; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 18px; font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+section { padding-block: 36px 8px; scroll-margin-top: 16px; }
+.sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; }
+.sec-no { font-family: var(--f-mono); font-size: 13px; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 1px 7px; flex: none; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 26px; line-height: 1.2; margin: 0; text-wrap: balance; }
+h3 { font-size: 16px; font-weight: 600; margin: 22px 0 8px; }
+p, li { max-width: 68ch; }
+p { margin: 0 0 12px; }
+ul { margin: 0 0 12px; padding-left: 20px; display: grid; gap: 6px; }
+strong { font-weight: 600; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; margin-top: 8px; }
+@media (max-width: 640px) { .two { grid-template-columns: minmax(0,1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; min-width: 0; }
+.panel h3 { margin-top: 0; display: flex; align-items: center; gap: 8px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.dot.good { background: var(--good); } .dot.warn { background: var(--warn); }
+.panel ul { margin: 0; }
+.swap { display: grid; gap: 8px; margin: 14px 0; }
+.swap div { display: grid; grid-template-columns: 64px minmax(0,1fr); gap: 12px; align-items: baseline; padding: 10px 14px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); }
+.swap .tag { font-family: var(--f-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.swap .no .tag { color: var(--bad); } .swap .yes .tag { color: var(--good); }
+.swap .no p { text-decoration: line-through; text-decoration-color: var(--bad); color: var(--muted); }
+.swap p { margin: 0; }
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); margin: 12px 0; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font-family: var(--f-mono); font-weight: 500; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+td:first-child { font-weight: 600; white-space: nowrap; }
+td.num { font-variant-numeric: tabular-nums; }
+.steps { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 0; border-left: 2px solid var(--line); }
+.steps li { position: relative; padding: 4px 0 14px 22px; max-width: none; }
+.steps li::before { content: ""; position: absolute; left: -7px; top: 10px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); }
+.steps .d { font-family: var(--f-mono); font-size: 12px; color: var(--accent); display: block; }
+.callout { background: var(--accent-soft); border-radius: 10px; padding: 16px 20px; margin: 14px 0; }
+.callout p:last-child { margin-bottom: 0; }
+.note { border: 1px solid var(--line); border-left: 3px solid var(--warn); border-radius: 8px; padding: 14px 18px; background: var(--surface); }
+.kpis { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.kpis span { font-size: 14px; border: 1px solid var(--line); background: var(--surface); padding: 5px 12px; border-radius: 999px; }
+footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+footer a, main a { color: var(--accent); }
+footer ul { list-style: none; padding: 0; gap: 2px; }
+</style>
+
+<div class="wrap">
+  <nav class="toc" aria-label="İçindekiler">
+    <div class="lbl">İçindekiler</div>
+    <ol>
+      <li><a href="#durum"><span>01</span>Mevcut durum</a></li>
+      <li><a href="#konum"><span>02</span>Konumlandırma</a></li>
+      <li><a href="#instagram"><span>03</span>Instagram</a></li>
+      <li><a href="#kanallar"><span>04</span>Instagram dışı kanallar</a></li>
+      <li><a href="#site"><span>05</span>Web sitesi</a></li>
+      <li><a href="#deneme"><span>06</span>Deneme → satış</a></li>
+      <li><a href="#urun"><span>07</span>Üründen pazarlama</a></li>
+      <li><a href="#plan"><span>08</span>90 günlük plan</a></li>
+      <li><a href="#not"><span>09</span>Ek not</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Pazarlama stratejisi · Ekim 2026</div>
+      <h1>OptiFlow Pazarlama Planı</h1>
+      <p class="lede">Gözlükçüler ve optik atölyeler için yazılmış bir yazılımı, ilk 90 günde ilk ödeme yapan müşterilerine ulaştırmak için konumlandırma, kanal ve içerik planı.</p>
+      <div class="meta"><span>optiflow.com.tr</span><span>@optiflowtr</span><span>Hedef: 25 ödeme yapan optik / 90 gün</span></div>
+    </header>
+
+    <section id="durum">
+      <div class="sec-head"><span class="sec-no">01</span><h2>Mevcut durum</h2></div>
+      <div class="two">
+        <div class="panel">
+          <h3><span class="dot good"></span>Güçlü yanlar</h3>
+          <ul>
+            <li><strong>Hikâye:</strong> “Yazılım ofisinde değil, optik atölyesinde doğdu.” Rakiplerin kopyalayamayacağı bir köken.</li>
+            <li><strong>Net acı noktaları:</strong> Medula reçetesini elle yazmak, ay sonu SGK faturası, katkı payı hesabı.</li>
+            <li><strong>Kolay giriş:</strong> 30 gün ücretsiz deneme, kredi kartı yok, kurulum ücreti yok.</li>
+            <li><strong>Güven:</strong> SGK şifresi sunucuya gelmiyor, her mağazaya ayrı veritabanı.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3><span class="dot warn"></span>Eksikler</h3>
+          <ul>
+            <li>Instagram’da 29 takipçi. Erken aşama için normal, tek kanal olarak yetersiz.</li>
+            <li>Sitede gerçek müşteri yorumu, vaka ya da rakam yok. Ekran görüntüleri “Örnek Optik” deneme mağazasından.</li>
+            <li>Fiyat görünmüyor (“teklif alın”). Küçük esnafta sürtünme yaratır.</li>
+            <li>Rakiplerden (Tema Optik vb.) farkı anlatan bir sayfa yok.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="konum">
+      <div class="sec-head"><span class="sec-no">02</span><h2>Konumlandırma: optisyenin yazdığı optik yazılımı</h2></div>
+      <p>Mesajı özellik listesinden çıkarıp optisyenin kazandığı zamana ve paraya çevirin.</p>
+      <div class="swap">
+        <div class="no"><span class="tag">Eski</span><p>Medula entegrasyonu, SGK fatura otomasyonu</p></div>
+        <div class="yes"><span class="tag">Yeni</span><p>Ay sonu SGK faturası artık bir akşamınızı yemiyor.</p></div>
+        <div class="yes"><span class="tag">Yeni</span><p>Reçeteyi bir kez bile elle yazmadan sipariş.</p></div>
+      </div>
+      <div class="callout">
+        <p><strong>Yapılacak:</strong> Kendi atölyenizde gerçek ölçüm alın. “Elle X saat sürüyordu, OptiFlow ile Y dakika.” Tek bir gerçek rakam, on özellik maddesinden daha çok satar.</p>
+      </div>
+    </section>
+
+    <section id="instagram">
+      <div class="sec-head"><span class="sec-no">03</span><h2>Instagram stratejisi</h2></div>
+      <p>Hedef kitle gözlük alan müşteri değil; <strong>optik sahipleri, optisyenler ve optisyenlik öğrencileri</strong>. Haftada 3 reels ve 2 carousel, dört içerik ayağı üzerinden:</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Ayak</th><th>Örnek içerik</th><th>Amaç</th></tr></thead>
+          <tbody>
+            <tr><td>SGK ve Medula rehberi</td><td>“Gözlük hakkı kaç yılda bir yenilenir?”, “Medula’da en sık yapılan 5 hata”, katkı payı değişiklikleri</td><td>Kaydetme ve paylaşım; ana büyüme motoru</td></tr>
+            <tr><td>Atölye hayatı</td><td>Müşteri “gözlüğüm hazır mı?” diye 4. kez arıyor; OptiFlow’da durumu telefondan görüyor</td><td>Mizah, “bu benim” hissi, takip</td></tr>
+            <tr><td>Önce / sonra demo</td><td>15 saniye: defter ve Excel ile fatura, ardından OptiFlow’da tek tık</td><td>Ürünü göstermek</td></tr>
+            <tr><td>Kurucu hikâyesi</td><td>“Bu yazılımı neden yazdım?”, atölyeden gerçek kareler</td><td>Güven</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Hızlı kazanımlar</h3>
+      <ul>
+        <li><strong>DM otomasyonu:</strong> “Yoruma SGK yaz, ay sonu fatura kontrol listesini DM’den gönderelim.” Potansiyel müşteri listesi toplar.</li>
+        <li>Türkiye’deki optik, cam laboratuvarı, çerçeve distribütörü ve optisyenlik MYO hesaplarını takip edip her gün anlamlı yorum yapın.</li>
+        <li><strong>Mevzuat refleksi:</strong> SGK’da bir değişiklik olduğu gün açıklayıcı carousel yayınlayın. Hedef algı: “Değişiklikleri ilk OptiFlow’dan öğreniyorum.”</li>
+      </ul>
+    </section>
+
+    <section id="kanallar">
+      <div class="sec-head"><span class="sec-no">04</span><h2>Asıl büyüme Instagram dışında</h2></div>
+      <p>Niş B2B pazarında satış ilişki ve kanal ile gelir. Önem sırasına göre:</p>
+      <h3>Cam laboratuvarları ve distribütörlerle ortaklık</h3>
+      <p>Her hafta onlarca optiğe uğruyor ya da sipariş alıyorlar. Komisyon veya ortak kampanya ile satış ekibiniz olabilirler. Uzun vadede “siparişi OptiFlow’dan doğrudan laboratuvara gönder” entegrasyonu hem kanal hem rekabet avantajı olur.</p>
+      <h3>Tavsiye programı</h3>
+      <p>“Bir meslektaşını getir, ikiniz de 1 ay ücretsiz.” Optisyenler birbirini tanır; meslek odaları ve WhatsApp grupları aktif.</p>
+      <h3>İl il doğrudan ulaşım</h3>
+      <p>Google Haritalar’dan bir ildeki optikleri listeleyin, kendi şehrinizden başlayın. Kısa WhatsApp mesajı ya da yüz yüze ziyaretle 15 dakikalık demo teklif edin. İlk 20 müşteri böyle gelir.</p>
+      <h3>Optisyenlik MYO’ları</h3>
+      <p>Öğrencilere ücretsiz eğitim lisansı verin, derslerde kullanılsın. Bugünün öğrencisi yarının optik sahibi.</p>
+      <h3>Fuarlar ve meslek odası etkinlikleri</h3>
+      <p>Stant pahalıysa ziyaretçi olarak gidip tablette demo yapmak da yeterli.</p>
+    </section>
+
+    <section id="site">
+      <div class="sec-head"><span class="sec-no">05</span><h2>Web sitesi ve dönüşüm</h2></div>
+      <ul>
+        <li><strong>Fiyatı gösterin:</strong> En azından “aylık ₺X’ten başlayan”. Esnaf “teklif alın” görünce çoğu zaman vazgeçer.</li>
+        <li><strong>ROI hesaplayıcı:</strong> “Ayda kaç SGK reçetesi işliyorsunuz?” sorusuna göre aylık saat ve hata kaybı tasarrufunu gösterin.</li>
+        <li><strong>Gerçek referanslar:</strong> İlk 5 müşteriden 30 saniyelik telefon videoları. Kendi atölyeniz ilk vaka olabilir.</li>
+        <li><strong>Karşılaştırma sayfası:</strong> Defter, Excel, genel muhasebe programı ve OptiFlow yan yana. Rakip adı vermeden fark anlatılır.</li>
+        <li><strong>“Verilerinizi biz taşırız”:</strong> Geçiş korkusu en büyük satış engeli; açıkça kaldırın.</li>
+        <li><strong>SEO:</strong> Mevcut 4 rehberi 10–15 yazıya çıkarın: “SGK gözlük faturası nasıl hazırlanır”, “Medula optik reçete sorgulama”, “gözlük hakkı kaç yılda bir”.</li>
+        <li><strong>Google İşletme Profili ve küçük Google Ads bütçesi:</strong> “optik programı”, “gözlükçü yazılımı” gibi yüksek niyetli kelimeler.</li>
+      </ul>
+    </section>
+
+    <section id="deneme">
+      <div class="sec-head"><span class="sec-no">06</span><h2>Deneme süresini satışa çevirmek</h2></div>
+      <p>Kaydolan optiği 30 gün boyunca yalnız bırakmayın.</p>
+      <ol class="steps">
+        <li><span class="d">1. gün</span>WhatsApp’tan “kurulumda yardım edelim mi?” mesajı ve kısa görüntülü arama.</li>
+        <li><span class="d">3. gün</span>İlk siparişi birlikte girin.</li>
+        <li><span class="d">7. gün</span>İlk Medula reçetesi aktarımı. Ürünün ikna ettiği an bu.</li>
+        <li><span class="d">25. gün</span>“Bu ay X sipariş ve Y reçete işlediniz” özeti, ardından ücretli plana geçiş teklifi.</li>
+      </ol>
+    </section>
+
+    <section id="urun">
+      <div class="sec-head"><span class="sec-no">07</span><h2>Üründen doğan pazarlama</h2></div>
+      <ul>
+        <li><strong>Müşterilere hazır tanıtım şablonları:</strong> OptiFlow kullanan optiklere “Gözlüğünüzün durumunu telefondan takip edin” ve karekodlu garanti kartını anlatan Instagram görselleri verin. Optik kendi müşterisine reklam yapar, @optiflowtr etiketiyle siz de görünürsünüz.</li>
+        <li><strong>Küçük imza:</strong> Müşteriye giden WhatsApp bildiriminin ve garanti kartının altına kapatılabilir bir “OptiFlow ile” ibaresi.</li>
+      </ul>
+    </section>
+
+    <section id="plan">
+      <div class="sec-head"><span class="sec-no">08</span><h2>90 günlük plan</h2></div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Dönem</th><th>Odak</th><th>Hedef</th></tr></thead>
+          <tbody>
+            <tr><td class="num">0–30 gün</td><td>Fiyatı yayınla; kendi atölyenden vaka ve ölçüm; içerik takvimi; kendi ilinde 30 optiğe ulaş</td><td class="num">10 deneme · 3 ödeme yapan</td></tr>
+            <tr><td class="num">30–60 gün</td><td>Tavsiye programı; 2 laboratuvar/distribütör görüşmesi; video referanslar; 5 yeni blog yazısı</td><td class="num">25 deneme · 10 ödeme yapan · 500 takipçi</td></tr>
+            <tr><td class="num">60–90 gün</td><td>Komşu illere açıl; Google Ads testi; MYO iş birliği</td><td class="num">50 deneme · 25 ödeme yapan</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>İzlenecek metrikler</h3>
+      <div class="kpis">
+        <span>Deneme sayısı</span><span>Denemeden ücretliye geçiş oranı</span><span>Müşteri edinme kanalı</span><span>Aylık müşteri kaybı</span>
+      </div>
+      <p style="margin-top:12px">Kayıt formunda “Bizi nereden duydunuz?” sorusu zorunlu olsun; hangi kanalın işe yaradığını ancak böyle görürsünüz.</p>
+    </section>
+
+    <section id="not">
+      <div class="sec-head"><span class="sec-no">09</span><h2>Pazarlama dışı bir not</h2></div>
+      <div class="note">
+        <p style="margin:0">GitHub reposu herkese açık. Gerçek <code>config.php</code> yüklenmemiş, bu iyi. Yine de tüm kaynak kod rakiplerin incelemesine açık; reponun private yapılması önerilir.</p>
+      </div>
+    </section>
+
+    <footer>
+      <div class="eyebrow" style="color:var(--muted)">Kaynaklar</div>
+      <ul>
+        <li><a href="https://optiflow.com.tr">optiflow.com.tr</a></li>
+        <li><a href="https://www.instagram.com/optiflowtr/">instagram.com/optiflowtr</a></li>
+        <li><a href="https://github.com/can2821998-creator/optiflow">github.com/can2821998-creator/optiflow</a></li>
+        <li><a href="https://apps.apple.com/ca/app/tema-optik/id6476373017">Tema Optik (App Store)</a></li>
+      </ul>
+    </footer>
+  </main>
+</div>

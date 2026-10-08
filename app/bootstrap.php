@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.25.0';
+const APP_VERSION = '4.26.0';
 const APP_ROOT = __DIR__ . '/..';
 
 // 4.16.8: canlıya yükleme sürerken yarım dosyalara denk gelmemek için kısa bakım ekranı (app/guncelleme.php).

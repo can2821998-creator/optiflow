@@ -1,6 +1,13 @@
 OPTIFLOW
-Release: 4.25.0 (2026-10-08)
+Release: 4.26.0 (2026-10-08)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.26.0 (karşılama: fiyatlar yayında)
+  - Fiyat kartları Lite / Pro / Çok Şubeli: Lite 499 ₺, Pro 999 ₺ (ay, KDV dahil); yıllık ödemede %20 indirim
+    (Lite 4.790 ₺, Pro 9.590 ₺ / yıl). 30 gün ücretsiz deneme aynen sürüyor; her fiyatlı kartta
+    "İlk 30 gün ücretsiz · kart gerekmez" etiketi. Tutarlar app/pazarlama.php 'aylik' + 'yillik_indirim' alanlarından hesaplanır.
+  - Pro kartı vurgulu; Çok Şubeli "Yakında" ve "Görüşelim". SSS'ye "OptiFlow ne kadar?" (FAQ şemasına da girer),
+    SoftwareApplication şemasında paket başına Offer (aylık, KDV dahil). Pro indirme notu "30 gün ücretsiz".
 
 DEĞİŞİKLİK NOTLARI — 4.25.0 (karşılama sayfasının tamamı hareketli)
   - Ortak sahne sistemi (assets/karsilama-sahne.js; karsilama-film.js'in yerini aldı): başlıklar bulanıktan netleşerek,

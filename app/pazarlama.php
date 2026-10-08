@@ -48,31 +48,50 @@ function optiflow_pazarlama(): array
 
         // --- FİYATLAR --------------------------------------------------------
         // 'fiyat' boşsa kartta "Fiyat için bize yazın" görünür.
+        // 'aylik' (rakam, TL) doluysa kart onu gösterir; 'yillik_indirim' (%) ile yıllık tutar hesaplanır.
+        'yillik_indirim' => 20,                 // Yıllık ödemede indirim yüzdesi. 0 ise yıllık satırı çıkmaz.
         'paketler' => [
             [
-                'ad'       => 'Tek Mağaza',
-                'fiyat'    => '',               // Örn: '1.490 ₺'
-                'donem'    => '/ ay + KDV',
-                'aciklama' => 'Tek şubeli gözlükçü ve optik atölyesi için her şey.',
+                'ad'       => 'Lite',
+                'aylik'    => 499,
+                'fiyat'    => '',
+                'donem'    => '/ ay · KDV dahil',
+                'aciklama' => 'Tarayıcıda, her cihazda. Kurulum yok; bilgisayar, tablet ve telefondan açılır.',
                 'vurgu'    => false,
                 'ozellikler' => [
-                    'Medula köprüsü ve SGK katkı payı',
-                    'Sipariş, atölye panosu, teslim',
-                    'WhatsApp bildirimleri ve hatırlatmalar',
-                    'Kasa, bakiye takibi ve kâr raporu',
-                    'Stok, çerçeve ve karekodlu etiket',
+                    'Sipariş, müşteri, reçete geçmişi, atölye panosu',
+                    'SGK katkı payı ve ay sonu SGK faturası',
+                    'WhatsApp bildirimleri ve "Siparişim nerede?"',
+                    'Kasa, bakiye, kâr raporu, stok ve etiket',
+                    'Garanti kartı, hızlı satış, ödeme linki',
                     'Sınırsız müşteri ve sipariş',
+                ],
+            ],
+            [
+                'ad'       => 'Pro',
+                'aylik'    => 999,
+                'fiyat'    => '',
+                'donem'    => '/ ay · KDV dahil',
+                'aciklama' => "Windows'ta, Medula'nın yanında. Reçete tek tuşla siparişe gelir.",
+                'vurgu'    => true,
+                'ozellikler' => [
+                    "Lite'taki her şey",
+                    'Medula reçetesini tek tuşla siparişe aktarma',
+                    'Medula ekranından tek tuşla SGK hak kontrolü',
+                    'ÜTS karekod etiketi ve imha dosyası',
+                    'USB barkod / karekod okuyucu',
+                    'İnternet kesilince açık siparişleri görme',
                 ],
             ],
             [
                 'ad'       => 'Çok Şubeli',
                 'fiyat'    => '',               // Örn: '990 ₺'
-                'donem'    => '/ şube / ay + KDV',
+                'donem'    => '/ şube / ay · KDV dahil',
                 'aciklama' => 'Zincirler için şube yönetimi geliştiriliyor. Ön kayıt için bize yazın; hazır olunca ilk siz kullanın.',
-                'vurgu'    => true,
+                'vurgu'    => false,
                 'yakinda'  => true,             // şube özelliği yayına girince kaldırın
                 'ozellikler' => [
-                    'Tek Mağaza paketindeki her şey',
+                    "Pro paketindeki her şey",
                     'Şube başına ayrı kullanıcı ve yetki',
                     'Merkezden tüm siparişleri görme',
                     'Şube ve personel bazında raporlar',
@@ -89,6 +108,27 @@ function optiflow_pazarlama(): array
 function pz_e(?string $s): string
 {
     return htmlspecialchars((string) $s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+/** TL tutarını Türkçe biçimde yazar: 4790 → '4.790 ₺'. */
+function pz_tl(int $tutar): string
+{
+    return number_format($tutar, 0, ',', '.') . ' ₺';
+}
+
+/**
+ * Paketin fiyat bilgisi: ['aylik' => 499, 'yillik' => 4790, 'yillik_aylik' => 399] ya da aylık yoksa null.
+ * Yıllık tutar aşağı yuvarlanır (4.790,40 → 4.790) ki ilan edilen indirim her zaman en az söylenen kadar olsun.
+ */
+function pz_paket_fiyat(array $pk): ?array
+{
+    $aylik = (int) ($pk['aylik'] ?? 0);
+    if ($aylik <= 0) {
+        return null;
+    }
+    $indirim = max(0, min(90, (int) (optiflow_pazarlama()['yillik_indirim'] ?? 0)));
+    $yillik  = $indirim > 0 ? (int) floor($aylik * 12 * (100 - $indirim) / 100) : 0;
+    return ['aylik' => $aylik, 'yillik' => $yillik, 'yillik_aylik' => $yillik > 0 ? (int) floor($yillik / 12) : 0, 'indirim' => $indirim];
 }
 
 /** WhatsApp bağlantısı (numara ayarlı değilse boş döner). */

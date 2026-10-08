@@ -28,6 +28,24 @@ function render_karsilama(): void
     $iletisimUrl = $wa ?: ($tel ?: ($mail !== '' ? 'mailto:' . $mail . '?subject=' . rawurlencode('OptiFlow demo') : ''));
     $iletisimAd  = $wa ? "WhatsApp'tan demo isteyin" : ($tel ? 'Arayın, gösterelim' : ($mail !== '' ? 'Demo isteyin' : ''));
 
+    // Fiyatı belli paketler: SSS cevabı ve arama motoru şeması (Offer) buradan üretilir
+    $fiyatli = [];
+    foreach ($p['paketler'] as $pk) {
+        if (($fy = pz_paket_fiyat($pk)) !== null) {
+            $fiyatli[] = [$pk['ad'], $fy];
+        }
+    }
+    $fiyatCevap = '';
+    if ($fiyatli) {
+        $parca = [];
+        foreach ($fiyatli as [$ad, $fy]) {
+            $parca[] = 'OptiFlow ' . $ad . ' aylık ' . pz_tl($fy['aylik']) . ($fy['yillik'] > 0 ? ' (yıllık ' . pz_tl($fy['yillik']) . ')' : '');
+        }
+        $fiyatCevap = implode(', ', $parca) . '; fiyatlara KDV dahildir.'
+            . ($fiyatli[0][1]['indirim'] > 0 ? ' Yıllık ödemede %' . $fiyatli[0][1]['indirim'] . ' indirim uygulanır.' : '')
+            . ' Kurulum ücreti yoktur; müşteri ve sipariş sayısı sınırsızdır. İlk 30 gün ücretsizdir.';
+    }
+
     $sss = [
         ['Medula ile nasıl çalışıyor, SGK şifremi istiyor mu?',
          "Hayır. OptiFlow Pro, Medula Optik'i ve OptiFlow'u tek pencerede açan Windows uygulamasıdır. Medula'ya kendiniz girersiniz; isterseniz Chrome'daki gibi \"Kaydet\" dersiniz, sonraki girişlerde kullanıcı adı ve şifre kendiliğinden yazılır, güvenlik kodunu siz girersiniz. Şifre yalnızca o bilgisayarda, Windows şifrelemesiyle saklanır; OptiFlow sunucusuna gönderilmez. Reçeteyi açıp \"Aktar\"a bastığınızda yalnızca o an ekranda görünen reçete OptiFlow'a gelir."],
@@ -43,6 +61,7 @@ function render_karsilama(): void
          'Şube yönetimi geliştiriliyor: şubeye göre kullanıcı ve yetki, merkezden tüm şubeleri görme ve şubeler arası stok transferi. Şimdilik her şube ayrı bir mağaza hesabıyla çalışır.'],
         ['Telefon ve tablette çalışır mı? Bir şey kurmam gerekir mi?',
          "OptiFlow tarayıcıda çalışır; bilgisayar, tablet ve telefonda açılır, telefonun ana ekranına uygulama gibi eklenir. Medula aktarımı ve ÜTS karekod okuyucu için mağaza bilgisayarına OptiFlow Pro'yu kurarsınız; güncellemeleri kendisi alır."],
+        ...($fiyatCevap !== '' ? [['OptiFlow ne kadar?', $fiyatCevap]] : []),
         ['Kredi kartı bilgisi vermem gerekiyor mu?',
          'Hayır. 30 günlük deneme kart bilgisi olmadan başlar. Deneme bittiğinde erişim durur; devam etmek isterseniz sizinle iletişime geçeriz.'],
         ['Kurulum ne kadar sürer?',
@@ -54,6 +73,12 @@ function render_karsilama(): void
     $faqLd = [];
     foreach ($sss as [$s, $c]) {
         $faqLd[] = ['@type' => 'Question', 'name' => $s, 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $c]];
+    }
+    $offerLd = [['@type' => 'Offer', 'price' => '0', 'priceCurrency' => 'TRY', 'description' => '30 gün ücretsiz deneme']];
+    foreach ($fiyatli as [$ad, $fy]) {
+        $offerLd[] = ['@type' => 'Offer', 'name' => 'OptiFlow ' . $ad, 'price' => (string) $fy['aylik'], 'priceCurrency' => 'TRY',
+            'priceSpecification' => ['@type' => 'UnitPriceSpecification', 'price' => (string) $fy['aylik'], 'priceCurrency' => 'TRY',
+                'unitCode' => 'MON', 'valueAddedTaxIncluded' => true]];
     }
     $ldJson = static fn (array $v): string => (string) json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG);
 
@@ -145,7 +170,7 @@ function render_karsilama(): void
 <meta property="og:locale" content="tr_TR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://optiflow.com.tr/assets/og-optiflow.png">
-<script type="application/ld+json"><?= $ldJson(['@context' => 'https://schema.org', '@type' => 'SoftwareApplication', 'name' => 'OptiFlow', 'applicationCategory' => 'BusinessApplication', 'operatingSystem' => 'Web, Windows', 'inLanguage' => 'tr', 'description' => 'Gözlükçüler için Medula aktarımı, SGK katkı payı ve ay sonu SGK faturası, sipariş, atölye, garanti, kasa ve stok yönetim sistemi.', 'offers' => ['@type' => 'Offer', 'price' => '0', 'priceCurrency' => 'TRY', 'description' => '30 gün ücretsiz deneme'], 'url' => 'https://optiflow.com.tr/']) ?></script>
+<script type="application/ld+json"><?= $ldJson(['@context' => 'https://schema.org', '@type' => 'SoftwareApplication', 'name' => 'OptiFlow', 'applicationCategory' => 'BusinessApplication', 'operatingSystem' => 'Web, Windows', 'inLanguage' => 'tr', 'description' => 'Gözlükçüler için Medula aktarımı, SGK katkı payı ve ay sonu SGK faturası, sipariş, atölye, garanti, kasa ve stok yönetim sistemi.', 'offers' => $offerLd, 'url' => 'https://optiflow.com.tr/']) ?></script>
 <script type="application/ld+json"><?= $ldJson(['@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => $faqLd]) ?></script>
 <script type="application/ld+json"><?= $ldJson(['@context' => 'https://schema.org', '@graph' => [
     ['@type' => 'Organization', '@id' => 'https://optiflow.com.tr/#org', 'name' => 'OptiFlow', 'url' => 'https://optiflow.com.tr/', 'logo' => 'https://optiflow.com.tr/assets/icons/icon-512.png']
@@ -656,7 +681,14 @@ section{padding-block:96px}
 .tutar span{font-size:.95rem;font-weight:600;color:var(--ink-2);margin-left:6px}
 .paket.vurgu .tutar span{color:var(--night-ink)}
 .sor{font-weight:800}
-.paket ul{list-style:none;margin:0;padding:0;display:grid;gap:8px;flex:1}
+.deneme{align-self:flex-start;font-size:13px;font-weight:800;padding:4px 12px;border-radius:999px;border:1.5px solid var(--blue);color:var(--blue-deep)}
+.paket.vurgu .deneme{border-color:rgba(255,255,255,.55);color:#fff}
+.yillik{margin-top:-6px;font-size:14px;color:var(--ink-2);display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-variant-numeric:tabular-nums}
+.yillik b{color:var(--ink)}
+.paket.vurgu .yillik{color:var(--night-ink)}
+.paket.vurgu .yillik b{color:#fff}
+.yillik .indirim{font-size:12px;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--blue);color:#fff}
+.paket ul{list-style:none;margin:0;padding:0;display:grid;gap:8px;flex:1;align-content:start}
 .paket li{padding-left:24px;position:relative;color:var(--ink-2)}
 .paket li::before{content:"";position:absolute;left:0;top:.5em;width:12px;height:7px;border-left:2px solid var(--blue);border-bottom:2px solid var(--blue);transform:rotate(-45deg)}
 .paket.vurgu li::before{border-color:#fff}
@@ -873,7 +905,7 @@ h3{font-weight:750}
             <p>Medula Optik ve OptiFlow aynı pencerede. Reçete tek tuşla siparişe gelir, SGK hakkı Medula ekranından sorgulanır, karekod okuyucu doğrudan çalışır.</p>
             <div class="surum-eylem">
               <a class="btn btn-red" href="indir.php"><?= $ico['down'] ?>Windows için indir</a>
-              <small><?= $indir ? 'Sürüm ' . pz_e(indir_etiket($indir)) . ' · ' : '' ?>Windows 10 / 11 · ücretsiz</small>
+              <small><?= $indir ? 'Sürüm ' . pz_e(indir_etiket($indir)) . ' · ' : '' ?>Windows 10 / 11 · 30 gün ücretsiz</small>
             </div>
           </div>
           <figure class="masaustu" role="img" aria-label="OptiFlow Pro penceresi: solda Medula reçetesi, sağda OptiFlow sipariş ekranı">
@@ -1105,18 +1137,24 @@ h3{font-weight:750}
         <div class="kamp"><b><?= pz_e($kamp['baslik']) ?></b><span><?= pz_e($kamp['metin']) ?></span></div>
       <?php endif; ?>
       <div class="paketler">
-        <?php foreach ($p['paketler'] as $pk): $vurgu = !empty($pk['vurgu']); ?>
+        <?php foreach ($p['paketler'] as $pk): $vurgu = !empty($pk['vurgu']); $yakinda = !empty($pk['yakinda']); $fy = pz_paket_fiyat($pk); ?>
           <div class="paket<?= $vurgu ? ' vurgu on-night' : '' ?>">
-            <h3><?= pz_e($pk['ad']) ?><?php if (!empty($pk['yakinda'])): ?> <span class="yakinda">Yakında</span><?php endif; ?></h3>
+            <h3><?= pz_e($pk['ad']) ?><?php if ($yakinda): ?> <span class="yakinda">Yakında</span><?php endif; ?></h3>
             <p class="acik"><?= pz_e($pk['aciklama']) ?></p>
-            <?php if (trim((string) $pk['fiyat']) !== ''): ?>
+            <?php if ($fy): ?>
+              <div class="deneme">İlk 30 gün ücretsiz · kart gerekmez</div>
+              <div class="tutar"><?= pz_e(pz_tl($fy['aylik'])) ?><span><?= pz_e($pk['donem']) ?></span></div>
+              <?php if ($fy['yillik'] > 0): ?>
+                <div class="yillik"><b>Yıllık <?= pz_e(pz_tl($fy['yillik'])) ?></b> · aylık <?= pz_e(pz_tl($fy['yillik_aylik'])) ?> karşılığı <span class="indirim">%<?= (int) $fy['indirim'] ?> indirim</span></div>
+              <?php endif; ?>
+            <?php elseif (trim((string) $pk['fiyat']) !== ''): ?>
               <div class="tutar"><?= pz_e($pk['fiyat']) ?><span><?= pz_e($pk['donem']) ?></span></div>
             <?php else: ?>
               <div class="sor">Size özel fiyat için bize yazın</div>
             <?php endif; ?>
             <ul><?php foreach ($pk['ozellikler'] as $oz): ?><li><?= pz_e($oz) ?></li><?php endforeach; ?></ul>
-            <?php if ($vurgu && $iletisimUrl !== ''): ?>
-              <a class="btn btn-red" href="<?= pz_e($iletisimUrl) ?>" target="_blank" rel="noopener">Görüşelim</a>
+            <?php if ($yakinda && $iletisimUrl !== ''): ?>
+              <a class="btn btn-line" href="<?= pz_e($iletisimUrl) ?>" target="_blank" rel="noopener">Görüşelim</a>
             <?php else: ?>
               <a class="btn <?= $vurgu ? 'btn-red' : 'btn-line' ?>" href="kayit.php">30 gün ücretsiz deneyin</a>
             <?php endif; ?>

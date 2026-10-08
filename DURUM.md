@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 8 Ekim 2026 (4.28.0 / Pro 5.5.0)*
+*Son güncelleme: 8 Ekim 2026 (4.28.1 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.28.0**, şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.28.0** bekleniyor (deneyimler). 4.27.0 canlıda doğrulandı (imza anları, 08.10). 4.24.1 canlıda doğrulandı. 4.22.2 canlıda doğrulandı (video + Instagram).
+- **Sunucu 4.28.1**, şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Canlı site: 4.28.1** bekleniyor (üst menü). 4.28.0 08.10 push (deneyimler). 4.24.1 canlıda doğrulandı. 4.22.2 canlıda doğrulandı (video + Instagram).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
@@ -33,6 +33,7 @@
 - 4.28.0 (kullanıcı "başka etkileyici fikir" → dördü de seçildi): Medula aktarım simülatörü (#dene), dükkân adı
   kişiselleştirme (+ kayit.php?isim=), lensmetre kazanç hesabı (#hesap), Ishihara "30" levhası, saate göre selam,
   ay sonu bandı (assets/karsilama-deneyim.js). Kazanç varsayımları sayfada yazılı; değiştirilecekse JS'teki dakikalar.
+- 4.28.1: üst menü 981–1300 px arasında kırılmıyor (az gereken bağlantılar daralınca gizlenir).
 - Strateji sıradakiler: ROI hesaplayıcı, kayıtta "Bizi nereden duydunuz?", tavsiye programı.
 
 ## Önceki oturum (4.22.1 — pazarlama: tanıtım videosu + iletişim bilgileri)

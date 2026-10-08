@@ -267,6 +267,12 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .nav-links a:not(.btn){text-decoration:none;color:var(--ink-2)}
 .nav-links a:not(.btn):hover{color:var(--ink)}
 .nav-links .btn{padding:10px 16px;font-size:14px}
+/* 4.28.1: menü 981–1300 px arasında iki satıra kırılıyordu → kırılmaz; daraldıkça boşluk azalır, sonra az gerekenler gizlenir
+   (Pro'yu indir: Lite/Pro bölümünde ve alt bilgide; Neler yapar / Sorular: sayfada aşağıda). 980 altı zaten yalnız düğmeler. */
+.nav-links a{white-space:nowrap}
+@media (max-width:1300px){.nav-links{gap:16px;font-size:14px}}
+@media (max-width:1200px){.nav-links a[href="indir.php"]:not(.btn){display:none}}
+@media (max-width:1100px){.nav-links a[href="#neler"],.nav-links a[href="#sss"]{display:none}}
 
 /* ---------- Tanıtım videosu (4.24.0): foropter sahnesi ----------
    Bölüm uzun, sahne yapışkan; kaydırma ilerlemesi --p (0 → 1) assets/karsilama-sahne.js'ten gelir.

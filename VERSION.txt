@@ -1,6 +1,10 @@
 OPTIFLOW
-Release: 4.28.0 (2026-10-08)
+Release: 4.28.1 (2026-10-08)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.28.1 (karşılama: üst menü)
+  - 981–1300 px arasında menü bağlantıları iki satıra kırılıyordu. Artık kırılmaz; daraldıkça boşluk azalır, 1200 altında
+    "Pro'yu indir", 1100 altında "Neler yapar" ve "Sorular" gizlenir (sayfada karşılıkları var). Başlık her genişlikte 73 px.
 
 DEĞİŞİKLİK NOTLARI — 4.28.0 (karşılama: ziyaretçiyi işin içine sokan deneyimler)
   - Medula aktarım simülatörü (#dene, Lite/Pro'nun ardında): ziyaretçi örnek reçete değerlerini değiştirip "Aktar"a

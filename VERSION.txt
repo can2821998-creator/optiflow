@@ -1,6 +1,12 @@
 OPTIFLOW
-Release: 4.26.0 (2026-10-08)
+Release: 4.26.1 (2026-10-08)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.26.1 (karşılama: yatay taşma düzeltmeleri)
+  - ~800 px genişlikte "Lite ve Pro" kartları giriş animasyonunda (3B yatık, perspektif) sayfadan taşıp yatay kaydırma
+    çubuğu açıyordu → #surumler overflow-x:clip. 1024 px civarında yolun sonundaki gözlük simgesi 2 px taşıyordu → #yol.
+  - 360 px altı telefonlarda üst "Ücretsiz deneyin" düğmesi ve alt WhatsApp çubuğu ekrandan taşıyordu → küçük ekran kuralı.
+  - 320–1440 px arası 13 genişlikte, animasyon öncesi ve sonrası durumda taşma ölçüldü: yok.
 
 DEĞİŞİKLİK NOTLARI — 4.26.0 (karşılama: fiyatlar yayında)
   - Fiyat kartları Lite / Pro / Çok Şubeli: Lite 499 ₺, Pro 999 ₺ (ay, KDV dahil); yıllık ödemede %20 indirim

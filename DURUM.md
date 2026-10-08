@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 8 Ekim 2026 (4.26.0 / Pro 5.5.0)*
+*Son güncelleme: 8 Ekim 2026 (4.26.1 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.26.0**, şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.26.0** bekleniyor (fiyatlar). 4.25.0 08.10 push. 4.24.1 canlıda doğrulandı. 4.22.2 canlıda doğrulandı (video + Instagram).
+- **Sunucu 4.26.1**, şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Canlı site: 4.26.1** bekleniyor (taşma düzeltmesi). 4.26.0 canlıda doğrulandı (fiyatlar, 08.10). 4.24.1 canlıda doğrulandı. 4.22.2 canlıda doğrulandı (video + Instagram).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
@@ -25,6 +25,7 @@
 - KDV: fiyatlar KDV DAHİL (kullanıcı teyidi 07.10).
 - AÇIK GÜVENLİK SORUSU: `docs/GITHUB-FTP-SIRLARI.xlsx` herkese açık depoda; içinde FTP şifresi varsa şifre
   değiştirilmeli, dosya depodan kaldırılmalı, depo private yapılmalı. Kullanıcıya iletildi, cevap bekleniyor.
+- 4.26.1: karşılamada yatay taşmalar (#surumler 3B giriş, #yol gezgini, 360 px altı üst düğme / alt çubuk) giderildi.
 - Strateji sıradakiler: ROI hesaplayıcı, kayıtta "Bizi nereden duydunuz?", tavsiye programı.
 
 ## Önceki oturum (4.22.1 — pazarlama: tanıtım videosu + iletişim bilgileri)

@@ -388,7 +388,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .son::before{background:radial-gradient(460px circle at var(--mx,50%) var(--my,50%),rgba(208,51,79,.38),transparent 70%)}
 .hero.isikli::before,.son.isikli::before{opacity:1}
 /* Lite / Pro: katmanlı derinlik */
-#surumler{--i:.5}
+#surumler{--i:.5;overflow-x:clip}   /* 4.26.1: "dondur" girişinde 3B yatık kart perspektifle genişleyip sayfayı yana kaydırıyordu */
 .surum-grid{perspective:1400px}
 .sahne .tarayici{transform:translateY(calc((.5 - var(--i)) * 34px))}
 .sahne .cep{transform:translateY(calc((.5 - var(--i)) * -96px)) rotate(calc((.5 - var(--i)) * 10deg))}
@@ -400,7 +400,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .js-sahne .fark td.ile{background-size:0% 100%;transition:background-size 1s cubic-bezier(.2,.8,.2,1) calc(var(--sira,0) * 90ms + .6s)}
 .js-sahne .fark tr.gorunur td.ile{background-size:100% 100%}
 /* gözlüğün yolu: çizgi dolar, gözlük ilerler, geçilen adımlar yanar */
-#yol{--i:1}
+#yol{--i:1;overflow-x:clip}   /* 4.26.1: yolun sonunda gözlük simgesi yarı genişliği kadar sağa taşıyordu */
 .yol-kap{position:relative}
 .yol li{--on:clamp(0,calc((var(--i) * 1.3 - .06 - var(--k) / var(--n)) * 9),1)}
 #yol .yol li::before{background:color-mix(in srgb,var(--magenta) calc(var(--on) * 100%),var(--paper));color:color-mix(in srgb,#fff calc(var(--on) * 100%),var(--ink));
@@ -767,6 +767,15 @@ footer{padding-block:56px 40px;font-size:14.5px;color:var(--ink-2)}
   .mbar{display:flex;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(245,243,243,.96);border-top:1px solid var(--line)}
   .mbar .btn{flex:1;padding:13px 10px}
   body.bar{padding-bottom:76px}
+}
+/* 4.26.1: 360 px altı (küçük Android) — üst düğme ve alt çubuk ekrana sığsın */
+@media (max-width:360px){
+  .wrap{padding-inline:16px}
+  .wordmark{font-size:18px;gap:8px}
+  .wordmark svg{width:26px;height:26px}
+  .nav-links .btn{padding:9px 12px;font-size:13px}
+  .mbar{gap:8px;padding-inline:12px}
+  .mbar .btn{padding:12px 6px;font-size:14px;min-width:0}
 }
 
 /* ---------- 4.19.0 tipografi: tüm başlıklar sans, sıkı ---------- */

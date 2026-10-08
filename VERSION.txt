@@ -1,6 +1,20 @@
 OPTIFLOW
-Release: 4.27.0 (2026-10-08)
+Release: 4.28.0 (2026-10-08)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.28.0 (karşılama: ziyaretçiyi işin içine sokan deneyimler)
+  - Medula aktarım simülatörü (#dene, Lite/Pro'nun ardında): ziyaretçi örnek reçete değerlerini değiştirip "Aktar"a
+    basar; değerler uçarak siparişe yerleşir, SGK payı (uygulamadaki tahminle aynı: 1 gözlük × 150 ₺) ve müşterinin
+    ödeyeceği sayılır, aşamalar dolar, telefona WhatsApp düşer; süre sayacı → "3,7 saniye. Elle 2–3 dakika."
+  - Dükkân adı: hero'daki kutuya yazılan ad sayfadaki "Örnek Optik" yazılarına (simülatör, telefon, Pro penceresi) ve
+    kayıt bağlantılarına işlenir; kayıt formu ?isim= ile dolu açılır (app/pages/kayit.php, yalnız GET, e() ile kaçışlı).
+  - Lensmetre kazanç hesabı (#hesap, fiyatlardan önce): sipariş / SGK oranı / saat değeri kadranları → aylık saat ve
+    TL, "Pro aylık ücretini ~N günde çıkarır". Varsayımlar sayfada "Hesap neye dayanıyor?" altında açıkça yazılı.
+  - Ishihara renk testi levhası (fiyat başlığının yanında, canvas): içindeki "30" → üstüne gelince "30 gün ücretsiz".
+  - Saate göre selam (hero üstü) ve ayın son 5 günü ay sonu bandı (ziyaretçinin kendi saatiyle; kapatılınca o ay çıkmaz).
+  - assets/karsilama-deneyim.js (yeni, CSP self); localStorage yalnız kolaylık (dükkân adı, kapatılan bant).
+  - Düzeltme: 4.27.0'daki iş emri fişi telefonda gizlenmiyordu (sayfa 375 → 417 px genişliyordu).
+  - Başsız Chrome testi: 375 / 1024 / 1366 px, simülatör uçtan uca, ay sonu bandı 29 Ekim'e alınmış saatle; taşma yok.
 
 DEĞİŞİKLİK NOTLARI — 4.27.0 (karşılama: imza anları — tekdüze giriş efektleri yerine)
   - Kök hikâyesi (#koken, tanıtım videosunun hemen ardında, yapışkan sahne): kod editöründe "OptiFlow bir yazılım

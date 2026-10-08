@@ -8,6 +8,10 @@ if (tenant_oturum()) {
 
 $hata = '';
 $v = ['isim' => '', 'email' => '', 'admin_ad' => '', 'admin_kullanici' => ''];
+// 4.28.0: tanıtım sayfasında yazılan dükkân adı (?isim=) formu doldurur; yalnız görüntülenir (e() ile kaçışlı)
+if (!is_post() && isset($_GET['isim']) && is_string($_GET['isim'])) {
+    $v['isim'] = mb_substr(trim($_GET['isim']), 0, 80);
+}
 if (is_post()) {
     $v['isim'] = trim(post('isim'));
     $v['email'] = trim(post('email'));

@@ -13,7 +13,8 @@ require_once __DIR__ . '/indir.php';
  * İletişim, fiyat ve kampanya bilgileri app/pazarlama.php'den gelir; boş alanlar sayfada görünmez.
  * CSP 'script-src self': satır içi JavaScript YOK (SSS <details> ile çalışır, netleşme CSS animasyonudur).
  * Dış betikler: assets/karsilama-sahne.js (giriş efektleri, kaydırmaya bağlı bölümler, foropter sahnesi, sesli izleme),
- * assets/karsilama-imza.js (4.27.0: kök hikâyesi, "1 mi 2 mi?" muayenesi, büyüteç, bileme / yazıcı).
+ * assets/karsilama-imza.js (4.27.0: kök hikâyesi, "1 mi 2 mi?" muayenesi, büyüteç, bileme / yazıcı),
+ * assets/karsilama-deneyim.js (4.28.0: Medula simülatörü, dükkân adı, lensmetre hesabı, renk testi, ay sonu bandı, selam).
  */
 function render_karsilama(): void
 {
@@ -642,7 +643,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .yol li::after{content:"TAMAM";position:absolute;top:-13px;left:40px;padding:2px 8px;border:2px solid var(--magenta);border-radius:6px;background:var(--paper);color:var(--magenta);
   font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;rotate:-9deg;pointer-events:none;
   --dm:clamp(0,calc((var(--on) - .7) / .3),1);opacity:var(--dm);scale:calc(2.4 - var(--dm) * 1.4)}
-@media (max-width:980px){.yol li::after{top:-4px;left:auto;right:0}}
+@media (max-width:980px){.yol li::after{top:-4px;left:auto;right:0}.yol-gezgin{display:none}}
 
 /* --- kapanış göz eşeli: kaydırdıkça satırlar netleşir, 1,0 satırı kayıt düğmesi --- */
 .son-esel{max-width:880px;margin:0 auto}
@@ -662,6 +663,139 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rg
 .js-sahne .son-satir{--b:clamp(0,calc((var(--k) * .085 + .1 - var(--i)) * 34 + 1),9)}
 .js-sahne .son-satir .harf,.js-sahne .son-cta .hero-ctas{filter:blur(calc(var(--b) * 1px));opacity:calc(1 - var(--b) / 14)}
 .son-esel + p{margin-top:24px}
+
+/* ========== 4.28.0 DENEYİMLER (assets/karsilama-deneyim.js) ==========
+   Selam, dükkân adı, ay sonu bandı, Medula simülatörü, lensmetre hesabı, renk testi. Etkileşimli bölümler JS yoksa gizli. */
+.selam{margin:0 auto 18px;text-align:center;font-family:var(--mono);font-size:13px;letter-spacing:.03em;color:var(--ink-2)}
+.selam::before{content:"";display:inline-block;width:7px;height:7px;margin-right:9px;border-radius:50%;background:#2bb36a;box-shadow:0 0 0 4px rgba(43,179,106,.15);vertical-align:.1em}
+.dukkan:not([hidden]){display:grid;justify-items:center;gap:8px;width:min(460px,100%);margin-top:6px}
+.dukkan label{font-size:13.5px;font-weight:700;color:var(--ink-2)}
+.dukkan-kutu{display:flex;width:100%;border:2px solid var(--ink);border-radius:12px;overflow:hidden;background:var(--card)}
+.dukkan-kutu:focus-within{box-shadow:0 0 0 4px rgba(208,51,79,.2)}
+.dukkan input{flex:1;min-width:0;border:0;padding:12px 14px;font:inherit;font-size:15px;background:transparent;color:var(--ink)}
+.dukkan input:focus{outline:none}
+.dukkan button{border:0;padding:0 18px;font:inherit;font-weight:800;background:var(--ink);color:#fff;cursor:pointer}
+.dukkan button:focus-visible{outline:3px solid var(--magenta);outline-offset:-3px}
+.dukkan-not{margin:0;min-height:1.3em;font-size:13.5px;color:var(--ink-2)}
+.dukkan-not b{color:var(--blue)}
+/* ay sonu bandı (ayın son 5 günü) */
+.aysonu{position:relative;z-index:31;padding:10px 52px 10px 16px;background:linear-gradient(90deg,#8f1a2e,#d0334f);color:#fff;font-size:14px}
+.aysonu-ic{max-width:1160px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 14px;text-align:center}
+.aysonu-gun{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:rgba(0,0,0,.25)}
+.aysonu-git{color:#fff;font-weight:800;text-underline-offset:3px}
+.aysonu-kapat{position:absolute;right:10px;top:50%;translate:0 -50%;width:32px;height:32px;border:0;border-radius:8px;background:rgba(0,0,0,.22);color:#fff;font-size:20px;line-height:1;cursor:pointer}
+
+/* --- Medula aktarım simülatörü --- */
+.dene{display:none}
+.js-sahne .dene{display:block}
+.sim{display:grid;grid-template-columns:minmax(0,1.05fr) auto minmax(0,1fr) 170px;gap:22px;align-items:center}
+.sim-medula{background:#e9edf2;border:1px solid #c7d0db;border-radius:10px;overflow:hidden;color:#1d2b3a;font-family:Tahoma,Verdana,"Segoe UI",sans-serif;font-size:13px;box-shadow:0 20px 40px -24px rgba(0,0,0,.4)}
+.sim-medula-ust{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;background:linear-gradient(180deg,#2f6db3,#1f4f8a);color:#fff;font-size:12.5px}
+.sim-medula-ust b{letter-spacing:.06em}
+.sim-kunye{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0;padding:10px 12px;border-bottom:1px solid #c7d0db}
+.sim-kunye dt{font-size:11px;color:#5a6b7d}
+.sim-kunye dd{margin:0;font-weight:700}
+.sim-tablo{width:100%;border-collapse:collapse}
+.sim-tablo th,.sim-tablo td{padding:7px 6px;text-align:center}
+.sim-tablo thead th{font-size:11.5px;font-weight:700;color:#5a6b7d}
+.sim-medula .sim-tablo{margin-bottom:8px}
+.sim-medula .sim-tablo tbody th{text-align:left;padding-left:12px}
+.sim-medula input{width:100%;max-width:76px;box-sizing:border-box;padding:6px 4px;border:1px solid #9fb0c3;border-radius:3px;background:#fff;color:#1d2b3a;font:inherit;font-family:var(--mono);text-align:center}
+.sim-medula input:focus{outline:2px solid #2f6db3;outline-offset:1px}
+.sim-medula input.duzeltildi{border-color:#d0334f;background:#fde8ec}
+.sim-orta{display:grid;justify-items:center;gap:10px}
+.sim-aktar{width:96px;height:96px;border-radius:50%;border:0;cursor:pointer;background:linear-gradient(135deg,#d0334f,#8f1a2e);color:#fff;font:inherit;font-weight:800;font-size:17px;animation:aktar-nabiz 2.4s ease-out infinite}
+.sim-aktar:focus-visible{outline:3px solid var(--ink);outline-offset:4px}
+.sim-aktar:disabled{cursor:default;animation:none;filter:saturate(.7)}
+@keyframes aktar-nabiz{0%{box-shadow:0 18px 30px -12px rgba(180,35,60,.9),0 0 0 0 rgba(208,51,79,.4)}70%,100%{box-shadow:0 18px 30px -12px rgba(180,35,60,.9),0 0 0 22px rgba(208,51,79,0)}}
+.sim-sure{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.sim.bitti .sim-sure{color:var(--red);font-weight:700}
+.sim-of{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 20px 40px -24px rgba(0,0,0,.35);min-width:0}
+.sim-of-ust{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.sim-of-ust small{font-family:var(--serif);font-size:13px;font-weight:800;color:var(--red);text-align:right}
+.sim-musteri{display:flex;justify-content:space-between;gap:10px;margin:10px 0 4px}
+.sim-musteri span{font-size:13px;color:var(--ink-2)}
+.sim-hedef thead th{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+.sim-hedef tbody th{text-align:left;font-size:13px}
+.sim-hedef td{height:30px;min-width:48px;font-family:var(--mono);font-weight:700;border-bottom:1px dashed var(--line)}
+.sim-hedef td.dolu{animation:sim-dolu .8s ease}
+@keyframes sim-dolu{0%{background:rgba(208,51,79,.35)}100%{background:transparent}}
+.sim-hesap{display:grid;gap:4px;margin:10px 0 8px;font-size:14px}
+.sim-hesap div{display:flex;justify-content:space-between;gap:10px}
+.sim-hesap dt small{font-size:11px;color:var(--ink-2)}
+.sim-hesap dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.sim-hesap .sgk dd{color:var(--red)}
+.sim-hesap .kalan{padding-top:6px;border-top:1px solid var(--line);font-weight:800}
+.sim-adim{display:flex;gap:6px;margin:8px 0 0;padding:0;list-style:none}
+.sim-adim li{flex:1;padding:6px 4px;border-radius:8px;background:var(--paper);color:var(--ink-2);font-size:11.5px;font-weight:700;text-align:center;transition:background .3s ease,color .3s ease}
+.sim-adim li.on{background:var(--magenta);color:#fff}
+.sim-tel{width:170px;aspect-ratio:9/18;border:7px solid #141012;border-radius:26px;background:#ece5dd;overflow:hidden;box-shadow:0 24px 40px -18px rgba(0,0,0,.6)}
+.sim-tel-ekran{height:100%;display:flex;flex-direction:column}
+.sim-tel-ust{padding:10px 12px;background:#075e54;color:#fff;font-size:13px;font-weight:700}
+.sim-balon{margin:14px 10px;padding:9px 10px 6px;border-radius:0 10px 10px 10px;background:#fff;color:#1b1416;font-size:12px;line-height:1.35;box-shadow:0 1px 1px rgba(0,0,0,.12);
+  opacity:0;translate:0 -16px;scale:.9;transition:opacity .4s ease,translate .6s cubic-bezier(.3,1.6,.5,1),scale .6s cubic-bezier(.3,1.6,.5,1)}
+.sim-balon b{display:block;margin-bottom:2px;color:#075e54;font-size:12px}
+.sim-balon small{display:block;text-align:right;font-size:10px;color:#8a8a8a}
+.sim-tel.bildirim .sim-balon{opacity:1;translate:0 0;scale:1}
+.sim-ucan{position:fixed;z-index:80;display:grid;place-items:center;box-sizing:border-box;pointer-events:none;border-radius:6px;background:#d0334f;color:#fff;font-family:var(--mono);font-size:13px;font-weight:700;box-shadow:0 10px 24px -8px rgba(143,26,46,.8)}
+.sim-son:not([hidden]){display:grid;justify-items:center;gap:14px;margin-top:28px;text-align:center;animation:recete-gel .6s cubic-bezier(.3,1.4,.5,1)}
+.sim-son p{margin:0;max-width:60ch;font-size:16.5px}
+.sim-son p b{color:var(--red);font-size:1.3em}
+.sim-son .btn,.recete-eylem .btn{white-space:normal;text-align:center}
+.sim-not{margin:18px auto 0;max-width:80ch;font-size:12.5px;color:var(--ink-2);text-align:center}
+@media (max-width:1100px){.sim{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}.sim-tel{grid-column:1/-1;justify-self:center;aspect-ratio:auto;height:auto;width:min(300px,100%)}}
+@media (max-width:760px){.sim{grid-template-columns:minmax(0,1fr)}.sim-orta{grid-auto-flow:column;align-items:center}.sim-aktar{width:80px;height:80px}}
+@media (prefers-reduced-motion:reduce){.sim-aktar{animation:none}}
+
+/* --- lensmetre kazanç hesabı --- */
+.hesap{display:none;background:var(--night);color:#fff}
+.js-sahne .hesap{display:block}
+.hesap-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:56px;align-items:center}
+.hesap h2{color:#fff}
+.hesap .lead{color:var(--night-ink)}
+.hesap-kadran{margin-top:22px}
+.hesap-kadran label{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:6px;font-weight:700}
+.hesap-kadran output{font-family:var(--mono);font-size:1.25rem;color:#ff6b81;font-variant-numeric:tabular-nums}
+.hesap input[type=range]{width:100%;height:28px;accent-color:#ff6b81;cursor:pointer}
+.hesap-varsayim{margin-top:24px;font-size:14px;color:var(--night-ink)}
+.hesap-varsayim summary{cursor:pointer;font-weight:700;color:#fff}
+.hesap-varsayim ul{display:grid;gap:4px;margin:10px 0 6px;padding-left:18px}
+.hesap-varsayim p{margin:0}
+.lensmetre{--lm:min(320px,80vw);position:relative;display:grid;justify-items:center;gap:14px;text-align:center}
+.lensmetre svg{display:block;width:var(--lm);height:var(--lm)}
+.lm-govde{fill:#1f191b;stroke:#3a3033;stroke-width:2}
+.lm-yuz{fill:#0d0a0b;stroke:#2a2225;stroke-width:1}
+.lm-cam{fill:rgba(255,255,255,.025);stroke:none}
+.lm-cetvel line{stroke:rgba(255,255,255,.35);stroke-width:1}
+.lm-cetvel line.lm-buyuk{stroke:#fff;stroke-width:2}
+.lm-cetvel text{fill:rgba(255,255,255,.7);font-family:var(--mono);font-size:11px}
+.lm-ibre{transform-origin:160px 160px;transform:rotate(-135deg);transition:transform .8s cubic-bezier(.3,1.5,.5,1)}
+.lm-ibre path{stroke:#ff6b81;stroke-width:3;stroke-linecap:round}
+.lm-ibre circle{fill:#ff6b81}
+.hesap.tasti .lm-ibre path,.hesap.tasti .lm-ibre circle{stroke:#ffd59a;fill:#ffd59a}
+.lm-okuma{position:absolute;top:calc(var(--lm) * .63);left:0;right:0;pointer-events:none}
+.lm-okuma b{display:block;font-family:var(--mono);font-size:2.2rem;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+.lm-okuma span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--night-ink)}
+.lm-alt{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.lm-alt div{padding:10px 16px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);text-align:left}
+.lm-alt small{display:block;font-size:11.5px;color:var(--night-ink)}
+.lm-alt b{font-family:var(--mono);font-size:1.3rem;font-variant-numeric:tabular-nums}
+.lm-alt div:first-child b{color:#ff6b81}
+.lm-sonuc{margin:0;max-width:36ch;min-height:2.8em;font-weight:650;color:#fff}
+@media (max-width:980px){.hesap-grid{grid-template-columns:minmax(0,1fr);gap:40px}}
+@media (prefers-reduced-motion:reduce){.lm-ibre{transition:none}}
+
+/* --- Ishihara renk testi levhası --- */
+.fiyat-bas{display:flex;align-items:center;justify-content:space-between;gap:30px}
+.ishihara:not([hidden]){position:relative;flex:none;display:grid;justify-items:center;gap:8px;width:190px;margin:0;cursor:pointer;outline:none}
+.ishihara canvas{display:block;width:190px;height:190px;border-radius:50%;box-shadow:0 14px 30px -14px rgba(0,0,0,.4)}
+.ishihara-cevap{position:absolute;top:0;left:0;width:190px;height:190px;border-radius:50%;display:grid;place-content:center;text-align:center;background:rgba(20,16,18,.84);color:#fff;font-weight:800;
+  opacity:0;scale:.85;transition:opacity .35s ease,scale .45s cubic-bezier(.3,1.6,.5,1)}
+.ishihara-cevap b{font-family:var(--serif);font-size:3.4rem;line-height:.9;color:#ff6b81}
+.ishihara:hover .ishihara-cevap,.ishihara:focus-visible .ishihara-cevap,.ishihara.acik .ishihara-cevap{opacity:1;scale:1}
+.ishihara:focus-visible canvas{outline:3px solid var(--magenta);outline-offset:4px}
+.ishihara figcaption{max-width:22ch;font-size:12.5px;font-weight:700;color:var(--ink-2);text-align:center}
+@media (max-width:640px){.fiyat-bas{flex-direction:column;align-items:flex-start}.ishihara:not([hidden]){align-self:center}}
 
 /* ---------- Göz eşeli (hero) ---------- */
 .hero{padding-block:56px 72px;overflow:hidden}
@@ -1006,6 +1140,7 @@ h3{font-weight:750}
 <main>
   <div class="hero">
     <div class="wrap">
+      <p class="selam" data-selam hidden></p>
       <div class="esel">
         <h1 aria-label="Reçete Medula'dan tek tıkla siparişe, sipariş atölyeye, gözlük müşteriye.">
           <?php foreach ($esel as $i => [$metin, $keskin]): ?>
@@ -1030,6 +1165,15 @@ h3{font-weight:750}
           <li><?= $p['kurulum_destegi'] ? 'Kurulumu sizinle birlikte yapıyoruz' : 'Teknik bilgi gerekmez' ?></li>
           <li>Her mağazaya ayrı veritabanı</li>
         </ul>
+        <?php /* 4.28.0 — ziyaretçi dükkân adını yazar; sayfadaki "Örnek Optik" yazıları ve kayıt formu bu adla dolar (assets/karsilama-deneyim.js) */ ?>
+        <form class="dukkan" data-dukkan-form hidden>
+          <label for="dukkan-ad">Siteyi kendi dükkânınızla görün</label>
+          <div class="dukkan-kutu">
+            <input id="dukkan-ad" name="dukkan" maxlength="40" autocomplete="organization" placeholder="Mağazanızın adı, örn. Yıldız Optik">
+            <button type="submit">Göster</button>
+          </div>
+          <p class="dukkan-not" aria-live="polite"></p>
+        </form>
         <a class="surum-isaret" href="#surumler"><span class="rozet lite">Lite</span> tarayıcıda, her cihazda <span class="ayrac"></span> <span class="rozet pro">Pro</span> Windows'ta, Medula'nın yanında</a>
       </div>
     </div>
@@ -1130,7 +1274,7 @@ h3{font-weight:750}
             </div>
           </div>
           <figure class="masaustu" role="img" aria-label="OptiFlow Pro penceresi: solda Medula reçetesi, sağda OptiFlow sipariş ekranı">
-            <div class="ms-ust"><span class="ms-ad">OptiFlow Pro · Örnek Optik</span><span class="ms-dug"><i></i><i></i><i></i></span></div>
+            <div class="ms-ust"><span class="ms-ad">OptiFlow Pro · <span data-dukkan>Örnek Optik</span></span><span class="ms-dug"><i></i><i></i><i></i></span></div>
             <div class="ms-arac">
               <span class="sekme">Medula Optik</span><span class="sekme acik">OptiFlow</span>
               <span class="bosluk"></span>
@@ -1176,6 +1320,69 @@ h3{font-weight:750}
         </table>
       </div>
       <div class="gizlilik"><?= $ico['lock'] ?><span>SGK şifreniz <b>sunucumuza hiç gelmez</b>. İsterseniz yalnızca kendi bilgisayarınızda, Windows şifrelemesiyle saklanır ve Medula girişine kendiliğinden yazılır. Reçete yalnızca "Aktar"a bastığınızda gelir.</span></div>
+    </div>
+  </section>
+
+  <?php /* 4.28.0 — Medula aktarım simülatörü: değerler "Aktar"la uçarak siparişe yerleşir, SGK payı ve bakiye hesaplanır,
+           telefona WhatsApp düşer. Yalnız JS ile görünür (.js-sahne). SGK tutarı uygulamadaki tahminle aynı mantık:
+           tek odak uzak = 1 gözlük × taban tutar (varsayılan 150 ₺); kesin tutarı Medula verir. */
+     $simSgk = 150; $simTutar = 4500; ?>
+  <section id="dene" class="dene" data-simulator data-sgk="<?= (int) $simSgk ?>" data-tutar="<?= (int) $simTutar ?>" aria-labelledby="dene-baslik">
+    <div class="wrap">
+      <div class="bas">
+        <h2 id="dene-baslik">Kendiniz deneyin: reçeteyi Medula'dan aktarın.</h2>
+        <p class="lead">Değerleri istediğiniz gibi değiştirin, sonra "Aktar"a basın ve saati izleyin.</p>
+      </div>
+      <div class="sim">
+        <div class="sim-medula">
+          <div class="sim-medula-ust"><b>MEDULA OPTİK</b><span>Reçete İşlemleri</span></div>
+          <dl class="sim-kunye"><div><dt>e-Reçete No</dt><dd>1A2B3C4</dd></div><div><dt>Hasta</dt><dd>A*** Y***</dd></div><div><dt>Kullanım</dt><dd>Uzak</dd></div></dl>
+          <table class="sim-tablo">
+            <thead><tr><th></th><th scope="col">Sferik</th><th scope="col">Silendirik</th><th scope="col">Aks</th></tr></thead>
+            <tbody>
+              <?php foreach (['sag' => ['Sağ', '+1,25', '-0,75', '45'], 'sol' => ['Sol', '+1,00', '-0,50', '130']] as $g => [$ad, $sf, $sl, $ak]): ?>
+                <tr><th scope="row"><?= pz_e($ad) ?></th>
+                  <td><input data-sim="<?= $g ?>-sf" value="<?= pz_e($sf) ?>" inputmode="decimal" maxlength="6" aria-label="<?= pz_e($ad) ?> sferik"></td>
+                  <td><input data-sim="<?= $g ?>-sl" value="<?= pz_e($sl) ?>" inputmode="decimal" maxlength="6" aria-label="<?= pz_e($ad) ?> silendirik"></td>
+                  <td><input data-sim="<?= $g ?>-ak" value="<?= pz_e($ak) ?>" inputmode="numeric" maxlength="3" aria-label="<?= pz_e($ad) ?> aks"></td></tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+        <div class="sim-orta">
+          <button type="button" class="sim-aktar" data-sim-aktar><span>Aktar</span></button>
+          <span class="sim-sure" data-sim-sure aria-live="off">0,0 sn</span>
+        </div>
+        <div class="sim-of">
+          <div class="sim-of-ust"><span>Sipariş #01271</span><small data-dukkan>Örnek Optik</small></div>
+          <div class="sim-musteri"><b>Ayşe Y.</b><span>Tek odak · uzak</span></div>
+          <table class="sim-tablo sim-hedef">
+            <thead><tr><th></th><th scope="col">SF</th><th scope="col">SİL</th><th scope="col">AKS</th></tr></thead>
+            <tbody>
+              <?php foreach (['sag' => 'Sağ', 'sol' => 'Sol'] as $g => $ad): ?>
+                <tr><th scope="row"><?= pz_e($ad) ?></th><td data-slot="<?= $g ?>-sf"></td><td data-slot="<?= $g ?>-sl"></td><td data-slot="<?= $g ?>-ak"></td></tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+          <dl class="sim-hesap">
+            <div><dt>Cam + çerçeve</dt><dd><?= pz_e(number_format($simTutar, 2, ',', '.')) ?> ₺</dd></div>
+            <div class="sgk"><dt>SGK katkı payı <small>tahmini</small></dt><dd data-sim-sgk>—</dd></div>
+            <div class="kalan"><dt>Müşteri öder</dt><dd data-sim-kalan>—</dd></div>
+          </dl>
+          <ol class="sim-adim"><li>Sipariş alındı</li><li>Atölyede</li><li>Hazır</li></ol>
+        </div>
+        <div class="sim-tel" aria-hidden="true">
+          <div class="sim-tel-ekran">
+            <div class="sim-tel-ust">WhatsApp</div>
+            <div class="sim-balon"><b data-dukkan>Örnek Optik</b>Ayşe Hanım, gözlüğünüz hazır. Mağazamızdan teslim alabilirsiniz.<small>şimdi</small></div>
+          </div>
+        </div>
+      </div>
+      <div class="sim-son" data-sim-son hidden>
+        <p><b data-sim-sonuc>3,8 saniye.</b> Aynı reçeteyi Medula ekranından okuyup tek tek yazmak ortalama 2–3 dakika sürer; sıra hatası da cabası.</p>
+        <div class="hero-ctas"><a class="btn btn-red" href="kayit.php">Kendi dükkânınızda deneyin · 30 gün ücretsiz</a><button type="button" class="btn btn-line" data-sim-tekrar>Bir daha</button></div>
+      </div>
+      <p class="sim-not">Örnek reçete ve tutarlar uydurmadır. SGK payı uygulamadaki tahmin ayarıyla hesaplanır; kesin tutarı Medula verir. Medula'dan aktarım OptiFlow Pro'dadır.</p>
     </div>
   </section>
 
@@ -1233,8 +1440,8 @@ h3{font-weight:750}
           <p class="alt-not">Duvardaki atölye ekranında da aynı liste döner; fiyat, telefon ve reçete görünmez.</p>
         </div>
         <div class="telefon" role="img" aria-label="Müşterinin telefonunda sipariş durumu ve garanti bilgisi örneği">
-          <div class="tel-bildirim" aria-hidden="true"><i><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.3.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.4z"/></svg></i><span><b>Örnek Optik · WhatsApp</b>Gözlüğünüz hazır, teslim alabilirsiniz.</span></div>
-          <div class="tel-ust"><i></i>Örnek Optik</div>
+          <div class="tel-bildirim" aria-hidden="true"><i><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.3.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.4z"/></svg></i><span><b><span data-dukkan>Örnek Optik</span> · WhatsApp</b>Gözlüğünüz hazır, teslim alabilirsiniz.</span></div>
+          <div class="tel-ust"><i></i><span data-dukkan>Örnek Optik</span></div>
           <div class="tel-kart">
             <small>#01270</small>
             <h4>Gözlüğünüz hazır</h4>
@@ -1341,11 +1548,70 @@ h3{font-weight:750}
     </div>
   </section>
 
+  <?php /* 4.28.0 — lensmetre kazanç hesabı. Varsayımlar sayfada açıkça yazılı; tutar ziyaretçinin girdiği rakamlardan.
+           Pro'nun aylık fiyatı pazarlama.php'den. Yalnız JS ile görünür (.js-sahne). */
+     $proAylik = 0;
+     foreach ($p['paketler'] as $pk) { if (($pk['ad'] ?? '') === 'Pro' && ($fy = pz_paket_fiyat($pk))) { $proAylik = $fy['aylik']; } } ?>
+  <section id="hesap" class="hesap on-night" data-hesap data-pro="<?= (int) $proAylik ?>" aria-labelledby="hesap-baslik">
+    <div class="wrap hesap-grid">
+      <div class="hesap-sol">
+        <h2 id="hesap-baslik">Dükkânınızın numarasını ölçelim.</h2>
+        <p class="lead">Üç kadranı kendi dükkânınıza göre çevirin; lensmetre ayda ne kadar zaman ve para kazandığınızı okusun.</p>
+        <div class="hesap-kadran">
+          <label for="h-siparis">Ayda kaç sipariş?<output data-h-cikti="h-siparis">120</output></label>
+          <input type="range" id="h-siparis" min="10" max="600" step="10" value="120">
+        </div>
+        <div class="hesap-kadran">
+          <label for="h-sgk">Bunların yüzde kaçı SGK'lı?<output data-h-cikti="h-sgk">%60</output></label>
+          <input type="range" id="h-sgk" min="0" max="100" step="5" value="60">
+        </div>
+        <div class="hesap-kadran">
+          <label for="h-saat">Bir saatinizin değeri<output data-h-cikti="h-saat">300 ₺</output></label>
+          <input type="range" id="h-saat" min="100" max="1500" step="50" value="300">
+        </div>
+        <details class="hesap-varsayim">
+          <summary>Hesap neye dayanıyor?</summary>
+          <ul>
+            <li>SGK'lı reçeteyi Medula'dan okuyup elle yazmak: ~3 dk → "Aktar"la ~10 sn.</li>
+            <li>Ay sonu SGK faturası için reçete başına sayım ve Medula listesiyle karşılaştırma: ~1,5 dk.</li>
+            <li>Sipariş başına katkı payı / bakiye hesabı: ~1 dk.</li>
+            <li>Sipariş başına bir "gözlüğüm hazır mı?" telefonu: ~1,5 dk → WhatsApp ve karekod.</li>
+          </ul>
+          <p>Bunlar tezgâhtan tahminlerdir; kendi sürelerinizle farklı çıkabilir.</p>
+        </details>
+      </div>
+      <div class="lensmetre" role="img" aria-label="Lensmetre göstergesi: aylık kazanılan saat" data-lensmetre>
+        <svg viewBox="0 0 320 320" aria-hidden="true">
+          <circle cx="160" cy="160" r="150" class="lm-govde"/>
+          <circle cx="160" cy="160" r="128" class="lm-yuz"/>
+          <g class="lm-cetvel" data-lm-cetvel></g>
+          <g class="lm-ibre" data-lm-ibre><path d="M160 160 L160 52" /><circle cx="160" cy="160" r="9"/></g>
+          <circle cx="160" cy="160" r="128" class="lm-cam"/>
+        </svg>
+        <div class="lm-okuma"><b data-h-saat>0</b><span>saat / ay</span></div>
+        <div class="lm-alt">
+          <div><small>Aylık değeri</small><b data-h-tl>0 ₺</b></div>
+          <?php if ($proAylik > 0): ?><div><small>OptiFlow Pro</small><b><?= pz_e(pz_tl($proAylik)) ?></b></div><?php endif; ?>
+        </div>
+        <p class="lm-sonuc" data-h-sonuc aria-live="polite"></p>
+        <a class="btn btn-red" href="kayit.php">30 gün ücretsiz ölçün</a>
+      </div>
+    </div>
+  </section>
+
   <section id="fiyatlar">
     <div class="wrap">
-      <div class="bas">
-        <h2>Sade fiyat, sürpriz yok.</h2>
-        <p class="lead">30 gün boyunca her şey açık ve ücretsiz. Beğenirseniz devam edersiniz.</p>
+      <div class="bas fiyat-bas">
+        <div>
+          <h2>Sade fiyat, sürpriz yok.</h2>
+          <p class="lead">30 gün boyunca her şey açık ve ücretsiz. Beğenirseniz devam edersiniz.</p>
+        </div>
+        <?php /* 4.28.0 — Ishihara renk testi levhası (canvas, assets/karsilama-deneyim.js); üstüne gelince "30 gün ücretsiz" */ ?>
+        <figure class="ishihara" data-ishihara hidden tabindex="0" role="img" aria-label="Renk testi levhası; içinde 30 yazıyor: 30 gün ücretsiz">
+          <canvas width="440" height="440"></canvas>
+          <span class="ishihara-cevap" aria-hidden="true"><b>30</b>gün ücretsiz</span>
+          <figcaption>Bu levhada hangi sayıyı görüyorsunuz?</figcaption>
+        </figure>
       </div>
       <?php if (!empty($kamp['aktif'])): ?>
         <div class="kamp"><b><?= pz_e($kamp['baslik']) ?></b><span><?= pz_e($kamp['metin']) ?></span></div>
@@ -1478,6 +1744,7 @@ h3{font-weight:750}
 <?php endif; ?>
 <script src="<?= e(asset('karsilama-sahne.js')) ?>" defer></script>
 <script src="<?= e(asset('karsilama-imza.js')) ?>" defer></script>
+<script src="<?= e(asset('karsilama-deneyim.js')) ?>" defer></script>
 </body>
 </html><?php
     exit;

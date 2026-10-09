@@ -396,7 +396,8 @@ function sgk_katki_uygula(int $orderId, int $customerId, array $rx): array
 {
     // 4.21.0: sipariş katalog teklifinden geldiyse SGK payı teklifte müşteriyle anlaşılan tutarda kalır
     // (üzerine tahmin yazılırsa bakiye, yani müşteriye söylenen tutar, değişirdi). Elle düzeltme sipariş sayfasından.
-    $teklifli = (bool) scalar("SELECT COUNT(*) FROM quotes WHERE converted_order_id = ? AND tip = 'katalog'", [$orderId]);
+    $teklifli = (bool) scalar("SELECT COUNT(*) FROM quotes WHERE converted_order_id = ? AND tip = 'katalog'", [$orderId])
+        || (bool) scalar('SELECT COUNT(*) FROM quote_gozlukler WHERE converted_order_id = ?', [$orderId]);   // 4.26.0: ek gözlük siparişi
     if ($teklifli) {
         $tutar = (float) scalar('SELECT sgk_amount FROM orders WHERE id = ?', [$orderId]);
     } else {

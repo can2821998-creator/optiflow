@@ -137,7 +137,13 @@ function sema_kur(PDO $p): void
         opt3_name TEXT NULL, opt3_desc TEXT NULL, opt3_price REAL NULL, converted_order_id INTEGER NULL, created_by INTEGER NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         tip TEXT NOT NULL DEFAULT 'serbest', frame_item_id INTEGER NULL, frame_desc TEXT NULL, frame_price REAL NOT NULL DEFAULT 0, lens_design TEXT NULL,
         sgk_amount REAL NOT NULL DEFAULT 0, discount_rate REAL NOT NULL DEFAULT 0, opt1_product_id INTEGER NULL, opt2_product_id INTEGER NULL, opt3_product_id INTEGER NULL,
-        secilen INTEGER NULL)");
+        secilen INTEGER NULL, gozluk_ad TEXT NULL, updated_at TEXT NULL, updated_by INTEGER NULL)");
+    // migrate_v32_teklif_gozlukler ile aynı sütunlar (4.26.0: teklifte 2. ve 3. gözlük)
+    $p->exec("CREATE TABLE quote_gozlukler (id INTEGER PRIMARY KEY AUTOINCREMENT, quote_id INTEGER NOT NULL REFERENCES quotes(id) ON DELETE CASCADE, sira INTEGER NOT NULL,
+        ad TEXT NOT NULL, frame_item_id INTEGER NULL, frame_desc TEXT NULL, frame_price REAL NOT NULL DEFAULT 0, lens_design TEXT NULL, sgk_amount REAL NOT NULL DEFAULT 0,
+        opt1_name TEXT NULL, opt1_desc TEXT NULL, opt1_price REAL NULL, opt1_product_id INTEGER NULL, opt2_name TEXT NULL, opt2_desc TEXT NULL, opt2_price REAL NULL,
+        opt2_product_id INTEGER NULL, opt3_name TEXT NULL, opt3_desc TEXT NULL, opt3_price REAL NULL, opt3_product_id INTEGER NULL, secilen INTEGER NULL,
+        converted_order_id INTEGER NULL, UNIQUE (quote_id, sira))");
     $p->exec("CREATE TABLE lens_products (id INTEGER PRIMARY KEY AUTOINCREMENT, brand TEXT NOT NULL, name TEXT NOT NULL, design TEXT NOT NULL DEFAULT 'tek_odak',
         tier TEXT NOT NULL DEFAULT 'dengeli', lens_index TEXT NULL, coating TEXT NULL, price REAL NULL, note TEXT NULL, is_active INTEGER NOT NULL DEFAULT 1, updated_at TEXT NULL,
         hammadde TEXT NULL, yuzey TEXT NULL)");

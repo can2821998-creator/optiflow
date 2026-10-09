@@ -11,15 +11,23 @@ if ($customerId > 0) {
 
 $quote = null;
 $quoteId = is_post() ? post_int('quote_id') : query_int('quote_id');
+// 4.26.0: çok gözlüklü teklifte her gözlük ayrı siparişe çevrilir (1: quotes satırı, 2–3: quote_gozlukler)
+$gozlukNo = max(1, is_post() ? post_int('gozluk') : query_int('gozluk'));
 if ($quoteId > 0) {
-    $quote = row('SELECT * FROM quotes WHERE id = ? AND converted_order_id IS NULL', [$quoteId]);
+    $quote = row('SELECT * FROM quotes WHERE id = ?', [$quoteId]);
+    $acik = $quote && ($gozlukNo === 1
+        ? empty($quote['converted_order_id'])
+        : (int) scalar('SELECT COUNT(*) FROM quote_gozlukler WHERE quote_id = ? AND sira = ? AND converted_order_id IS NULL', [$quoteId, $gozlukNo]) > 0);
+    if (!$acik) {
+        $quote = null;   // bu gözlük zaten siparişe dönmüş ya da yok
+    }
     if ($quote && !$customer && $quote['customer_id']) {
         $customer = find_customer((int) $quote['customer_id']);
     }
 }
 // 4.21.0: katalog teklifinin seçilen seçeneği → tutar, SGK payı, çerçeve ve not ön dolum (app/teklif.php)
 $secenek = is_post() ? post_int('secenek') : query_int('secenek');
-$onDolum = $quote ? teklif_siparis_on_dolum($quote, $secenek) : null;
+$onDolum = $quote ? teklif_siparis_on_dolum($quote, $secenek, $gozlukNo) : null;
 $tutarMetni = static fn(float $x): string => number_format($x, 2, ',', '.');
 
 if (is_post()) {
@@ -92,7 +100,7 @@ if (is_post()) {
             flash($err, 'error');
         }
         // 4.21.0: hata sonrası tekliften dönüştürme bağlamı da korunur (eskiden quote_id kayboluyordu)
-        $geri = array_filter(['customer_id' => $customer ? (int) $customer['id'] : null, 'quote_id' => $quote ? (int) $quote['id'] : null, 'secenek' => $onDolum ? $secenek : null]);
+        $geri = array_filter(['customer_id' => $customer ? (int) $customer['id'] : null, 'quote_id' => $quote ? (int) $quote['id'] : null, 'secenek' => $onDolum ? $secenek : null, 'gozluk' => $quote && $gozlukNo > 1 ? $gozlukNo : null]);
         redirect('order-new.php' . ($geri ? '?' . http_build_query($geri) : ''));
     }
 
@@ -162,7 +170,11 @@ if (is_post()) {
     $todayCount = (int) scalar("SELECT COUNT(*) FROM orders WHERE created_by = ? AND DATE(created_at) = CURDATE()", [$user['id']]);
     flash('Sipariş ' . order_no($orderId) . ' oluşturuldu. 🎉 Bugünkü ' . $todayCount . '. siparişiniz!');
     if ($quote) {
-        update('quotes', ['converted_order_id' => $orderId] + ($onDolum ? ['secilen' => $secenek] : []), 'id = ?', [$quote['id']]);
+        if ($gozlukNo === 1) {
+            update('quotes', ['converted_order_id' => $orderId] + ($onDolum ? ['secilen' => $secenek] : []), 'id = ?', [$quote['id']]);
+        } else {
+            update('quote_gozlukler', ['converted_order_id' => $orderId] + ($onDolum ? ['secilen' => $secenek] : []), 'quote_id = ? AND sira = ?', [$quote['id'], $gozlukNo]);
+        }
         if ($onDolum && $onDolum['sgk_amount'] > 0) {
             q('UPDATE orders SET sgk_amount = ? WHERE id = ?', [$onDolum['sgk_amount'], $orderId]);   // bakiye = teklifteki ödenecek
         }
@@ -179,7 +191,7 @@ page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipari�
 ?>
 <?php if ($quote && $onDolum): ?>
   <div class="alert alert-info">
-    <b>Teklif #<?= (int) $quote['id'] ?> siparişe çevriliyor (<?= e((string) $quote["opt{$secenek}_name"]) ?>).</b>
+    <b>Teklif #<?= (int) $quote['id'] ?> siparişe çevriliyor (<?= e(($gozlukNo > 1 || !empty($quote['gozluk_ad']) ? $onDolum['gozluk_ad'] . ' · ' : '') . ($quote["opt{$secenek}_name"] ?? '')) ?>).</b>
     Tutar, Medula payı (<?= money($onDolum['sgk_amount']) ?>), çerçeve ve not tekliften dolduruldu; müşteriden alınacak:
     <b><?= money($onDolum['total_amount'] - $onDolum['sgk_amount']) ?></b>.
   </div>
@@ -196,6 +208,7 @@ page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipari�
   <?= csrf_field() ?>
   <?php if ($quote): ?><input type="hidden" name="quote_id" value="<?= (int) $quote['id'] ?>"><?php endif; ?>
   <?php if ($onDolum): ?><input type="hidden" name="secenek" value="<?= (int) $secenek ?>"><?php endif; ?>
+  <?php if ($quote && $gozlukNo > 1): ?><input type="hidden" name="gozluk" value="<?= (int) $gozlukNo ?>"><?php endif; ?>
   <section class="card">
     <div class="card-head"><h2><span class="step">1</span> Müşteri</h2></div>
 

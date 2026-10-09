@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 8 Ekim 2026 (4.28.2 / Pro 5.5.0)*
+*Son güncelleme: 9 Ekim 2026 (4.29.0 / Pro 5.5.0)*
 
 ## Sürüm
-- **Sunucu 4.28.2**, şema **31**. Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.28.2** bekleniyor (dükkân adı sonrası kaydırma yok). 4.28.1 ve 4.28.0 canlıda doğrulandı. 4.24.1 canlıda doğrulandı. 4.22.2 canlıda doğrulandı (video + Instagram).
+- **Sunucu 4.29.0**, şema **32**. Masaüstü **OptiFlow Pro 5.5.0**.
+- **Canlı site: 4.29.0** bekleniyor (09.10 push; teklifte çok gözlük + düzenleme). 4.28.1 ve 4.28.0 canlıda doğrulandı. 4.24.1 canlıda doğrulandı. 4.22.2 canlıda doğrulandı (video + Instagram).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
@@ -16,7 +16,14 @@
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.26.0 — pazarlama stratejisi + fiyatlar)
+## Son oturum (4.29.0 — teklifte uzak + yakın gözlük, teklif düzenleme; TEKNOPLUS bilgisayarı)
+- Kullanıcı: "Tekliflerde düzenle yok; bazı müşteriler yakın + uzak, biz tek gözlük teklifi veriyoruz."
+- Teklifte 1–3 gözlük (gözlük 1 quotes satırında, 2–3 quote_gozlukler; şema 32), her gözlük ayrı siparişe döner
+  (order-new.php gozluk=N), düzenleme (teklif-yeni.php?id=…, serbest teklif quote.php içinde; siparişe dönmüşse kilitli).
+- Testler: tests/teklif/test.php 120 (çoklu gözlük, düzenleme, form → kayıt round-trip). Uçtan uca yerel deneme:
+  optiflow-yerel/video/teklif-test.mjs (yeni teklif uzak + yakın → görünüm → döküm → düzenle → yakın gözlüğü siparişe çevir).
+
+## Önceki oturum (4.26.0 — pazarlama stratejisi + fiyatlar)
 - Pazarlama stratejisi (konumlandırma, Instagram, laboratuvar/distribütör ortaklığı, tavsiye programı, deneme
   akışı, 90 günlük plan): `docs/PAZARLAMA-STRATEJISI-2026-10-07.html` (claude.ai artifact olarak da yayında).
 - Fiyatlar (kullanıcı kararı): Lite 499 ₺, Pro 999 ₺ / ay KDV dahil, yıllıkta %20 indirim. `app/pazarlama.php`

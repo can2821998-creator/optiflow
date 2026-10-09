@@ -152,14 +152,78 @@ ok(str_contains($dk, 'print-color-adjust:exact') && str_contains($dk, '@page{siz
 $td = (string) file_get_contents(dirname(__DIR__, 2) . '/app/partials/teklif-dokum.php');
 ok(str_contains($td, "dokum_sayfa_bas(") && str_contains($td, "'teklif-dokum.css'") && str_contains($td, 'dokum_bas(['), 'teklif dökümü ortak başlık/stil + teklife özel stil');
 
+echo "11) Çoklu gözlük (4.26.0): uzak + yakın, gözlük başına SGK ve sipariş\n";
+$GLOBALS['__kullanici'] = $personel;
+$ikili = ['customer_id' => (string) $mus['id'], 'discount_rate' => '10', 'gozluk_ad' => '',
+    'ek' => [2 => ['aktif' => '1', 'ad' => '', 'cerceve_tur' => 'elle', 'frame_desc' => 'Okuma çerçevesi', 'frame_price' => '1.500',
+        'urun' => [1 => (string) $cam1], 'cam_fiyat' => [1 => '3.000'], 'secenek_ad' => [1 => ''], 'sgk_var' => '1', 'lens_design' => 'tek_odak_yakin', 'sgk_amount' => ''],
+        3 => ['aktif' => '0', 'urun' => [1 => (string) $pasif]]]] + $temel;
+$idG = teklif_kaydet($ikili, $personel);
+$qG = row('SELECT * FROM quotes WHERE id = ?', [$idG]);
+$gz = teklif_gozlukleri($qG);
+esit(2, count($gz), 'iki gözlük (etkin olmayan 3. yok sayılır)');
+esit('Uzak gözlük', $gz[0]['ad'], 'adı boş gözlük 1: Uzak gözlük');
+esit('Yakın gözlük', $gz[1]['ad'], 'adı boş gözlük 2: Yakın gözlük');
+esit('Uzak gözlük', $qG['gozluk_ad'], 'çoklu teklifte gözlük 1 adı saklanır');
+esit(160.0, (float) $gz[1]['sgk_amount'], 'yakın gözlüğün kendi SGK payı (tahmin)');
+esit(round((3000 + 1500 - 160) * 0.9, 2), $gz[1]['secenekler'][0]['hesap']['odenecek'], 'yakın gözlük: teklifin iskontosuyla hesap');
+[$az, $cok] = teklif_toplam_aralik($gz);
+$tut = static fn(array $g): array => array_map(static fn($x) => $x['hesap']['odenecek'], $g['secenekler']);
+esit(round(min($tut($gz[0])) + min($tut($gz[1])), 2), $az, 'toplam: her gözlüğün en uygun seçeneği');
+esit(round(max($tut($gz[0])) + max($tut($gz[1])), 2), $cok, 'toplam: her gözlüğün en kapsamlı seçeneği');
+ok($az < $cok, 'toplam aralığı: en uygun < en kapsamlı');
+$odY = teklif_siparis_on_dolum($qG, 1, 2);
+esit('Okuma çerçevesi', $odY['frame_info'], 'yakın gözlüğün siparişi kendi çerçevesiyle');
+esit('tek_odak_yakin', $odY['lens_design'], 'yakın gözlüğün kullanım şekli');
+esit(round(160 + (3000 + 1500 - 160) * 0.9, 2), $odY['total_amount'], 'yakın gözlük sipariş tutarı = SGK + ödenecek');
+ok(str_contains($odY['notes'], 'Yakın gözlük'), 'sipariş notunda gözlük adı');
+esit(null, teklif_siparis_on_dolum($qG, 1, 3), 'olmayan gözlük: ön dolum yok');
+esit('Uzak gözlük', teklif_siparis_on_dolum($qG, 1)['gozluk_ad'], 'gözlük verilmezse gözlük 1 (eski çağrı biçimi)');
+$waG = teklif_whatsapp_metni($qG, 'Örnek Optik');
+ok(str_contains($waG, 'YAKIN GÖZLÜK') && str_contains($waG, 'Toplam (2 gözlük)'), 'WhatsApp: gözlük başlıkları ve toplam');
+hata_bekle(fn() => teklif_kaydet(['ek' => [2 => ['aktif' => '1', 'ad' => 'Güneş', 'cerceve_tur' => 'kendi', 'urun' => []]]] + $ikili, $personel), 'ek gözlükte cam zorunlu, hata gözlük adıyla', 'Güneş: Katalogdan en az bir cam');
+esit(1, count(teklif_gozlukleri(row('SELECT * FROM quotes WHERE id = ?', [$id]))), 'eski tek gözlüklü teklif: 1 gözlük');
+esit('Gözlük', teklif_gozlukleri(row('SELECT * FROM quotes WHERE id = ?', [$id]))[0]['ad'], 'tek gözlük adı: Gözlük');
+
+echo "12) Teklif düzenleme\n";
+$idF = teklif_kaydet($ikili, $personel);
+$form = teklif_form_degerleri(row('SELECT * FROM quotes WHERE id = ?', [$idF]));
+esit('stok', $form['cerceve_tur'], 'form: stok çerçeve');
+esit('1', $form['ek'][2]['aktif'], 'form: ek gözlük etkin');
+esit('elle', $form['ek'][2]['cerceve_tur'], 'form: ek gözlüğün elle çerçevesi');
+esit('3.000,00', $form['ek'][2]['cam_fiyat'][1], 'form: fiyat Türkçe biçimde');
+$onceF = teklif_gozlukleri(row('SELECT * FROM quotes WHERE id = ?', [$idF]));
+teklif_kaydet($form, $personel, $idF);
+$sonraF = teklif_gozlukleri(row('SELECT * FROM quotes WHERE id = ?', [$idF]));
+esit(array_map(static fn($g) => [$g['ad'], $g['frame_desc'], (float) $g['sgk_amount'], array_map(static fn($s) => $s['hesap']['odenecek'], $g['secenekler'])], $onceF),
+    array_map(static fn($g) => [$g['ad'], $g['frame_desc'], (float) $g['sgk_amount'], array_map(static fn($s) => $s['hesap']['odenecek'], $g['secenekler'])], $sonraF),
+    'formdan değiştirmeden kaydetmek teklifi aynen korur');
+$duz = teklif_kaydet(['discount_rate' => '5', 'gozluk_ad' => 'Bilgisayar gözlüğü', 'ek' => []] + $ikili, $personel, $idG);
+esit($idG, $duz, 'aynı teklif güncellendi');
+$qD = row('SELECT * FROM quotes WHERE id = ?', [$idG]);
+esit(5.0, (float) $qD['discount_rate'], 'iskonto güncellendi');
+esit('Bilgisayar gözlüğü', $qD['gozluk_ad'], 'elle yazılan gözlük adı');
+esit(0, (int) scalar('SELECT COUNT(*) FROM quote_gozlukler WHERE quote_id = ?', [$idG]), 'kaldırılan ek gözlük silindi');
+esit((int) $qG['created_by'], (int) $qD['created_by'], 'hazırlayan değişmez');
+ok($qD['updated_at'] !== null && (int) $qD['updated_by'] === 2, 'güncelleyen ve zaman saklanır');
+esit($idF, (int) scalar('SELECT MAX(id) FROM quotes'), 'düzenleme yeni teklif açmaz');
+q('UPDATE quotes SET converted_order_id = 77 WHERE id = ?', [$idG]);
+hata_bekle(fn() => teklif_kaydet($ikili, $personel, $idG), 'siparişe dönmüş teklif düzenlenemez', 'düzenlenemez');
+$idH = teklif_kaydet($ikili, $personel);
+q('UPDATE quote_gozlukler SET converted_order_id = 78 WHERE quote_id = ?', [$idH]);
+hata_bekle(fn() => teklif_kaydet($ikili, $personel, $idH), 'ek gözlüğü siparişe dönen teklif de düzenlenemez', 'düzenlenemez');
+hata_bekle(fn() => teklif_kaydet($ikili, $personel, $serbest), 'serbest teklif bu ekrandan düzenlenmez', 'bulunamadı');
+
 echo "10) Kaynak denetimleri\n";
 $kok = dirname(__DIR__, 2);
 $mig = (string) file_get_contents($kok . '/app/migrations.php');
-ok(str_contains($mig, 'const SCHEMA_VERSION = 31;') && str_contains($mig, 'migrate_v31_katalog_teklif'), 'göç v31');
+ok(str_contains($mig, 'const SCHEMA_VERSION = 32;') && str_contains($mig, 'migrate_v31_katalog_teklif') && str_contains($mig, 'migrate_v32_teklif_gozlukler'), 'göç v31 + v32 (çoklu gözlük)');
 $dom = (string) file_get_contents($kok . '/app/domain.php');
 ok(str_contains($dom, "FROM quotes WHERE converted_order_id = ? AND tip = 'katalog'"), 'reçete kaydı teklifteki SGK payını ezmez');
 $on = (string) file_get_contents($kok . '/app/pages/order-new.php');
-ok(str_contains($on, 'teklif_siparis_on_dolum($quote, $secenek)') && str_contains($on, "'quote_id' => \$quote ? (int) \$quote['id'] : null"), 'sipariş ekranı ön dolum + hata sonrası teklif bağlamı');
+ok(str_contains($on, 'teklif_siparis_on_dolum($quote, $secenek, $gozlukNo)') && str_contains($on, "'quote_id' => \$quote ? (int) \$quote['id'] : null"), 'sipariş ekranı ön dolum + hata sonrası teklif bağlamı');
+ok(str_contains($on, "update('quote_gozlukler', ['converted_order_id' => \$orderId]") && str_contains($on, 'name="gozluk"'), 'ek gözlük kendi siparişine bağlanır');
+ok(str_contains($dom, 'FROM quote_gozlukler WHERE converted_order_id = ?'), 'ek gözlük siparişinde de teklifteki SGK payı korunur');
 $ty = (string) file_get_contents($kok . '/app/pages/teklif-yeni.php');
 ok(!preg_match('/<script>|onclick=|onchange=/', $ty) && str_contains($ty, "page_end(['teklif.js'])"), 'teklif ekranı: satır içi betik yok (CSP)');
 $st = (string) file_get_contents($kok . '/app/pages/settings.php');

@@ -93,14 +93,23 @@ page_header('Teklifler', 'Müşteriye katalogdaki camlarla 1–3 seçenekli tekl
             <tr>
               <td><a class="cell-link" href="quote.php?id=<?= (int) $q['id'] ?>"><b><?= e($q['customer_name']) ?></b><small class="block muted"><?= $q['customer_phone'] ? e(phone_display($q['customer_phone'])) : '—' ?></small></a></td>
               <td class="hide-sm">
-                <?php foreach (teklif_secenekleri($q) as $s): // 4.21.0: katalog teklifinde ödenecek tutar ?>
-                  <span class="badge sm <?= (int) ($q['secilen'] ?? 0) === $s['no'] ? 'tone-green' : 'tone-gray' ?>"><?= e($s['baslik']) ?><?= isset($s['hesap']) ? ' · ' . money($s['hesap']['odenecek']) : ($s['fiyat'] !== null ? ' · ' . money($s['fiyat']) : '') ?></span>
-                <?php endforeach; ?>
-                <?php if ($q['converted_order_id']): ?><span class="badge sm tone-green">Siparişe döndü</span><?php endif; ?>
+                <?php $gzl = teklif_gozlukleri($q); if (count($gzl) > 1): // 4.26.0: çok gözlüklü teklif — gözlük başına en uygun tutar ?>
+                  <?php foreach ($gzl as $gz): $tutarlar = array_map(static fn($x) => $x['hesap']['odenecek'], $gz['secenekler']); ?>
+                    <span class="badge sm <?= $gz['converted_order_id'] ? 'tone-green' : 'tone-gray' ?>"><?= e($gz['ad']) ?><?= $tutarlar ? ' · ' . money(min($tutarlar)) . (count($tutarlar) > 1 ? '\'den' : '') : '' ?></span>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <?php foreach (teklif_secenekleri($q) as $s): // 4.21.0: katalog teklifinde ödenecek tutar ?>
+                    <span class="badge sm <?= (int) ($q['secilen'] ?? 0) === $s['no'] ? 'tone-green' : 'tone-gray' ?>"><?= e($s['baslik']) ?><?= isset($s['hesap']) ? ' · ' . money($s['hesap']['odenecek']) : ($s['fiyat'] !== null ? ' · ' . money($s['fiyat']) : '') ?></span>
+                  <?php endforeach; ?>
+                <?php endif; ?>
+                <?php if ($donmus = teklif_siparise_donmus($q)): ?><span class="badge sm tone-green">Siparişe döndü</span><?php endif; ?>
               </td>
               <td class="hide-md"><?= e($q['created_by_name'] ?: '—') ?></td>
               <td class="hide-md"><?= date_tr($q['created_at']) ?></td>
-              <td><a class="btn btn-ghost btn-sm" href="quote.php?id=<?= (int) $q['id'] ?>">Aç</a></td>
+              <td class="nowrap">
+                <?php if (!$donmus): // 4.26.0 düzenleme ?><a class="btn btn-ghost btn-sm" href="<?= ($q['tip'] ?? 'serbest') === 'katalog' ? 'teklif-yeni.php?id=' . (int) $q['id'] : 'quote.php?id=' . (int) $q['id'] . '&amp;duzenle=1#duzenle' ?>"><?= icon('edit') ?> Düzenle</a><?php endif; ?>
+                <a class="btn btn-ghost btn-sm" href="quote.php?id=<?= (int) $q['id'] ?>">Aç</a>
+              </td>
             </tr>
           <?php endforeach; ?>
         </tbody>

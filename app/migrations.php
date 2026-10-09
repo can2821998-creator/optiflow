@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 31;
+const SCHEMA_VERSION = 32;
 
 function run_migrations(): void
 {
@@ -69,6 +69,7 @@ function run_migrations(): void
         if ($current < 29) { migrate_v29_hizli_satis(); set_schema_version(29); }
         if ($current < 30) { migrate_v30_beni_hatirla(); set_schema_version(30); }
         if ($current < 31) { migrate_v31_katalog_teklif(); set_schema_version(31); }
+        if ($current < 32) { migrate_v32_teklif_gozlukler(); set_schema_version(32); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1599,4 +1600,38 @@ function migrate_v31_katalog_teklif(): void
     add_column('lens_products', 'hammadde', 'VARCHAR(20) NULL');
     add_column('lens_products', 'yuzey', 'VARCHAR(20) NULL');
     db()->exec('ALTER TABLE lens_products MODIFY coating VARCHAR(255) NULL');
+}
+
+/** 4.26.0 — Bir teklifte birden çok gözlük (ör. uzak + yakın) ve teklif düzenleme.
+    Gözlük 1 eskisi gibi quotes satırında durur (gozluk_ad ile adı); 2. ve 3. gözlük quote_gozlukler'de, her birinin kendi
+    çerçevesi, 1–3 cam seçeneği, kullanım şekli, SGK payı, seçilen seçeneği ve siparişi olur. İskonto ve not teklif geneli. */
+function migrate_v32_teklif_gozlukler(): void
+{
+    add_column('quotes', 'gozluk_ad', 'VARCHAR(40) NULL');
+    add_column('quotes', 'updated_at', 'DATETIME NULL');
+    add_column('quotes', 'updated_by', 'INT UNSIGNED NULL');
+    db()->exec("CREATE TABLE IF NOT EXISTS quote_gozlukler (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        quote_id INT UNSIGNED NOT NULL,
+        sira TINYINT UNSIGNED NOT NULL,
+        ad VARCHAR(40) NOT NULL,
+        frame_item_id INT UNSIGNED NULL,
+        frame_desc VARCHAR(255) NULL,
+        frame_price DECIMAL(12,2) NOT NULL DEFAULT 0,
+        lens_design VARCHAR(20) NULL,
+        sgk_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+        opt1_name VARCHAR(60) NULL, opt1_desc VARCHAR(500) NULL, opt1_price DECIMAL(12,2) NULL, opt1_product_id INT UNSIGNED NULL,
+        opt2_name VARCHAR(60) NULL, opt2_desc VARCHAR(500) NULL, opt2_price DECIMAL(12,2) NULL, opt2_product_id INT UNSIGNED NULL,
+        opt3_name VARCHAR(60) NULL, opt3_desc VARCHAR(500) NULL, opt3_price DECIMAL(12,2) NULL, opt3_product_id INT UNSIGNED NULL,
+        secilen TINYINT UNSIGNED NULL,
+        converted_order_id INT UNSIGNED NULL,
+        UNIQUE KEY uq_qg_sira (quote_id, sira),
+        INDEX idx_qg_order (converted_order_id)
+    ) " . t_opts());
+    if (!constraint_exists('quote_gozlukler', 'fk_qg_quote')) {
+        db()->exec('ALTER TABLE quote_gozlukler ADD CONSTRAINT fk_qg_quote FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE CASCADE');
+    }
+    if (!constraint_exists('quote_gozlukler', 'fk_qg_order')) {
+        db()->exec('ALTER TABLE quote_gozlukler ADD CONSTRAINT fk_qg_order FOREIGN KEY (converted_order_id) REFERENCES orders(id) ON DELETE SET NULL');
+    }
 }

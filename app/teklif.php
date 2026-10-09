@@ -19,9 +19,23 @@ declare(strict_types=1);
    İskonto sınırı: personel en çok setting('teklif_iskonto_max', '10') %; süper yetkili sınırsız (en çok %100).
    Cam ve çerçeve bilgisi teklif anında kopyalanır: katalog fiyatı sonradan değişse de teklif değişmez.
    Taşınabilir SQL (testler SQLite'ta).
+
+   4.26.0 — Bir teklifte 1–3 gözlük (ör. uzak + yakın): gözlük 1 quotes satırında (adı gozluk_ad), 2. ve 3. gözlük
+   quote_gozlukler'de; her gözlüğün kendi çerçevesi, cam seçenekleri, kullanım şekli ve SGK payı vardır, iskonto ve not
+   teklif genelidir. Her gözlük ayrı siparişe çevrilir (atölyede ayrı iş). Siparişe dönmemiş teklif düzenlenebilir.
    ========================================================================== */
 
 const TEKLIF_SECENEK_SAYISI = 3;
+const TEKLIF_GOZLUK_SAYISI = 3;
+
+/** Adı yazılmamış gözlüğün adı: tek gözlükse "Gözlük", birden çoksa sırayla uzak / yakın / 3. */
+function teklif_gozluk_varsayilan_ad(int $sira, int $adet): string
+{
+    if ($adet <= 1) {
+        return 'Gözlük';
+    }
+    return [1 => 'Uzak gözlük', 2 => 'Yakın gözlük'][$sira] ?? $sira . '. gözlük';
+}
 
 /** Seçenek başına hesap. Tutarlar kuruşa yuvarlanır. */
 function teklif_hesapla(float $cam, float $cerceve, float $sgk, float $oran): array
@@ -109,25 +123,191 @@ function teklif_sgk_tahmini(string $kullanim): float
 }
 
 /**
- * Formdan teklifi doğrular ve kaydeder. Döner: teklif no. Hata: DomainException (kullanıcıya gösterilir).
- * $g: customer_id | first_name, last_name, phone ; cerceve_tur (stok|elle|kendi), frame_item_id, frame_desc,
- *     frame_price ; urun[1..3], cam_fiyat[1..3], secenek_ad[1..3] ; sgk_var, lens_design, sgk_amount ;
- *     discount_rate ; note
+ * Bir gözlüğün çerçeve, cam seçenekleri ve SGK alanlarını doğrular. $g: düz alanlar (gözlük 1 için formun kökü,
+ * ek gözlükler için ek[n]); $on: hata iletilerinin başı ("Yakın gözlük: " ya da tek gözlükte boş).
+ * Alanlar: cerceve_tur (stok|elle|kendi), frame_item_id, frame_desc, frame_price ; urun[1..3], cam_fiyat[1..3],
+ * secenek_ad[1..3] ; sgk_var, lens_design, sgk_amount
  */
-function teklif_kaydet(array $g, array $kullanici): int
+function teklif_gozluk_oku(array $g, string $on = ''): array
 {
     $p = static fn(string $k, string $d = ''): string => is_string($g[$k] ?? null) ? trim($g[$k]) : $d;
     $dizi = static fn(string $k): array => is_array($g[$k] ?? null) ? $g[$k] : [];
-    $para = static function (string $ham, string $alan): ?float {
+    $para = static function (string $ham, string $alan) use ($on): ?float {
         if (trim($ham) === '') {
             return null;
         }
         $v = parse_money($ham);
         if ($v === null || $v < 0) {
-            throw new DomainException($alan . ' geçersiz. Örnek: 4.250,00');
+            throw new DomainException($on . $alan . ' geçersiz. Örnek: 4.250,00');
         }
         return $v;
     };
+
+    // --- Çerçeve ---
+    $cerceveTur = $p('cerceve_tur', 'stok');
+    $frameItemId = null;
+    $frameDesc = '';
+    $framePrice = 0.0;
+    if ($cerceveTur === 'stok') {
+        $fid = (int) ($g['frame_item_id'] ?? 0);
+        if ($fid <= 0) {
+            throw new DomainException($on . 'Stoktan bir çerçeve seçin ya da "Elle yaz" / "Müşterinin kendi çerçevesi"ni seçin.');
+        }
+        $f = row('SELECT * FROM frame_items WHERE id = ? AND is_active = 1', [$fid]);
+        if (!$f) {
+            throw new DomainException($on . 'Seçilen çerçeve stokta bulunamadı.');
+        }
+        $frameItemId = $fid;
+        $frameDesc = frame_item_label($f);
+        $fiyat = $para($p('frame_price'), 'Çerçeve fiyatı');
+        $framePrice = $fiyat ?? (float) ($f['price'] ?? 0);
+    } elseif ($cerceveTur === 'elle') {
+        $frameDesc = mb_substr($p('frame_desc'), 0, 255);
+        if ($frameDesc === '') {
+            throw new DomainException($on . 'Çerçeve açıklamasını yazın (örn. Ray-Ban RB5154 52□21).');
+        }
+        $framePrice = $para($p('frame_price'), 'Çerçeve fiyatı') ?? 0.0;
+    } elseif ($cerceveTur === 'kendi') {
+        $frameDesc = 'Müşterinin kendi çerçevesi';
+    } else {
+        throw new DomainException($on . 'Çerçeve seçimi geçersiz.');
+    }
+
+    // --- Cam seçenekleri ---
+    $urunler = $dizi('urun');
+    $fiyatlar = $dizi('cam_fiyat');
+    $adlar = $dizi('secenek_ad');
+    $secenekler = [];
+    for ($i = 1; $i <= TEKLIF_SECENEK_SAYISI; $i++) {
+        $pid = (int) ($urunler[$i] ?? 0);
+        if ($pid <= 0) {
+            continue;
+        }
+        $u = row('SELECT * FROM lens_products WHERE id = ? AND is_active = 1', [$pid]);
+        if (!$u) {
+            throw new DomainException($on . 'Seçenek ' . $i . ': cam katalogda bulunamadı ya da pasif.');
+        }
+        $fiyat = $para(is_string($fiyatlar[$i] ?? null) ? $fiyatlar[$i] : '', 'Seçenek ' . $i . ' cam fiyatı');
+        if ($fiyat === null) {
+            $fiyat = $u['price'] !== null ? (float) $u['price'] : null;
+        }
+        if ($fiyat === null) {
+            throw new DomainException($on . 'Seçenek ' . $i . ': "' . trim($u['brand'] . ' ' . $u['name']) . '" için katalogda fiyat yok; fiyatı yazın.');
+        }
+        $et = teklif_cam_etiketi($u);
+        $baslik = mb_substr(trim(is_string($adlar[$i] ?? null) ? $adlar[$i] : ''), 0, 60);
+        $secenekler[] = [
+            'baslik' => $baslik !== '' ? $baslik : (product_tiers()[$u['tier']] ?? 'Seçenek ' . (count($secenekler) + 1)),
+            'urun'   => $u,
+            'ad'     => mb_substr($et['ad'], 0, 160),
+            'desc'   => mb_substr($et['ozellik'], 0, 400),
+            'not'    => mb_substr($et['not'], 0, 90),
+            'fiyat'  => $fiyat,
+        ];
+    }
+    if (!$secenekler) {
+        throw new DomainException($on . 'Katalogdan en az bir cam seçin.');
+    }
+
+    // --- SGK ---
+    $kullanim = $p('lens_design', 'tek_odak_uzak');
+    if (function_exists('lens_designs') && !isset(lens_designs()[$kullanim])) {
+        throw new DomainException($on . 'Kullanım şekli geçersiz.');
+    }
+    $sgk = 0.0;
+    if (($g['sgk_var'] ?? '') === '1') {
+        $sgk = $para($p('sgk_amount'), 'Medula (SGK) payı') ?? teklif_sgk_tahmini($kullanim);
+    }
+
+    // quotes / quote_gozlukler sütunları
+    $sutun = [
+        'frame_item_id' => $frameItemId,
+        'frame_desc'    => $frameDesc,
+        'frame_price'   => round($framePrice, 2),
+        'lens_design'   => $kullanim,
+        'sgk_amount'    => round($sgk, 2),
+    ];
+    foreach (range(1, TEKLIF_SECENEK_SAYISI) as $i) {
+        $s = $secenekler[$i - 1] ?? null;
+        $sutun["opt{$i}_name"] = $s['baslik'] ?? null;
+        // satır 1: cam adı · satır 2: özellikler · satır 3: katalog notu (varsa)
+        $sutun["opt{$i}_desc"] = $s ? $s['ad'] . "\n" . $s['desc'] . ($s['not'] !== '' ? "\n" . $s['not'] : '') : null;
+        $sutun["opt{$i}_price"] = $s ? round($s['fiyat'], 2) : null;
+        $sutun["opt{$i}_product_id"] = $s ? (int) $s['urun']['id'] : null;
+    }
+    return ['sutun' => $sutun, 'secenek' => count($secenekler)];
+}
+
+/** Düzenleme ekranı için kayıtlı katalog teklifini form alanlarına çevirir (teklif_kaydet'in beklediği biçim). */
+function teklif_form_degerleri(array $q): array
+{
+    $tl = static fn($x): string => $x === null ? '' : number_format((float) $x, 2, ',', '.');
+    $gozluk = static function (array $r) use ($tl): array {
+        $tur = !empty($r['frame_item_id']) ? 'stok' : ((string) $r['frame_desc'] === 'Müşterinin kendi çerçevesi' ? 'kendi' : 'elle');
+        $v = [
+            'cerceve_tur'   => $tur,
+            'frame_item_id' => $tur === 'stok' ? (string) (int) $r['frame_item_id'] : '',
+            'frame_desc'    => $tur === 'elle' ? (string) $r['frame_desc'] : '',
+            'frame_price'   => $tur === 'kendi' ? '' : $tl($r['frame_price']),
+            'lens_design'   => (string) ($r['lens_design'] ?: 'tek_odak_uzak'),
+            'sgk_var'       => (float) $r['sgk_amount'] > 0 ? '1' : '',
+            'sgk_amount'    => (float) $r['sgk_amount'] > 0 ? $tl($r['sgk_amount']) : '',
+            'urun' => [], 'cam_fiyat' => [], 'secenek_ad' => [],
+        ];
+        $n = 1;
+        for ($i = 1; $i <= TEKLIF_SECENEK_SAYISI; $i++) {
+            if (empty($r["opt{$i}_name"])) {
+                continue;
+            }
+            $v['urun'][$n] = (string) (int) $r["opt{$i}_product_id"];
+            $v['cam_fiyat'][$n] = $tl($r["opt{$i}_price"]);
+            $v['secenek_ad'][$n] = (string) $r["opt{$i}_name"];
+            $n++;
+        }
+        return $v;
+    };
+    $oran = (float) $q['discount_rate'];
+    $g = $gozluk($q) + [
+        'customer_id'   => (string) (int) $q['customer_id'],
+        'gozluk_ad'     => (string) ($q['gozluk_ad'] ?? ''),
+        'discount_rate' => $oran > 0 ? rtrim(rtrim(number_format($oran, 2, ',', ''), '0'), ',') : '',
+        'note'          => (string) ($q['note'] ?? ''),
+        'ek'            => [],
+    ];
+    foreach (rows('SELECT * FROM quote_gozlukler WHERE quote_id = ? ORDER BY sira', [(int) $q['id']]) as $e) {
+        $g['ek'][(int) $e['sira']] = ['aktif' => '1', 'ad' => (string) $e['ad']] + $gozluk($e);
+    }
+    return $g;
+}
+
+/** Teklif herhangi bir gözlüğüyle siparişe dönmüş mü? (Dönmüşse düzenlenemez.) */
+function teklif_siparise_donmus(array $q): bool
+{
+    return !empty($q['converted_order_id'])
+        || (int) scalar('SELECT COUNT(*) FROM quote_gozlukler WHERE quote_id = ? AND converted_order_id IS NOT NULL', [(int) $q['id']]) > 0;
+}
+
+/**
+ * Formdan teklifi doğrular ve kaydeder; $duzenleId verilirse o teklifi günceller. Döner: teklif no.
+ * Hata: DomainException (kullanıcıya gösterilir).
+ * $g: customer_id | first_name, last_name, phone ; gözlük 1 alanları (bkz. teklif_gozluk_oku) + gozluk_ad ;
+ *     ek[2..3][aktif=1, ad, …gözlük alanları] ; discount_rate ; note
+ */
+function teklif_kaydet(array $g, array $kullanici, int $duzenleId = 0): int
+{
+    $p = static fn(string $k, string $d = ''): string => is_string($g[$k] ?? null) ? trim($g[$k]) : $d;
+
+    // --- Düzenleme ---
+    $eski = null;
+    if ($duzenleId > 0) {
+        $eski = row('SELECT * FROM quotes WHERE id = ?', [$duzenleId]);
+        if (!$eski || ($eski['tip'] ?? 'serbest') !== 'katalog') {
+            throw new DomainException('Düzenlenecek teklif bulunamadı.');
+        }
+        if (teklif_siparise_donmus($eski)) {
+            throw new DomainException('Bu teklif siparişe dönmüş; düzenlenemez. Gerekirse yeni teklif hazırlayın.');
+        }
+    }
 
     // --- Müşteri ---
     $musteriId = (int) ($g['customer_id'] ?? 0);
@@ -147,80 +327,23 @@ function teklif_kaydet(array $g, array $kullanici): int
         }
     }
 
-    // --- Çerçeve ---
-    $cerceveTur = $p('cerceve_tur', 'stok');
-    $frameItemId = null;
-    $frameDesc = '';
-    $framePrice = 0.0;
-    if ($cerceveTur === 'stok') {
-        $fid = (int) ($g['frame_item_id'] ?? 0);
-        if ($fid <= 0) {
-            throw new DomainException('Stoktan bir çerçeve seçin ya da "Elle yaz" / "Müşterinin kendi çerçevesi"ni seçin.');
+    // --- Gözlükler: 1 (formun kökü) + etkin ek gözlükler (ek[2], ek[3]) ---
+    $ekler = [];
+    foreach (is_array($g['ek'] ?? null) ? $g['ek'] : [] as $n => $e) {
+        if ((int) $n >= 2 && (int) $n <= TEKLIF_GOZLUK_SAYISI && is_array($e) && ($e['aktif'] ?? '') === '1') {
+            $ekler[(int) $n] = $e;
         }
-        $f = row('SELECT * FROM frame_items WHERE id = ? AND is_active = 1', [$fid]);
-        if (!$f) {
-            throw new DomainException('Seçilen çerçeve stokta bulunamadı.');
-        }
-        $frameItemId = $fid;
-        $frameDesc = frame_item_label($f);
-        $fiyat = $para($p('frame_price'), 'Çerçeve fiyatı');
-        $framePrice = $fiyat ?? (float) ($f['price'] ?? 0);
-    } elseif ($cerceveTur === 'elle') {
-        $frameDesc = mb_substr($p('frame_desc'), 0, 255);
-        if ($frameDesc === '') {
-            throw new DomainException('Çerçeve açıklamasını yazın (örn. Ray-Ban RB5154 52□21).');
-        }
-        $framePrice = $para($p('frame_price'), 'Çerçeve fiyatı') ?? 0.0;
-    } elseif ($cerceveTur === 'kendi') {
-        $frameDesc = 'Müşterinin kendi çerçevesi';
-    } else {
-        throw new DomainException('Çerçeve seçimi geçersiz.');
     }
-
-    // --- Cam seçenekleri ---
-    $urunler = $dizi('urun');
-    $fiyatlar = $dizi('cam_fiyat');
-    $adlar = $dizi('secenek_ad');
-    $secenekler = [];
-    for ($i = 1; $i <= TEKLIF_SECENEK_SAYISI; $i++) {
-        $pid = (int) ($urunler[$i] ?? 0);
-        if ($pid <= 0) {
-            continue;
-        }
-        $u = row('SELECT * FROM lens_products WHERE id = ? AND is_active = 1', [$pid]);
-        if (!$u) {
-            throw new DomainException('Seçenek ' . $i . ': cam katalogda bulunamadı ya da pasif.');
-        }
-        $fiyat = $para(is_string($fiyatlar[$i] ?? null) ? $fiyatlar[$i] : '', 'Seçenek ' . $i . ' cam fiyatı');
-        if ($fiyat === null) {
-            $fiyat = $u['price'] !== null ? (float) $u['price'] : null;
-        }
-        if ($fiyat === null) {
-            throw new DomainException('Seçenek ' . $i . ': "' . trim($u['brand'] . ' ' . $u['name']) . '" için katalogda fiyat yok; fiyatı yazın.');
-        }
-        $et = teklif_cam_etiketi($u);
-        $baslik = mb_substr(trim(is_string($adlar[$i] ?? null) ? $adlar[$i] : ''), 0, 60);
-        $secenekler[] = [
-            'baslik' => $baslik !== '' ? $baslik : (product_tiers()[$u['tier']] ?? 'Seçenek ' . (count($secenekler) + 1)),
-            'urun'   => $u,
-            'ad'     => mb_substr($et['ad'], 0, 160),
-            'desc'   => mb_substr($et['ozellik'], 0, 400),
-            'not'    => mb_substr($et['not'], 0, 90),
-            'fiyat'  => $fiyat,
-        ];
-    }
-    if (!$secenekler) {
-        throw new DomainException('Katalogdan en az bir cam seçin.');
-    }
-
-    // --- SGK ---
-    $kullanim = $p('lens_design', 'tek_odak_uzak');
-    if (function_exists('lens_designs') && !isset(lens_designs()[$kullanim])) {
-        throw new DomainException('Kullanım şekli geçersiz.');
-    }
-    $sgk = 0.0;
-    if (($g['sgk_var'] ?? '') === '1') {
-        $sgk = $para($p('sgk_amount'), 'Medula (SGK) payı') ?? teklif_sgk_tahmini($kullanim);
+    ksort($ekler);
+    $adet = 1 + count($ekler);
+    $adYaz = static fn($ham, int $sira): string => mb_substr(trim(is_string($ham) ? $ham : ''), 0, 40) ?: teklif_gozluk_varsayilan_ad($sira, $adet);
+    $ad1 = $adYaz($g['gozluk_ad'] ?? '', 1);
+    $gozlukler = [1 => ['ad' => $ad1] + teklif_gozluk_oku($g, $adet > 1 ? $ad1 . ': ' : '')];
+    $sira = 1;
+    foreach ($ekler as $e) {
+        $sira++;
+        $ad = $adYaz($e['ad'] ?? '', $sira);
+        $gozlukler[$sira] = ['ad' => $ad] + teklif_gozluk_oku($e, $ad . ': ');
     }
 
     // --- İskonto ---
@@ -234,7 +357,7 @@ function teklif_kaydet(array $g, array $kullanici): int
         throw new DomainException('İskonto yetkiniz en çok %' . rtrim(rtrim(number_format($sinir, 2, ',', ''), '0'), ',') . '. Daha yüksek iskonto için yöneticinize başvurun.');
     }
 
-    return transaction(function () use ($musteri, $p, $kullanici, $frameItemId, $frameDesc, $framePrice, $secenekler, $kullanim, $sgk, $oran): int {
+    return transaction(function () use ($musteri, $p, $kullanici, $gozlukler, $adet, $oran, $eski, $g): int {
         if ($musteri) {
             $cid = (int) $musteri['id'];
         } else {
@@ -249,31 +372,32 @@ function teklif_kaydet(array $g, array $kullanici): int
             }
             $musteri = find_customer($cid);
         }
+        $adElle = trim(is_string($g['gozluk_ad'] ?? null) ? $g['gozluk_ad'] : '') !== '';
         $veri = [
             'tip'            => 'katalog',
             'customer_id'    => $cid,
             'customer_name'  => mb_substr(trim($musteri['first_name'] . ' ' . $musteri['last_name']), 0, 160),
             'customer_phone' => $musteri['phone'] ?: null,
             'note'           => mb_substr($p('note'), 0, 255) ?: null,
-            'frame_item_id'  => $frameItemId,
-            'frame_desc'     => $frameDesc,
-            'frame_price'    => round($framePrice, 2),
-            'lens_design'    => $kullanim,
-            'sgk_amount'     => round($sgk, 2),
+            'gozluk_ad'      => $adet > 1 || $adElle ? $gozlukler[1]['ad'] : null,
             'discount_rate'  => round($oran, 2),
-            'created_by'     => $kullanici['id'],
-            'created_at'     => date('Y-m-d H:i:s'),
-        ];
-        foreach (range(1, TEKLIF_SECENEK_SAYISI) as $i) {
-            $s = $secenekler[$i - 1] ?? null;
-            $veri["opt{$i}_name"] = $s['baslik'] ?? null;
-            // satır 1: cam adı · satır 2: özellikler · satır 3: katalog notu (varsa)
-            $veri["opt{$i}_desc"] = $s ? $s['ad'] . "\n" . $s['desc'] . ($s['not'] !== '' ? "\n" . $s['not'] : '') : null;
-            $veri["opt{$i}_price"] = $s ? round($s['fiyat'], 2) : null;
-            $veri["opt{$i}_product_id"] = $s ? (int) $s['urun']['id'] : null;
+        ] + $gozlukler[1]['sutun'];
+        if ($eski) {
+            $id = (int) $eski['id'];
+            update('quotes', $veri + ['secilen' => null, 'updated_at' => date('Y-m-d H:i:s'), 'updated_by' => $kullanici['id']], 'id = ?', [$id]);
+            q('DELETE FROM quote_gozlukler WHERE quote_id = ?', [$id]);
+        } else {
+            $id = insert('quotes', $veri + ['created_by' => $kullanici['id'], 'created_at' => date('Y-m-d H:i:s')]);
         }
-        $id = insert('quotes', $veri);
-        audit('quote_create', 'quote', $id, ['müşteri' => $veri['customer_name'], 'seçenek' => count($secenekler), 'iskonto %' => $oran, 'sgk' => $sgk]);
+        foreach ($gozlukler as $sira => $gz) {
+            if ($sira === 1) {
+                continue;
+            }
+            insert('quote_gozlukler', ['quote_id' => $id, 'sira' => $sira, 'ad' => $gz['ad']] + $gz['sutun']);
+        }
+        $ozet = ['müşteri' => $veri['customer_name'], 'gözlük' => $adet, 'seçenek' => array_sum(array_column($gozlukler, 'secenek')), 'iskonto %' => $oran,
+            'sgk' => array_sum(array_map(static fn($gz) => $gz['sutun']['sgk_amount'], $gozlukler))];
+        audit($eski ? 'quote_update' : 'quote_create', 'quote', $id, $ozet);
         return $id;
     });
 }
@@ -304,18 +428,72 @@ function teklif_secenekleri(array $q): array
     return $liste;
 }
 
-/** Siparişe çevirirken ön dolum: seçilen seçeneğin tutarı, SGK payı, çerçeve ve not. Katalog teklifi değilse null. */
-function teklif_siparis_on_dolum(array $q, int $secenek): ?array
+/**
+ * Katalog teklifinin gözlükleri (gözlük 1 quotes satırından, 2–3 quote_gozlukler'den), her biri seçenekleri ve
+ * hesabıyla: [sira, ad, frame_item_id, frame_desc, frame_price, lens_design, sgk_amount, secilen, converted_order_id, secenekler].
+ */
+function teklif_gozlukleri(array $q): array
+{
+    if (($q['tip'] ?? 'serbest') !== 'katalog') {
+        return [];
+    }
+    $ekler = !empty($q['id']) ? rows('SELECT * FROM quote_gozlukler WHERE quote_id = ? ORDER BY sira', [(int) $q['id']]) : [];
+    $adet = 1 + count($ekler);
+    $alanlar = ['frame_item_id', 'frame_desc', 'frame_price', 'lens_design', 'sgk_amount', 'secilen', 'converted_order_id'];
+    $liste = [];
+    $g1 = ['sira' => 1, 'ad' => (string) (($q['gozluk_ad'] ?? '') ?: teklif_gozluk_varsayilan_ad(1, $adet))];
+    foreach ($alanlar as $a) {
+        $g1[$a] = $q[$a] ?? null;
+    }
+    $liste[] = $g1 + ['secenekler' => teklif_secenekleri($q)];
+    foreach ($ekler as $e) {
+        $gz = ['sira' => (int) $e['sira'], 'ad' => (string) $e['ad']];
+        foreach ($alanlar as $a) {
+            $gz[$a] = $e[$a] ?? null;
+        }
+        // seçenek hesabı teklifin iskontosuyla
+        $liste[] = $gz + ['secenekler' => teklif_secenekleri(['tip' => 'katalog', 'discount_rate' => $q['discount_rate']] + $e)];
+    }
+    return $liste;
+}
+
+/** Gözlüklerin en uygun ve en kapsamlı seçeneklerle toplam ödenecek tutarı: [en_az, en_cok]. */
+function teklif_toplam_aralik(array $gozlukler): array
+{
+    $az = 0.0;
+    $cok = 0.0;
+    foreach ($gozlukler as $gz) {
+        $tutarlar = array_map(static fn($s) => $s['hesap']['odenecek'], $gz['secenekler']);
+        if ($tutarlar) {
+            $az += min($tutarlar);
+            $cok += max($tutarlar);
+        }
+    }
+    return [round($az, 2), round($cok, 2)];
+}
+
+/** Siparişe çevirirken ön dolum: seçilen gözlüğün seçilen seçeneği → tutar, SGK payı, çerçeve ve not. Katalog teklifi değilse null. */
+function teklif_siparis_on_dolum(array $q, int $secenek, int $gozluk = 1): ?array
 {
     if (($q['tip'] ?? 'serbest') !== 'katalog') {
         return null;
     }
-    foreach (teklif_secenekleri($q) as $s) {
+    $gozlukler = teklif_gozlukleri($q);
+    $gz = null;
+    foreach ($gozlukler as $aday) {
+        if ($aday['sira'] === $gozluk) {
+            $gz = $aday;
+        }
+    }
+    if (!$gz) {
+        return null;
+    }
+    foreach ($gz['secenekler'] as $s) {
         if ($s['no'] !== $secenek) {
             continue;
         }
         $h = $s['hesap'];
-        $not = 'Teklif #' . (int) $q['id'] . ' · ' . $s['baslik'] . ': ' . $s['cam'] . ($s['ozellik'] !== '' ? ' (' . $s['ozellik'] . ')' : '')
+        $not = 'Teklif #' . (int) $q['id'] . (count($gozlukler) > 1 ? ' · ' . $gz['ad'] : '') . ' · ' . $s['baslik'] . ': ' . $s['cam'] . ($s['ozellik'] !== '' ? ' (' . $s['ozellik'] . ')' : '')
             . "\nCam " . money($h['cam']) . ' + çerçeve ' . money($h['cerceve'])
             . ($h['sgk'] > 0 ? ' − SGK ' . money($h['sgk']) : '')
             . ($h['iskonto'] > 0 ? ' − iskonto %' . rtrim(rtrim(number_format($h['oran'], 2, ',', ''), '0'), ',') . ' (' . money($h['iskonto']) . ')' : '')
@@ -323,9 +501,11 @@ function teklif_siparis_on_dolum(array $q, int $secenek): ?array
         return [
             'total_amount'  => round($h['sgk'] + $h['odenecek'], 2),   // bakiye = toplam − SGK − ödenen = ödenecek
             'sgk_amount'    => $h['sgk'],
-            'frame_item_id' => $q['frame_item_id'] ? (int) $q['frame_item_id'] : null,
-            'frame_info'    => (string) $q['frame_desc'],
+            'frame_item_id' => $gz['frame_item_id'] ? (int) $gz['frame_item_id'] : null,
+            'frame_info'    => (string) $gz['frame_desc'],
             'notes'         => $not,
+            'gozluk_ad'     => $gz['ad'],
+            'lens_design'   => (string) $gz['lens_design'],
         ];
     }
     return null;
@@ -336,16 +516,28 @@ function teklif_whatsapp_metni(array $q, string $magaza): string
 {
     $m = 'Merhaba ' . $q['customer_name'] . ",\nfiyat teklifimiz:\n";
     if (($q['tip'] ?? 'serbest') === 'katalog') {
-        $m .= "\nÇerçeve: " . $q['frame_desc'] . ((float) $q['frame_price'] > 0 ? ' — ' . money($q['frame_price']) : '') . "\n";
-        foreach (teklif_secenekleri($q) as $s) {
-            $h = $s['hesap'];
-            $m .= "\n• " . $s['baslik'] . ': ' . $s['cam'] . ($s['ozellik'] !== '' ? "\n  " . $s['ozellik'] : '')
-                . "\n  Cam " . money($h['cam']) . ' + çerçeve ' . money($h['cerceve']) . ' = ' . money($h['ara'])
-                . ($h['sgk'] > 0 ? "\n  SGK (Medula) payı −" . money($h['sgk']) : '')
-                . ($h['iskonto'] > 0 ? "\n  İskonto %" . rtrim(rtrim(number_format($h['oran'], 2, ',', ''), '0'), ',') . ' −' . money($h['iskonto']) : '')
-                . "\n  *Ödenecek: " . money($h['odenecek']) . "*\n";
+        $gozlukler = teklif_gozlukleri($q);
+        $sgkVar = false;
+        foreach ($gozlukler as $gz) {
+            if (count($gozlukler) > 1) {
+                $m .= "\n*" . mb_strtoupper($gz['ad'], 'UTF-8') . "*";
+            }
+            $m .= "\nÇerçeve: " . $gz['frame_desc'] . ((float) $gz['frame_price'] > 0 ? ' — ' . money($gz['frame_price']) : '') . "\n";
+            $sgkVar = $sgkVar || (float) $gz['sgk_amount'] > 0;
+            foreach ($gz['secenekler'] as $s) {
+                $h = $s['hesap'];
+                $m .= "\n• " . $s['baslik'] . ': ' . $s['cam'] . ($s['ozellik'] !== '' ? "\n  " . $s['ozellik'] : '')
+                    . "\n  Cam " . money($h['cam']) . ' + çerçeve ' . money($h['cerceve']) . ' = ' . money($h['ara'])
+                    . ($h['sgk'] > 0 ? "\n  SGK (Medula) payı −" . money($h['sgk']) : '')
+                    . ($h['iskonto'] > 0 ? "\n  İskonto %" . rtrim(rtrim(number_format($h['oran'], 2, ',', ''), '0'), ',') . ' −' . money($h['iskonto']) : '')
+                    . "\n  *Ödenecek: " . money($h['odenecek']) . "*\n";
+            }
         }
-        if ((float) $q['sgk_amount'] > 0) {
+        if (count($gozlukler) > 1) {
+            [$az, $cok] = teklif_toplam_aralik($gozlukler);
+            $m .= "\n*Toplam (" . count($gozlukler) . ' gözlük): ' . ($az === $cok ? money($az) : money($az) . ' – ' . money($cok)) . "*\n";
+        }
+        if ($sgkVar) {
             $m .= "\nSGK payı tahminidir; kesin tutar Medula'da reçete işlenince belli olur.\n";
         }
     } else {

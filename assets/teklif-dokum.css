@@ -46,6 +46,17 @@
 .satirlar{list-style:none;margin:0;padding:0;display:grid;gap:3px}
 .satirlar li{position:relative;padding-left:14px;font-size:10px;color:var(--ink-2);line-height:1.4}
 .satirlar li::before{content:"";position:absolute;left:2px;top:5px;width:6px;height:6px;border-radius:2px;background:var(--grad)}
+/* 4.26.0 — çok gözlüklü teklif: gözlük başlığı ve toplam şeridi */
+.gozluk-bas{display:flex;align-items:center;gap:10px;margin:7mm 12mm -2mm;break-after:avoid}
+.tema-bilet .gozluk-bas{margin-left:10mm;margin-right:10mm}
+.gozluk-no{display:grid;place-items:center;flex:none;width:26px;height:26px;border-radius:8px;background:var(--grad);color:#fff;font:800 12px Manrope,sans-serif}
+.gozluk-bas h2{margin:0;font-family:var(--display);font-stretch:var(--display-w);font-weight:800;font-size:17px;line-height:1.15;letter-spacing:var(--display-ls)}
+.gozluk-bas p{margin:1px 0 0;font-size:9.5px;color:var(--ink-2)}
+.toplam-serit{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6mm 12mm 0;padding:11px 16px;border-radius:16px;background:var(--gece);color:#fff;break-inside:avoid}
+.tema-bilet .toplam-serit{margin-left:10mm;margin-right:10mm}
+.toplam-serit b{display:block;font-size:12px}
+.toplam-serit small{display:block;font-size:9px;color:rgba(255,255,255,.7)}
+.toplam-serit strong{font-family:var(--display);font-stretch:var(--display-w);font-weight:800;font-size:22px;letter-spacing:var(--display-ls);font-variant-numeric:tabular-nums}
 @media screen and (max-width:840px){
   .secenekler.n2,.secenekler.n3,.alt-iki{grid-template-columns:1fr}
   .sozluk dl{grid-template-columns:1fr}

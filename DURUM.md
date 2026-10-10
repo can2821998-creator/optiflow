@@ -3,7 +3,7 @@
 *Son güncelleme: 10 Ekim 2026 (4.30.0 / Pro 5.5.0 / Asistan 1.0.0)*
 
 ## Sürüm
-- **Sunucu 4.30.0** (dal `oturum/asistan`, main'e birleştirilmedi), şema **33**. Android **OptiFlow Asistan 1.0.0** (önizleme APK: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.
+- **Sunucu 4.30.0**, şema **33** (10.10 main'e birleştirildi; Sürüm yayınla + Canlıya al). Android **OptiFlow Asistan 1.0.0** (önizleme APK: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.
 - **Canlı site: 4.29.0** bekleniyor (09.10 push; teklifte çok gözlük + düzenleme). 4.28.1 ve 4.28.0 canlıda doğrulandı. 4.24.1 canlıda doğrulandı. 4.22.2 canlıda doğrulandı (video + Instagram).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
@@ -16,7 +16,7 @@
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.30.0 — telefon asistanı; dal `oturum/asistan`)
+## Son oturum (4.30.0 — telefon asistanı)
 - Kullanıcı (Poyraz Optik): "Mağazaya gelen telefonları yakalamakta zorlanıyorum; asistan otomatik cevaplasın, 'Poyraz
   Optik'e hoş geldiniz' desin, sistemden bilgi verip cevaplasın." Kararlar: üçüncü parti YOK; mağaza telefonu Android 13+
   (Vodafone); asistan aynı telefonda, kimse açmazsa birkaç çalıştan sonra açar. SMS önerisini beğenmedi.
@@ -27,7 +27,8 @@
 - **Gerçek telefonda DENENMEDİ.** Riskler: görüşmede mikrofon paylaşımı (erişilebilirlik istisnası), TTS'in karşı tarafa
   hoparlörden duyulması, EXTRA_AUDIO_SOURCE desteği. Tanılama: sayfadaki "Uygulama olayları" (ses seviyesi).
 - Bekleyen: kullanıcı GitHub'a ASISTAN_KEYSTORE_B64 / ASISTAN_KEYSTORE_SIFRE sırlarını ekleyecek (dosya sohbette verildi);
-  denemek için "gite yükle" (canlıya alma) gerekli; sonra merkez panelden özelliği açıp telefonda kurulum.
+  10.10 "gite yükle" ile canlıya alındı; sıradaki: merkez panelden özelliği açıp telefonda kurulum + ilk gerçek arama,
+  "Uygulama olayları"na göre düzeltme.
 
 ## Son oturum (4.29.0 — teklifte uzak + yakın gözlük, teklif düzenleme; TEKNOPLUS bilgisayarı)
 - Kullanıcı: "Tekliflerde düzenle yok; bazı müşteriler yakın + uzak, biz tek gözlük teklifi veriyoruz."

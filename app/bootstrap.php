@@ -129,6 +129,7 @@ require __DIR__ . '/garanti.php';  // 4.16.0 garanti kaydı ve garanti kartı
 require __DIR__ . '/satis.php';    // 4.17.0 hızlı satış ve ürün kataloğu
 require __DIR__ . '/teklif.php';   // 4.21.0 katalogdan teklif (cam + çerçeve + SGK + iskonto)
 require __DIR__ . '/dokum.php';    // 4.22.0 ortak döküm (yazdırılan belge) yapı taşları
+require __DIR__ . '/asistan.php';  // 4.30.0 telefon asistanı (Android uygulamasıyla konuşma)
 require __DIR__ . '/karsilama.php';
 
 set_exception_handler('handle_fatal');
@@ -160,7 +161,7 @@ $kokIstek = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'index.php'
 $GLOBALS['__kok_istek'] = $kokIstek;
 
 if (!tenant_oturum() && isset($_COOKIE[HATIRLA_MAGAZA_CEREZ]) && !$kokIstek
-    && !in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['cron.php', 'odeme-bildirim.php', 'kayit.php', 'merkez-panel.php', 'tesekkurler.php'], true)) {
+    && !in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['cron.php', 'odeme-bildirim.php', 'kayit.php', 'merkez-panel.php', 'tesekkurler.php', 'asistan.php'], true)) {
     magaza_hatirla_dene();
 }
 
@@ -184,7 +185,7 @@ $kopruUcNoktasi = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'sgk-ak
  * doğrulamasını yapar (PayTR: HMAC imzası; cron: gizli anahtar). Mağaza veritabanını
  * uç noktanın kendisi, doğrulamadan SONRA seçer.
  */
-$sunucuUcNoktasi = in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['cron.php', 'odeme-bildirim.php'], true);
+$sunucuUcNoktasi = in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['cron.php', 'odeme-bildirim.php', 'asistan.php'], true);   // 4.30.0 asistan.php: telefon asistanı (cihaz anahtarı)
 
 /*
  * 4.16.0 — Müşteriye verilen sayfalar (fiş / garanti kartı karekodu): müşterinin mağaza oturumu

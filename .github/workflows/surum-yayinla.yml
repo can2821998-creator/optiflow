@@ -145,7 +145,7 @@ jobs:
           mkdir paket
           git archive HEAD | tar -x -C paket
           cd paket
-          rm -rf desktop tests docs .github .gitignore ./*.md
+          rm -rf desktop android tests docs .github .gitignore ./*.md
           rm -f indir/masaustu/*.blockmap indir/masaustu/latest.yml
           cp ../masaustu/*.blockmap indir/masaustu/        # blockmap, bu derlemenin exe'siyle eşleşmeli
           test ! -e config.php

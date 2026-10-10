@@ -1,0 +1,3 @@
+OptiFlow Asistan (Android) kurulum dosyası buraya, "Sürüm yayınla" iş akışı tarafından konur:
+  indir/asistan/OptiFlow-Asistan.apk
+Dosya git'te tutulmaz; GitHub Releases'ta ve hosting paketinde bulunur.

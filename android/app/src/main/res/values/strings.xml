@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OptiFlow Asistan</string>
+    <string name="erisim_adi">OptiFlow Asistan</string>
+    <string name="erisim_aciklama">Mağaza telefonuna gelen ve açılamayan aramaları karşılar: hoş geldiniz der, sipariş durumunu söyler, not alır. Görüşmede arayanı duyabilmek için bu izin gerekir. Ekrandaki içerik okunmaz.</string>
+</resources>

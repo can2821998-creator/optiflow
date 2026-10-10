@@ -1,0 +1,64 @@
+# OptiFlow Asistan (Android) — APK derlemesi.
+# android/ değişince her dalda derlenir (Actions › bu çalışma › Artifacts › OptiFlow-Asistan-apk);
+# "Sürüm yayınla" da bu iş akışını çağırıp APK'yı Release'e ve hosting paketine (indir/asistan/) koyar.
+#
+# İmza: ASISTAN_KEYSTORE_B64 (anahtar deposu, base64) ve ASISTAN_KEYSTORE_SIFRE sırları varsa onlarla
+# imzalanır — sürümler birbirinin üzerine kurulabilir. Sır yoksa GEÇİCİ bir anahtarla imzalanır:
+# kurulum çalışır ama bir sonraki sürümü kurmadan önce eskisini kaldırmak gerekir.
+name: Android asistan
+
+on:
+  push:
+    paths:
+      - android/**
+      - .github/workflows/android-asistan.yml
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    env:
+      ASISTAN_KEYSTORE_B64: ${{ secrets.ASISTAN_KEYSTORE_B64 }}
+      ASISTAN_KEYSTORE_SIFRE: ${{ secrets.ASISTAN_KEYSTORE_SIFRE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: İmza anahtarı
+        run: |
+          mkdir -p android/keystore
+          if [ -n "$ASISTAN_KEYSTORE_B64" ]; then
+            echo "$ASISTAN_KEYSTORE_B64" | base64 -d > android/keystore/asistan.jks
+            echo "ASISTAN_KEYSTORE=$GITHUB_WORKSPACE/android/keystore/asistan.jks" >> "$GITHUB_ENV"
+          else
+            echo "::warning::ASISTAN_KEYSTORE_B64 sırrı yok: APK geçici anahtarla imzalanıyor (güncellemede eskisini kaldırmak gerekir)."
+            S=$(openssl rand -hex 16)
+            keytool -genkeypair -keystore android/keystore/asistan.jks -storetype PKCS12 -alias asistan -keyalg RSA -keysize 3072 \
+              -validity 12000 -storepass "$S" -keypass "$S" -dname "CN=OptiFlow Asistan (gecici), O=OptiFlow, C=TR"
+            echo "ASISTAN_KEYSTORE=$GITHUB_WORKSPACE/android/keystore/asistan.jks" >> "$GITHUB_ENV"
+            echo "ASISTAN_KEYSTORE_SIFRE=$S" >> "$GITHUB_ENV"
+          fi
+      - name: Derle
+        working-directory: android
+        run: gradle --no-daemon assembleRelease
+      - name: Adlandır
+        run: |
+          V=$(cat android/app/surum.txt)
+          mkdir -p cikti
+          cp android/app/build/outputs/apk/release/app-release.apk "cikti/OptiFlow-Asistan.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "cikti/OptiFlow-Asistan-${V}.apk"
+          ls -la cikti
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OptiFlow-Asistan-apk
+          path: cikti/*.apk
+          if-no-files-found: error

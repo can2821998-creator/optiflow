@@ -94,6 +94,12 @@ function ozellik_tanimlari(): array
             'kisa'     => 'İnternet kesilince açık siparişler ve müşteri telefonları bilgisayarda şifreli kopyadan görüntülenir.',
             'masaustu' => true,
         ],
+        // 4.30.0 — mağazanın Android telefonundaki "OptiFlow Asistan" uygulaması (app/asistan.php)
+        'telefon_asistan' => [
+            'ad'       => 'Telefon asistanı',
+            'kisa'     => 'Açılamayan aramayı mağaza telefonundaki uygulama karşılar: hoş geldiniz der, sipariş / cam durumunu söyler, not alır.',
+            'masaustu' => false,
+        ],
         // 4.20.3 — telefon/tarayıcı (PWA) karşılığı: assets/pwa.js kopyayı tarayıcıda şifreli tutar, offline.html gösterir
         'cevrimdisi_tel' => [
             'ad'       => 'Telefonda çevrimdışı kopya',

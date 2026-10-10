@@ -386,6 +386,9 @@ function ozellik_menusu_ekle(array &$nav): void
     if (ozellik_acik('whatsapp')) {
         $ekle($a, 'hatirlatma', ['mesajlar', 'mesajlar.php', 'WhatsApp mesajları', 'chat', wa_bekleyen_sayisi()]);
     }
+    if (ozellik_acik('telefon_asistan') && function_exists('asistan_rozet')) {   // 4.30.0
+        $ekle($a, 'hatirlatma', ['telefon-asistani', 'telefon-asistani.php', 'Telefon asistanı', 'bell', asistan_rozet()]);
+    }
     if (ozellik_acik('sgk_mutabakat')) {
         $ekle($a, 'sgk', ['sgk-mutabakat', 'sgk-mutabakat.php', 'SGK mutabakat', 'chart', 0]);
     }

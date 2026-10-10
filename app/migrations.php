@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 32;
+const SCHEMA_VERSION = 33;
 
 function run_migrations(): void
 {
@@ -70,6 +70,7 @@ function run_migrations(): void
         if ($current < 30) { migrate_v30_beni_hatirla(); set_schema_version(30); }
         if ($current < 31) { migrate_v31_katalog_teklif(); set_schema_version(31); }
         if ($current < 32) { migrate_v32_teklif_gozlukler(); set_schema_version(32); }
+        if ($current < 33) { migrate_v33_telefon_asistani(); set_schema_version(33); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1634,4 +1635,39 @@ function migrate_v32_teklif_gozlukler(): void
     if (!constraint_exists('quote_gozlukler', 'fk_qg_order')) {
         db()->exec('ALTER TABLE quote_gozlukler ADD CONSTRAINT fk_qg_order FOREIGN KEY (converted_order_id) REFERENCES orders(id) ON DELETE SET NULL');
     }
+}
+
+/** 4.30.0 — Telefon asistanı: eşleşen Android cihazlar ve aramalar (özet + geri arama). Konuşma metni tutulmaz. */
+function migrate_v33_telefon_asistani(): void
+{
+    db()->exec("CREATE TABLE IF NOT EXISTS asistan_cihazlar (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        ad VARCHAR(80) NOT NULL,
+        anahtar_ozet CHAR(64) NOT NULL,
+        aktif TINYINT(1) NOT NULL DEFAULT 1,
+        son_gorulme DATETIME NULL,
+        son_surum VARCHAR(20) NULL,
+        created_at DATETIME NOT NULL,
+        UNIQUE KEY uq_asistan_anahtar (anahtar_ozet)
+    ) " . t_opts());
+    db()->exec("CREATE TABLE IF NOT EXISTS asistan_aramalar (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        anahtar CHAR(24) NOT NULL,
+        cihaz_id INT UNSIGNED NULL,
+        numara VARCHAR(20) NOT NULL DEFAULT '',
+        customer_id INT UNSIGNED NULL,
+        sonuc VARCHAR(16) NOT NULL DEFAULT 'basladi',
+        ozet VARCHAR(1000) NOT NULL DEFAULT '',
+        not_metni VARCHAR(500) NULL,
+        geri_ara TINYINT(1) NOT NULL DEFAULT 0,
+        tamamlandi_at DATETIME NULL,
+        tamamlayan INT UNSIGNED NULL,
+        sure SMALLINT UNSIGNED NULL,
+        durum_json VARCHAR(1000) NOT NULL DEFAULT '{}',
+        created_at DATETIME NOT NULL,
+        updated_at DATETIME NOT NULL,
+        UNIQUE KEY uq_asistan_arama (anahtar),
+        INDEX idx_asistan_geri (geri_ara, tamamlandi_at),
+        INDEX idx_asistan_tarih (created_at)
+    ) " . t_opts());
 }

@@ -131,12 +131,22 @@ class AnaEkran : Activity() {
         if (servis == null) kutu.addView(dugme("Uygulama bilgisi (kısıtlanmış ayar)", false) {
             startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
         })
+        val uretici = Build.MANUFACTURER.lowercase()
+        if (uretici in listOf("xiaomi", "redmi", "poco", "tecno", "infinix", "itel", "oppo", "realme", "vivo", "huawei", "honor", "oneplus")) {
+            kutu.addView(yazi("${Build.MANUFACTURER} telefonlarda: uygulamanın arka planda kapatılmaması için \"Otomatik başlat\"ı açın ve pil ayarını \"Kısıtlama yok\" yapın. Erişilebilirlik ayarında \"Bu hizmet hatalı çalışıyor\" yazıyorsa sistem asistanı kapatmıştır.", 13.5f, false, bordo).apply { setPadding(0, dp(10), 0, 0) })
+            kutu.addView(dugme("Otomatik başlatma ayarı", false) { otomatikBaslat() })
+        }
         adim(pilSerbest(), "Pil kısıtlaması", "Telefon uygulamayı uyutmasın diye pil kısıtlamasını kaldırın.", "Kısıtlamayı kaldır") {
             startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName")))
         }
 
         kutu.addView(yazi("Deneme ve ayarlar", 18f, true).apply { setPadding(0, dp(20), 0, dp(2)) })
         kutu.addView(yazi("Deneme konuşması arama olmadan çalışır: asistan konuşur, siz telefona tuşa basmadan sesle cevap verin.", 13.5f, false, Color.parseColor("#4A3C41")))
+        kutu.addView(dugme("Ses testi (arama olmadan bir cümle söyler)", false) {
+            val sv = AsistanServisi.o
+            if (sv == null) Toast.makeText(this, "Önce \"Ses erişimi\"ni açın.", Toast.LENGTH_LONG).show()
+            else { sv.sesTesti(); ana.postDelayed({ ciz() }, 6000) }
+        })
         kutu.addView(dugme("Deneme konuşması başlat") { deneme() })
         kutu.addView(dugme(if (ayar.yerelAcik) "Bu telefonda duraklat" else "Bu telefonda yeniden başlat", false) {
             ayar.yerelAcik = !ayar.yerelAcik
@@ -153,12 +163,34 @@ class AnaEkran : Activity() {
                 .setNegativeButton("Vazgeç", null).show()
         })
 
+        getSharedPreferences("asistan", MODE_PRIVATE).getString("son_cokme", null)?.let { c ->
+            kutu.addView(yazi("Son çökme: $c", 12.5f, false, bordo).apply { setPadding(0, dp(16), 0, 0) })
+            kutu.addView(dugme("Çökme kaydını temizle", false) { getSharedPreferences("asistan", MODE_PRIVATE).edit().remove("son_cokme").apply(); ciz() })
+        }
         kutu.addView(yazi("Son olaylar", 18f, true).apply { setPadding(0, dp(20), 0, dp(2)) })
         val olaylar = synchronized(AsistanServisi.olaylar) { AsistanServisi.olaylar.toList() }
         kutu.addView(yazi(if (olaylar.isEmpty()) "Henüz olay yok." else olaylar.joinToString("\n"), 12.5f, false, Color.parseColor("#4A3C41")).apply {
             typeface = Typeface.MONOSPACE
         })
         kutu.addView(dugme("Yenile", false) { ciz() })
+    }
+
+    /** Üreticinin "otomatik başlat" ekranı (yoksa uygulama bilgisi). */
+    private fun otomatikBaslat() {
+        val adaylar = listOf(
+            Intent().setClassName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"),
+            Intent().setClassName("com.transsion.phonemaster", "com.cyin.himgr.autostart.AutoStartActivity"),
+            Intent().setClassName("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity"),
+            Intent().setClassName("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"),
+            Intent().setClassName("com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"),
+        )
+        for (i in adaylar) {
+            try {
+                startActivity(i)
+                return
+            } catch (_: Exception) {}
+        }
+        startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
     }
 
     private fun deneme() {

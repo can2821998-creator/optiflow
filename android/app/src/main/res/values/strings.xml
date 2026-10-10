@@ -2,5 +2,5 @@
 <resources>
     <string name="app_name">OptiFlow Asistan</string>
     <string name="erisim_adi">OptiFlow Asistan</string>
-    <string name="erisim_aciklama">Mağaza telefonuna gelen ve açılamayan aramaları karşılar: hoş geldiniz der, sipariş durumunu söyler, not alır. Görüşmede arayanı duyabilmek için bu izin gerekir. Ekrandaki içerik okunmaz.</string>
+    <string name="erisim_aciklama">Mağaza telefonuna gelen ve açılamayan aramaları karşılar: hoş geldiniz der, sipariş durumunu söyler, not alır. Görüşmede arayanı duyabilmek ve gerekirse görüşme ekranındaki Hoparlör düğmesine basabilmek için bu izin gerekir. Başka hiçbir ekran içeriği okunmaz, saklanmaz ya da gönderilmez.</string>
 </resources>

@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
@@ -15,6 +16,7 @@ import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -24,7 +26,7 @@ import java.util.concurrent.Executors
  * Asistanın kendisi. Erişilebilirlik hizmeti olarak çalışır çünkü:
  *  - sistem onu sürekli ayakta tutar (telefon yeniden başlasa da kendiliğinden açılır),
  *  - Android, görüşme sırasında mikrofonu yalnızca böyle bir hizmete paylaştırır.
- * Ekrandaki içeriği OKUMAZ (erisim.xml: canRetrieveWindowContent=false).
+ * Ekran içeriğine YALNIZCA görüşme ekranındaki "Hoparlör" düğmesini bulmak için bakar (yedek yol); başka hiçbir şey okunmaz.
  *
  * Akış: telefon çalar → [bekleme] saniye kimse açmazsa aramayı açar → hoparlörü açar →
  * sunucuya "basla" → söyler → dinler (tuş + konuşma) → "cevap" → … → "bitir" gelince kapatır.
@@ -70,11 +72,41 @@ class AsistanServisi : AccessibilityService() {
         telecom = getSystemService(TelecomManager::class.java)
         ses = getSystemService(AudioManager::class.java)
         Api.surum = try { packageManager.getPackageInfo(packageName, 0).versionName ?: "?" } catch (e: Exception) { "?" }
+        cokmeYakalayici()
         konusucu = Konusucu(this) { _, mesaj -> olay(mesaj) }
         dinleyici = Dinleyici(this, ana)
         telefonuDinle()
         ayarlariYenile()
-        olay("Asistan hizmeti açıldı (sürüm ${Api.surum})")
+        olay("Asistan hizmeti açıldı (sürüm ${Api.surum}, ${Build.MANUFACTURER} ${Build.MODEL}, Android ${Build.VERSION.RELEASE})")
+        val p = getSharedPreferences("asistan", MODE_PRIVATE)
+        p.getString("son_cokme", null)?.let { olay("Önceki çökme: $it") }
+    }
+
+    /** Hizmet çökerse nedeni bir sonraki açılışta OptiFlow'a ve ana ekrana yazılır (tanılama). */
+    private fun cokmeYakalayici() {
+        val onceki = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { t, e ->
+            try {
+                val ozet = e.javaClass.simpleName + ": " + (e.message ?: "") + " @ " +
+                    e.stackTrace.take(5).joinToString(" < ") { it.className.substringAfterLast('.') + "." + it.methodName + ":" + it.lineNumber }
+                getSharedPreferences("asistan", MODE_PRIVATE).edit()
+                    .putString("son_cokme", java.text.SimpleDateFormat("dd.MM HH:mm", Locale("tr", "TR")).format(Date()) + " " + ozet.take(300)).commit()
+                val g = Thread { Api.istek(ayar, "olay", mapOf("metin" to ("ÇÖKME: " + ozet).take(200))) }
+                g.start()
+                g.join(2500)
+            } catch (_: Throwable) {}
+            onceki?.uncaughtException(t, e)
+        }
+    }
+
+    /** Ana ekrandaki "Ses testi": arama olmadan seçili kanaldan bir cümle söyler. */
+    fun sesTesti() {
+        isci.execute {
+            val bas = SystemClock.elapsedRealtime()
+            val tamam = konusucu?.soyle("Merhaba, bu bir ses denemesidir. Beni duyuyorsanız asistan konuşabiliyor.", ayar.sesKanali) == true
+            olay("Ses testi (" + ayar.sesKanali + " kanalı): " + (if (tamam) "seslendirme bitti" else "seslendirme başlamadı ya da yarım kaldı") +
+                " · " + (SystemClock.elapsedRealtime() - bas) / 100 / 10.0 + " sn")
+        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
@@ -203,15 +235,50 @@ class AsistanServisi : AccessibilityService() {
         }
     }
 
+    @Suppress("DEPRECATION")
+    private fun hoparlorAcikMi(): Boolean =
+        ses.communicationDevice?.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER || ses.isSpeakerphoneOn
+
     private fun hoparlorAc() {
         try {
             val hoparlor = ses.availableCommunicationDevices.firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
-            if (hoparlor != null) ses.setCommunicationDevice(hoparlor)
+            val sonuc = if (hoparlor != null) ses.setCommunicationDevice(hoparlor) else false
             @Suppress("DEPRECATION")
             ses.isSpeakerphoneOn = true
-            ses.setStreamVolume(AudioManager.STREAM_VOICE_CALL, ses.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL), 0)
+            try {
+                ses.setStreamVolume(AudioManager.STREAM_VOICE_CALL, ses.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL), 0)
+                ses.setStreamVolume(AudioManager.STREAM_MUSIC, ses.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0)
+            } catch (_: Exception) {}
+            ana.postDelayed({
+                val acik = hoparlorAcikMi()
+                olay("Hoparlör: setCommunicationDevice=$sonuc, açık=$acik, ses modu=${ses.mode}")
+                if (!acik) hoparlorDugmesineBas()
+            }, 600)
         } catch (e: Exception) {
             olay("Hoparlör açılamadı: ${e.message}")
+            hoparlorDugmesineBas()
+        }
+    }
+
+    /** Yedek yol: görüşme ekranındaki "Hoparlör" düğmesine erişilebilirlikle basar (başka hiçbir şeye dokunmaz). */
+    private fun hoparlorDugmesineBas() {
+        try {
+            val adlar = listOf("Hoparlör", "Hoparlörü aç", "Hoparlörü", "Speaker", "Speakerphone", "Ses yükselticisi")
+            val pencereler = windows.mapNotNull { it.root } + listOfNotNull(rootInActiveWindow)
+            for (kok in pencereler) {
+                for (ad in adlar) {
+                    val dugum = kok.findAccessibilityNodeInfosByText(ad).firstOrNull() ?: continue
+                    var d: AccessibilityNodeInfo? = dugum
+                    while (d != null && !d.isClickable) d = d.parent
+                    if (d != null && !d.isChecked && d.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+                        olay("Hoparlör düğmesine basıldı (\"$ad\")")
+                        return
+                    }
+                }
+            }
+            olay("Görüşme ekranında Hoparlör düğmesi bulunamadı")
+        } catch (e: Exception) {
+            olay("Hoparlör düğmesi: ${e.message}")
         }
     }
 
@@ -254,10 +321,13 @@ class AsistanServisi : AccessibilityService() {
                 return
             }
             oturum = c.optString("oturum")
+            olay("Görüşme başladı (numara " + (if (numara.isEmpty()) "bilinmiyor" else "var") + ", kanal ${ayar.sesKanali}" + (if (!deneme) ", hoparlör ${hoparlorAcikMi()}" else "") + ")")
             var tur = 0
             while (!durdurIstek && tur < 12) {
                 tur++
-                k.soyle(c.optString("soyle"), ayar.sesKanali)
+                val sBas = SystemClock.elapsedRealtime()
+                val soylendi = k.soyle(c.optString("soyle"), ayar.sesKanali)
+                if (tur == 1) olay("Karşılama " + (if (soylendi) "söylendi" else "SÖYLENEMEDİ") + " (" + (SystemClock.elapsedRealtime() - sBas) / 1000 + " sn)")
                 if (c.optBoolean("bitir") || durdurIstek) break
                 val s = d.dinle(c.optString("mod", "menu")) { kaydet(it) }
                 if (durdurIstek) break

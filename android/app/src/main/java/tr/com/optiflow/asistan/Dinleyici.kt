@@ -14,8 +14,8 @@ import android.os.SystemClock
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import java.io.IOException
 import java.io.OutputStream
+import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
@@ -106,10 +106,25 @@ class Dinleyici(private val ctx: Context, private val ana: Handler) {
             sozBitti.countDown()   // tanıma yok: yalnızca tuşlar
         }
 
+        // Boruya yazma ayrı iş parçacığında: tanıma servisi sesi okumazsa (desteklemiyorsa) boru dolar ve
+        // yazma kilitlenir — dinleme bu yüzden asla takılmamalı. Kuyruk doluysa ses parçası atılır.
+        val kuyruk = ArrayBlockingQueue<ByteArray>(200)
+        val yazilacak = yaz
+        val yazici = if (yazilacak != null) Thread {
+            try {
+                while (true) {
+                    val parca = kuyruk.take()
+                    if (parca.isEmpty()) break
+                    yazilacak.write(parca)
+                }
+            } catch (_: Exception) {
+            } finally {
+                try { yazilacak.close() } catch (_: Exception) {}
+            }
+        }.apply { isDaemon = true; start() } else null
         val dtmf = DtmfCozucu(oran)
         val tuslar = StringBuilder()
         val tampon = ShortArray(oran / 50)          // 20 ms
-        val bayt = ByteArray(tampon.size * 2)
         val bas = SystemClock.elapsedRealtime()
         var sonTus = 0L
         var tepe = 0.0
@@ -125,17 +140,13 @@ class Dinleyici(private val ctx: Context, private val ana: Handler) {
                     tuslar.append(it)
                     sonTus = SystemClock.elapsedRealtime()
                 }
-                val y = yaz
-                if (y != null) {
+                if (yazici != null) {
+                    val parca = ByteArray(n * 2)
                     for (i in 0 until n) {
-                        bayt[2 * i] = (tampon[i].toInt() and 0xff).toByte()
-                        bayt[2 * i + 1] = (tampon[i].toInt() shr 8 and 0xff).toByte()
+                        parca[2 * i] = (tampon[i].toInt() and 0xff).toByte()
+                        parca[2 * i + 1] = (tampon[i].toInt() shr 8 and 0xff).toByte()
                     }
-                    try {
-                        y.write(bayt, 0, n * 2)
-                    } catch (e: IOException) {
-                        yaz = null
-                    }
+                    kuyruk.offer(parca)
                 }
                 val simdi = SystemClock.elapsedRealtime()
                 if (mod == "numara") {
@@ -148,7 +159,9 @@ class Dinleyici(private val ctx: Context, private val ana: Handler) {
         } finally {
             try { kayit.stop() } catch (_: Exception) {}
             kayit.release()
-            try { yaz?.close() } catch (_: Exception) {}
+            kuyruk.clear()
+            kuyruk.offer(ByteArray(0))   // yazıcıya "bitti"
+            yazici?.interrupt()
         }
         if (tuslar.isEmpty()) sozBitti.await(4, TimeUnit.SECONDS)
         ana.post {

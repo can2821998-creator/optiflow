@@ -4,7 +4,7 @@
 
 ## Sürüm
 - **Sunucu 4.30.0**, şema **33** (10.10 main'e birleştirildi; Sürüm yayınla + Canlıya al). Android **OptiFlow Asistan 1.0.0** (önizleme APK: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.29.0** bekleniyor (09.10 push; teklifte çok gözlük + düzenleme). 4.28.1 ve 4.28.0 canlıda doğrulandı. 4.24.1 canlıda doğrulandı. 4.22.2 canlıda doğrulandı (video + Instagram).
+- **Canlı site: 4.30.0** (10.10: Sürüm yayınla + Canlıya al başarılı; indir/asistan/ canlıda doğrulandı). Release v4.30.0-pro5.5.0 (APK dahil).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB

@@ -14,9 +14,13 @@ on:
       - .github/workflows/android-asistan.yml
   workflow_dispatch:
   workflow_call:
+    inputs:
+      onizleme:
+        type: boolean
+        default: false
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   apk:
@@ -62,3 +66,17 @@ jobs:
           name: OptiFlow-Asistan-apk
           path: cikti/*.apk
           if-no-files-found: error
+      # Deneme için: main dışındaki dallarda APK "asistan-onizleme" ön sürümüne konur (her derlemede üzerine yazılır).
+      - name: Önizleme sürümüne koy
+        if: (github.event_name == 'push' && github.ref != 'refs/heads/main') || inputs.onizleme == true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(cat android/app/surum.txt)
+          if ! gh release view asistan-onizleme --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create asistan-onizleme --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+              --title "OptiFlow Asistan (Android) — önizleme" \
+              --notes "Deneme sürümü. Mağaza telefonuna kurulur; OptiFlow › Telefon asistanı sayfasındaki adımları izleyin."
+          fi
+          gh release upload asistan-onizleme cikti/OptiFlow-Asistan.apk --clobber --repo "$GITHUB_REPOSITORY"
+          gh release edit asistan-onizleme --repo "$GITHUB_REPOSITORY" --notes "Deneme sürümü ${V} (derleme ${GITHUB_RUN_NUMBER}, dal ${GITHUB_REF_NAME}, $(date -u +%d.%m.%Y\ %H:%M) UTC). Mağaza telefonuna kurulur; OptiFlow › Telefon asistanı sayfasındaki adımları izleyin."

@@ -8,7 +8,8 @@
 #   2. Windows'ta OptiFlow Pro kurulumu derlenir (IMZA_TURU sırrı varsa İMZALI),
 #   3. Hosting güncelleme zip'i hazırlanır (config.php / storage içeriği YOK),
 #   4. Hepsi GitHub › Releases'ta o etiketle yayınlanır:
-#        OptiFlow-Pro-Setup-<sürüm>.exe, .blockmap, latest.yml, optiflow-<sürüm>-hosting.zip
+#        OptiFlow-Pro-Setup-<sürüm>.exe, .blockmap, latest.yml, optiflow-<sürüm>-hosting.zip,
+#        OptiFlow-Asistan.apk (Android telefon asistanı; android-asistan.yml çağrılır)
 #
 # Etiketi Actions oluşturur (bu yüzden oturumdan etiket göndermek gerekmez).
 name: Sürüm yayınla
@@ -130,11 +131,23 @@ jobs:
             desktop/release/latest.yml
           if-no-files-found: error
 
+  android:
+    needs: surumler
+    if: needs.surumler.outputs.yeni == '1'
+    uses: ./.github/workflows/android-asistan.yml
+    with:
+      onizleme: false
+    secrets: inherit
+
   yayin:
-    needs: [surumler, sunucu-test, masaustu]
+    needs: [surumler, sunucu-test, masaustu, android]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: OptiFlow-Asistan-apk
+          path: asistan
       - uses: actions/download-artifact@v4
         with:
           name: masaustu
@@ -148,6 +161,7 @@ jobs:
           rm -rf desktop android tests docs .github .gitignore ./*.md
           rm -f indir/masaustu/*.blockmap indir/masaustu/latest.yml
           cp ../masaustu/*.blockmap indir/masaustu/        # blockmap, bu derlemenin exe'siyle eşleşmeli
+          cp ../asistan/OptiFlow-Asistan.apk indir/asistan/   # 4.30.0 telefon asistanı (Android)
           test ! -e config.php
           zip -qr -X "../optiflow-${S}-hosting.zip" .
       - name: Sürüm notu
@@ -165,4 +179,4 @@ jobs:
           gh release create "${{ needs.surumler.outputs.etiket }}" --target "$GITHUB_SHA" \
             --title "OptiFlow ${{ needs.surumler.outputs.sunucu }} · OptiFlow Pro ${{ needs.surumler.outputs.masaustu }}" \
             --notes-file notlar.md \
-            masaustu/*.exe masaustu/*.blockmap masaustu/latest.yml optiflow-*-hosting.zip
+            masaustu/*.exe masaustu/*.blockmap masaustu/latest.yml optiflow-*-hosting.zip asistan/OptiFlow-Asistan.apk

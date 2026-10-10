@@ -3,21 +3,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-
-    <queries>
-        <intent>
-            <action android:name="android.speech.RecognitionService" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.TTS_SERVICE" />
-        </intent>
-    </queries>
 
     <application
         android:allowBackup="false"
@@ -53,18 +42,13 @@
             </intent-filter>
         </service>
 
-        <!-- Asistanın kendisi: sürekli çalışır, aramada mikrofonu kullanabilir (Ayarlar › Erişilebilirlik › OptiFlow Asistan) -->
-        <service
-            android:name=".AsistanServisi"
-            android:exported="true"
-            android:label="@string/erisim_adi"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+        <!-- Arama durumu: çalıyor (kart göster) / açıldı / bitti (açılmadıysa SMS + geri aranacak) -->
+        <receiver
+            android:name=".AramaAlici"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
+                <action android:name="android.intent.action.PHONE_STATE" />
             </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/erisim" />
-        </service>
+        </receiver>
     </application>
 </manifest>

@@ -451,6 +451,150 @@ function asistan_bitti(array $arama, int $sure, string $olay = ''): void
     asistan_arama_guncelle($arama, $arama['durum'] ?? [], $ek);
 }
 
+/* ---------------- 4.31.0 — Arayan kartı ve cevapsız arama mesajı ----------------
+   Sesli karşılama gerçek telefonda çalışmadı (Android, uygulamanın sesini görüşmeye vermiyor: yankı
+   engelleme siliyor). Kullanıcı kararı (10.10): telefon çalarken ekranda arayanın sipariş durumu,
+   açılamayan aramaya mağaza hattından otomatik SMS + "Geri aranacaklar". Sesli akış (asistan_basla /
+   asistan_cevap) ileride internet hattı (SIP) gelirse diye duruyor. */
+
+const ASISTAN_MESAJ_ARALIK_SAAT = 6;   // aynı numaraya en fazla bu aralıkla bir SMS
+
+function asistan_mesaj_acik(): bool
+{
+    return asistan_ayar('mesaj', '1') === '1';
+}
+
+function asistan_mesaj_kayitsiz(): bool
+{
+    return asistan_ayar('mesaj_kayitsiz', '0') === '1';
+}
+
+/** Telefon çalarken ekranda gösterilecek arayan kartı (yalnızca mağazanın kendi telefonuna). */
+function asistan_bilgi(string $numara): array
+{
+    $m = asistan_musteri_bul($numara);
+    $gorunum = phone_display(normalize_phone($numara) ?: $numara) ?: ($numara !== '' ? $numara : 'Gizli numara');
+    if (!$m) {
+        $acik = asistan_numara($numara) !== '' ? (int) scalar(
+            'SELECT COUNT(*) FROM asistan_aramalar WHERE numara LIKE ? AND geri_ara = 1 AND tamamlandi_at IS NULL',
+            ['%' . asistan_numara($numara)]
+        ) : 0;
+        return ['ok' => true, 'tanindi' => false, 'numara' => $gorunum, 'baslik' => 'Kayıtlı olmayan numara',
+            'satirlar' => $acik ? ['Bu numara daha önce aradı, geri aranmadı (' . $acik . ')'] : []];
+    }
+    $ad = trim((string) $m['first_name'] . ' ' . (string) $m['last_name']);
+    $satirlar = [];
+    foreach (asistan_siparisler((int) $m['id']) as $o) {
+        $kalan = asistan_kalan($o);
+        $satirlar[] = order_no((int) $o['id']) . ' · ' . stage_label((string) $o['order_stage']) . ' — ' . asistan_siparis_cumlesi($o)
+            . ($kalan > 0.009 ? ' Kalan ' . money($kalan) . '.' : '');
+    }
+    if (!$satirlar) {
+        $satirlar[] = 'Hazırlanmakta olan siparişi yok.';
+    }
+    return ['ok' => true, 'tanindi' => true, 'numara' => $gorunum, 'baslik' => $ad, 'musteri_id' => (int) $m['id'], 'satirlar' => $satirlar];
+}
+
+/** Siparişin kalan tutarı (SGK payı düşülmüş) — kart için; SMS'e yazılmaz. */
+function asistan_kalan(array $o): float
+{
+    try {
+        $odenen = (float) scalar('SELECT COALESCE(SUM(amount), 0) FROM payments WHERE order_id = ?', [(int) $o['id']]);
+    } catch (Throwable $e) {
+        return 0.0;
+    }
+    return round((float) ($o['total_amount'] ?? 0) - (float) ($o['sgk_amount'] ?? 0) - $odenen, 2);
+}
+
+/** Cevapsız aramaya gidecek SMS (tutar yok). Kayıtsız arayan için genel metin. */
+function asistan_mesaj_metni(?array $musteri): string
+{
+    $magaza = setting('shop_name', 'OptiFlow');
+    if (!$musteri) {
+        return $magaza . ': Aradığınız için teşekkür ederiz, şu an telefona çıkamadık. En kısa sürede sizi geri arayacağız.';
+    }
+    $siparisler = asistan_siparisler((int) $musteri['id']);
+    $ad = trim((string) $musteri['first_name'] . ' ' . (string) $musteri['last_name']);
+    $metin = $magaza . ': Merhaba ' . $ad . ', aramanıza yetişemedik. ';
+    if ($siparisler) {
+        $o = $siparisler[0];
+        $metin .= asistan_siparis_cumlesi($o);
+        $takip = function_exists('order_track_url') && function_exists('track_page_exists') && track_page_exists() ? order_track_url((int) $o['id']) : '';
+        if ($takip !== '') {
+            $metin .= ' Takip: ' . $takip;
+        }
+        if (count($siparisler) > 1) {
+            $metin .= ' (' . count($siparisler) . ' siparişinizden en yenisi)';
+        }
+        $metin .= ' Gerekirse sizi geri arayacağız.';
+    } else {
+        $metin .= 'En kısa sürede sizi geri arayacağız.';
+    }
+    return $metin;
+}
+
+/**
+ * Telefon açılmadan bitti: "Geri aranacaklar"a yazılır (aynı numaranın açık kaydı varsa üzerine eklenir)
+ * ve gönderilecek SMS döner. Aynı numaraya ASISTAN_MESAJ_ARALIK_SAAT içinde ikinci SMS gitmez.
+ */
+function asistan_cevapsiz(string $numara, ?int $cihazId = null): array
+{
+    asistan_kayit_temizle();
+    $son10 = asistan_numara($numara);
+    $simdi = date('Y-m-d H:i:s');
+    $musteri = $son10 !== '' ? asistan_musteri_bul($numara) : null;
+    $kisa = mb_substr(preg_replace('/[^\d+]/', '', $numara) ?? '', 0, 20);
+
+    $acik = $son10 !== '' ? row('SELECT * FROM asistan_aramalar WHERE numara LIKE ? AND geri_ara = 1 AND tamamlandi_at IS NULL ORDER BY id DESC LIMIT 1', ['%' . $son10]) : null;
+    if ($acik) {
+        update('asistan_aramalar', ['ozet' => mb_substr(trim((string) $acik['ozet'] . ' · tekrar aradı ' . date('H:i')), 0, 1000), 'updated_at' => $simdi], 'id = ?', [(int) $acik['id']]);
+        $id = (int) $acik['id'];
+    } else {
+        $id = insert('asistan_aramalar', [
+            'anahtar' => bin2hex(random_bytes(12)), 'cihaz_id' => $cihazId, 'numara' => $kisa, 'customer_id' => $musteri ? (int) $musteri['id'] : null,
+            'sonuc' => 'cevapsiz', 'ozet' => 'Cevapsız arama ' . date('H:i'), 'geri_ara' => $son10 !== '' ? 1 : 0, 'durum_json' => '{}',
+            'created_at' => $simdi, 'updated_at' => $simdi,
+        ]);
+        if ($son10 !== '' && function_exists('push_send')) {
+            try {
+                $ids = array_map('intval', array_column(rows('SELECT id FROM user_accounts WHERE is_active = 1'), 'id'));
+                if ($ids) {
+                    push_send(['title' => 'Cevapsız arama · ' . ($musteri ? trim($musteri['first_name'] . ' ' . $musteri['last_name']) : phone_display(normalize_phone($numara) ?: $numara)),
+                        'body' => 'Geri aranacaklar listesine eklendi.', 'url' => 'telefon-asistani.php', 'tag' => 'cevapsiz-' . $son10], $ids);
+                }
+            } catch (Throwable $e) {
+                // bildirim gidemedi: kayıt yine listede
+            }
+        }
+    }
+
+    $gonder = asistan_mesaj_acik() && $son10 !== '' && preg_match('/^5\d{9}$/', $son10) === 1 && ($musteri || asistan_mesaj_kayitsiz());
+    $neden = '';
+    if (!$gonder) {
+        $neden = !asistan_mesaj_acik() ? 'mesaj kapalı' : ($son10 === '' ? 'numara gizli' : (preg_match('/^5\d{9}$/', $son10) !== 1 ? 'cep telefonu değil' : 'kayıtlı olmayan numara'));
+    } else {
+        $sinir = date('Y-m-d H:i:s', time() - ASISTAN_MESAJ_ARALIK_SAAT * 3600);
+        $son = (int) scalar("SELECT COUNT(*) FROM asistan_aramalar WHERE numara LIKE ? AND ozet LIKE ? AND updated_at >= ?", ['%' . $son10, '%SMS gönderildi%', $sinir]);
+        if ($son > 0) {
+            $gonder = false;
+            $neden = 'son ' . ASISTAN_MESAJ_ARALIK_SAAT . ' saatte mesaj gitti';
+        }
+    }
+    $metin = $gonder ? asistan_mesaj_metni($musteri) : '';
+    return ['ok' => true, 'kayit' => $id, 'gonder' => $gonder, 'metin' => $metin, 'neden' => $neden];
+}
+
+/** Uygulama SMS'i gönderdi / gönderemedi. */
+function asistan_mesaj_sonucu(int $kayitId, bool $gitti, string $hata = ''): void
+{
+    $a = row('SELECT * FROM asistan_aramalar WHERE id = ?', [$kayitId]);
+    if (!$a) {
+        return;
+    }
+    $ek = $gitti ? 'SMS gönderildi ' . date('H:i') : 'SMS gönderilemedi' . ($hata !== '' ? ' (' . mb_substr($hata, 0, 60) . ')' : '');
+    update('asistan_aramalar', ['ozet' => mb_substr(trim((string) $a['ozet'] . ' · ' . $ek), 0, 1000), 'sonuc' => $gitti ? 'mesaj' : $a['sonuc'], 'updated_at' => date('Y-m-d H:i:s')], 'id = ?', [$kayitId]);
+}
+
 /* ---------------- Cihaz eşleştirme ---------------- */
 
 /** Yeni 6 haneli eşleştirme kodu (15 dk geçerli; ayarlarda yalnızca özeti tutulur). */
@@ -504,6 +648,8 @@ function asistan_sonuc_etiketi(string $s): array
 {
     return match ($s) {
         'bilgi'   => ['Bilgi verildi', 'green'],
+        'mesaj'   => ['Cevapsız · SMS gitti', 'blue'],
+        'cevapsiz'=> ['Cevapsız arama', 'amber'],
         'not'     => ['Geri aranacak', 'amber'],
         'kapandi' => ['Kapandı', 'gray'],
         default   => ['Yarım kaldı', 'gray'],

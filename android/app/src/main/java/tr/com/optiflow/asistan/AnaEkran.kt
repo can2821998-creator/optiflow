@@ -15,6 +15,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import org.json.JSONObject
 import android.provider.Settings
 import android.text.InputType
 import android.widget.Button
@@ -24,7 +25,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 
-/** Kurulum ve durum ekranı. Asistanın kendisi AsistanServisi'nde çalışır; bu ekran kapalıyken de. */
+/** Kurulum ve durum ekranı. Asıl iş AramaAlici / AramaTanima / Kart'ta; bu ekran kapalıyken de çalışır. */
 class AnaEkran : Activity() {
     private lateinit var ayar: Ayarlar
     private lateinit var kutu: LinearLayout
@@ -52,8 +53,26 @@ class AnaEkran : Activity() {
 
     override fun onResume() {
         super.onResume()
-        AsistanServisi.o?.yenidenBaslat()
         ciz()
+        ayarlariYenile()
+    }
+
+    /** OptiFlow'daki ayarlar (açık/kapalı) — uygulama her açıldığında */
+    private fun ayarlariYenile() {
+        if (!ayar.bagli) return
+        Thread {
+            val c = Api.istek(ayar, "ayar")
+            ana.post {
+                if (c.optBoolean("ok")) {
+                    ayar.sunucuAcik = c.optBoolean("acik", true)
+                    ayar.magazaAdi = c.optString("magaza", ayar.magazaAdi)
+                } else if (c.optBoolean("yeniden_bagla")) {
+                    ayar.baglantiyiKaldir()
+                    Kayit.yaz(this, "OptiFlow bağlantıyı kaldırmış: yeniden bağlayın", false)
+                }
+                ciz()
+            }
+        }.start()
     }
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
@@ -104,75 +123,84 @@ class AnaEkran : Activity() {
     private fun ciz() {
         kutu.removeAllViews()
         kutu.addView(yazi("OptiFlow Asistan", 26f, true))
-        kutu.addView(yazi(if (ayar.bagli) "Bağlı mağaza: ${ayar.magazaAdi.ifEmpty { "#" + ayar.magaza }}" else "Mağaza telefonuna gelen ve açılamayan aramaları karşılar.", 14f, false, Color.parseColor("#7D6A70")))
+        kutu.addView(yazi(if (ayar.bagli) "Bağlı mağaza: ${ayar.magazaAdi.ifEmpty { "#" + ayar.magaza }}" else "Telefon çalarken arayanın sipariş durumunu gösterir; açılamayan aramaya SMS gönderir.", 14f, false, Color.parseColor("#7D6A70")))
 
-        val servis = AsistanServisi.o
-        val neden = servis?.hazirMi()
+        val izinler = mutableListOf(Manifest.permission.READ_PHONE_STATE, Manifest.permission.SEND_SMS)
+        if (Build.VERSION.SDK_INT >= 33) izinler.add(Manifest.permission.POST_NOTIFICATIONS)
+        val hepsi = ayar.bagli && izinler.all { izinVar(it) } && rolVar() && Settings.canDrawOverlays(this)
+        val neden = ayar.beklemeNedeni()
         val durumMetni = when {
-            servis == null -> "Asistan çalışmıyor: aşağıdaki adımları tamamlayın."
-            neden != null -> "Asistan beklemede: $neden"
-            else -> "Asistan hazır. Arama ${ayar.bekleme} sn içinde açılmazsa karşılar."
+            !hepsi -> "Kurulum tamamlanmadı: aşağıdaki adımları yapın."
+            neden != null -> "Beklemede: $neden"
+            else -> "Hazır. Telefon çalınca kart çıkar; açılamayan aramaya SMS gider."
         }
-        kutu.addView(yazi(durumMetni, 16f, true, if (servis != null && neden == null) Color.parseColor("#17663F") else bordo).apply { setPadding(0, dp(12), 0, dp(4)) })
+        kutu.addView(yazi(durumMetni, 16f, true, if (hepsi && neden == null) Color.parseColor("#17663F") else bordo).apply { setPadding(0, dp(12), 0, dp(4)) })
 
         adim(ayar.bagli, "OptiFlow'a bağlan", "OptiFlow › Telefon asistanı › \"Bağlama kodu al\". Karekodu bu telefonun kamerasıyla okutun ya da kodu buraya girin.", "Kodla bağla") { kodlaBagla() }
-        val izinler = listOf(Manifest.permission.READ_PHONE_STATE, Manifest.permission.ANSWER_PHONE_CALLS, Manifest.permission.RECORD_AUDIO)
-        adim(izinler.all { izinVar(it) }, "İzinler", "Telefon durumu, aramayı açma ve mikrofon izni.", "İzinleri ver") {
-            val l = izinler.toMutableList()
-            if (Build.VERSION.SDK_INT >= 33) l.add(Manifest.permission.POST_NOTIFICATIONS)
-            requestPermissions(l.toTypedArray(), 1)
+        adim(izinler.all { izinVar(it) }, "İzinler", "Telefon durumu (arama geldi / bitti), SMS gönderme ve bildirim izni.", "İzinleri ver") {
+            requestPermissions(izinler.toTypedArray(), 1)
         }
-        adim(rolVar(), "Arayan numarayı tanıma", "Asistanın arayanı tanıması için \"arama tanıma\" görevini OptiFlow Asistan'a verin. Aramalar engellenmez.", "Görevi ver") {
+        adim(rolVar(), "Arayan numarayı tanıma", "Arayanı tanımak için \"arama tanıma\" görevini OptiFlow Asistan'a verin. Aramalar engellenmez.", "Görevi ver") {
             startActivityForResult(getSystemService(RoleManager::class.java).createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING), 2)
         }
-        adim(servis != null, "Ses erişimi (erişilebilirlik)", "Ayarlar › Erişilebilirlik › Yüklü uygulamalar › OptiFlow Asistan › Aç. \"Kısıtlanmış ayar\" uyarısı çıkarsa önce \"Uygulama bilgisi\"ne girip sağ üstteki ⋮ menüsünden \"Kısıtlanmış ayarlara izin ver\"i seçin.", "Erişilebilirlik ayarlarını aç") {
-            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-        }
-        if (servis == null) kutu.addView(dugme("Uygulama bilgisi (kısıtlanmış ayar)", false) {
-            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
-        })
-        val uretici = Build.MANUFACTURER.lowercase()
-        if (uretici in listOf("xiaomi", "redmi", "poco", "tecno", "infinix", "itel", "oppo", "realme", "vivo", "huawei", "honor", "oneplus")) {
-            kutu.addView(yazi("${Build.MANUFACTURER} telefonlarda: uygulamanın arka planda kapatılmaması için \"Otomatik başlat\"ı açın ve pil ayarını \"Kısıtlama yok\" yapın. Erişilebilirlik ayarında \"Bu hizmet hatalı çalışıyor\" yazıyorsa sistem asistanı kapatmıştır.", 13.5f, false, bordo).apply { setPadding(0, dp(10), 0, 0) })
-            kutu.addView(dugme("Otomatik başlatma ayarı", false) { otomatikBaslat() })
+        adim(Settings.canDrawOverlays(this), "Ekranda kart gösterme", "Telefon çalarken arayan kartı ekranın üstünde çıksın diye \"Diğer uygulamaların üzerinde göster\" iznini açın.", "İzni aç") {
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
         }
         adim(pilSerbest(), "Pil kısıtlaması", "Telefon uygulamayı uyutmasın diye pil kısıtlamasını kaldırın.", "Kısıtlamayı kaldır") {
             startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName")))
         }
+        val uretici = Build.MANUFACTURER.lowercase()
+        if (uretici in listOf("xiaomi", "redmi", "poco", "tecno", "infinix", "itel", "oppo", "realme", "vivo", "huawei", "honor", "oneplus")) {
+            kutu.addView(yazi("${Build.MANUFACTURER} telefonlarda ayrıca \"Otomatik başlat\"ı açın ve pil ayarını \"Kısıtlama yok\" yapın.", 13.5f, false, bordo).apply { setPadding(0, dp(10), 0, 0) })
+            kutu.addView(dugme("Otomatik başlatma ayarı", false) { otomatikBaslat() })
+        }
 
         kutu.addView(yazi("Deneme ve ayarlar", 18f, true).apply { setPadding(0, dp(20), 0, dp(2)) })
-        kutu.addView(yazi("Deneme konuşması arama olmadan çalışır: asistan konuşur, siz telefona tuşa basmadan sesle cevap verin.", 13.5f, false, Color.parseColor("#4A3C41")))
-        kutu.addView(dugme("Ses testi (arama olmadan bir cümle söyler)", false) {
-            val sv = AsistanServisi.o
-            if (sv == null) Toast.makeText(this, "Önce \"Ses erişimi\"ni açın.", Toast.LENGTH_LONG).show()
-            else { sv.sesTesti(); ana.postDelayed({ ciz() }, 6000) }
-        })
-        kutu.addView(dugme("Deneme konuşması başlat") { deneme() })
+        kutu.addView(dugme("Kartı dene (bir numara için)") { kartDene() })
         kutu.addView(dugme(if (ayar.yerelAcik) "Bu telefonda duraklat" else "Bu telefonda yeniden başlat", false) {
             ayar.yerelAcik = !ayar.yerelAcik
             ciz()
         })
-        kutu.addView(dugme("Asistan sesi: " + (if (ayar.sesKanali == "medya") "medya kanalı" else "görüşme kanalı") + " (değiştir)", false) {
-            ayar.sesKanali = if (ayar.sesKanali == "medya") "cagri" else "medya"
-            Toast.makeText(this, "Arayan asistanı duyamıyorsa diğer kanalı deneyin.", Toast.LENGTH_LONG).show()
-            ciz()
-        })
         if (ayar.bagli) kutu.addView(dugme("Bağlantıyı kaldır", false) {
-            AlertDialog.Builder(this).setMessage("Bu telefonun OptiFlow bağlantısı kaldırılsın mı? Asistan arama açmaz.")
+            AlertDialog.Builder(this).setMessage("Bu telefonun OptiFlow bağlantısı kaldırılsın mı?")
                 .setPositiveButton("Kaldır") { _, _ -> ayar.baglantiyiKaldir(); ciz() }
                 .setNegativeButton("Vazgeç", null).show()
         })
 
-        getSharedPreferences("asistan", MODE_PRIVATE).getString("son_cokme", null)?.let { c ->
-            kutu.addView(yazi("Son çökme: $c", 12.5f, false, bordo).apply { setPadding(0, dp(16), 0, 0) })
-            kutu.addView(dugme("Çökme kaydını temizle", false) { getSharedPreferences("asistan", MODE_PRIVATE).edit().remove("son_cokme").apply(); ciz() })
-        }
         kutu.addView(yazi("Son olaylar", 18f, true).apply { setPadding(0, dp(20), 0, dp(2)) })
-        val olaylar = synchronized(AsistanServisi.olaylar) { AsistanServisi.olaylar.toList() }
+        val olaylar = Kayit.liste(this)
         kutu.addView(yazi(if (olaylar.isEmpty()) "Henüz olay yok." else olaylar.joinToString("\n"), 12.5f, false, Color.parseColor("#4A3C41")).apply {
             typeface = Typeface.MONOSPACE
         })
         kutu.addView(dugme("Yenile", false) { ciz() })
+    }
+
+    private fun kartDene() {
+        if (!ayar.bagli) {
+            Toast.makeText(this, "Önce OptiFlow'a bağlanın.", Toast.LENGTH_LONG).show()
+            return
+        }
+        val giris = EditText(this).apply {
+            hint = "Müşteri telefonu"
+            inputType = InputType.TYPE_CLASS_PHONE
+        }
+        AlertDialog.Builder(this).setTitle("Kartı dene").setMessage("Bu numara arıyormuş gibi kart gösterilir (SMS gitmez).")
+            .setView(giris)
+            .setPositiveButton("Göster") { _, _ ->
+                val num = giris.text.toString()
+                Thread {
+                    val b: JSONObject = Api.istek(ayar, "bilgi", mapOf("numara" to num))
+                    ana.post {
+                        if (b.optBoolean("ok")) {
+                            Kart.goster(applicationContext, b)
+                            if (!Settings.canDrawOverlays(this)) Toast.makeText(this, "Kart için \"Ekranda kart gösterme\" iznini açın; şimdilik bildirim olarak gösterildi.", Toast.LENGTH_LONG).show()
+                        } else {
+                            Toast.makeText(this, b.optString("hata", "Bilgi alınamadı"), Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }.start()
+            }
+            .setNegativeButton("Vazgeç", null).show()
     }
 
     /** Üreticinin "otomatik başlat" ekranı (yoksa uygulama bilgisi). */
@@ -191,32 +219,6 @@ class AnaEkran : Activity() {
             } catch (_: Exception) {}
         }
         startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
-    }
-
-    private fun deneme() {
-        val s = AsistanServisi.o
-        if (s == null) {
-            Toast.makeText(this, "Önce \"Ses erişimi\"ni açın.", Toast.LENGTH_LONG).show()
-            return
-        }
-        if (!ayar.bagli) {
-            Toast.makeText(this, "Önce OptiFlow'a bağlanın.", Toast.LENGTH_LONG).show()
-            return
-        }
-        val giris = EditText(this).apply {
-            hint = "Müşteri telefonu (boş: kayıtsız arayan)"
-            inputType = InputType.TYPE_CLASS_PHONE
-        }
-        AlertDialog.Builder(this).setTitle("Deneme konuşması").setMessage("Hangi numaradan aranıyormuş gibi olsun?")
-            .setView(giris)
-            .setPositiveButton("Başlat") { _, _ ->
-                s.gorusmeyiBaslat(true, giris.text.toString())
-                AlertDialog.Builder(this).setMessage("Asistan konuşuyor. Bitince bu pencereyi kapatın.")
-                    .setPositiveButton("Durdur") { _, _ -> s.denemeyiDurdur(); ciz() }
-                    .setOnDismissListener { ana.postDelayed({ ciz() }, 500) }
-                    .show()
-            }
-            .setNegativeButton("Vazgeç", null).show()
     }
 
     private fun kodlaBagla(sunucu: String? = null, magaza: String? = null, kod: String? = null) {
@@ -244,7 +246,6 @@ class AnaEkran : Activity() {
                     ayar.anahtar = c.optString("anahtar")
                     ayar.magazaAdi = c.optString("magaza")
                     Toast.makeText(this, "Bağlandı: " + ayar.magazaAdi, Toast.LENGTH_LONG).show()
-                    AsistanServisi.o?.yenidenBaslat()
                 } else {
                     AlertDialog.Builder(this).setTitle("Bağlanamadı").setMessage(c.optString("hata", "Bilinmeyen hata")).setPositiveButton("Tamam", null).show()
                 }
@@ -275,7 +276,6 @@ class AnaEkran : Activity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        AsistanServisi.o?.yenidenBaslat()
         ciz()
     }
 }

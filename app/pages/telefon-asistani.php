@@ -22,9 +22,9 @@ if (is_post()) {
             case 'ayar':
                 require_super();
                 setting_set('asistan_acik', isset($_POST['acik']) ? '1' : '0');
-                setting_set('asistan_bekleme', (string) max(5, min(60, post_int('bekleme') ?: 20)));
-                setting_set('asistan_karsilama', mb_substr(trim(post('karsilama')), 0, 300));
-                audit('asistan', 'ayar', null, ['açık' => isset($_POST['acik']) ? 'evet' : 'hayır', 'bekleme' => post_int('bekleme')]);
+                setting_set('asistan_mesaj', isset($_POST['mesaj']) ? '1' : '0');
+                setting_set('asistan_mesaj_kayitsiz', isset($_POST['mesaj_kayitsiz']) ? '1' : '0');
+                audit('asistan', 'ayar', null, ['açık' => isset($_POST['acik']) ? 'evet' : 'hayır', 'sms' => isset($_POST['mesaj']) ? 'evet' : 'hayır']);
                 flash('Telefon asistanı ayarları kaydedildi. Telefon en geç birkaç dakika içinde yeni ayarı alır.');
                 redirect('telefon-asistani.php');
             case 'kod':
@@ -50,7 +50,7 @@ $bekleyen = rows('SELECT a.*, c.first_name, c.last_name FROM asistan_aramalar a 
 $son = rows('SELECT a.*, c.first_name, c.last_name FROM asistan_aramalar a LEFT JOIN customers c ON c.id = a.customer_id ORDER BY a.created_at DESC LIMIT 40');
 $cihazlar = rows('SELECT * FROM asistan_cihazlar WHERE aktif = 1 ORDER BY id DESC');
 $bugun = (int) scalar('SELECT COUNT(*) FROM asistan_aramalar WHERE created_at >= ?', [date('Y-m-d 00:00:00')]);
-$bilgi7 = (int) scalar("SELECT COUNT(*) FROM asistan_aramalar WHERE sonuc = 'bilgi' AND created_at >= ?", [date('Y-m-d H:i:s', time() - 7 * 86400)]);
+$bilgi7 = (int) scalar("SELECT COUNT(*) FROM asistan_aramalar WHERE sonuc IN ('bilgi', 'mesaj') AND created_at >= ?", [date('Y-m-d H:i:s', time() - 7 * 86400)]);
 $olaylar = json_decode(setting('asistan_olaylar', '[]'), true) ?: [];
 $magazaId = (int) (tenant_oturum()['id'] ?? 0);
 $apkVar = is_file(APP_ROOT . '/indir/asistan/OptiFlow-Asistan.apk');
@@ -59,19 +59,19 @@ $kim = static fn(array $a): string => trim((string) ($a['first_name'] ?? '') . '
 $tel = static fn(array $a): string => phone_display(normalize_phone((string) $a['numara']) ?: (string) $a['numara']) ?: 'Gizli numara';
 
 page_start('Telefon asistanı', 'telefon-asistani');
-page_header('Telefon asistanı', 'Açılamayan aramaları mağaza telefonundaki OptiFlow Asistan karşılar: hoş geldiniz der, sipariş ve cam durumunu söyler, not alır.', '', '', 'Atölye');
+page_header('Telefon asistanı', 'Mağaza telefonu çalarken arayanın sipariş durumu ekranda görünür; açılamayan aramaya otomatik SMS gider ve geri aranacaklar listesine düşer.', '', '', 'Atölye');
 ?>
 <section class="stats">
   <div class="stat <?= $bekleyen ? 'tone-amber' : '' ?>"><small>Geri aranacak</small><b><?= count($bekleyen) ?></b><span>bekleyen not</span></div>
-  <div class="stat"><small>Bugün</small><b><?= $bugun ?></b><span>asistanın açtığı arama</span></div>
-  <div class="stat"><small>Son 7 gün</small><b><?= $bilgi7 ?></b><span>bilgi verilen arama</span></div>
-  <div class="stat <?= $cihazlar ? 'tone-green' : '' ?>"><small>Telefon</small><b><?= $cihazlar ? 'Bağlı' : 'Bağlı değil' ?></b><span><?= asistan_acik_mi() ? 'asistan açık' : 'asistan kapalı' ?></span></div>
+  <div class="stat"><small>Bugün</small><b><?= $bugun ?></b><span>cevapsız arama</span></div>
+  <div class="stat"><small>Son 7 gün</small><b><?= $bilgi7 ?></b><span>SMS ile bilgi verildi</span></div>
+  <div class="stat <?= $cihazlar ? 'tone-green' : '' ?>"><small>Telefon</small><b><?= $cihazlar ? 'Bağlı' : 'Bağlı değil' ?></b><span><?= asistan_acik_mi() ? (asistan_mesaj_acik() ? 'açık · SMS gönderir' : 'açık · SMS kapalı') : 'kapalı' ?></span></div>
 </section>
 
 <section class="card">
   <div class="card-head"><h2><?= icon('bell') ?> Geri aranacaklar</h2></div>
   <?php if (!$bekleyen): ?>
-    <?= empty_state('Bekleyen not yok', 'Asistan not aldığında ya da arayanı anlayamadığında burada görünür ve size bildirim gelir.') ?>
+    <?= empty_state('Geri aranacak kimse yok', 'Mağaza telefonu açılamadığında arayan burada görünür ve size bildirim gelir.') ?>
   <?php else: ?>
     <div class="table-wrap"><table class="table">
       <thead><tr><th>Zaman</th><th>Arayan</th><th>Not</th><th></th></tr></thead>
@@ -92,9 +92,9 @@ page_header('Telefon asistanı', 'Açılamayan aramaları mağaza telefonundaki 
 
 <div class="grid cols-2">
   <section class="card">
-    <div class="card-head"><h2><?= icon('chat') ?> Son aramalar</h2><small class="muted"><?= ASISTAN_KAYIT_GUN ?> gün saklanır</small></div>
+    <div class="card-head"><h2><?= icon('chat') ?> Son cevapsız aramalar</h2><small class="muted"><?= ASISTAN_KAYIT_GUN ?> gün saklanır</small></div>
     <?php if (!$son): ?>
-      <?= empty_state('Henüz arama yok', 'Telefon bağlanınca asistanın açtığı aramalar burada listelenir.') ?>
+      <?= empty_state('Henüz kayıt yok', 'Telefon bağlanınca açılamayan aramalar burada listelenir.') ?>
     <?php else: ?>
       <div class="table-wrap"><table class="table">
         <thead><tr><th>Zaman</th><th>Arayan</th><th>Sonuç</th></tr></thead>
@@ -115,9 +115,10 @@ page_header('Telefon asistanı', 'Açılamayan aramaları mağaza telefonundaki 
       <div class="card-head"><h2><?= icon('settings') ?> Ayarlar</h2></div>
       <form method="post" class="stack" data-guard>
         <?= csrf_field() ?><input type="hidden" name="eylem" value="ayar">
-        <label class="check-line"><input type="checkbox" name="acik" <?= asistan_acik_mi() ? 'checked' : '' ?>> Asistan açık (kimse açmazsa aramayı karşılasın)</label>
-        <label class="field"><span>Kaç saniye çaldıktan sonra açsın?</span><input type="number" name="bekleme" min="5" max="60" value="<?= asistan_bekleme_sn() ?>"><small class="muted">Bu sürede siz açarsanız asistan karışmaz. Önerilen 20 sn (yaklaşık 4 çalış).</small></label>
-        <label class="field"><span>Karşılama cümlesi</span><input name="karsilama" maxlength="300" value="<?= e(asistan_ayar('karsilama')) ?>" placeholder="<?= e(asistan_karsilama()) ?>"><small class="muted">Boş bırakırsanız: "<?= e(asistan_karsilama()) ?>" · {magaza} yazarsanız mağaza adı gelir.</small></label>
+        <label class="check-line"><input type="checkbox" name="acik" <?= asistan_acik_mi() ? 'checked' : '' ?>> Telefon asistanı açık</label>
+        <label class="check-line"><input type="checkbox" name="mesaj" <?= asistan_mesaj_acik() ? 'checked' : '' ?>> Açılamayan aramaya SMS gönder (kayıtlı müşteriye sipariş durumu)</label>
+        <label class="check-line"><input type="checkbox" name="mesaj_kayitsiz" <?= asistan_mesaj_kayitsiz() ? 'checked' : '' ?>> Kayıtlı olmayan cep numaralarına da "sizi geri arayacağız" SMS'i gönder</label>
+        <small class="muted">SMS mağaza telefonunun kendi hattından gider (tarifenizdeki SMS). Aynı numaraya <?= ASISTAN_MESAJ_ARALIK_SAAT ?> saatte en fazla bir SMS. Örnek: "<?= e(asistan_mesaj_metni(null)) ?>"</small>
         <div><button class="btn btn-primary">Kaydet</button></div>
       </form>
     </section>
@@ -135,7 +136,7 @@ page_header('Telefon asistanı', 'Açılamayan aramaları mağaza telefonundaki 
       <?php else: ?>
         <ol class="small" style="margin:0 0 12px;padding-left:18px">
           <li>Mağaza telefonuna <a class="link" href="<?= e($apkUrl) ?>"<?= $apkVar ? ' download' : ' target="_blank" rel="noopener"' ?>>OptiFlow Asistan uygulamasını indirin</a> ve kurun (bilinmeyen kaynaklara izin isteyebilir).</li>
-          <li>Uygulamadaki izinleri verin: telefon, mikrofon, arama tanıma ve "Ses erişimi" (erişilebilirlik).</li>
+          <li>Uygulamadaki izinleri verin: telefon, SMS, arama tanıma ve "diğer uygulamaların üzerinde gösterme".</li>
           <li>Aşağıdaki düğmeyle kod alın ve karekodu telefonla okutun.</li>
         </ol>
         <form method="post"><?= csrf_field() ?><input type="hidden" name="eylem" value="kod"><button class="btn btn-primary"><?= icon('plus') ?> Bağlama kodu al</button></form>
@@ -150,12 +151,12 @@ page_header('Telefon asistanı', 'Açılamayan aramaları mağaza telefonundaki 
     <?php endif; ?>
 
     <section class="card">
-      <div class="card-head"><h2><?= icon('shield') ?> Telefonda neler söylenir?</h2></div>
+      <div class="card-head"><h2><?= icon('shield') ?> Nasıl çalışır?</h2></div>
       <ul class="small" style="margin:0;padding-left:18px">
-        <li>Arayan numara kayıtlıysa: adı ve siparişin durumu (camlar geldi mi, atölyede mi, hazır mı, tahmini teslim).</li>
-        <li>Numara kayıtlı değilse: siparişteki numarayı tuşlamasını ister; o zaman isim söylenmez.</li>
-        <li>Tutar, bakiye ve kişisel bilgiler <b>söylenmez</b>; konuşma kaydedilmez, yalnızca kısa özet ve not tutulur.</li>
-        <li>1 sipariş durumu · 2 adres ve saatler · 3 not bırak. Arayan konuşarak da sorabilir.</li>
+        <li><b>Telefon çalarken</b> ekranın üstünde kart: arayanın adı, siparişlerinin durumu (camlar geldi mi, atölyede mi, hazır mı, tahmini teslim) ve kalan tutar. Kim açarsa cevabı bilir.</li>
+        <li><b>Açılamazsa</b> kayıtlı müşteriye mağaza hattından SMS: sipariş durumu, tahmini teslim ve takip bağlantısı. SMS'te tutar ve bakiye <b>yazmaz</b>.</li>
+        <li>Her cevapsız arama <b>Geri aranacaklar</b>a düşer ve bildirim gelir; aynı kişi tekrar ararsa aynı kayda eklenir.</li>
+        <li>Kayıtlar <?= ASISTAN_KAYIT_GUN ?> gün saklanır.</li>
       </ul>
     </section>
 

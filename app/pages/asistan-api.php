@@ -13,6 +13,9 @@ require dirname(__DIR__, 2) . '/app/bootstrap.php';
      POST ?eylem=cevap&m=      oturum, metin, tus     → söylenecek metin
      POST ?eylem=bitti&m=      oturum, sure, olay
      POST ?eylem=olay&m=       metin (uygulama tanılama kaydı; sayfada son olaylar)
+     POST ?eylem=bilgi&m=      numara                 → arayan kartı (4.31.0)
+     POST ?eylem=cevapsiz&m=   numara                 → geri aranacak kaydı + gönderilecek SMS
+     POST ?eylem=mesaj_sonucu&m= kayit, gitti, hata
    ========================================================================== */
 
 $eylem = (string) ($_GET['eylem'] ?? '');
@@ -58,6 +61,7 @@ if (!$ozellikVar) {
 }
 db();
 run_migrations();
+$GLOBALS['__musteri_magaza'] = $magaza;   // takip bağlantıları (musteri_url) bu mağazanın numarasını taşısın
 
 if ($eylem === 'bagla') {
     if (merkez_hiz_asildi('asistan_bagla', 'm' . $mid, 10, 10, 900)) {
@@ -84,7 +88,7 @@ if (isset($_SERVER['HTTP_X_ASISTAN_SURUM'])) {
 switch ($eylem) {
     case 'ayar':
         $json(['ok' => true, 'acik' => asistan_acik_mi(), 'bekleme_sn' => asistan_bekleme_sn(), 'magaza' => setting('shop_name', 'OptiFlow'),
-            'karsilama' => asistan_karsilama()]);
+            'karsilama' => asistan_karsilama(), 'mesaj' => asistan_mesaj_acik(), 'mesaj_kayitsiz' => asistan_mesaj_kayitsiz()]);
     case 'basla':
         if (!asistan_acik_mi()) {
             $json(['ok' => false, 'kapali' => true, 'hata' => 'Asistan OptiFlow\'da kapalı.']);
@@ -103,6 +107,16 @@ switch ($eylem) {
         $metin = isset($_POST['metin']) ? mb_substr((string) $_POST['metin'], 0, 500) : null;
         $tus = isset($_POST['tus']) ? (preg_replace('/[^\d#*]/', '', (string) $_POST['tus']) ?? '') : null;
         $json(asistan_cevap($arama, $metin, $tus));
+    case 'bilgi':      // 4.31.0 telefon çalarken ekrandaki arayan kartı
+        $json(asistan_bilgi((string) ($_POST['numara'] ?? '')) + ['mesaj' => asistan_mesaj_acik()]);
+    case 'cevapsiz':   // 4.31.0 açılmadan biten arama → geri aranacaklar + gönderilecek SMS
+        if (!asistan_acik_mi()) {
+            $json(['ok' => true, 'gonder' => false, 'neden' => 'asistan kapalı']);
+        }
+        $json(asistan_cevapsiz((string) ($_POST['numara'] ?? ''), (int) $cihaz['id']));
+    case 'mesaj_sonucu':
+        asistan_mesaj_sonucu((int) ($_POST['kayit'] ?? 0), ($_POST['gitti'] ?? '') === '1', (string) ($_POST['hata'] ?? ''));
+        $json(['ok' => true]);
     case 'olay':
         $kayit = json_decode(setting('asistan_olaylar', '[]'), true) ?: [];
         array_unshift($kayit, [date('d.m H:i:s'), mb_substr((string) ($_POST['metin'] ?? ''), 0, 200)]);

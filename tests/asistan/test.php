@@ -13,6 +13,11 @@ $p->exec("CREATE TABLE asistan_aramalar (id INTEGER PRIMARY KEY AUTOINCREMENT, a
     tamamlandi_at TEXT NULL, tamamlayan INTEGER NULL, sure INTEGER NULL, durum_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL, updated_at TEXT NOT NULL)");
 
 insert('user_accounts', ['full_name' => 'Selin', 'is_active' => 1, 'role' => 'super_yetkili']);
+if (!function_exists('stage_label')) {
+    function stage_label(?string $k): string { return ['atolyede' => 'Atölyede', 'hazirlandi' => 'Hazır', 'siparis_verildi' => 'Sipariş alındı'][$k] ?? (string) $k; }
+}
+function track_page_exists(): bool { return false; }
+try { $p->exec("CREATE TABLE payments (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NOT NULL, amount REAL NOT NULL, method TEXT, created_at TEXT)"); } catch (Throwable $e) {}
 setting_set('shop_name', 'Poyraz Optik');
 setting_set('shop_address', 'Bağdat Caddesi 214, Kadıköy');
 setting_set('shop_hours', "Pazartesi – Cumartesi 09:30 – 19:30\nPazar kapalı");
@@ -145,6 +150,39 @@ ok(asistan_cihaz_dogrula((string) $anahtar) === null, 'kaldırılan cihaz çalı
 $kod2 = asistan_eslesme_kodu_uret();
 setting_set('asistan_eslesme', explode('|', setting('asistan_eslesme'))[0] . '|' . (time() - 1));
 ok(asistan_bagla($kod2, 'Z') === null, 'süresi dolan kod reddedilir');
+
+echo "10) Arayan kartı ve cevapsız arama SMS (4.31.0)\n";
+q("UPDATE asistan_aramalar SET tamamlandi_at = ? WHERE geri_ara = 1", [date('Y-m-d H:i:s')]);
+$GLOBALS['__push'] = [];
+update('orders', ['order_stage' => 'atolyede', 'total_amount' => 4650, 'sgk_amount' => 150, 'promised_date' => $ileri], 'id = ?', [$o1]);
+insert('payments', ['order_id' => $o1, 'amount' => 1500, 'method' => 'nakit', 'created_at' => date('Y-m-d H:i:s')]);
+$b = asistan_bilgi('+90 532 123 45 67');
+ok($b['tanindi'] && $b['baslik'] === 'Ayşe Yılmaz' && str_contains($b['satirlar'][0], 'atölyede hazırlanıyor') && str_contains($b['satirlar'][0], 'Kalan 3.000,00'), 'kart: isim, durum, kalan (SGK ve ödeme düşülmüş)');
+$b = asistan_bilgi('05559990000');
+ok(!$b['tanindi'] && $b['baslik'] === 'Kayıtlı olmayan numara', 'kart: kayıtsız numara');
+$c = asistan_cevapsiz('05321234567', 1);
+ok($c['gonder'] && str_starts_with($c['metin'], 'Poyraz Optik: Merhaba Ayşe Yılmaz, aramanıza yetişemedik.') && str_contains($c['metin'], 'atölyede hazırlanıyor'), 'SMS: kayıtlı müşteriye durum');
+ok(!str_contains($c['metin'], '₺') && !str_contains($c['metin'], 'Kalan'), 'SMS: tutar yazmaz');
+$k = row('SELECT * FROM asistan_aramalar WHERE id = ?', [$c['kayit']]);
+ok((int) $k['geri_ara'] === 1 && $k['sonuc'] === 'cevapsiz' && (int) $k['customer_id'] === $mus, 'geri aranacaklara düştü');
+ok(str_starts_with($GLOBALS['__push'][0][0]['title'], 'Cevapsız arama · Ayşe Yılmaz'), 'yetkiliye bildirim');
+asistan_mesaj_sonucu($c['kayit'], true);
+esit('mesaj', (string) scalar('SELECT sonuc FROM asistan_aramalar WHERE id = ?', [$c['kayit']]), 'SMS gitti işaretlendi');
+$c2 = asistan_cevapsiz('+905321234567', 1);
+ok(!$c2['gonder'] && str_contains($c2['neden'], 'saatte mesaj gitti') && $c2['kayit'] === $c['kayit'], 'tekrar arayınca aynı kayda eklenir, ikinci SMS gitmez');
+ok(str_contains((string) scalar('SELECT ozet FROM asistan_aramalar WHERE id = ?', [$c['kayit']]), 'tekrar aradı'), 'tekrar aradı notu');
+$c3 = asistan_cevapsiz('05557776655');
+ok(!$c3['gonder'] && $c3['neden'] === 'kayıtlı olmayan numara', 'kayıtsız: varsayılan SMS yok');
+setting_set('asistan_mesaj_kayitsiz', '1');
+$c4 = asistan_cevapsiz('05557776644');
+ok($c4['gonder'] && str_contains($c4['metin'], 'geri arayacağız') && !str_contains($c4['metin'], 'Merhaba'), 'kayıtsız (açıksa): genel SMS');
+$c5 = asistan_cevapsiz('02125556677');
+ok(!$c5['gonder'] && $c5['neden'] === 'cep telefonu değil', 'sabit hatta SMS gitmez');
+$c6 = asistan_cevapsiz('');
+ok(!$c6['gonder'] && $c6['neden'] === 'numara gizli' && (int) scalar('SELECT geri_ara FROM asistan_aramalar WHERE id = ?', [$c6['kayit']]) === 0, 'gizli numara: geri aranamaz, SMS yok');
+setting_set('asistan_mesaj', '0');
+ok(!asistan_cevapsiz('05321234500')['gonder'], 'SMS kapalıyken gönderilmez');
+setting_set('asistan_mesaj', '1');
 
 echo "9) Kaynak denetimleri\n";
 $kok = dirname(__DIR__, 2);

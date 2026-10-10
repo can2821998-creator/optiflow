@@ -26,16 +26,15 @@ class Ayarlar(ctx: Context) {
     var yerelAcik: Boolean
         get() = p.getBoolean("yerel_acik", true)
         set(v) = p.edit().putBoolean("yerel_acik", v).apply()
-    /** Kaç saniye çaldıktan sonra açılsın (sunucudan gelir) */
-    var bekleme: Int
-        get() = p.getInt("bekleme", 20)
-        set(v) = p.edit().putInt("bekleme", v.coerceIn(5, 60)).apply()
-    /** Asistanın sesi hangi kanaldan çalınsın: "cagri" (görüşme sesi) ya da "medya" — telefona göre biri daha iyi duyulur */
-    var sesKanali: String
-        get() = p.getString("ses_kanali", "cagri") ?: "cagri"
-        set(v) = p.edit().putString("ses_kanali", v).apply()
-
     val bagli: Boolean get() = magaza > 0 && anahtar.length == 40
+
+    /** Kart / SMS çalışmıyorsa nedeni (yoksa null) */
+    fun beklemeNedeni(): String? = when {
+        !bagli -> "OptiFlow'a bağlı değil"
+        !yerelAcik -> "bu telefonda duraklatıldı"
+        !sunucuAcik -> "OptiFlow'da kapalı"
+        else -> null
+    }
 
     fun baglantiyiKaldir() {
         p.edit().remove("anahtar").remove("magaza").remove("magaza_adi").apply()

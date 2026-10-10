@@ -97,7 +97,7 @@ function ozellik_tanimlari(): array
         // 4.30.0 — mağazanın Android telefonundaki "OptiFlow Asistan" uygulaması (app/asistan.php)
         'telefon_asistan' => [
             'ad'       => 'Telefon asistanı',
-            'kisa'     => 'Açılamayan aramayı mağaza telefonundaki uygulama karşılar: hoş geldiniz der, sipariş / cam durumunu söyler, not alır.',
+            'kisa'     => 'Mağaza telefonu çalarken arayanın sipariş durumu ekranda; açılamayan aramaya otomatik SMS ve geri aranacaklar listesi (Android uygulaması).',
             'masaustu' => false,
         ],
         // 4.20.3 — telefon/tarayıcı (PWA) karşılığı: assets/pwa.js kopyayı tarayıcıda şifreli tutar, offline.html gösterir

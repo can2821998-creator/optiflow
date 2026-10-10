@@ -3,7 +3,7 @@
 *Son güncelleme: 10 Ekim 2026 (4.30.0 / Pro 5.5.0 / Asistan 1.0.0)*
 
 ## Sürüm
-- **Sunucu 4.30.0**, şema **33** (10.10 main'e birleştirildi; Sürüm yayınla + Canlıya al). Android **OptiFlow Asistan 1.0.0** (önizleme APK: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.
+- **Sunucu 4.30.1**, şema **33** (10.10 main'e birleştirildi; Sürüm yayınla + Canlıya al). Android **OptiFlow Asistan 1.0.0** (önizleme APK: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.
 - **Canlı site: 4.30.0** (10.10: Sürüm yayınla + Canlıya al başarılı; indir/asistan/ canlıda doğrulandı). Release v4.30.0-pro5.5.0 (APK dahil).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
@@ -15,6 +15,13 @@
   sayfa) ve seo testi ORTAM yüzünden düşer (`mktemp` /tmp yolu Windows PHP'ye geçmez, OpenSSL/dosya izni farkı);
   doğrulama CI'da (Linux).
 
+
+## Son oturum (4.30.1 — asistan ilk deneme)
+- Kullanıcı kurdu (Play Protect'i geçti), deneme araması: asistan açtı ama HİÇ SES yok; erişilebilirlikte "Bu hizmet
+  hatalı çalışıyor". Telefon büyük olasılıkla Xiaomi/HyperOS benzeri. 1.0.1: boru yazımı kilitlenmez, çökme + ses
+  tanılaması (sayfadaki "Uygulama olayları"), hoparlör düğmesine erişilebilirlikle basma, Ses testi, otomatik başlatma.
+- Bekleyen: kullanıcı 1.0.1 ile Ses testi + gerçek arama yapıp "Son olaylar" / "Uygulama olayları" ekranlarını gönderecek.
+  İmza sırları (ASISTAN_KEYSTORE_*) GitHub'a henüz eklenmedi → her güncellemede eski uygulama kaldırılmalı.
 
 ## Son oturum (4.30.0 — telefon asistanı)
 - Kullanıcı (Poyraz Optik): "Mağazaya gelen telefonları yakalamakta zorlanıyorum; asistan otomatik cevaplasın, 'Poyraz

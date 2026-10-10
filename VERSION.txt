@@ -1,6 +1,13 @@
 OPTIFLOW
-Release: 4.30.0 (2026-10-10)
+Release: 4.30.1 (2026-10-10)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.30.1 (OptiFlow Asistan 1.0.1)
+  - İlk gerçek denemede (Poyraz Optik) asistan aramayı açtı ama ses çıkmadı; erişilebilirlik ekranında "Bu hizmet
+    hatalı çalışıyor". Düzeltmeler: dinlemede boruya yazma artık kilitlenmez (tanıma servisi sesi okumazsa asistan
+    sessiz takılıyordu); çökme nedeni + hoparlör / karşılama / ses seviyesi tanılaması OptiFlow'a yazılır; hoparlör
+    açılmazsa görüşme ekranındaki Hoparlör düğmesine erişilebilirlikle basılır; "Ses testi" düğmesi; Xiaomi vb.
+    telefonlar için otomatik başlatma ayarı kısayolu. Site indirme klasörüne (indir/asistan/) 1.0.1 konur.
 
 DEĞİŞİKLİK NOTLARI — 4.30.0 (telefon asistanı — Android; şema 33)
   - YENİ (özellik: telefon_asistan, varsayılan kapalı; merkez panelden açılır): mağazanın Android telefonuna kurulan

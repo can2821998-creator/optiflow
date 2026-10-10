@@ -262,6 +262,9 @@ class AsistanServisi : AccessibilityService() {
                 val s = d.dinle(c.optString("mod", "menu")) { kaydet(it) }
                 if (durdurIstek) break
                 kaydet("Duyulan: " + (s.tus?.let { "tuş $it" } ?: "") + (s.metin?.let { " \"$it\"" } ?: if (s.tus == null) "—" else ""))
+                // Sunucuya içerik gönderilmez; yalnızca tanılama: tuş var mı, konuşma tanındı mı, ses seviyesi
+                olay("Dinleme: " + (if (s.tus != null) "tuş" else "tuş yok") + " · " + (if (s.metin != null) "konuşma tanındı" else "konuşma yok") +
+                    " · ses seviyesi ${s.seviye}" + if (s.seviye <= 1) " (mikrofona ses gelmiyor)" else "")
                 val form = mutableMapOf("oturum" to oturum)
                 s.metin?.let { form["metin"] = it }
                 s.tus?.let { form["tus"] = it }

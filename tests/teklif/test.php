@@ -217,7 +217,7 @@ hata_bekle(fn() => teklif_kaydet($ikili, $personel, $serbest), 'serbest teklif b
 echo "10) Kaynak denetimleri\n";
 $kok = dirname(__DIR__, 2);
 $mig = (string) file_get_contents($kok . '/app/migrations.php');
-ok(str_contains($mig, 'const SCHEMA_VERSION = 32;') && str_contains($mig, 'migrate_v31_katalog_teklif') && str_contains($mig, 'migrate_v32_teklif_gozlukler'), 'göç v31 + v32 (çoklu gözlük)');
+ok(preg_match('/const SCHEMA_VERSION = (3[2-9]|[4-9]\d);/', $mig) === 1 && str_contains($mig, 'migrate_v31_katalog_teklif') && str_contains($mig, 'migrate_v32_teklif_gozlukler'), 'göç v31 + v32 (çoklu gözlük)');
 $dom = (string) file_get_contents($kok . '/app/domain.php');
 ok(str_contains($dom, "FROM quotes WHERE converted_order_id = ? AND tip = 'katalog'"), 'reçete kaydı teklifteki SGK payını ezmez');
 $on = (string) file_get_contents($kok . '/app/pages/order-new.php');

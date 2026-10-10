@@ -1,6 +1,20 @@
 OPTIFLOW
-Release: 4.29.0 (2026-10-09)
+Release: 4.30.0 (2026-10-10)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.30.0 (telefon asistanı — Android; şema 33)
+  - YENİ (özellik: telefon_asistan, varsayılan kapalı; merkez panelden açılır): mağazanın Android telefonuna kurulan
+    "OptiFlow Asistan" uygulaması, kimse açmayan aramayı ayarlanan süre (varsayılan 20 sn) sonra açar,
+    "<Mağaza>'ya hoş geldiniz" der, arayan numaraya kayıtlı müşterinin sipariş durumunu söyler (camlar tedarik
+    ediliyor / depodan bekleniyor / geldi, atölyede, hazır, tahmini teslim günü). Arayan tuşla (1 durum, 2 adres ve
+    saatler, 3 not) ya da konuşarak sorabilir; not bırakırsa "Geri aranacaklar" listesine düşer ve bildirim gelir.
+  - Dışarıdan hizmet yok: telefonun kendi Türkçe sesi ve konuşma tanıması, tuş sesleri telefonda çözülür. Konuşma
+    mantığı sunucuda (app/asistan.php, uç nokta asistan.php) — cevaplar uygulama güncellenmeden iyileştirilebilir.
+  - Güvenlik / KVKK: telefon tek kullanımlık kodla bağlanır (cihaz anahtarının yalnızca özeti saklanır); telefonda
+    tutar, bakiye söylenmez; tuşlanan numarada isim söylenmez; konuşma metni saklanmaz, özet + not 90 gün.
+  - OptiFlow › Atölye › Telefon asistanı: geri aranacaklar, son aramalar, ayarlar (açık/kapalı, çaldırma süresi,
+    karşılama cümlesi), telefonu bağlama (karekod), uygulama tanılama olayları. Rehber: docs/TELEFON-ASISTANI.md.
+  - APK: GitHub Actions (android-asistan.yml); Release'te ve hosting paketinde indir/asistan/OptiFlow-Asistan.apk.
 
 DEĞİŞİKLİK NOTLARI — 4.29.0 (teklifte birden çok gözlük + teklif düzenleme; şema 32)
   - Bir teklifte 1–3 gözlük (ör. uzak + yakın): "Gözlük ekle" ile ikinci/üçüncü gözlük bloğu; her gözlüğün adı, kendi

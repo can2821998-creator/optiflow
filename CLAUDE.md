@@ -34,6 +34,9 @@ Tek oturum varsa doğrudan `main`.
 
 ## Yapı
 - Depo kökü = sunucu (PHP, hosting'e yüklenen kod): `app/`, `assets/`, kökteki `*.php`.
+- `android/` = OptiFlow Asistan (Kotlin, bağımlılıksız) — mağaza telefonunda aramayı karşılayan uygulama. APK GitHub
+  Actions'ta derlenir (`.github/workflows/android-asistan.yml`; dallarda `asistan-onizleme` ön sürümü, main sürümünde
+  Release + `indir/asistan/`). Konuşma mantığı sunucuda: `app/asistan.php`, uç nokta `asistan.php`.
 - `desktop/` = OptiFlow Pro (Electron + TypeScript) masaüstü kaynağı. Güvenlik: `desktop/SECURITY.md`,
   sürüm/imzalama: `desktop/RELEASE.md`. Exe derlemesi: `desktop/` içinde `npm ci && npm run dist:win`
   (imzalı: `npm run dist:win:imzali`, GitHub: `.github/workflows/optiflow-pro-surum.yml`).
@@ -57,6 +60,7 @@ php tests/hatirla/test.php
 php tests/guvenlik/test.php
 php tests/arayuz/test.php
 php tests/teklif/test.php
+php tests/asistan/test.php
 ```
 Masaüstü (desktop/ içinde, Node 22): `npm ci && npm run typecheck && npm test`
 (sunucu entegrasyon: `tests/server/*.mjs`, uçtan uca: `tests/e2e/` — yerel test sunucusu ister, bkz. desktop/BUILD.md).

@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference
  * dinle() bitene kadar bekler: iş parçacığında çağırın.
  */
 class Dinleyici(private val ctx: Context, private val ana: Handler) {
-    data class Sonuc(val metin: String?, val tus: String?)
+    data class Sonuc(val metin: String?, val tus: String?, val seviye: Int = 0)
 
     @Volatile var durdur = false
 
@@ -112,11 +112,15 @@ class Dinleyici(private val ctx: Context, private val ana: Handler) {
         val bayt = ByteArray(tampon.size * 2)
         val bas = SystemClock.elapsedRealtime()
         var sonTus = 0L
+        var tepe = 0.0
         kayit.startRecording()
         try {
             while (!durdur && SystemClock.elapsedRealtime() - bas < sinir) {
                 val n = kayit.read(tampon, 0, tampon.size)
                 if (n <= 0) continue
+                var e = 0.0
+                for (i in 0 until n) { val v = tampon[i] / 32768.0; e += v * v }
+                tepe = maxOf(tepe, Math.sqrt(e / n))
                 dtmf.isle(tampon, n)?.let {
                     tuslar.append(it)
                     sonTus = SystemClock.elapsedRealtime()
@@ -151,6 +155,7 @@ class Dinleyici(private val ctx: Context, private val ana: Handler) {
             try { tanici.get()?.destroy() } catch (_: Exception) {}
             try { okuUcu?.close() } catch (_: Exception) {}
         }
-        return Sonuc(metin.get()?.takeIf { it.isNotBlank() }, tuslar.toString().takeIf { it.isNotEmpty() })
+        // seviye: en yüksek ses (0–100). 0–1 → mikrofona hiç ses gelmiyor (görüşmede ses erişimi engellenmiş olabilir)
+        return Sonuc(metin.get()?.takeIf { it.isNotBlank() }, tuslar.toString().takeIf { it.isNotEmpty() }, (tepe * 100).toInt().coerceIn(0, 100))
     }
 }

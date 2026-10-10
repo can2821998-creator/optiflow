@@ -520,13 +520,13 @@ function asistan_mesaj_metni(?array $musteri): string
         $o = $siparisler[0];
         $metin .= asistan_siparis_cumlesi($o);
         $takip = function_exists('order_track_url') && function_exists('track_page_exists') && track_page_exists() ? order_track_url((int) $o['id']) : '';
-        if ($takip !== '') {
-            $metin .= ' Takip: ' . $takip;
-        }
         if (count($siparisler) > 1) {
             $metin .= ' (' . count($siparisler) . ' siparişinizden en yenisi)';
         }
         $metin .= ' Gerekirse sizi geri arayacağız.';
+        if ($takip !== '') {
+            $metin .= ' Takip: ' . $takip;
+        }
     } else {
         $metin .= 'En kısa sürede sizi geri arayacağız.';
     }

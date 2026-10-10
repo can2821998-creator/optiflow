@@ -1,6 +1,19 @@
 OPTIFLOW
-Release: 4.30.1 (2026-10-10)
+Release: 4.31.0 (2026-10-10)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.31.0 (telefon asistanı: arayan kartı + cevapsız aramaya SMS; OptiFlow Asistan 1.1.0)
+  - Sesli karşılama gerçek telefonda çalışmadı: asistan konuştu ama ses karşı tarafa gitmedi (Android, uygulamanın
+    sesini görüşmeye vermiyor; yankı engelleme siliyor). Kullanıcı kararı: sesli asistan bırakıldı.
+  - Yeni akış: telefon ÇALARKEN ekranın üstünde arayan kartı (ad, siparişlerin durumu — camlar geldi mi, atölyede
+    mi, hazır mı, tahmini teslim — ve kalan tutar) + aynı bilgiyle bildirim. Telefon AÇILAMAZSA kayıtlı müşteriye
+    mağaza hattından SMS (durum, tahmini teslim, takip bağlantısı; tutar yazmaz; aynı numaraya 6 saatte bir) ve
+    "Geri aranacaklar"a kayıt + bildirim; tekrar arayan aynı kayda eklenir.
+  - Ayarlar: SMS açık/kapalı, kayıtlı olmayan cep numaralarına "sizi geri arayacağız" SMS'i (varsayılan kapalı).
+  - Uygulama 1.1.0 artık aramayı açmaz, mikrofon ve Erişilebilirlik izni istemez (Play Protect / "hizmet hatalı
+    çalışıyor" sorunları ortadan kalkar). İzinler: telefon durumu, SMS, arama tanıma, diğer uygulamaların üzerinde
+    gösterme. Uç nokta: asistan.php eylem=bilgi / cevapsiz / mesaj_sonucu. Sesli akışın sunucu kodu ileride
+    internet hattı (SIP) için duruyor.
 
 DEĞİŞİKLİK NOTLARI — 4.30.1 (OptiFlow Asistan 1.0.1)
   - İlk gerçek denemede (Poyraz Optik) asistan aramayı açtı ama ses çıkmadı; erişilebilirlik ekranında "Bu hizmet

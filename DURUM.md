@@ -1,6 +1,6 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 10 Ekim 2026 (4.30.0 / Pro 5.5.0 / Asistan 1.0.0)*
+*Son güncelleme: 11 Ekim 2026 (4.31.0 / Pro 5.5.0 / Asistan 1.1.0)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
 - **Sunucu 4.31.0**, şema **33** (10.10 main'e birleştirildi; Sürüm yayınla + Canlıya al). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.

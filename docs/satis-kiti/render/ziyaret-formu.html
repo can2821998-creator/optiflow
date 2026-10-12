@@ -1,0 +1,42 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>OptiFlow ziyaret formu</title><style>@font-face{font-family:Manrope;font-weight:200 800;src:url("../../../assets/fonts/manrope-latin-wght-normal.woff2") format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+20BA,U+2122,U+2190-2193,U+2212}
+@font-face{font-family:Manrope;font-weight:200 800;src:url("../../../assets/fonts/manrope-latin-ext-wght-normal.woff2") format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F}
+@font-face{font-family:"IBM Plex Mono";font-weight:500;src:url("../../../assets/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2");unicode-range:U+0000-00FF,U+2000-206F,U+2212}
+@font-face{font-family:"IBM Plex Mono";font-weight:500;src:url("../../../assets/fonts/ibm-plex-mono-latin-ext-500-normal.woff2") format("woff2");unicode-range:U+0100-02BA,U+1E00-1E9F}
+@page{size:A4;margin:0}
+:root{--paper:#f5f3f3;--ink:#1b1416;--ink-2:#463b3e;--muted:#776b6e;--line:#e8e1e2;--brand:#b4233c;--brand-ink:#8f1a2e;--brand-bright:#d0334f;--brand-soft:#fbe4e8;--coral:#ff6b81;--night:#141012;--night-2:#221a1d;--on-night:#f3eef0;--on-night-muted:#ab9fa3}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff}
+body{font-family:Manrope,Arial,sans-serif;color:var(--ink);font-size:10.5pt;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sayfa{position:relative;width:210mm;height:297mm;overflow:hidden;padding:16mm 16mm 14mm;page-break-after:always;break-after:page;background:#fff}
+.sayfa:last-child{page-break-after:auto;break-after:auto}
+.mono,.etiket{font-family:"IBM Plex Mono",Consolas,monospace;font-weight:500}
+.etiket{font-size:8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-ink)}
+h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.025em;line-height:1.08}
+h1{font-size:30pt}h2{font-size:19pt}h3{font-size:12pt;letter-spacing:-.01em}
+p{margin:0}
+.logo{display:flex;align-items:center;gap:3mm;font-weight:800;font-size:15pt;letter-spacing:-.02em}
+.logo svg{width:9mm;height:9mm}
+.ust{display:flex;justify-content:space-between;align-items:center;padding-bottom:5mm;border-bottom:.4mm solid var(--line);margin-bottom:8mm}
+.alt{position:absolute;left:16mm;right:16mm;bottom:9mm;display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;font-size:7.5pt;color:var(--muted)}
+.kutu{border:.35mm solid var(--line);border-radius:4mm;padding:5mm 6mm}
+.gece{background:var(--night);color:var(--on-night)}
+.izgara2{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+.izgara3{display:grid;grid-template-columns:repeat(3,1fr);gap:5mm}
+ul.tik{list-style:none;margin:0;padding:0;display:grid;gap:1.6mm}
+ul.tik li{padding-left:5mm;position:relative}
+ul.tik li::before{content:"";position:absolute;left:0;top:1.6mm;width:2.6mm;height:1.5mm;border-left:.5mm solid var(--brand);border-bottom:.5mm solid var(--brand);transform:rotate(-45deg)}
+.gece ul.tik li::before{border-color:var(--coral)}
+.sure{font-family:"IBM Plex Mono",monospace;font-weight:500;color:var(--brand-ink);font-size:9pt;white-space:nowrap}
+table{width:100%;border-collapse:collapse}
+@page{size:A4 landscape;margin:0}</style></head><body><section class="sayfa form" style="width:297mm;height:210mm;padding:12mm 14mm">
+  <style>
+  .form table{margin-top:4mm;table-layout:fixed}
+  .form th{font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:7pt;letter-spacing:.06em;text-transform:uppercase;text-align:left;color:var(--brand-ink);padding:2mm 1.6mm;border-bottom:.6mm solid var(--ink)}
+  .form td{height:11.6mm;border-bottom:.3mm solid var(--line);border-right:.3mm solid var(--line)}
+  .form td:last-child{border-right:0}
+  .form .not{margin-top:3mm;font-size:8pt;color:var(--muted)}
+  </style>
+  <div class="ust" style="margin-bottom:3mm"><div class="logo" style="color:#1b1416"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="f1" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6b81"/><stop offset=".55" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/></linearGradient></defs><g transform="rotate(-10 50 50)" fill="url(#f1)"><path fill-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z"/><circle cx="50" cy="50" r="7"/></g></svg><span>OptiFlow</span></div><span class="etiket">Saha ziyaret takip formu</span></div>
+  <table><tr><th style="width:14mm">Tarih</th><th style="width:30mm">Optik adı · ilçe</th><th style="width:30mm">Yetkili · telefon</th><th style="width:15mm">Kaynak</th><th style="width:30mm">Medula&#039;yı kim, nasıl kullanıyor?</th><th style="width:22mm">Şu anki program</th><th style="width:11mm">İlgi 1–5</th><th style="width:26mm">Sonraki adım · tarih</th></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table>
+  <p class="not">Kaynak: broşür · tanıdık · Instagram · laboratuvar · fuar · diğer. İlgi: 1 ilgisiz … 5 "mağazayı açalım". Her ziyaretten sonra aynı gün WhatsApp şablonu 3'ü gönderin.</p>
+</section></body></html>

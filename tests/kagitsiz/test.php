@@ -99,9 +99,14 @@ ok(str_starts_with($son['url'], 'https://wa.me/?text='), 'numara yoksa WhatsApp 
 echo "7) Kaynak denetimi\n";
 $kaynak = (string) file_get_contents(dirname(__DIR__, 2) . '/app/kagitsiz.php');
 ok(!preg_match('/NOW\(\)|INTERVAL/', $kaynak), 'taşınabilir SQL (NOW/INTERVAL yok)');
-$zarf = (string) file_get_contents(dirname(__DIR__, 2) . '/app/partials/zarf-formu.php');
-ok(!preg_match('/<script(?![^>]*src=)/i', $zarf) && !preg_match('/\son[a-z]+=/i', $zarf), 'zarf formunda satır içi betik yok (CSP)');
+$zarf = (string) file_get_contents(dirname(__DIR__, 2) . '/app/partials/siparis-fisi.php');
+ok(!preg_match('/<script(?![^>]*src=)/i', $zarf) && !preg_match('/\son[a-z]+=/i', $zarf), 'sipariş fişinde satır içi betik yok (CSP)');
 ok(str_contains($zarf, 'can_see_amounts()'), 'tutarlar yetkiye bağlı');
+ok(str_contains($zarf, "'A4 portrait'") && str_contains($zarf, "'210mm 148.5mm'"), 'iki kâğıt: A4 dikey ve kesilmiş yarım sayfa');
+ok(str_contains($zarf, 'class="kesim"') && str_contains($zarf, 'if (!$yarim)'), 'kesme çizgisi yalnız A4\'te');
+$print = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/print.php');
+ok(str_contains($print, "\$type === 'order' && ozellik_acik('kagitsiz') && !query_int('tam')"), 'siparişin Fiş düğmesi yarım sayfa fişi basar, &tam=1 ayrıntılı fiş');
+ok(str_contains($print, "if (\$type === 'zarf')"), 'eski zarf bağlantısı fişe yönlenir');
 $index = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/index.php');
 ok(str_contains($index, "ozellik_acik('kagitsiz')"), 'ana ekran kartı özellik anahtarına bağlı');
 

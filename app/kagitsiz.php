@@ -8,7 +8,8 @@ declare(strict_types=1);
    sipariş formuna yazılır, form sipariş zarfına konur; stokta olmayan camların numaraları
    gün sonunda ayrı bir kâğıda yeniden yazılıp fotoğrafı WhatsApp'tan depoya gönderilir.
    Bu modül iki yeniden yazmayı kaldırır:
-     1) Zarf formu: siparişten A5 form basılır (print.php?type=zarf), elle yazılan formun yerini alır.
+     1) Sipariş fişi yarım sayfa (4.32.1): siparişteki "Fiş" A4'ün üst yarısına basılır, ortada kesme çizgisi;
+        kesilen alt yarı bir sonraki fişe kullanılır (app/partials/siparis-fisi.php). Elle yazılan formun yerini alır.
      2) Gün sonu depo siparişi: eksik camlar türe ve numaraya göre gruplanıp TEK TUŞLA depoya
         WhatsApp metni olarak gider; camlar "Depoya sipariş verildi" olur. Son gönderim geri alınabilir.
    Depoya giden metinde MÜŞTERİ BİLGİSİ YOKTUR (yalnız cam türü, numara, adet).

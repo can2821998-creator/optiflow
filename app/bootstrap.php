@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.32.0';
+const APP_VERSION = '4.32.1';
 const APP_ROOT = __DIR__ . '/..';
 
 // 4.16.8: canlıya yükleme sürerken yarım dosyalara denk gelmemek için kısa bakım ekranı (app/guncelleme.php).
@@ -118,7 +118,7 @@ require __DIR__ . '/lens.php';
 require __DIR__ . '/gorevler.php';
 require __DIR__ . '/odeme.php';
 require __DIR__ . '/tedarik.php';
-require __DIR__ . '/kagitsiz.php';   // 4.32.0 kâğıtsız tezgâh: zarf formu, gün sonu depo siparişi
+require __DIR__ . '/kagitsiz.php';   // 4.32.0 kâğıtsız tezgâh: yarım sayfa sipariş fişi, gün sonu depo siparişi
 require __DIR__ . '/sgk-mutabakat.php';
 require __DIR__ . '/barkod.php';
 require __DIR__ . '/uts.php';      // 4.13.0 ÜTS bildirimleri

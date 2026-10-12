@@ -44,7 +44,7 @@ function ozellik_tanimlari(): array
         ],
         'kagitsiz' => [
             'ad'       => 'Kâğıtsız tezgâh',
-            'kisa'     => 'Elle yazılan sipariş formu yerine A5 zarf formu; gün sonunda eksik camlar tek tuşla depoya WhatsApp ile (müşteri bilgisi olmadan).',
+            'kisa'     => 'Elle yazılan sipariş formu yerine yarım sayfa sipariş fişi (A4 üst yarı + kesme çizgisi); gün sonunda eksik camlar tek tuşla depoya WhatsApp ile (müşteri bilgisi olmadan).',
             'masaustu' => false,
         ],
         'stok_oneri' => [

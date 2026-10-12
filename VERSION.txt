@@ -1,6 +1,14 @@
 OPTIFLOW
-Release: 4.32.0 (2026-10-12)
+Release: 4.32.1 (2026-10-12)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.32.1 (kâğıtsız tezgâh: zarf formu → siparişin kendi fişi, yarım sayfa)
+  - Ayrı "Zarf formu" yok: siparişteki "Fiş" düğmesi (özellik kagitsiz açıkken) yarım sayfa sipariş fişini basar.
+    A4 dikey kâğıdın ÜST YARISINA (210 × 148,5 mm) iki sütunlu fiş, ortada "✂ Buradan kesin" çizgisi; kesilen boş alt
+    yarı bir sonraki fiş için saklanır. Fiş ekranında kâğıt seçimi: "A4 · üst yarı" / "Kesilmiş yarım sayfa" (210 × 148,5,
+    çizgisiz; yazıcıya uzun kenarı önde, A5 yatay, %100). Ayrıntılı A4 müşteri fişi aynı ekrandan (&tam=1).
+  - app/partials/zarf-formu.php → siparis-fisi.php, assets/zarf.css → siparis-fisi.css; print.php?type=zarf eski
+    bağlantıları fişe yönlenir. Reçete numaraları daha iri (14 pt). Başsız Chrome: iki mod da tek sayfa PDF.
 
 DEĞİŞİKLİK NOTLARI — 4.32.0 (kâğıtsız tezgâh — özellik: kagitsiz, varsayılan kapalı)
   - Neden: optiklerin çoğunda reçete Medula'dan kontrol edilip ELLE sipariş formuna yazılıyor, form sipariş zarfına

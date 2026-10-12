@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 12 Ekim 2026 (4.32.0 / Pro 5.5.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 12 Ekim 2026 (4.32.1 / Pro 5.5.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
-- **Sunucu 4.32.0**, şema **33** (10.10 main'e birleştirildi; Sürüm yayınla + Canlıya al). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.32.0** bekleniyor (kâğıtsız tezgâh; özellik kapalı gelir). 4.31.1 canlıda doğrulandı (12.10).
+- **Sunucu 4.32.1**, şema **33** (10.10 main'e birleştirildi; Sürüm yayınla + Canlıya al). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.
+- **Canlı site: 4.32.1** bekleniyor (yarım sayfa sipariş fişi). 4.32.0 canlıda doğrulandı (12.10).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
@@ -21,10 +21,13 @@
   camların numaraları gün sonu ayrı kâğıda yazılıp fotoğrafı WhatsApp'la depoya gidiyor ("Türkiye'deki optiklerin %90'ı").
   Medula işlemi toplu (gün/hafta sonu), SGK faturası mağazanın kendi e-fatura programından kesiliyor → ay sonu döküm
   karşılaştırması pratikte 3. iş. Odak: OptiFlow kâğıdı kaldırmalı.
-- 4.32.0 (özellik `kagitsiz`, varsayılan kapalı): A5 zarf formu + Siparişler ana ekranında gün sonu "depoya WhatsApp"
+- 4.32.0 (özellik `kagitsiz`, varsayılan kapalı): fiş + Siparişler ana ekranında gün sonu "depoya WhatsApp"
   kartı (gruplu, müşterisiz metin, tek tuş, geri al). Testler 45/45. Önizleme: veritabanısız betikle A5 PDF tek sayfa.
 - Kullanıcıdan beklenen: merkez panelden pilot mağazada "Kâğıtsız tezgâh"ı aç; Tedarikçiler'de depoyu telefonuyla ekle;
-  bir gün zarf formu + gün sonu gönderimiyle çalışıp geri bildirim ver (zarfın düzeni alıştıkları forma uyuyor mu?).
+  bir gün yarım sayfa fiş + gün sonu gönderimiyle çalışıp geri bildirim ver (fişin düzeni alıştıkları forma uyuyor mu?).
+- 4.32.1 (kullanıcı: "A4'ün yarısına sığsın, ortada kesme çizgisi, kalan yarım sayfayı yazıcıya koyup kullansınlar" +
+  "ekstra zarf değil, siparişin içindeki fiş üzerinden"): ayrı zarf formu kaldırıldı; siparişin "Fiş"i yarım sayfa
+  (A4 üst yarı + kesme çizgisi / kesilmiş yarım sayfa), ayrıntılı A4 müşteri fişi &tam=1. app/partials/siparis-fisi.php.
 - Sıradaki (öneri, onay bekliyor): ay sonu sadeleştirme — döküm karşılaştırması isteğe bağlı; ana ekran e-fatura
   programına girilecek toplam + Excel liste; "Medula'ya işlenecekler" listesi + "hepsi işlendi" tek tuş (toplu işleme
   uygun). Pazarlama mesajı "kâğıt sipariş formu yok" olarak güncellenecek (site, broşür, Instagram).

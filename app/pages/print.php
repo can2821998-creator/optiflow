@@ -9,8 +9,13 @@ require_login();
    Katalog teklifi: app/partials/teklif-dokum.php. */
 
 $type = query('type');
-if ($type === 'zarf' && ozellik_acik('kagitsiz')) {   // 4.32.0 kâğıtsız tezgâh: A5 zarf formu (kendi sayfası)
-    require dirname(__DIR__) . '/partials/zarf-formu.php';
+if ($type === 'zarf') {   // eski bağlantı → sipariş fişi
+    redirect('print.php?type=order&id=' . query_int('id'));
+}
+if ($type === 'order' && ozellik_acik('kagitsiz') && !query_int('tam')) {
+    // 4.32.0 kâğıtsız tezgâh: sipariş fişi yarım sayfa (A4 üst yarı + kesme çizgisi ya da kesilmiş yarım sayfa).
+    // Ayrıntılı A4 müşteri fişi: &tam=1 (aşağıdaki döküm).
+    require dirname(__DIR__) . '/partials/siparis-fisi.php';
     exit;
 }
 $shop = setting('shop_name', 'OptiFlow');

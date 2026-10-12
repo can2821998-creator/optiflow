@@ -592,10 +592,7 @@ page_start($name . ' ' . order_no($id), 'orders');
         </div>
       </details>
     <?php endif; ?>
-    <?php if (ozellik_acik('kagitsiz') && $order['order_stage'] !== 'iptal'): ?>
-      <a class="btn btn-primary" href="print.php?type=zarf&id=<?= $id ?>" target="_blank" title="Elle yazılan sipariş formu yerine A5 zarf formu"><?= icon('print') ?> Zarf formu</a>
-    <?php endif; ?>
-    <a class="btn" href="print.php?type=order&id=<?= $id ?>" target="_blank"><?= icon('print') ?> Fiş</a>
+    <a class="btn<?= ozellik_acik('kagitsiz') ? ' btn-primary' : '' ?>" href="print.php?type=order&id=<?= $id ?>" target="_blank"<?= ozellik_acik('kagitsiz') ? ' title="Yarım sayfa sipariş fişi: A4 üst yarı + kesme çizgisi"' : '' ?>><?= icon('print') ?> Fiş</a>
     <a class="btn" href="customer.php?id=<?= (int) $order['customer_id'] ?>"><?= icon('user') ?> Müşteri kartı</a>
     <?php if (ozellik_acik('efatura') && can_see_amounts() && $order['order_stage'] !== 'iptal'):
       $faturaVar = (int) scalar("SELECT id FROM faturalar WHERE order_id = ? AND durum <> 'iptal' ORDER BY id LIMIT 1", [$id]); ?>

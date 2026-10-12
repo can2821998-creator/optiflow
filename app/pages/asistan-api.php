@@ -30,7 +30,8 @@ $json = static function (array $v, int $kod = 200): never {
 };
 
 $magaza = magaza_baglan_id($mid);
-$ozellikVar = $magaza && in_array('telefon_asistan', ozellik_listesi_temizle($magaza['ozellikler'] ?? ''), true);
+$ozellikVar = $magaza && !ozellik_askida('telefon_asistan')   // 4.32.0: askıdayken telefon bağlanamaz, kart/SMS çalışmaz
+    && in_array('telefon_asistan', ozellik_listesi_temizle($magaza['ozellikler'] ?? ''), true);
 
 if ($eylem === 'qr') {
     // Telefonun kamerasıyla okutulan karekod buraya gelir; düğme uygulamayı açar.

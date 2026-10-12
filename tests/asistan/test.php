@@ -193,5 +193,9 @@ ok(str_contains($api, "in_array('telefon_asistan'") && str_contains($api, 'asist
 $bs = (string) file_get_contents($kok . '/app/bootstrap.php');
 ok(str_contains($bs, "'odeme-bildirim.php', 'asistan.php'], true);"), 'asistan.php oturumsuz sunucu uç noktası (CSRF yok, mağaza &m=)');
 ok(str_contains((string) file_get_contents($kok . '/app/ozellik.php'), "'telefon_asistan' => ["), 'özellik anahtarı tanımlı (varsayılan kapalı)');
+$ozk = (string) file_get_contents($kok . '/app/ozellik.php');
+ok(preg_match("/'telefon_asistan' => \[[^\]]*'askida'\s*=> true/s", $ozk) === 1 && str_contains($ozk, "!empty(\$tanim['askida'])"), '4.32.0: telefon asistanı askıda — her mağazada kapalı sayılır');
+ok(str_contains((string) file_get_contents($kok . '/app/pages/asistan-api.php'), "!ozellik_askida('telefon_asistan')"), 'askıdayken telefon uç noktası çalışmaz');
+ok(substr_count((string) file_get_contents($kok . '/app/pages/merkez-panel.php'), 'ozellik_yonetilenler()') === 3, 'merkez panelinde askıdaki özellik listelenmez');
 
 bitir();

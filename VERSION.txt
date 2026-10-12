@@ -1,6 +1,11 @@
 OPTIFLOW
-Release: 4.31.0 (2026-10-10)
+Release: 4.31.1 (2026-10-12)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.31.1 (telefon asistanı askıda)
+  - Kullanıcı kararı (12.10): telefon asistanı şimdilik askıda. Özellik tanımında 'askida' bayrağı: hiçbir mağazada
+    açık sayılmaz (menü girişi, telefon-asistani.php, telefon uç noktası asistan-api.php kapanır), merkez panelinin
+    özellik listelerinde görünmez. Mağazaların kayıtlı seçimi ve verileri silinmez; askı kalkınca kaldığı yerden sürer.
 
 DEĞİŞİKLİK NOTLARI — 4.31.0 (telefon asistanı: arayan kartı + cevapsız aramaya SMS; OptiFlow Asistan 1.1.0)
   - Sesli karşılama gerçek telefonda çalışmadı: asistan konuştu ama ses karşı tarafa gitmedi (Android, uygulamanın

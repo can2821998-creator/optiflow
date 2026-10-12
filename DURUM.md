@@ -1,9 +1,9 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 11 Ekim 2026 (4.31.0 / Pro 5.5.0 / Asistan 1.1.0)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 12 Ekim 2026 (4.31.1 / Pro 5.5.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
-- **Sunucu 4.31.0**, şema **33** (10.10 main'e birleştirildi; Sürüm yayınla + Canlıya al). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.
+- **Sunucu 4.31.1**, şema **33** (10.10 main'e birleştirildi; Sürüm yayınla + Canlıya al). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.
 - **Canlı site: 4.31.0** (10.10: Sürüm yayınla + Canlıya al başarılı; indir/asistan/OptiFlow-Asistan.apk = Asistan 1.1.0). Release v4.31.0-pro5.5.0.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
@@ -16,7 +16,14 @@
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.31.0 — sesli asistan bırakıldı → arayan kartı + cevapsız SMS)
+## Son oturum (4.31.1 — telefon asistanı askıya alındı; TEKNOPLUS)
+- Kullanıcı (12.10): "Telefon asistanını askıya al, menüde vs görünmesin; şube özelliğine geçelim."
+- app/ozellik.php: 'askida' => true (telefon_asistan) → ozellik_durumu her mağazada 'kapali', merkez panel listeleri
+  ozellik_yonetilenler() kullanır, panelden kaydetmede askıdaki seçim korunur; asistan-api.php askıdayken reddeder.
+  Geri açmak: tanımdaki 'askida' satırını sil. Release iş akışı APK'yı yine üretir (zararsız).
+- Sıradaki: şube özelliği (aynı oturumda başlandı).
+
+## Önceki oturum (4.31.0 — sesli asistan bırakıldı → arayan kartı + cevapsız SMS)
 - 1.0.1 denemesi: asistan açtı, sesi mağaza telefonundan duyuldu ama KARŞI TARAFA GİTMEDİ (medya kanalı da). Neden:
   Android yankı engelleme cihazın kendi çaldığı sesi uplink'ten siler; sıradan uygulama görüşmeye ses veremez.
   Seçenekler sunuldu (SIP hattı + yönlendirme / sesliyi bırak); kullanıcı "sesli asistanı bırak" dedi.

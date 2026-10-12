@@ -624,7 +624,7 @@ $gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yen
         <b>Masaüstü</b> etiketliler yalnızca OptiFlow Pro uygulamasında çalışır.</p>
       <form method="post">
         <?= csrf_field() ?><input type="hidden" name="action" value="ozellikler"><input type="hidden" name="id" value="<?= (int) $detay['id'] ?>"><input type="hidden" name="geri" value="detay">
-        <?php $acikOz = merkez_magaza_ozellikleri($detay); foreach (ozellik_tanimlari() as $ok => $ot): ?>
+        <?php $acikOz = merkez_magaza_ozellikleri($detay); foreach (ozellik_yonetilenler() as $ok => $ot): ?>
           <label class="ozellik-satir" style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid #eee">
             <input type="checkbox" name="ozellik[]" value="<?= e($ok) ?>" <?= in_array($ok, $acikOz, true) ? 'checked' : '' ?> style="margin-top:4px">
             <span><b><?= e($ot['ad']) ?></b><?php if ($ot['masaustu']): ?> <span class="badge b-pro">Masaüstü</span><?php endif; ?><br><span class="muted mini"><?= e($ot['kisa']) ?></span></span>
@@ -902,10 +902,10 @@ $gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yen
       <option value="surum_pro">Paketi Pro yap</option>
       <option value="surum_lite">Paketi Lite yap</option>
       <optgroup label="Özellik aç">
-        <?php foreach (ozellik_tanimlari() as $ok => $ot): ?><option value="ozellik_ac:<?= e($ok) ?>"><?= e($ot['ad']) ?> — aç</option><?php endforeach; ?>
+        <?php foreach (ozellik_yonetilenler() as $ok => $ot): ?><option value="ozellik_ac:<?= e($ok) ?>"><?= e($ot['ad']) ?> — aç</option><?php endforeach; ?>
       </optgroup>
       <optgroup label="Özellik kapat">
-        <?php foreach (ozellik_tanimlari() as $ok => $ot): ?><option value="ozellik_kapat:<?= e($ok) ?>"><?= e($ot['ad']) ?> — kapat</option><?php endforeach; ?>
+        <?php foreach (ozellik_yonetilenler() as $ok => $ot): ?><option value="ozellik_kapat:<?= e($ok) ?>"><?= e($ot['ad']) ?> — kapat</option><?php endforeach; ?>
       </optgroup>
     </select>
     <button class="btn btn-primary btn-sm">Uygula</button>

@@ -13,6 +13,9 @@ declare(strict_types=1);
    uygulamasından girilmesini ister (ör. barkod okuyucu, çevrimdışı mod).
 
    Lite/Pro paket kuralları (paket.php: SGK aktarımı, ÜTS) değişmedi.
+
+   4.32.0: 'askida' => true olan özellik ASKIDADIR: hiçbir mağazada açık sayılmaz (menü, sayfa, uç nokta kapanır),
+   merkez panelinde listelenmez. Mağazaların kayıtlı seçimi silinmez; askı kalkınca kaldığı yerden devam eder.
    ========================================================================== */
 
 /** Yönetilebilir özellikler. Yeni özellik eklemek için buraya satır ekleyin. */
@@ -95,10 +98,12 @@ function ozellik_tanimlari(): array
             'masaustu' => true,
         ],
         // 4.30.0 — mağazanın Android telefonundaki "OptiFlow Asistan" uygulaması (app/asistan.php)
+        // 4.32.0 — kullanıcı kararı (12.10): şimdilik askıda; menüde ve merkez panelinde görünmez.
         'telefon_asistan' => [
             'ad'       => 'Telefon asistanı',
             'kisa'     => 'Mağaza telefonu çalarken arayanın sipariş durumu ekranda; açılamayan aramaya otomatik SMS ve geri aranacaklar listesi (Android uygulaması).',
             'masaustu' => false,
+            'askida'   => true,
         ],
         // 4.20.3 — telefon/tarayıcı (PWA) karşılığı: assets/pwa.js kopyayı tarayıcıda şifreli tutar, offline.html gösterir
         'cevrimdisi_tel' => [
@@ -107,6 +112,18 @@ function ozellik_tanimlari(): array
             'masaustu' => false,
         ],
     ];
+}
+
+/** Özellik askıda mı? (Askıdaki özellik her mağazada kapalı sayılır, panelde listelenmez.) */
+function ozellik_askida(string $k): bool
+{
+    return !empty(ozellik_tanimlari()[$k]['askida']);
+}
+
+/** Merkez panelinde açılıp kapatılabilen özellikler (askıdakiler hariç). */
+function ozellik_yonetilenler(): array
+{
+    return array_filter(ozellik_tanimlari(), static fn(array $t) => empty($t['askida']));
 }
 
 /** JSON/dizi → geçerli, tekrarsız özellik anahtarları. Bilinmeyenler atılır. */
@@ -143,7 +160,7 @@ function magaza_ozellikleri(): array
 function ozellik_durumu(string $k): string
 {
     $tanim = ozellik_tanimlari()[$k] ?? null;
-    if (!$tanim || !in_array($k, magaza_ozellikleri(), true)) {
+    if (!$tanim || !empty($tanim['askida']) || !in_array($k, magaza_ozellikleri(), true)) {
         return 'kapali';
     }
     if ($tanim['masaustu'] && !is_optiflow_desktop()) {
@@ -202,6 +219,9 @@ function merkez_ozellik_ayarla(int $magazaId, string $k, bool $acik): void
     if (!isset(ozellik_tanimlari()[$k])) {
         throw new DomainException('Bilinmeyen özellik.');
     }
+    if (ozellik_askida($k)) {
+        throw new DomainException('Bu özellik şimdilik askıda.');
+    }
     $m = merkez_row('SELECT ozellikler FROM magazalar WHERE id = ?', [$magazaId]);
     if (!$m) {
         throw new DomainException('Mağaza bulunamadı.');
@@ -217,6 +237,10 @@ function merkez_ozellik_ayarla(int $magazaId, string $k, bool $acik): void
 /** Tüm listeyi birden kaydet (detay sayfasındaki onay kutuları). */
 function merkez_ozellikleri_kaydet(int $magazaId, array $acikAnahtarlar): void
 {
-    $liste = ozellik_listesi_temizle(array_values($acikAnahtarlar));
+    // Askıdaki özellikler formda yok: mağazanın kayıtlı seçimi korunur, formdan gelen değer yok sayılır
+    $eski = merkez_row('SELECT ozellikler FROM magazalar WHERE id = ?', [$magazaId]);
+    $askida = array_filter($eski ? merkez_magaza_ozellikleri($eski) : [], 'ozellik_askida');
+    $form = array_filter(ozellik_listesi_temizle(array_values($acikAnahtarlar)), static fn($k) => !ozellik_askida($k));
+    $liste = array_values(array_unique(array_merge($form, $askida)));
     merkez_q('UPDATE magazalar SET ozellikler = ?, guncelleme = NOW() WHERE id = ?', [json_encode($liste), $magazaId]);
 }

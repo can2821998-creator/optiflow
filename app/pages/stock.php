@@ -9,6 +9,26 @@ $tabs = [
     'gelen'   => ['Son gelenler (14 gün)', "i.stock_status = 'stokta_var' AND i.arrived_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)"],
 ];
 
+/* 4.32.0 kâğıtsız tezgâh: gün sonu eksik camlar tek tuşla depoya (WhatsApp), son gönderimi geri al */
+if (is_post() && ozellik_acik('kagitsiz') && in_array(post('eylem'), ['depo_whatsapp', 'depo_geri'], true)) {
+    if (post('eylem') === 'depo_geri') {
+        $n = depo_geri_al();
+        flash($n > 0 ? $n . ' cam yeniden "Eksik" listesine alındı.' : 'Geri alınacak gönderim yok.');
+        redirect(post('geri') === 'ana' ? 'index.php' : 'stock.php');
+    }
+    $tedarikciSecim = post_int('supplier_id') ?: null;
+    if ($tedarikciSecim) {
+        setting_set('depo_tedarikci_id', (string) $tedarikciSecim);   // bir dahaki sefere de bu depo
+    }
+    $sonuc = depo_gonder($tedarikciSecim);
+    if ($sonuc['adet'] === 0) {
+        flash('Depoya gidecek eksik cam yok.');
+        redirect('index.php');
+    }
+    header('Location: ' . $sonuc['url'], true, 303);   // WhatsApp (yeni sekmede açılır; ana sekme kendini yeniler)
+    exit;
+}
+
 if (is_post()) {
     $ids = array_values(array_filter(array_map('intval', (array) ($_POST['items'] ?? []))));
     $to = post('to');

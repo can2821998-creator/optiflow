@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 12 Ekim 2026 (4.31.1 / Pro 5.5.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 12 Ekim 2026 (4.32.0 / Pro 5.5.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
-- **Sunucu 4.31.1**, şema **33** (10.10 main'e birleştirildi; Sürüm yayınla + Canlıya al). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.31.0** (10.10: Sürüm yayınla + Canlıya al başarılı; indir/asistan/OptiFlow-Asistan.apk = Asistan 1.1.0). Release v4.31.0-pro5.5.0.
+- **Sunucu 4.32.0**, şema **33** (10.10 main'e birleştirildi; Sürüm yayınla + Canlıya al). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.
+- **Canlı site: 4.32.0** bekleniyor (kâğıtsız tezgâh; özellik kapalı gelir). 4.31.1 canlıda doğrulandı (12.10).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
@@ -16,7 +16,21 @@
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.31.1 — telefon asistanı askıya alındı; TEKNOPLUS)
+## Son oturum (4.32.0 — kâğıtsız tezgâh; Poyraz AB bilgisayarı, dal oturum/kagitsiz → main)
+- Kullanıcı (12.10): pilotta bile reçete Medula'dan kontrol edilip ELLE forma yazılıyor, form zarfa giriyor; eksik
+  camların numaraları gün sonu ayrı kâğıda yazılıp fotoğrafı WhatsApp'la depoya gidiyor ("Türkiye'deki optiklerin %90'ı").
+  Medula işlemi toplu (gün/hafta sonu), SGK faturası mağazanın kendi e-fatura programından kesiliyor → ay sonu döküm
+  karşılaştırması pratikte 3. iş. Odak: OptiFlow kâğıdı kaldırmalı.
+- 4.32.0 (özellik `kagitsiz`, varsayılan kapalı): A5 zarf formu + Siparişler ana ekranında gün sonu "depoya WhatsApp"
+  kartı (gruplu, müşterisiz metin, tek tuş, geri al). Testler 45/45. Önizleme: veritabanısız betikle A5 PDF tek sayfa.
+- Kullanıcıdan beklenen: merkez panelden pilot mağazada "Kâğıtsız tezgâh"ı aç; Tedarikçiler'de depoyu telefonuyla ekle;
+  bir gün zarf formu + gün sonu gönderimiyle çalışıp geri bildirim ver (zarfın düzeni alıştıkları forma uyuyor mu?).
+- Sıradaki (öneri, onay bekliyor): ay sonu sadeleştirme — döküm karşılaştırması isteğe bağlı; ana ekran e-fatura
+  programına girilecek toplam + Excel liste; "Medula'ya işlenecekler" listesi + "hepsi işlendi" tek tuş (toplu işleme
+  uygun). Pazarlama mesajı "kâğıt sipariş formu yok" olarak güncellenecek (site, broşür, Instagram).
+- Ayrıca bu oturumda: docs/satis-kiti/ (A4 broşür, demo senaryosu, itirazlar, WhatsApp şablonları, laboratuvar teklifi,
+  ziyaret formu; `php docs/satis-kiti/uret.php` + başsız Chrome PDF).
+## Önceki oturum (4.31.1 — telefon asistanı askıya alındı; TEKNOPLUS)
 - Kullanıcı (12.10): "Telefon asistanını askıya al, menüde vs görünmesin; şube özelliğine geçelim."
 - app/ozellik.php: 'askida' => true (telefon_asistan) → ozellik_durumu her mağazada 'kapali', merkez panel listeleri
   ozellik_yonetilenler() kullanır, panelden kaydetmede askıdaki seçim korunur; asistan-api.php askıdayken reddeder.

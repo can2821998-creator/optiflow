@@ -9,6 +9,10 @@ require_login();
    Katalog teklifi: app/partials/teklif-dokum.php. */
 
 $type = query('type');
+if ($type === 'zarf' && ozellik_acik('kagitsiz')) {   // 4.32.0 kâğıtsız tezgâh: A5 zarf formu (kendi sayfası)
+    require dirname(__DIR__) . '/partials/zarf-formu.php';
+    exit;
+}
 $shop = setting('shop_name', 'OptiFlow');
 $title = '';
 $ekCss = [];

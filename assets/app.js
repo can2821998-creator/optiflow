@@ -54,6 +54,13 @@
     });
   });
 
+  /* 4.32.0 Yeni sekmede sonuç açan formlar (ör. depoya WhatsApp): gönderimden sonra bu sayfa kendini yeniler */
+  $$('form[data-sonra-yenile]').forEach(function (f) {
+    f.addEventListener('submit', function () {
+      setTimeout(function () { location.reload(); }, 1800);
+    });
+  });
+
   /* Kaydedilmemiş değişiklik uyarısı + çift gönderim engeli */
   var dirty = false;
   $$('form[data-guard]').forEach(function (f) {

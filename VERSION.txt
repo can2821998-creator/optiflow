@@ -1,6 +1,21 @@
 OPTIFLOW
-Release: 4.31.1 (2026-10-12)
+Release: 4.32.0 (2026-10-12)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.32.0 (kâğıtsız tezgâh — özellik: kagitsiz, varsayılan kapalı)
+  - Neden: optiklerin çoğunda reçete Medula'dan kontrol edilip ELLE sipariş formuna yazılıyor, form sipariş zarfına
+    konuyor; stokta olmayan camların numaraları gün sonunda AYRI BİR KÂĞIDA yeniden yazılıp fotoğrafı WhatsApp'tan
+    depoya gidiyor. OptiFlow bu iki yeniden yazmayı kaldırır.
+  - Zarf formu (A5): sipariş ekranında "Zarf formu" (print.php?type=zarf). Sipariş no, müşteri, telefon, teslim sözü,
+    uzak/yakın reçete, PD/yükseklik, her camın stok durumu (Stokta / Eksik / Depoya sipariş verildi), çerçeve, tutar-
+    alınan-kalan (yalnız tutar yetkisiyle), e-reçete no, takip karekodu, atölye kutucukları, not. app/partials/zarf-formu.php,
+    assets/zarf.css (A5 dikey, siyah-beyaz yazıcıda okunur).
+  - Gün sonu depo siparişi: Siparişler ana ekranında "Depoya gidecek N eksik cam" kartı; camlar türe ve numaraya göre
+    gruplanır (aks yazılmaz, MÜŞTERİ BİLGİSİ GİTMEZ). "WhatsApp'ta depoya gönder" → depo numarasına hazır metin açılır,
+    camlar "Depoya sipariş verildi" olur; son gönderim 12 saat içinde geri alınabilir. Depo: Ayarlardaki tedarikçi
+    (depo_tedarikci_id) ya da telefonu olan tek tedarikçi; birden çoksa kartta seçilir, seçim hatırlanır.
+    app/kagitsiz.php, stock.php (eylem depo_whatsapp / depo_geri), index.php, assets/app.js (data-sonra-yenile).
+  - tests/kagitsiz/test.php (45 test; CI listesine eklendi).
 
 DEĞİŞİKLİK NOTLARI — 4.31.1 (telefon asistanı askıda)
   - Kullanıcı kararı (12.10): telefon asistanı şimdilik askıda. Özellik tanımında 'askida' bayrağı: hiçbir mağazada

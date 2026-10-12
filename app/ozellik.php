@@ -42,6 +42,11 @@ function ozellik_tanimlari(): array
             'kisa'     => 'Siparişteki reçeteden laboratuvar sipariş formu; yazdır, WhatsApp veya e-posta ile gönder.',
             'masaustu' => false,
         ],
+        'kagitsiz' => [
+            'ad'       => 'Kâğıtsız tezgâh',
+            'kisa'     => 'Elle yazılan sipariş formu yerine A5 zarf formu; gün sonunda eksik camlar tek tuşla depoya WhatsApp ile (müşteri bilgisi olmadan).',
+            'masaustu' => false,
+        ],
         'stok_oneri' => [
             'ad'       => 'Stok satın alma önerisi',
             'kisa'     => 'Eksik camlar ve kritik seviyedeki çerçevelerden tedarikçi bazında sipariş listesi.',

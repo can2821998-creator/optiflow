@@ -1037,6 +1037,8 @@ function audit_actions(): array
         'rx_update'        => 'Reçete düzenledi',
         'rx_delete'        => 'Reçete sildi',
         'stock_update'     => 'Cam stok durumunu değiştirdi',
+        'depo_gonderim'    => 'Eksik camları depoya WhatsApp ile gönderdi',
+        'depo_geri_al'     => 'Depo gönderimini geri aldı',
         'customer_create'  => 'Müşteri ekledi',
         'customer_update'  => 'Müşteri bilgilerini değiştirdi',
         'customer_merge'   => 'Müşterileri birleştirdi',

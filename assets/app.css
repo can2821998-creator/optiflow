@@ -2280,3 +2280,22 @@ html.tema-koyu .tema-dugme .tema-ay { display: none; }
   .page-actions > .btn, .page-actions > form { flex: none; width: 100%; }
   .page-actions form.inline input { flex: 1; min-width: 0; }
 }
+
+/* ==========================================================================
+   4.32.0 — Kâğıtsız tezgâh: gün sonu depo kartı (Siparişler ana ekranı)
+   ========================================================================== */
+.depo-kart { border-color: var(--brand-soft); background: linear-gradient(180deg, var(--brand-tint), var(--surface) 70%); }
+.depo-ust { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 14px 24px; }
+.depo-ust h2 { margin: 4px 0 4px; font-size: 1.25rem; }
+.depo-etiket { font: 700 11px/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--brand-ink); }
+.depo-gonder { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 12px; }
+.depo-gonder .field { margin: 0; min-width: 190px; }
+.depo-gonder small { flex-basis: 100%; text-align: right; }
+.depo-liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px 22px; margin: 16px 0 10px; }
+.depo-grup b { display: block; font-size: 14px; margin-bottom: 4px; }
+.depo-grup b span, .depo-grup li span { color: var(--muted); font-weight: 600; }
+.depo-grup ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.depo-grup code { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.depo-son { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; margin: 0 0 16px; padding: 8px 14px; border-radius: var(--radius-sm); background: var(--green-bg); color: var(--green); font-size: 13.5px; font-weight: 600; }
+.depo-son .ic { width: 16px; height: 16px; vertical-align: -3px; }
+@media (max-width: 640px) { .depo-gonder { width: 100%; } .depo-gonder .btn { flex: 1; } .depo-gonder small { text-align: left; } }

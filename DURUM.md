@@ -1,12 +1,14 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 12 Ekim 2026 (4.32.1 / Pro 5.5.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 15 Ekim 2026 (4.33.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
-- **Sunucu 4.32.1**, şema **33** (10.10 main'e birleştirildi; Sürüm yayınla + Canlıya al). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.5.0**.
-- **Canlı site: 4.32.1** bekleniyor (yarım sayfa sipariş fişi). 4.32.0 canlıda doğrulandı (12.10).
+- **Sunucu 4.33.0**, şema **33** (göç yok). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Canlı site: 4.32.1** (12.10 Actions "Canlıya al" başarılı). 4.33.0 main'e push edilince yayınlanır.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
+  15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);
+  `desktop/` içinde `npm ci && npm run typecheck && npx vitest run` çalışıyor.
 - Yerel test kurulumu (kullanıcının PC'si, depoya girmez): `C:\Users\TEKNOPLUS\optiflow-yerel\` — taşınabilir MariaDB
   11.4 (127.0.0.1:3307, başlat: `mariadb-11.4.8-winx64\bin\mariadbd.exe --defaults-file=veri\my.ini`), şifreler ve
   uydurma veri betiği (`ornek-veri.php`) orada; depoda `config.php` (gitignore) yerel. Sunucu: `php -S 127.0.0.1:8080`.
@@ -16,7 +18,20 @@
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.32.0 — kâğıtsız tezgâh; Poyraz AB bilgisayarı, dal oturum/kagitsiz → main)
+## Son oturum (4.33.0 / Pro 5.6.0 — tezgâh akışı; Poyraz AB bilgisayarı, main)
+- Kullanıcı (15.10): "müşteri reçeteyi verir, tüm kaydı OptiFlow üzerinden Medula'dan kontrol edip aktarıp tezgâha bir
+  çıktı alacak şekilde kurgulayalım". Seçimler: Pro reçete no'yu Medula'ya kendisi yazsın; tek ekranda cam + stok,
+  çerçeve, tutar + kapora, telefon; çıktı = fiş + müşteri nüshası.
+- Yapılan: `tezgah.php` (app/pages/tezgah.php + app/tezgah.php + assets/tezgah.js), Pro `medula/sorgu.ts` +
+  `receteSorgula` köprüsü, fişte müşteri nüshası ve otomatik yazdırma. Akış SQLite deneme betiğiyle uçtan uca denendi
+  (Medula örnek metni → form → kayıt → fiş; A4 tek sayfa, yarım sayfa 2 sayfa). Testler: tezgah 42/42, Pro 127/127.
+- DOĞRULANMADI: Pro'nun gerçek Medula reçete sorgu ekranında numarayı bulup "Sorgula"ya basması (etiket sezgisi:
+  "e-Reçete No"/"Reçete No"). İlk denemede kullanıcıdan geri bildirim al; kutuyu bulamazsa Pro bildirimi
+  "sorgu ekranını açın" der ve numara elle yazılır. Gerekirse sorgu ekranının HTML'i (kişisel veri karartılmış) istenip fixture eklenmeli.
+- Sıradaki: pilot mağazada Tezgâh'ı denet (Kâğıtsız tezgâh açık olmalı + Pro 5.6.0 kurulu); ardından önceki öneri
+  "ay sonu sadeleştirme" (e-fatura toplamı + Excel, Medula'ya işlenecekler + tek tuş).
+
+## Önceki oturum (4.32.0 — kâğıtsız tezgâh; Poyraz AB bilgisayarı, dal oturum/kagitsiz → main)
 - Kullanıcı (12.10): pilotta bile reçete Medula'dan kontrol edilip ELLE forma yazılıyor, form zarfa giriyor; eksik
   camların numaraları gün sonu ayrı kâğıda yazılıp fotoğrafı WhatsApp'la depoya gidiyor ("Türkiye'deki optiklerin %90'ı").
   Medula işlemi toplu (gün/hafta sonu), SGK faturası mağazanın kendi e-fatura programından kesiliyor → ay sonu döküm
@@ -271,6 +286,7 @@
 - Devir paketi incelendi; depo bu oturumda kuruldu (geçmiş 4.12.0 hosting paketinden başlar).
 
 ## Sıradaki iş
+0. **Tezgâh pilotu (4.33.0):** gerçek Medula sorgu ekranında Pro 5.6.0 numarayı yazıyor mu, fiş + nüsha düzeni uygun mu — kullanıcıdan geri bildirim.
 0. **Şube özelliği** (kullanıcı kararı): şube, şubeye göre yetki, merkezden görme, transfer; bitince pazarlama.php 'yakinda' kaldır.
 0. **SEO bağlantısı:** kullanıcı hizmet hesabını kurunca panelde ilk veriyi birlikte kontrol et; sorgulara göre yeni rehber yazıları planla.
 1. **T.C. no maskeleme (KVKK) — kullanıcı "bir süre ertele" dedi (01.10):** `app/sgk-hak.php` › `sgk_hak_coz` okunan satırları ham saklıyor;

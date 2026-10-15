@@ -10,6 +10,8 @@
  *  - 5.4.0 Medula girişi (medula/giris.ts): ana süreç isterse giriş ekranını KAYITLI bilgiyle
  *    doldurur; kullanıcı "Giriş"e bastığında alanlardaki değerleri YALNIZCA ana sürece verir
  *    (ana süreç giriş başarılı olunca "kaydedilsin mi?" diye sorar). Sayfaya hiçbir şey açılmaz.
+ *  - 5.6.0 Tezgâh (medula/sorgu.ts): ana süreç personelin OptiFlow'da yazdığı e-reçete numarasını
+ *    gönderirse reçete sorgu kutusuna yazar ve "Sorgula"ya basar. Sayfadan bir şey okunmaz.
  */
 import { ipcRenderer } from 'electron';
 import { IPC } from '../shared/constants';
@@ -17,6 +19,7 @@ import { extractFrame } from '../medula/extractor';
 import { probeDocument } from '../medula/detector';
 import { listeNumaralari } from '../medula/liste';
 import { girisDoldur, girisIzle } from '../medula/giris';
+import { receteSorgula } from '../medula/sorgu';
 
 const arg = process.argv.find((a) => a.startsWith('--medula-extract-hosts='));
 const allowedHosts = (arg ? arg.split('=')[1] ?? '' : '')
@@ -56,8 +59,8 @@ function girisIstegi(id: string, r: { kayit?: unknown; izle?: unknown }): void {
 }
 
 ipcRenderer.on(IPC.medulaRequest, (_event, req: unknown) => {
-  const r = req as { id?: unknown; kind?: unknown; kayit?: unknown; izle?: unknown } | null;
-  if (!r || typeof r.id !== 'string' || (r.kind !== 'probe' && r.kind !== 'extract' && r.kind !== 'liste' && r.kind !== 'giris')) return;
+  const r = req as { id?: unknown; kind?: unknown; kayit?: unknown; izle?: unknown; no?: unknown } | null;
+  if (!r || typeof r.id !== 'string' || (r.kind !== 'probe' && r.kind !== 'extract' && r.kind !== 'liste' && r.kind !== 'giris' && r.kind !== 'sorgu')) return;
   const id = r.id;
   const kind = r.kind;
   if (!allowedHere()) {
@@ -68,6 +71,9 @@ ipcRenderer.on(IPC.medulaRequest, (_event, req: unknown) => {
     const w = window as Window & typeof globalThis;
     if (kind === 'giris') {
       girisIstegi(id, r);
+    } else if (kind === 'sorgu') {
+      const sonuc = typeof r.no === 'string' ? receteSorgula(document, w, r.no) : 'alan-yok';
+      ipcRenderer.send(IPC.medulaReply, { id, kind, ok: true, sonuc });
     } else if (kind === 'probe') {
       ipcRenderer.send(IPC.medulaReply, { id, kind, ok: true, probe: probeDocument(document, w) });
     } else if (kind === 'liste') {

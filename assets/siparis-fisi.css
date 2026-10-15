@@ -11,6 +11,8 @@ body { font: 500 9pt/1.3 "Manrope", system-ui, Arial, sans-serif; color: #141012
 .arac { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 16px; background: #141012; color: #d9cdd0; font-size: 13px; }
 .arac button { font: 700 14px system-ui, sans-serif; padding: 8px 16px; border-radius: 9px; border: 0; background: #d0334f; color: #fff; cursor: pointer; }
 .arac button.ghost { background: transparent; border: 1px solid #5a4a4f; color: #fff; }
+.arac a.dugme { font: 700 14px system-ui, sans-serif; padding: 8px 16px; border-radius: 9px; background: #f3eef0; color: #141012; text-decoration: none; }
+.arac a.dugme.ghost { background: transparent; border: 1px solid #5a4a4f; color: #fff; }
 .kagit-sec { display: inline-flex; border: 1px solid #5a4a4f; border-radius: 9px; overflow: hidden; }
 .kagit-sec a { padding: 7px 12px; color: #d9cdd0; text-decoration: none; font-weight: 700; }
 .kagit-sec a.secili { background: #f3eef0; color: #141012; }
@@ -69,6 +71,16 @@ small { color: #55494c; }
 .not small { font-size: 6pt; text-transform: uppercase; letter-spacing: .08em; }
 .not p { margin: .4mm 0 0; font-size: 8pt; }
 footer { font-size: 6pt; color: #776b6e; text-align: right; }
+
+/* 4.33.0 müşteri nüshası (A4 alt yarı / kesilmiş yarım sayfada ikinci sayfa) */
+.kagit + .kagit { break-before: page; }
+.nusha .ozet { margin: 0; display: grid; gap: 1.4mm; font-size: 9pt; }
+.nusha .ozet div { display: grid; grid-template-columns: 20mm 1fr; gap: 2mm; }
+.nusha .ozet dt { font-size: 6.5pt; text-transform: uppercase; letter-spacing: .08em; color: #55494c; padding-top: .6mm; }
+.nusha .ozet dd { margin: 0; font-weight: 700; }
+.nusha .uyari { margin: auto 0 0; font-size: 8pt; color: #55494c; border-top: .3mm solid #b9adb0; padding-top: 2mm; }
+.nusha .iletisim { margin-top: auto; }
+.nusha .iletisim p { margin: 0; font-size: 8.5pt; line-height: 1.45; }
 
 /* kesme çizgisi: A4'ün tam ortası */
 .kesim { position: absolute; left: 0; right: 0; top: 148.5mm; border-top: .35mm dashed #776b6e; }

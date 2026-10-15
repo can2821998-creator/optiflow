@@ -114,10 +114,11 @@ export function decideForMedula(raw: string | undefined | null, cfg: DesktopConf
 }
 
 /** Target URL for "open this incoming prescription" – built here, never taken from the server verbatim. */
-export function incomingUrl(cfg: DesktopConfig, incomingId: number): string | null {
+export function incomingUrl(cfg: DesktopConfig, incomingId: number, sayfa: 'sgk-aktar.php' | 'tezgah.php' = 'sgk-aktar.php'): string | null {
   if (!Number.isSafeInteger(incomingId) || incomingId <= 0) return null;
+  if (sayfa !== 'sgk-aktar.php' && sayfa !== 'tezgah.php') return null;
   const base = basePathOf(cfg);
-  return `${base.origin}${base.path}sgk-aktar.php?gelen=${incomingId}`;
+  return `${base.origin}${base.path}${sayfa}?gelen=${incomingId}`;
 }
 
 export function optiflowEndpoint(cfg: DesktopConfig, file: string, query: Record<string, string>): string {

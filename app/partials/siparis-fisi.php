@@ -7,6 +7,8 @@ declare(strict_types=1);
    Kâğıt (&kagit=):
      a4    (varsayılan) A4 dikey; fiş ÜST YARIDA (210 × 148,5 mm), ortada kesme çizgisi. Kesilen alt yarı boş kalır.
      yarim kesilmiş yarım sayfa (A5 yatay, 210 × 148,5 mm) yazıcıya konunca; çizgi yok.
+   4.33.0 müşteri nüshası (&nusha=0 ile kapanır): A4'te alt yarıda, kesilmiş yarım sayfada ikinci sayfa.
+   &tezgah=1 (tezgâh kaydından gelince): yazdırma penceresi kendiliğinden açılır, "Yeni reçete" bağlantısı.
    Tek dosya: assets/siparis-fisi.css + print.js. Tutarlar yalnız tutar görme yetkisi olana basılır.
    ========================================================================== */
 
@@ -15,6 +17,8 @@ if (!$o) {
     render_error_page('Sipariş bulunamadı', '');
 }
 $yarim = query('kagit') === 'yarim';
+$nusha = query('nusha') !== '0';
+$tezgah = query('tezgah') === '1';
 $rx = row('SELECT r.*, n.lens_type AS near_lens_type, n.right_sph AS near_right_sph, n.left_sph AS near_left_sph FROM prescription_records r LEFT JOIN near_prescription_details n ON n.prescription_id = r.id WHERE r.order_id = ? ORDER BY r.prescription_date DESC, r.id DESC LIMIT 1', [$o['id']]);
 $kalemler = $rx ? rows('SELECT lens_label, lens_type, lens_value, eye, item_group, stock_status FROM prescription_lens_items WHERE prescription_id = ? ORDER BY item_group, lens_no, id', [$rx['id']]) : [];
 $tutarlar = can_see_amounts();
@@ -59,7 +63,7 @@ if ($tutarlar && (string) $o['order_stage'] !== 'iptal') {
         . '<div class="kalan"><dt>Kalan</dt><dd>' . money($o['balance']) . '</dd></div></dl>';
 }
 $qr = $takip !== '' ? qr_svg($takip, 80, 'M', '#141012') : '';
-$secim = static fn(string $kagit, string $ad3) => '<a href="' . e(url_with(['kagit' => $kagit === 'a4' ? null : $kagit, 'tam' => null])) . '"' . (($kagit === 'yarim') === $yarim ? ' class="secili" aria-current="true"' : '') . '>' . $ad3 . '</a>';
+$secim = static fn(string $kagit, string $ad3) => '<a href="' . e(url_with(['kagit' => $kagit === 'a4' ? null : $kagit, 'tam' => null, 'tezgah' => null])) . '"' . (($kagit === 'yarim') === $yarim ? ' class="secili" aria-current="true"' : '') . '>' . $ad3 . '</a>';
 ?>
 <!doctype html>
 <html lang="tr">
@@ -69,12 +73,13 @@ $secim = static fn(string $kagit, string $ad3) => '<a href="' . e(url_with(['kag
 <link rel="stylesheet" href="<?= e(asset('siparis-fisi.css')) ?>">
 <style>@page { size: <?= $yarim ? '210mm 148.5mm' : 'A4 portrait' ?>; margin: 0; }</style>
 </head>
-<body class="<?= $yarim ? 'kagit-yarim' : 'kagit-a4' ?>">
+<body class="<?= $yarim ? 'kagit-yarim' : 'kagit-a4' ?>"<?= $tezgah ? ' data-otomatik-yazdir' : '' ?>>
 <div class="arac no-print">
-  <button type="button" data-print>Yazdır</button><button type="button" class="ghost" data-close>Kapat</button>
+  <button type="button" data-print>Yazdır</button><?php if ($tezgah): ?><a class="dugme" href="tezgah.php">Yeni reçete</a><a class="dugme ghost" href="order.php?id=<?= (int) $o['id'] ?>">Siparişi aç</a><?php else: ?><button type="button" class="ghost" data-close>Kapat</button><?php endif; ?>
   <nav class="kagit-sec" aria-label="Kâğıt"><?= $secim('a4', 'A4 · üst yarı') ?><?= $secim('yarim', 'Kesilmiş yarım sayfa') ?></nav>
-  <span><?= $yarim ? 'Kesilmiş yarım sayfayı (210 × 148 mm) yazıcıya <b>uzun kenarı önde</b> koyun; yazdırma ayarında kâğıt boyutu <b>A5</b>, yön <b>yatay</b>, ölçek <b>%100</b>.' : 'Fiş A4\'ün üst yarısına basılır; kesme çizgisinden kesin. Alt yarıyı bir sonraki fiş için saklayın (yukarıdan "Kesilmiş yarım sayfa").' ?></span>
-  <a class="tam" href="<?= e(url_with(['tam' => 1, 'kagit' => null])) ?>">Ayrıntılı A4 müşteri fişi</a>
+  <nav class="kagit-sec" aria-label="Müşteri nüshası"><a href="<?= e(url_with(['nusha' => null, 'tezgah' => null])) ?>"<?= $nusha ? ' class="secili" aria-current="true"' : '' ?>>Müşteri nüshalı</a><a href="<?= e(url_with(['nusha' => '0', 'tezgah' => null])) ?>"<?= !$nusha ? ' class="secili" aria-current="true"' : '' ?>>Yalnız fiş</a></nav>
+  <span><?= $yarim ? 'Kesilmiş yarım sayfayı (210 × 148 mm) yazıcıya <b>uzun kenarı önde</b> koyun; yazdırma ayarında kâğıt boyutu <b>A5</b>, yön <b>yatay</b>, ölçek <b>%100</b>.' . ($nusha ? ' Müşteri nüshası ikinci sayfadır.' : '') : ($nusha ? 'Üst yarı sipariş fişi (zarfa), alt yarı müşteri nüshası; kesme çizgisinden kesin.' : 'Fiş A4\'ün üst yarısına basılır; kesme çizgisinden kesin. Alt yarıyı bir sonraki fiş için saklayın (yukarıdan "Kesilmiş yarım sayfa").') ?></span>
+  <a class="tam" href="<?= e(url_with(['tam' => 1, 'kagit' => null, 'tezgah' => null])) ?>">Ayrıntılı A4 müşteri fişi</a>
 </div>
 <div class="kagit">
 <main class="fis">
@@ -110,13 +115,49 @@ $secim = static fn(string $kagit, string $ad3) => '<a href="' . e(url_with(['kag
     <section class="atolye">
       <h2>Atölye</h2>
       <div class="adimlar"><span>Cam geldi</span><span>Kesim</span><span>Montaj</span><span>Kontrol</span><span>Haber verildi</span></div>
-      <div class="not"><small>Not</small><p><?= $rx && $v('prescription_note') !== '' ? nl2br(e($v('prescription_note'))) : '' ?></p></div>
+      <div class="not"><small>Not</small><p><?= nl2br(e(trim(($rx ? $v('prescription_note') : '') . "\n" . trim((string) ($o['notes'] ?? ''))))) ?></p></div>
     </section>
     <footer><?= e($no) ?> · <?= e(date('d.m.Y H:i')) ?></footer>
   </div>
 </main>
 <?php if (!$yarim): ?>
-<div class="kesim" aria-hidden="true"><span>✂ Buradan kesin · alt yarıyı bir sonraki fiş için yazıcıya koyabilirsiniz</span></div>
+<div class="kesim" aria-hidden="true"><span>✂ Buradan kesin<?= $nusha ? ' · alt yarı müşteriye' : ' · alt yarıyı bir sonraki fiş için yazıcıya koyabilirsiniz' ?></span></div>
+<?php endif; ?>
+<?php if ($nusha):
+  $tel = trim(setting('shop_phone'));
+  $adres = trim(setting('shop_address'));
+  $camOzet = implode(' · ', array_unique(array_filter(array_map(static fn($k) => trim((string) $k['lens_type']), $kalemler)))) ?: trim((string) $o['lens_type']);
+  if ($yarim): ?></div><div class="kagit"><?php endif; ?>
+<section class="fis nusha">
+  <div class="sol">
+    <header class="ust">
+      <div>
+        <small class="dukkan"><?= e(setting('shop_name', 'OptiFlow')) ?> · Müşteri nüshası</small>
+        <div class="no"><?= e($no) ?></div>
+        <div class="tur"><?= e($ad) ?></div>
+      </div>
+      <?php if ($qr !== ''): ?><div class="qr"><?= $qr ?><small>Siparişim nerede?</small></div><?php endif; ?>
+    </header>
+    <div class="bilgi">
+      <span><small>Sipariş</small><b><?= e(date_tr($o['created_at'])) ?></b></span>
+      <span class="soz"><small>Teslim sözü</small><b><?= e($o['promised_date'] ? date_tr($o['promised_date']) : '—') ?></b></span>
+    </div>
+    <dl class="ozet">
+      <?php if ($camOzet !== ''): ?><div><dt>Cam</dt><dd><?= e($camOzet) ?></dd></div><?php endif; ?>
+      <div><dt>Çerçeve</dt><dd><?= e(trim((string) $o['frame_info']) ?: '—') ?></dd></div>
+      <?php if ((string) $o['sgk_erecete'] !== ''): ?><div><dt>e-Reçete</dt><dd><?= e((string) $o['sgk_erecete']) ?></dd></div><?php endif; ?>
+    </dl>
+    <p class="uyari">Gözlüğünüz hazır olunca size haber veriyoruz. Teslim alırken bu fişi getirmeniz yeterli.<?= $qr !== '' ? ' Karekodu telefonunuzla okutarak siparişinizin durumunu görebilirsiniz.' : '' ?></p>
+  </div>
+  <div class="sag">
+    <?= $hesap !== '' ? '<section><h2>Ödeme</h2>' . $hesap . '</section>' : '' ?>
+    <section class="iletisim">
+      <h2>Bize ulaşın</h2>
+      <p><b><?= e(setting('shop_name', 'OptiFlow')) ?></b><?= $tel !== '' ? '<br>' . e(phone_display($tel) ?: $tel) : '' ?><?= $adres !== '' ? '<br>' . nl2br(e($adres)) : '' ?></p>
+    </section>
+    <footer><?= e($no) ?> · <?= e(date('d.m.Y H:i')) ?></footer>
+  </div>
+</section>
 <?php endif; ?>
 </div>
 <script src="<?= e(asset('print.js')) ?>" defer></script>

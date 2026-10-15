@@ -8,6 +8,7 @@
  *
  * Deliberately narrow (spec §12): no generic invoke, no ipcRenderer, no tokens,
  * no cookies, no Medula content. Only: version, open Medula, start a transfer,
+ * ask Medula's query screen to show an e-reçete number (5.6.0, Tezgâh),
  * read transfer status, subscribe to status changes.
  */
 import { contextBridge, ipcRenderer } from 'electron';
@@ -75,6 +76,12 @@ if (isTrusted()) {
       durum: async (): Promise<{ surum: string; medulaAcik: boolean; aktarim: PublicTransfer }> => {
         const r = (isTrusted() ? await ipcRenderer.invoke(IPC.optiflowStatus) : {}) as Record<string, unknown>;
         return { surum: version, medulaAcik: r.medulaAcik === true, aktarim: toPublic(r.aktarim) };
+      },
+      /** 5.6.0 — Tezgâh: Medula'yı açar ve e-reçete numarasını sorgu ekranına yazdırır. */
+      receteSorgula: async (no: unknown): Promise<{ ok: boolean; mesaj: string }> => {
+        if (!isTrusted() || typeof no !== 'string') return { ok: false, mesaj: 'Yetkisiz' };
+        const r = (await ipcRenderer.invoke(IPC.optiflowReceteSorgula, no.slice(0, 40))) as Record<string, unknown> | null;
+        return { ok: r?.ok === true, mesaj: typeof r?.mesaj === 'string' ? r.mesaj : '' };
       },
       aktarimDinle: (cb: (t: PublicTransfer) => void): (() => void) => {
         if (typeof cb !== 'function') return () => undefined;

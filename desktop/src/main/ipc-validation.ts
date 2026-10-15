@@ -40,15 +40,29 @@ export interface MedulaGirisReply {
   ok: true;
   sonuc: 'doldu' | 'zaten-dolu' | 'alan-yok' | 'izleniyor';
 }
+export interface MedulaSorguReply {
+  id: string;
+  kind: 'sorgu';
+  ok: true;
+  sonuc: 'sorgulandi' | 'yazildi' | 'alan-yok';
+}
 export interface MedulaErrorReply {
   id: string;
-  kind: 'probe' | 'extract' | 'liste' | 'giris';
+  kind: 'probe' | 'extract' | 'liste' | 'giris' | 'sorgu';
   ok: false;
   error: string;
 }
-export type MedulaReply = MedulaProbeReply | MedulaExtractReply | MedulaListReply | MedulaGirisReply | MedulaErrorReply;
+export type MedulaReply = MedulaProbeReply | MedulaExtractReply | MedulaListReply | MedulaGirisReply | MedulaSorguReply | MedulaErrorReply;
 
 const GIRIS_SONUCLARI = ['doldu', 'zaten-dolu', 'alan-yok', 'izleniyor'] as const;
+const SORGU_SONUCLARI = ['sorgulandi', 'yazildi', 'alan-yok'] as const;
+
+/** 5.6.0 — e-Reçete numarası (OptiFlow sayfasından): boşluk/tire atılır, büyük harf; 4–12 harf/rakam, en az bir rakam. */
+export function parseReceteNo(v: unknown): string | null {
+  if (typeof v !== 'string' || v.length > 40) return null;
+  const no = v.replace(/[\s-]+/g, '').toUpperCase();
+  return /^[0-9A-Z]{4,12}$/.test(no) && /\d/.test(no) ? no : null;
+}
 
 /** e-Reçete numara listesi: en çok 1000 öğe; her biri 4–12 büyük harf/rakam ve en az bir rakam. */
 export function parseNumaralar(v: unknown): string[] | null {
@@ -94,7 +108,7 @@ export function parseExtraction(v: unknown): MedulaExtraction | null {
 
 export function parseMedulaReply(v: unknown): MedulaReply | null {
   if (!isObj(v) || !isStr(v.id, 64) || v.id.length < 8) return null;
-  if (v.kind !== 'probe' && v.kind !== 'extract' && v.kind !== 'liste' && v.kind !== 'giris') return null;
+  if (v.kind !== 'probe' && v.kind !== 'extract' && v.kind !== 'liste' && v.kind !== 'giris' && v.kind !== 'sorgu') return null;
   if (v.ok === false) {
     return { id: v.id, kind: v.kind, ok: false, error: isStr(v.error, 200) ? v.error : 'error' };
   }
@@ -106,6 +120,10 @@ export function parseMedulaReply(v: unknown): MedulaReply | null {
   if (v.kind === 'giris') {
     const sonuc = (GIRIS_SONUCLARI as readonly unknown[]).includes(v.sonuc) ? (v.sonuc as MedulaGirisReply['sonuc']) : null;
     return sonuc ? { id: v.id, kind: 'giris', ok: true, sonuc } : null;
+  }
+  if (v.kind === 'sorgu') {
+    const sonuc = (SORGU_SONUCLARI as readonly unknown[]).includes(v.sonuc) ? (v.sonuc as MedulaSorguReply['sonuc']) : null;
+    return sonuc ? { id: v.id, kind: 'sorgu', ok: true, sonuc } : null;
   }
   if (v.kind === 'liste') {
     const numaralar = parseNumaralar(v.numaralar);

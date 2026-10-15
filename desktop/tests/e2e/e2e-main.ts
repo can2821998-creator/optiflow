@@ -136,7 +136,7 @@ app.whenReady().then(async () => {
     }
 
     const api = await js<string[]>(owc, 'window.optiflowDesktop ? Object.keys(window.optiflowDesktop).sort() : null');
-    check('narrow API exposed on OptiFlow origin only', JSON.stringify(api) === JSON.stringify(['aktar', 'aktarimDinle', 'durum', 'medulaAc', 'surum']), JSON.stringify(api));
+    check('narrow API exposed on OptiFlow origin only', JSON.stringify(api) === JSON.stringify(['aktar', 'aktarimDinle', 'durum', 'medulaAc', 'receteSorgula', 'surum']), JSON.stringify(api));
     check('no Node in OptiFlow page', (await js<string>(owc, 'typeof require + typeof process + typeof module + typeof Buffer')) === 'undefined'.repeat(4));
     check('no ipcRenderer reachable', (await js<string>(owc, 'typeof window.ipcRenderer + typeof window.electron')) === 'undefined'.repeat(2));
 

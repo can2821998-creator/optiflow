@@ -8,7 +8,7 @@ mağaza izolasyonu → SGK kimlik bilgisi güvenliği → işlevsel güvenilirli
 | Bileşen | Güven | Ne yapabilir | Ne yapamaz |
 |---|---|---|---|
 | **OptiFlow sunucusu** | Güvenilir (bizim) | Kimlik doğrulama, mağaza seçimi, çözümleme, kayıt | — |
-| **OptiFlow renderer** (uzak sayfa) | Yarı güvenilir | Yalnızca kendi kökeninde `window.optiflowDesktop`: Medula'yı aç, aktarımı başlat, durum oku | Node, dosya sistemi, IPC, çerez, Medula içeriği, hasta özeti |
+| **OptiFlow renderer** (uzak sayfa) | Yarı güvenilir | Yalnızca kendi kökeninde `window.optiflowDesktop`: Medula'yı aç, aktarımı başlat, durum oku, e-reçete numarasını Medula sorgu kutusuna yazdır (5.6.0) | Node, dosya sistemi, IPC, çerez, Medula içeriği, hasta özeti |
 | **Ana süreç** | Güvenilir | Tüm kararlar, ağ çağrıları, doğrulama | — |
 | **Preload'lar** | Güvenilir kod, güvenilmeyen sayfada | Dar, sabit API | Genel `invoke/send`, `ipcRenderer` açmak |
 | **Medula sayfası** (üçüncü taraf) | **Güvenilmez** | Kendi içinde çalışmak | Node, IPC, OptiFlow API'si, araç çubuğu, SGK dışı gezinme; okuyucuyu tetiklemek |

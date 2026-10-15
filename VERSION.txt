@@ -1,6 +1,23 @@
 OPTIFLOW
-Release: 4.32.1 (2026-10-12)
+Release: 4.33.0 (2026-10-15)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.33.0 / Pro 5.6.0 (tezgâh: reçete → Medula → tek ekran kayıt → fiş; özellik: kagitsiz)
+  - Yeni "Tezgâh" sayfası (tezgah.php; menü Atölye › Tezgâh, Siparişler'de "Reçeteyle sipariş"): müşteri reçeteyi verir,
+    e-reçete no yazılır → "Medula'da aç". OptiFlow Pro 5.6.0 Medula'yı açar, numarayı reçete sorgu kutusuna yazar ve
+    "Sorgula"ya basar (giriş ekranındaysa girişten sonra, 10 dk içinde). Personel Medula'da kontrol edip "Reçeteyi aktar"
+    der → tek kayıt formu açılır. Pro yoksa "Reçeteyi elle gir".
+  - Tek form: müşteri (Medula'daki ada göre kayıtlılar önerilir / yeni müşteride telefon zorunlu), reçete (Medula'dan dolu,
+    düzeltilebilir; doğrulama reçete ekranıyla aynı), cam tipi + stok (Stokta / Eksik — eksikler gün sonu depo listesine),
+    stoktaki çerçeve, tutar + kapora, teslim sözü (varsayılan 3 iş günü; ayar tezgah_teslim_gun). Kaydet → sipariş + reçete
+    + camlar + kapora + SGK katkı tahmini tek işlemde; aynı aktarım iki kez kaydedilemez.
+  - Fiş: kayıttan sonra yazdırma penceresi kendiliğinden açılır. A4'te üst yarı sipariş fişi (zarfa), alt yarı MÜŞTERİ
+    NÜSHASI (sipariş no, teslim sözü, cam/çerçeve, tutar-alınan-kalan, takip karekodu, mağaza iletişimi); kesilmiş yarım
+    sayfada nüsha ikinci sayfa. "Yalnız fiş" (&nusha=0) eski düzen. Fiş notunda sipariş notu da çıkar.
+  - Pro 5.6.0: desktop/src/medula/sorgu.ts (kutu etiketten bulunur: e-Reçete No / Reçete No; T.C./tarih kutularına yazmaz),
+    window.optiflowDesktop.receteSorgula(no); Tezgâh'tan aktarınca Pro kayıt formunu kendisi açar. Medula'nın gerçek sorgu
+    ekranında DENENMEDİ (sentetik sayfalarla birim test).
+  - Testler: tests/tezgah/test.php (42), desktop tests/unit/tezgah-sorgu.test.ts (11).
 
 DEĞİŞİKLİK NOTLARI — 4.32.1 (kâğıtsız tezgâh: zarf formu → siparişin kendi fişi, yarım sayfa)
   - Ayrı "Zarf formu" yok: siparişteki "Fiş" düğmesi (özellik kagitsiz açıkken) yarım sayfa sipariş fişini basar.

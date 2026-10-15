@@ -2299,3 +2299,10 @@ html.tema-koyu .tema-dugme .tema-ay { display: none; }
 .depo-son { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; margin: 0 0 16px; padding: 8px 14px; border-radius: var(--radius-sm); background: var(--green-bg); color: var(--green); font-size: 13.5px; font-weight: 600; }
 .depo-son .ic { width: 16px; height: 16px; vertical-align: -3px; }
 @media (max-width: 640px) { .depo-gonder { width: 100%; } .depo-gonder .btn { flex: 1; } .depo-gonder small { text-align: left; } }
+
+/* 4.33.0 tezgâh: reçete no → Medula → tek ekran kayıt */
+.tezgah-no { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.tezgah-no .field { flex: 1 1 260px; margin: 0; }
+.tezgah-no input { font: 700 22px/1.2 var(--mono, ui-monospace, monospace); letter-spacing: .08em; text-transform: uppercase; }
+.ikili { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.tezgah-form .rx-input { margin: 14px 0; }

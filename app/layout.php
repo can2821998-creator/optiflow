@@ -375,6 +375,9 @@ function ozellik_menusu_ekle(array &$nav): void
         }
     };
     $a = &$nav['Atölye'];
+    if (ozellik_acik('kagitsiz')) {   // 4.33.0
+        $ekle($a, 'orders', ['tezgah', 'tezgah.php', 'Tezgâh', 'glasses', 0]);
+    }
     if (ozellik_acik('barkod')) {
         $ekle($a, 'orders', ['barkod', 'barkod.php', 'Barkod okut', 'barcode', 0]);
     }

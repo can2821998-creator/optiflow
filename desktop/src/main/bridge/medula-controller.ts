@@ -23,7 +23,7 @@ import { isMedulaExtractOrigin, isMedulaExtractUrl, isMedulaUrl } from './origin
 interface Pending {
   frameToken: string;
   processId: number;
-  kind: 'probe' | 'extract' | 'liste' | 'giris';
+  kind: 'probe' | 'extract' | 'liste' | 'giris' | 'sorgu';
   resolve: (r: MedulaReply | null) => void;
   timer: ReturnType<typeof setTimeout>;
 }
@@ -76,7 +76,7 @@ export class MedulaController {
     p.resolve(reply);
   }
 
-  private ask(frame: WebFrameMain, kind: 'probe' | 'extract' | 'liste' | 'giris', extra: Record<string, unknown> = {}): Promise<MedulaReply | null> {
+  private ask(frame: WebFrameMain, kind: 'probe' | 'extract' | 'liste' | 'giris' | 'sorgu', extra: Record<string, unknown> = {}): Promise<MedulaReply | null> {
     return new Promise((resolve) => {
       if (frame.isDestroyed() || frame.detached) return resolve(null);
       const id = randomUUID();
@@ -191,6 +191,21 @@ export class MedulaController {
     const girisCerceveleri = (await this.probeFrames()).filter((p) => p.probe.looksLikeLogin).map((p) => p.frame);
     const replies = await Promise.all(girisCerceveleri.map((f) => this.ask(f, 'giris', { izle, ...(kayit ? { kayit } : {}) })));
     return replies.map((r) => (r && r.ok && r.kind === 'giris' ? r.sonuc : 'yanit-yok'));
+  }
+
+  /**
+   * 5.6.0 — Tezgâh: personelin OptiFlow'da yazdığı e-reçete numarasını, giriş ekranı olmayan okunabilir
+   * SGK çerçevelerindeki reçete sorgu kutusuna yazdırır. En iyi sonuç döner (sorgulandi > yazildi > alan-yok).
+   */
+  async sorgu(no: string): Promise<'sorgulandi' | 'yazildi' | 'alan-yok' | 'login' | 'not-medula'> {
+    if (!this.topUrlAllowed()) return 'not-medula';
+    const probes = await this.probeFrames();
+    if (probes.length > 0 && probes.every((p) => p.probe.looksLikeLogin)) return 'login';
+    const cerceveler = probes.filter((p) => !p.probe.looksLikeLogin).map((p) => p.frame);
+    const replies = await Promise.all(cerceveler.map((f) => this.ask(f, 'sorgu', { no })));
+    const sonuclar = replies.map((r) => (r && r.ok && r.kind === 'sorgu' ? r.sonuc : 'alan-yok'));
+    log.info('bridge.sorgu', { frames: cerceveler.length, sonuc: sonuclar.join(',') });
+    return sonuclar.includes('sorgulandi') ? 'sorgulandi' : sonuclar.includes('yazildi') ? 'yazildi' : 'alan-yok';
   }
 
   dispose(): void {

@@ -15,7 +15,7 @@ import { incomingUrl, isMedulaUrl, isOptiflowUrl, optiflowEndpoint } from './bri
 import { RetryStore } from './bridge/retry-store';
 import { buildPayload, OptiflowApi, type TransferPayload } from './bridge/transfer-service';
 import { attachDownloads, openLastDownload, showLastDownloadInFolder } from './downloads';
-import { parseShellCommand, type ShellCommand } from './ipc-validation';
+import { parseReceteNo, parseShellCommand, type ShellCommand } from './ipc-validation';
 import { exportDiagnostics, log } from './logging';
 import { buildMenu } from './menu';
 import { attachMedulaGuards, attachOptiflowGuards, attachShellGuards, type NavDeps } from './navigation';
@@ -48,6 +48,8 @@ export class DesktopApp {
   /** 5.4.0 — saved Medula login (DPAPI, this PC only) and the last "Giriş" press awaiting its result. */
   private kasa!: MedulaGirisKasasi;
   private bekleyenGiris: { kullanici: string; sifre: string; degisim: boolean; at: number } | null = null;
+  /** 5.6.0 — Tezgâh: Medula'nın reçete sorgu ekranına yazılmayı bekleyen e-reçete numarası (yalnız bellekte, 10 dk). */
+  private bekleyenSorgu: { no: string; at: number } | null = null;
   private girisSorusuAcik = false;
   private readonly shellUrl: string;
   private readonly iconPath: string;
@@ -581,7 +583,40 @@ export class DesktopApp {
       this.patch({ medula: { ...this.state.medula, probe } });
       if (probe?.looksLikeLogin) void this.girisEkrani();
       else if (probe && this.bekleyenGiris) void this.girisBasarili();
+      if (probe && !probe.looksLikeLogin && this.bekleyenSorgu) void this.sorguDene();
     }, 700);
+  }
+
+  /* ------------------------------------------------- Tezgâh: reçete sorgu (5.6.0) */
+
+  /** OptiFlow Tezgâh sayfasındaki "Medula'da aç": Medula'yı açar, numarayı sorgu ekranına yazdırır. */
+  private async receteSorgula(no: string): Promise<{ ok: boolean; mesaj: string }> {
+    this.bekleyenSorgu = { no, at: Date.now() };
+    const acikti = !!this.medulaView;
+    this.openMedula();
+    if (!acikti) return { ok: true, mesaj: `Medula açılıyor. Giriş yapıp reçete sorgu ekranını açın; ${no} kendiliğinden yazılacak.` };
+    const mesaj = await this.sorguDene();
+    return { ok: true, mesaj: mesaj ?? `Medula açık. Reçete sorgu ekranını açın; ${no} kendiliğinden yazılacak.` };
+  }
+
+  /** Bekleyen numarayı açık Medula ekranına yazmayı dener; yazılırsa bekleyen silinir. Kullanıcıya gösterilecek mesajı döner. */
+  private async sorguDene(): Promise<string | null> {
+    const b = this.bekleyenSorgu;
+    if (!b || !this.medula) return null;
+    if (Date.now() - b.at > 10 * 60_000) {
+      this.bekleyenSorgu = null;
+      return null;
+    }
+    const sonuc = await this.medula.sorgu(b.no);
+    if (sonuc === 'login') return 'Medula girişini yapın; ardından reçete sorgu ekranını açın, numara kendiliğinden yazılacak.';
+    if (sonuc !== 'sorgulandi' && sonuc !== 'yazildi') return null;
+    if (this.bekleyenSorgu === b) this.bekleyenSorgu = null;
+    const text =
+      sonuc === 'sorgulandi'
+        ? `e-Reçete ${b.no} Medula'da sorgulandı. Reçeteyi kontrol edip “Reçeteyi aktar”a basın.`
+        : `e-Reçete ${b.no} sorgu kutusuna yazıldı. “Sorgula”ya basın, sonra reçeteyi aktarın.`;
+    this.patch({ notice: { kind: 'info', text } });
+    return text;
   }
 
   /* ------------------------------------------------- Medula girişi (5.4.0) */
@@ -787,18 +822,19 @@ export class DesktopApp {
   /** Navigate automatically only from the SGK page itself (never away from a half-filled form). */
   private maybeOpenIncoming(id: number): void {
     const cur = this.optiflowView.webContents.getURL();
-    let onSgkPage = false;
+    let sayfa: 'sgk-aktar.php' | 'tezgah.php' | null = null;
     try {
-      onSgkPage = isOptiflowUrl(cur, this.cfg) && new URL(cur).pathname.endsWith('/sgk-aktar.php');
+      const yol = isOptiflowUrl(cur, this.cfg) ? new URL(cur).pathname : '';
+      sayfa = yol.endsWith('/sgk-aktar.php') ? 'sgk-aktar.php' : yol.endsWith('/tezgah.php') ? 'tezgah.php' : null;
     } catch {
-      onSgkPage = false;
+      sayfa = null;
     }
-    if (onSgkPage) this.openIncoming(id);
+    if (sayfa) this.openIncoming(id, sayfa); // 5.6.0: Tezgâh sayfasından aktarınca kayıt formu açılır
     // otherwise the toolbar offers the 'Reçeteyi aç' button
   }
 
-  private openIncoming(id?: number): void {
-    const target = incomingUrl(this.cfg, id ?? this.state.transfer.incomingId ?? 0);
+  private openIncoming(id?: number, sayfa: 'sgk-aktar.php' | 'tezgah.php' = 'sgk-aktar.php'): void {
+    const target = incomingUrl(this.cfg, id ?? this.state.transfer.incomingId ?? 0, sayfa);
     if (!target) return;
     void this.optiflowView.webContents.loadURL(target);
     if (this.state.layout === 'sekme') this.patch({ activeView: 'optiflow' });
@@ -819,6 +855,12 @@ export class DesktopApp {
     wc.ipc.handle(IPC.optiflowTransfer, async (e) => {
       if (!this.isTrustedOptiflowSender(e)) return { asama: 'hata', mesaj: 'Yetkisiz' };
       return this.publicTransfer(await this.runTransfer());
+    });
+    wc.ipc.handle(IPC.optiflowReceteSorgula, async (e, raw: unknown) => {
+      if (!this.isTrustedOptiflowSender(e)) return { ok: false, mesaj: 'Yetkisiz' };
+      const no = parseReceteNo(raw);
+      if (!no) return { ok: false, mesaj: 'e-Reçete numarası geçersiz.' };
+      return this.receteSorgula(no);
     });
     wc.ipc.handle(IPC.optiflowStatus, (e) => {
       if (!this.isTrustedOptiflowSender(e)) return {};

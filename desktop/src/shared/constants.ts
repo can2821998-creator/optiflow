@@ -42,6 +42,8 @@ export const IPC = {
   optiflowOpenMedula: 'optiflow:medula-ac',
   optiflowTransfer: 'optiflow:aktar',
   optiflowStatus: 'optiflow:durum',
+  /** 5.6.0 — Tezgâh: e-reçete numarasını Medula'nın sorgu ekranına yaz. */
+  optiflowReceteSorgula: 'optiflow:recete-sorgula',
   // main -> OptiFlow page
   optiflowTransferEvent: 'optiflow:aktarim-olayi',
 

@@ -116,7 +116,7 @@ page_start('Siparişler', 'orders');
 page_header(
     'Siparişler',
     e(date_long()),
-    '<a class="btn btn-primary" href="order-new.php">' . icon('plus') . ' Yeni sipariş</a>',
+    ($depoAcik ? '<a class="btn btn-primary" href="tezgah.php">' . icon('glasses') . ' Reçeteyle sipariş</a> <a class="btn" href="order-new.php">' : '<a class="btn btn-primary" href="order-new.php">') . icon('plus') . ' Yeni sipariş</a>',
     '',
     greeting() . ', ' . explode(' ', (string) current_user()['full_name'])[0]
 );

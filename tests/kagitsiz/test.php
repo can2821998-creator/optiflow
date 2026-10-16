@@ -105,7 +105,7 @@ ok(str_contains($zarf, 'can_see_amounts()'), 'tutarlar yetkiye bağlı');
 ok(str_contains($zarf, "'A4 portrait'") && str_contains($zarf, "'210mm 148.5mm'"), 'iki kâğıt: A4 dikey ve kesilmiş yarım sayfa');
 ok(str_contains($zarf, 'class="kesim"') && str_contains($zarf, 'if (!$yarim)'), 'kesme çizgisi yalnız A4\'te');
 $print = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/print.php');
-ok(str_contains($print, "\$type === 'order' && ozellik_acik('kagitsiz') && !query_int('tam')"), 'siparişin Fiş düğmesi yarım sayfa fişi basar, &tam=1 ayrıntılı fiş');
+ok(str_contains($print, "\$type === 'order' && (ozellik_acik('kagitsiz') || query('tezgah') === '1' || query('fis') === '1') && !query_int('tam')"), 'siparişin Fiş düğmesi (ve 4.34.0 akışın döküm adımı) yarım sayfa fişi basar, &tam=1 ayrıntılı fiş');
 ok(str_contains($print, "if (\$type === 'zarf')"), 'eski zarf bağlantısı fişe yönlenir');
 $index = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/index.php');
 ok(str_contains($index, "ozellik_acik('kagitsiz')"), 'ana ekran kartı özellik anahtarına bağlı');

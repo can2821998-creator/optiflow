@@ -12,8 +12,9 @@ $type = query('type');
 if ($type === 'zarf') {   // eski bağlantı → sipariş fişi
     redirect('print.php?type=order&id=' . query_int('id'));
 }
-if ($type === 'order' && ozellik_acik('kagitsiz') && !query_int('tam')) {
+if ($type === 'order' && (ozellik_acik('kagitsiz') || query('tezgah') === '1' || query('fis') === '1') && !query_int('tam')) {
     // 4.32.0 kâğıtsız tezgâh: sipariş fişi yarım sayfa (A4 üst yarı + kesme çizgisi ya da kesilmiş yarım sayfa).
+    // 4.34.0: akışın ⑤. adımı (tezgah=1) her mağazada fiş + müşteri nüshası basar.
     // Ayrıntılı A4 müşteri fişi: &tam=1 (aşağıdaki döküm).
     require dirname(__DIR__) . '/partials/siparis-fisi.php';
     exit;

@@ -30,6 +30,25 @@ $secenek = is_post() ? post_int('secenek') : query_int('secenek');
 $onDolum = $quote ? teklif_siparis_on_dolum($quote, $secenek, $gozlukNo) : null;
 $tutarMetni = static fn(float $x): string => number_format($x, 2, ',', '.');
 
+/* 4.34.0 — Akış ④: müşteriye bağlı bekleyen reçete (tezgah.php ②, teklifte quotes.recete_id).
+   Reçete varsa cam tipi + stok durumu burada seçilir; kayıtta reçete siparişe yazılır (recete_siparise_uygula),
+   stoktaki camlarla sipariş atölyeye geçer, eksikler gün sonu depo listesine düşer; döküm yazdırılır. */
+$recete = null;
+$receteNo = is_post() ? post_int('recete_id') : query_int('recete');
+if ($receteNo <= 0 && $quote && !empty($quote['recete_id'])) {
+    $receteNo = (int) $quote['recete_id'];
+}
+if ($receteNo > 0 && $customer) {
+    $aday = recete_bekleyen($receteNo);
+    // tek reçete çok gözlüklü teklifte birden çok siparişe yazılabilir; teklifsiz akışta yalnızca bir kez
+    if ($aday && $aday['customer_id'] === (int) $customer['id'] && ($aday['used_order_id'] === 0 || $quote)) {
+        $recete = $aday;
+    }
+}
+$receteTasarim = $recete ? (string) (($onDolum['lens_design'] ?? '') !== '' ? $onDolum['lens_design'] : ($recete['rx']['lens_design'] ?? 'tek_odak_uzak')) : '';
+$receteUzak = $recete && $receteTasarim !== 'tek_odak_yakin';
+$receteYakin = $recete && in_array($receteTasarim, ['ayri_uzak_yakin', 'tek_odak_yakin'], true);
+
 if (is_post()) {
     $errors = [];
 
@@ -55,9 +74,22 @@ if (is_post()) {
     if (!isset(stages()[$stage]) || $stage === 'iptal') {
         $errors[] = 'Sipariş durumu geçersiz.';
     }
-    $txType = post('transaction_type', 'gozluk');
+    $txType = $recete ? 'gozluk' : post('transaction_type', 'gozluk');
     if (!isset(transaction_types()[$txType])) {
         $txType = 'gozluk';
+    }
+    $receteStok = [];
+    if ($recete) {
+        if (post('lens_type') === '') {
+            $errors[] = 'Cam tipini seçin.';
+        }
+        if (!valid_lens_type(post('near_lens_type'))) {
+            $errors[] = 'Yakın cam tipi listede yok.';
+        }
+        foreach (['uzak', 'yakin'] as $sg) {
+            $v = post('stock_' . $sg, 'stokta_var');
+            $receteStok[$sg] = in_array($v, ['stokta_var', 'stokta_yok'], true) ? $v : 'stokta_var';
+        }
     }
     $serviceType = $txType === 'tamir' ? post('service_type') : null;
     if ($serviceType !== null && $serviceType !== '' && !isset(service_types()[$serviceType])) {
@@ -100,7 +132,7 @@ if (is_post()) {
             flash($err, 'error');
         }
         // 4.21.0: hata sonrası tekliften dönüştürme bağlamı da korunur (eskiden quote_id kayboluyordu)
-        $geri = array_filter(['customer_id' => $customer ? (int) $customer['id'] : null, 'quote_id' => $quote ? (int) $quote['id'] : null, 'secenek' => $onDolum ? $secenek : null, 'gozluk' => $quote && $gozlukNo > 1 ? $gozlukNo : null]);
+        $geri = array_filter(['customer_id' => $customer ? (int) $customer['id'] : null, 'quote_id' => $quote ? (int) $quote['id'] : null, 'secenek' => $onDolum ? $secenek : null, 'gozluk' => $quote && $gozlukNo > 1 ? $gozlukNo : null, 'recete' => $recete ? $recete['id'] : null]);
         redirect('order-new.php' . ($geri ? '?' . http_build_query($geri) : ''));
     }
 
@@ -179,6 +211,17 @@ if (is_post()) {
             q('UPDATE orders SET sgk_amount = ? WHERE id = ?', [$onDolum['sgk_amount'], $orderId]);   // bakiye = teklifteki ödenecek
         }
     }
+    if ($recete) {
+        // ④ reçete siparişe → ⑤ döküm + gönder (stoktaki camlar atölyeye, eksikler depo listesine)
+        $uy = transaction(fn() => recete_siparise_uygula($recete['id'], $orderId, $receteTasarim, post('lens_type'), post('near_lens_type'), $receteStok, (int) $user['id']));
+        if (!empty($uy['sgk']['uyari'])) {
+            flash($uy['sgk']['uyari'], 'warn');
+        }
+        flash('Reçete siparişe yazıldı. '
+            . ($uy['atolye'] ? 'Camlar stokta: sipariş atölyeye gönderildi.' : '')
+            . ($uy['eksik'] ? $uy['eksik'] . ' eksik cam gün sonu depo listesine eklendi; camlar gelince atölyeye alın.' : ''));
+        redirect('print.php?type=order&id=' . $orderId . '&tezgah=1');
+    }
     $avgAmount = (float) scalar("SELECT AVG(total_amount) FROM orders WHERE order_stage <> 'iptal' AND created_at >= CURDATE() - INTERVAL 60 DAY AND id <> ?", [$orderId]);
     $isCritical = $avgAmount > 0 && $amount >= max(5000, $avgAmount * 2.2);
     $celebrateSuffix = '&yeni=1' . ($isCritical ? '&kritik=1' : '');
@@ -187,7 +230,10 @@ if (is_post()) {
 
 $lensTypes = lens_type_options();
 page_start('Yeni sipariş', 'orders');
-page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipariş bilgilerini girin.', '', 'index.php', 'Yeni kayıt');
+page_header('Yeni sipariş', $recete ? 'Cam tipini ve stok durumunu seçin; kaydedince döküm yazdırılır.' : 'Müşteriyi seçin veya ekleyin, ardından sipariş bilgilerini girin.', '', 'index.php', 'Yeni kayıt');
+if ($recete) {
+    echo akis_cubugu(4, $quote ? [] : [3]);
+}
 ?>
 <?php if ($quote && $onDolum): ?>
   <div class="alert alert-info">
@@ -209,6 +255,7 @@ page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipari�
   <?php if ($quote): ?><input type="hidden" name="quote_id" value="<?= (int) $quote['id'] ?>"><?php endif; ?>
   <?php if ($onDolum): ?><input type="hidden" name="secenek" value="<?= (int) $secenek ?>"><?php endif; ?>
   <?php if ($quote && $gozlukNo > 1): ?><input type="hidden" name="gozluk" value="<?= (int) $gozlukNo ?>"><?php endif; ?>
+  <?php if ($recete): ?><input type="hidden" name="recete_id" value="<?= (int) $recete['id'] ?>"><?php endif; ?>
   <section class="card">
     <div class="card-head"><h2><span class="step">1</span> Müşteri</h2></div>
 
@@ -238,8 +285,36 @@ page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipari�
     </div>
   </section>
 
+  <?php if ($recete):
+      $stokSec = ['stokta_var' => 'Stokta — atölyeye', 'stokta_yok' => 'Eksik — depodan istenecek'];
+  ?>
+  <section class="card akis-recete">
+    <div class="card-head"><h2><span class="step">2</span> Reçete ve camlar</h2>
+      <small class="muted"><?= e(lens_designs()[$receteTasarim] ?? '') ?><?= $recete['erecete'] !== '' ? ' · e-Reçete ' . e($recete['erecete']) : '' ?></small></div>
+    <p><?= e(recete_ozet($recete)) ?></p>
+    <input type="hidden" name="transaction_type" value="gozluk">
+    <input type="hidden" name="order_stage" value="siparis_verildi">
+    <div class="grid cols-3">
+      <label class="field"><span>Cam tipi *</span>
+        <select name="lens_type" required><option value="">Seçin</option><?= select_options($lensTypes ?? lens_type_options(), old('lens_type'), false) ?></select></label>
+      <?php if ($receteTasarim === 'ayri_uzak_yakin'): ?>
+        <label class="field"><span>Yakın cam tipi <small class="muted">(boşsa aynı)</small></span>
+          <select name="near_lens_type"><option value="">Uzakla aynı</option><?= select_options(lens_type_options(), old('near_lens_type'), false) ?></select></label>
+      <?php endif; ?>
+      <?php if ($receteUzak): ?>
+        <label class="field"><span><?= $receteYakin ? 'Uzak camlar' : 'Camlar' ?></span><select name="stock_uzak"><?= select_options($stokSec, old('stock_uzak', 'stokta_var')) ?></select></label>
+      <?php endif; ?>
+      <?php if ($receteYakin): ?>
+        <label class="field"><span>Yakın camlar</span><select name="stock_yakin"><?= select_options($stokSec, old('stock_yakin', 'stokta_var')) ?></select></label>
+      <?php endif; ?>
+    </div>
+    <p class="hint">Camlar stoktaysa sipariş kaydedilince atölyeye geçer; eksik camlar gün sonu “Depoya gidecek eksik camlar” listesine düşer.</p>
+  </section>
+  <?php endif; ?>
+
   <section class="card">
-    <div class="card-head"><h2><span class="step">2</span> İşlem</h2></div>
+    <div class="card-head"><h2><span class="step"><?= $recete ? 3 : 2 ?></span> <?= $recete ? 'Çerçeve, tutar ve teslim' : 'İşlem' ?></h2></div>
+    <?php if (!$recete): ?>
     <div class="chip-group" role="radiogroup" aria-label="İşlem türü">
       <?php foreach (transaction_types() as $tk => $tl): ?>
         <label class="chip <?= old('transaction_type', 'gozluk') === $tk ? 'active' : '' ?>">
@@ -247,7 +322,9 @@ page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipari�
         </label>
       <?php endforeach; ?>
     </div>
+    <?php endif; ?>
     <div class="grid cols-3" style="margin-top:16px">
+      <?php if (!$recete): ?>
       <label class="field" data-show-for="gozluk,gunes_gozlugu"><span>Cam tipi</span>
         <select name="lens_type"><option value="">Reçetede seçilecek / gerekmiyor</option><?= select_options($lensTypes, old('lens_type'), false) ?></select>
       </label>
@@ -258,7 +335,8 @@ page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipari�
         <select name="order_stage"><?= select_options(array_diff_key(stages(), ['iptal' => 1]), old('order_stage', 'siparis_verildi')) ?></select>
       </label>
       <label class="field"><span>Sipariş tarihi</span><input type="date" name="order_date" value="<?= e(old('order_date', date('Y-m-d'))) ?>" max="<?= date('Y-m-d') ?>"></label>
-      <label class="field"><span>Söz verilen teslim</span><input type="date" name="promised_date" value="<?= e(old('promised_date')) ?>"></label>
+      <?php endif; ?>
+      <label class="field"><span>Söz verilen teslim</span><input type="date" name="promised_date" value="<?= e(old('promised_date', $recete ? tezgah_teslim_tarihi() : '')) ?>"></label>
       <label class="field span-2" data-label-for="frame_info"><span>Çerçeve / ürün / işlem açıklaması</span><input name="frame_info" value="<?= e(old('frame_info', $onDolum['frame_info'] ?? '')) ?>" placeholder="örn. Ray-Ban 5154 52□21 — ya da 'Sağ sap vidası sıkıldı' — ya da 'Uvex güneş gözlüğü'"></label>
       <label class="field span-2" data-show-for="gozluk,gunes_gozlugu"><span>Stoktaki çerçeve <small class="muted">(seçince vitrin stoğundan düşer)</small></span>
         <select name="frame_item_id">
@@ -283,8 +361,12 @@ page_header('Yeni sipariş', 'Müşteriyi seçin veya ekleyin, ardından sipari�
 
   <div class="form-actions sticky-actions">
     <a class="btn btn-ghost" href="index.php">Vazgeç</a>
-    <button class="btn" name="next" value="order">Kaydet</button>
-    <button class="btn btn-primary" name="next" value="rx" data-show-for="gozluk"><?= icon('glasses') ?> Kaydet ve reçete ekle</button>
+    <?php if ($recete): ?>
+      <button class="btn btn-primary btn-lg" name="next" value="order"><?= icon('print') ?> Siparişi kaydet, döküm yazdır</button>
+    <?php else: ?>
+      <button class="btn" name="next" value="order">Kaydet</button>
+      <button class="btn btn-primary" name="next" value="rx" data-show-for="gozluk"><?= icon('glasses') ?> Kaydet ve reçete ekle</button>
+    <?php endif; ?>
   </div>
 </form>
 <?php /* 4.15.1: işlem türü alanları assets/moduller.js içinde (CSP) */ ?>

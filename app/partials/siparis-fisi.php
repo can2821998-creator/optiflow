@@ -63,7 +63,7 @@ if ($tutarlar && (string) $o['order_stage'] !== 'iptal') {
         . '<div class="kalan"><dt>Kalan</dt><dd>' . money($o['balance']) . '</dd></div></dl>';
 }
 $qr = $takip !== '' ? qr_svg($takip, 80, 'M', '#141012') : '';
-$secim = static fn(string $kagit, string $ad3) => '<a href="' . e(url_with(['kagit' => $kagit === 'a4' ? null : $kagit, 'tam' => null, 'tezgah' => null])) . '"' . (($kagit === 'yarim') === $yarim ? ' class="secili" aria-current="true"' : '') . '>' . $ad3 . '</a>';
+$secim = static fn(string $kagit, string $ad3) => '<a href="' . e(url_with(['kagit' => $kagit === 'a4' ? null : $kagit, 'tam' => null, 'tezgah' => null, 'fis' => '1'])) . '"' . (($kagit === 'yarim') === $yarim ? ' class="secili" aria-current="true"' : '') . '>' . $ad3 . '</a>';
 ?>
 <!doctype html>
 <html lang="tr">
@@ -75,9 +75,9 @@ $secim = static fn(string $kagit, string $ad3) => '<a href="' . e(url_with(['kag
 </head>
 <body class="<?= $yarim ? 'kagit-yarim' : 'kagit-a4' ?>"<?= $tezgah ? ' data-otomatik-yazdir' : '' ?>>
 <div class="arac no-print">
-  <button type="button" data-print>Yazdır</button><?php if ($tezgah): ?><a class="dugme" href="tezgah.php">Yeni reçete</a><a class="dugme ghost" href="order.php?id=<?= (int) $o['id'] ?>">Siparişi aç</a><?php else: ?><button type="button" class="ghost" data-close>Kapat</button><?php endif; ?>
+  <button type="button" data-print>Yazdır</button><?php if ($tezgah): ?><a class="dugme" href="tezgah.php">Sıradaki müşteri</a><a class="dugme ghost" href="order.php?id=<?= (int) $o['id'] ?>">Siparişi aç</a><?php else: ?><button type="button" class="ghost" data-close>Kapat</button><?php endif; ?>
   <nav class="kagit-sec" aria-label="Kâğıt"><?= $secim('a4', 'A4 · üst yarı') ?><?= $secim('yarim', 'Kesilmiş yarım sayfa') ?></nav>
-  <nav class="kagit-sec" aria-label="Müşteri nüshası"><a href="<?= e(url_with(['nusha' => null, 'tezgah' => null])) ?>"<?= $nusha ? ' class="secili" aria-current="true"' : '' ?>>Müşteri nüshalı</a><a href="<?= e(url_with(['nusha' => '0', 'tezgah' => null])) ?>"<?= !$nusha ? ' class="secili" aria-current="true"' : '' ?>>Yalnız fiş</a></nav>
+  <nav class="kagit-sec" aria-label="Müşteri nüshası"><a href="<?= e(url_with(['nusha' => null, 'tezgah' => null, 'fis' => '1'])) ?>"<?= $nusha ? ' class="secili" aria-current="true"' : '' ?>>Müşteri nüshalı</a><a href="<?= e(url_with(['nusha' => '0', 'tezgah' => null, 'fis' => '1'])) ?>"<?= !$nusha ? ' class="secili" aria-current="true"' : '' ?>>Yalnız fiş</a></nav>
   <span><?= $yarim ? 'Kesilmiş yarım sayfayı (210 × 148 mm) yazıcıya <b>uzun kenarı önde</b> koyun; yazdırma ayarında kâğıt boyutu <b>A5</b>, yön <b>yatay</b>, ölçek <b>%100</b>.' . ($nusha ? ' Müşteri nüshası ikinci sayfadır.' : '') : ($nusha ? 'Üst yarı sipariş fişi (zarfa), alt yarı müşteri nüshası; kesme çizgisinden kesin.' : 'Fiş A4\'ün üst yarısına basılır; kesme çizgisinden kesin. Alt yarıyı bir sonraki fiş için saklayın (yukarıdan "Kesilmiş yarım sayfa").') ?></span>
   <a class="tam" href="<?= e(url_with(['tam' => 1, 'kagit' => null, 'tezgah' => null])) ?>">Ayrıntılı A4 müşteri fişi</a>
 </div>

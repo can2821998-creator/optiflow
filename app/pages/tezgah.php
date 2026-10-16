@@ -2,31 +2,46 @@
 declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 $me = require_login();
-ozellik_gereksin('kagitsiz');
 
 /* ==========================================================================
-   4.33.0 — Tezgâh: reçete → Medula → tek ekran kayıt → fiş (app/tezgah.php).
-   1) e-Reçete no yazılır; OptiFlow Pro Medula'da sorguyu doldurur (assets/tezgah.js).
-   2) Personel Medula'da kontrol edip "Reçeteyi aktar"a basar → bu sayfa ?gelen=ID ile açılır.
-   3) Müşteri, cam + stok, çerçeve, tutar + kapora tek formda → kaydet → fiş + müşteri nüshası.
-   Pro yoksa ?elle=1: aynı form boş açılır.
+   4.34.0 — Tek akışın girişi (app/tezgah.php): ① Reçete → ② Müşteri → ③ Teklif → ④ Sipariş → ⑤ Döküm + gönder.
+   ① e-Reçete no yazılır; OptiFlow Pro Medula'da sorguyu doldurur (assets/tezgah.js). Personel Medula'da kontrol
+     edip "Reçeteyi aktar"a basar → bu sayfa ?gelen=ID ile açılır. Pro yoksa ?elle=1: aynı form boş açılır.
+   ② Müşteri (eşleşen kayıt ya da yeni) + reçete değerleri → "bekleyen reçete" olarak müşteriye bağlanır.
+     Sipariş burada AÇILMAZ: teklif-yeni.php (③) ya da teklifsizse doğrudan order-new.php (④) açılır.
    ========================================================================== */
 
 $gelenId = is_post() ? post_int('gelen_id') : query_int('gelen');
 $elle = !is_post() && query('elle') === '1';
 $geriUrl = $gelenId > 0 ? 'tezgah.php?gelen=' . $gelenId : 'tezgah.php?elle=1';
 
+/** Reçete müşteriye bağlandıktan sonraki adım: teklif (③) ya da teklifsiz sipariş (④). */
+$sonrakiAdim = static function (int $customerId, int $receteId, string $sonra): string {
+    $q = http_build_query(['customer_id' => $customerId, 'recete' => $receteId]);
+    return ($sonra === 'siparis' ? 'order-new.php?' : 'teklif-yeni.php?') . $q;
+};
+
+/** Bu aktarım zaten müşteriye bağlandıysa / siparişe yazıldıysa oraya git. */
+$oncekiKayit = static function (int $gelenId) use ($me, $sonrakiAdim): void {
+    if ($gelenId <= 0) {
+        return;
+    }
+    $kullanildi = (int) scalar('SELECT used_order_id FROM sgk_incoming WHERE id = ? AND user_id = ?', [$gelenId, (int) $me['id']]);
+    if ($kullanildi > 0) {
+        flash('Bu reçete zaten siparişe yazıldı.', 'info');
+        redirect('order.php?id=' . $kullanildi);
+    }
+    $b = row('SELECT id, customer_id FROM bekleyen_receteler WHERE gelen_id = ? ORDER BY id DESC LIMIT 1', [$gelenId]);
+    if ($b) {
+        flash('Bu reçete müşteriye kaydedilmiş; teklifle devam edin.', 'info');
+        redirect($sonrakiAdim((int) $b['customer_id'], (int) $b['id'], 'teklif'));
+    }
+};
+
 if (is_post()) {
     csrf_check();
+    $oncekiKayit($gelenId);
     $errors = [];
-
-    if ($gelenId > 0) {
-        $kullanildi = scalar('SELECT used_order_id FROM sgk_incoming WHERE id = ? AND user_id = ?', [$gelenId, (int) $me['id']]);
-        if ($kullanildi) {
-            flash('Bu reçete zaten kaydedildi.', 'warn');
-            redirect('order.php?id=' . (int) $kullanildi);
-        }
-    }
 
     // --- Müşteri ---
     $musteri = post('musteri', 'yeni');
@@ -49,46 +64,14 @@ if (is_post()) {
         }
     }
 
-    // --- Reçete + cam (reçete ekranıyla aynı doğrulama) ---
-    if (post('lens_type') === '') {
-        $errors[] = 'Cam tipini seçin.';
-    }
-    if (post('near_lens_type') === '') {
-        $_POST['near_lens_type'] = post('lens_type');
-    }
+    // --- Reçete (reçete ekranıyla aynı doğrulama; cam tipi siparişte seçilir) ---
+    $_POST['lens_type'] = '';
+    $_POST['near_lens_type'] = '';
     [$rxData, $nearData, $rxErrors] = rx_from_post();
     $errors = array_merge($errors, $rxErrors);
-    $stock = [];
-    foreach (['uzak', 'yakin'] as $g) {
-        $v = post('stock_' . $g, 'stokta_var');
-        if (!in_array($v, ['stokta_var', 'stokta_yok'], true)) {
-            $errors[] = 'Stok durumu geçersiz.';
-        }
-        $stock[$g] = $v;
-    }
     $erecete = tezgah_recete_no(post('erecete'));
     if (post('erecete') !== '' && $erecete === '') {
         $errors[] = 'e-Reçete numarası geçersiz.';
-    }
-
-    // --- Tutar ---
-    $amount = can_see_amounts() ? parse_money(post('total_amount')) : 0.0;
-    if ($amount === null || $amount < 0) {
-        $errors[] = 'Sipariş tutarı geçersiz. Örnek: 4.250,00';
-    }
-    $deposit = can_take_payments() ? parse_money(post('deposit')) : 0.0;
-    if ($deposit === null || $deposit < 0) {
-        $errors[] = 'Kapora tutarı geçersiz.';
-    } elseif ($amount !== null && $amount > 0 && $deposit > $amount + 0.001) {
-        $errors[] = 'Kapora sipariş tutarından büyük olamaz.';
-    }
-    $method = post('deposit_method', 'nakit');
-    if (!isset(payment_methods()[$method])) {
-        $method = 'nakit';
-    }
-    $promised = post('promised_date');
-    if ($promised !== '' && !valid_date($promised)) {
-        $errors[] = 'Teslim tarihi geçersiz.';
     }
 
     if ($errors) {
@@ -99,8 +82,7 @@ if (is_post()) {
         redirect($geriUrl);
     }
 
-    $sonuc = transaction(function () use ($customer, $me, $rxData, $nearData, $stock, $erecete, $amount, $deposit, $method, $promised, $gelenId) {
-        $simdi = date('Y-m-d H:i:s');
+    $sonuc = transaction(function () use ($customer, $me, $rxData, $nearData, $erecete, $gelenId) {
         $yeniMusteri = false;
         if ($customer) {
             $cid = (int) $customer['id'];
@@ -118,86 +100,27 @@ if (is_post()) {
                     'birth_year' => post('birth_year') !== '' ? (int) post('birth_year') : null,
                     'notes'      => $gelenId > 0 ? 'SGK e-reçetesinden oluşturuldu.' : null,
                     'created_by' => (int) $me['id'],
-                    'created_at' => $simdi,
+                    'created_at' => date('Y-m-d H:i:s'),
                 ]);
                 audit('customer_create', 'customer', $cid, ['ad' => "$first $last", 'kaynak' => 'tezgâh']);
                 $yeniMusteri = true;
             }
         }
-        $c = find_customer($cid);
-
-        $orderId = insert('orders', [
-            'customer_id'      => $cid,
-            'first_name'       => $c['first_name'],
-            'last_name'        => $c['last_name'],
-            'phone'            => (string) $c['phone'],
-            'total_amount'     => $amount,
-            'status'           => 'siparis_verildi',
-            'order_stage'      => 'siparis_verildi',
-            'transaction_type' => 'gozluk',
-            'lens_type'        => $rxData['lens_type'],
-            'frame_info'       => mb_substr(post('frame_info'), 0, 255),
-            'notes'            => mb_substr(post('notes'), 0, 2000) ?: null,
-            'promised_date'    => $promised ?: null,
-            'sales_person'     => $me['full_name'],
-            'created_by'       => (int) $me['id'],
-            'created_at'       => $simdi,
-            'updated_at'       => $simdi,
-        ]);
-        audit('order_create', 'order', $orderId, ['müşteri' => $c['first_name'] . ' ' . $c['last_name'], 'tutar' => $amount, 'kaynak' => 'tezgâh']);
-
-        $rxId = insert('prescription_records', $rxData + [
-            'order_id'         => $orderId,
-            'customer_id'      => $cid,
-            'sgk_rapor_no'     => $erecete !== '' ? $erecete : null,
-            'sgk_rapor_tarihi' => $erecete !== '' ? $rxData['prescription_date'] : null,
-            'created_by'       => (int) $me['id'],
-            'created_at'       => $simdi,
-        ]);
-        if ($nearData) {
-            insert('near_prescription_details', $nearData + ['prescription_id' => $rxId]);
-        }
-        sync_lens_items($rxId, $rxData, $nearData, $stock);
-        audit('rx_create', 'order', $orderId, ['reçete' => $rxId, 'sağ' => rx_line($rxData, 'right'), 'sol' => rx_line($rxData, 'left'), 'cam' => $rxData['lens_type']]);
-
-        if ($erecete !== '') {
-            q('UPDATE orders SET sgk_erecete = ? WHERE id = ?', [$erecete, $orderId]);   // 4.12.0 mutabakat
-        }
-        $stokCerceve = post_int('frame_item_id');
-        if ($stokCerceve > 0) {
-            order_set_frame_item($orderId, $stokCerceve, null);
-            if (trim(post('frame_info')) === '') {
-                $sc = row('SELECT * FROM frame_items WHERE id = ?', [$stokCerceve]);
-                if ($sc) {
-                    q('UPDATE orders SET frame_info = ? WHERE id = ?', [mb_substr(frame_item_label($sc), 0, 255), $orderId]);
-                }
-            }
-        }
-        if ($deposit > 0) {
-            $pid = insert('payments', ['order_id' => $orderId, 'amount' => $deposit, 'method' => $method, 'note' => 'Kapora', 'created_by' => (int) $me['id'], 'created_at' => $simdi]);
-            audit('payment_create', 'order', $orderId, ['tutar' => $deposit, 'yöntem' => $method, 'ödeme' => $pid]);
-        }
-        if ($gelenId > 0) {
-            q('UPDATE sgk_incoming SET used_order_id = ?, used_at = ? WHERE id = ? AND user_id = ?', [$orderId, $simdi, $gelenId, (int) $me['id']]);
-            audit('sgk_aktar', 'order', $orderId, ['e-reçete' => $erecete ?: '—', 'kaynak' => 'tezgâh']);
-        }
-        $sgk = $erecete !== '' ? sgk_katki_uygula($orderId, $cid, $rxData) : ['tutar' => 0.0, 'uyari' => ''];
-        return ['order' => $orderId, 'customer' => $cid, 'yeni_musteri' => $yeniMusteri, 'sgk' => $sgk];
+        $receteId = recete_bekleyen_kaydet($cid, $rxData, $nearData, $erecete, $gelenId, (int) $me['id']);
+        audit('recete_bekleyen', 'customer', $cid, ['e-reçete' => $erecete ?: '—', 'sağ' => rx_line($rxData, 'right'), 'sol' => rx_line($rxData, 'left'), 'kaynak' => $gelenId > 0 ? 'Medula' : 'elle']);
+        return ['customer' => $cid, 'recete' => $receteId, 'yeni_musteri' => $yeniMusteri];
     });
 
-    if (!empty($sonuc['sgk']['uyari'])) {
-        flash($sonuc['sgk']['uyari'], 'warn');
-    }
     if ($erecete !== '' && ozellik_acik('sgk_hak')) {
-        $hd = sgk_hak_durumu((int) $sonuc['customer'], (int) $sonuc['order']);
+        $hd = sgk_hak_durumu((int) $sonuc['customer'], 0);
         if ($hd['durum'] !== 'var') {
             flash('SGK hakkı: ' . $hd['mesaj'], $hd['durum'] === 'yok' ? 'warn' : 'info');
         }
     }
-    $eksik = (int) scalar("SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id WHERE r.order_id = ? AND i.stock_status = 'stokta_yok'", [(int) $sonuc['order']]);
-    flash('Sipariş ' . order_no((int) $sonuc['order']) . ' kaydedildi.' . ($eksik ? " $eksik cam gün sonu depo listesine eklendi." : '')
-        . (($sonuc['sgk']['tutar'] ?? 0) > 0 ? ' SGK katkısı tahmini ' . money($sonuc['sgk']['tutar']) . '.' : ''));
-    redirect('print.php?type=order&id=' . (int) $sonuc['order'] . '&tezgah=1');
+    $sonra = post('sonra') === 'siparis' ? 'siparis' : 'teklif';
+    flash(($sonuc['yeni_musteri'] ? 'Müşteri kaydı açıldı, reçete' : 'Reçete') . ' müşteriye kaydedildi. '
+        . ($sonra === 'siparis' ? 'Cam tipini ve stok durumunu seçip siparişi kaydedin.' : 'Şimdi teklifi hazırlayın.'));
+    redirect($sonrakiAdim((int) $sonuc['customer'], (int) $sonuc['recete'], $sonra));
 }
 
 /* ---------- Görünüm ---------- */
@@ -205,15 +128,12 @@ $form = null;        // ön değerler (rx_from_post alan adlarıyla)
 $eslesenler = [];
 $cozum = null;
 if ($gelenId > 0) {
-    $gelen = row('SELECT raw_text, used_order_id FROM sgk_incoming WHERE id = ? AND user_id = ?', [$gelenId, (int) $me['id']]);
+    $gelen = row('SELECT raw_text FROM sgk_incoming WHERE id = ? AND user_id = ?', [$gelenId, (int) $me['id']]);
     if (!$gelen) {
         flash('Aktarılan reçete bulunamadı.', 'error');
         redirect('tezgah.php');
     }
-    if ($gelen['used_order_id']) {
-        flash('Bu reçete zaten kaydedildi.', 'info');
-        redirect('order.php?id=' . (int) $gelen['used_order_id']);
-    }
+    $oncekiKayit($gelenId);
     $cozum = sgk_parse((string) $gelen['raw_text']);
     $form = tezgah_on_dolum($cozum);
     $eslesenler = sgk_musteri_bul((string) $cozum['ad'], (string) $cozum['soyad']);
@@ -224,8 +144,9 @@ if ($gelenId > 0) {
 $bekleyenler = $form === null ? tezgah_bekleyenler((int) $me['id']) : [];
 $o = static fn(string $k): string => old($k, (string) ($form[$k] ?? ''));
 
-page_start('Tezgâh', 'tezgah');
-page_header('Tezgâh', 'Reçete → Medula → kayıt → fiş, tek akışta', '', '', 'Kâğıtsız tezgâh');
+page_start('Yeni müşteri · reçete', 'tezgah');
+page_header('Yeni müşteri · reçete', 'Reçete → müşteri → teklif → sipariş → döküm, tek yolda', '', '', 'Satış');
+echo akis_cubugu($form === null ? 1 : 2);
 
 if ($form === null): ?>
 <div class="split">
@@ -239,7 +160,7 @@ if ($form === null): ?>
         </label>
         <button class="btn btn-primary btn-lg"><?= icon('search') ?> Medula'da aç</button>
       </form>
-      <p class="hint" data-tezgah-durum>OptiFlow Pro numarayı Medula'nın reçete sorgu ekranına yazar. Reçeteyi Medula'da kontrol edin, sonra üstteki <b>“Reçeteyi aktar”</b>a basın; kayıt formu burada açılır.</p>
+      <p class="hint" data-tezgah-durum>OptiFlow Pro numarayı Medula'nın reçete sorgu ekranına yazar. Reçeteyi Medula'da kontrol edin, sonra üstteki <b>“Reçeteyi aktar”</b>a basın; müşteri kaydı burada açılır.</p>
       <div class="form-actions">
         <button type="button" class="btn" data-tezgah-aktar hidden><?= icon('download') ?> Medula'daki reçeteyi aktar</button>
         <a class="btn btn-ghost" href="tezgah.php?elle=1">Reçeteyi elle gir</a>
@@ -250,7 +171,7 @@ if ($form === null): ?>
     <section class="card">
       <div class="card-head"><h2>Aktarılıp kaydedilmeyenler</h2></div>
       <?php if (!$bekleyenler): ?>
-        <p class="muted small">Medula'dan aktarılan her reçete kaydedilene kadar burada bekler.</p>
+        <p class="muted small">Medula'dan aktarılan her reçete müşteriye kaydedilene kadar burada bekler.</p>
       <?php else: ?>
         <ul class="list">
           <?php foreach ($bekleyenler as $b): ?>
@@ -276,7 +197,7 @@ if ($form === null): ?>
   <input type="hidden" name="gelen_id" value="<?= (int) $gelenId ?>">
 
   <section class="card">
-    <div class="card-head"><h2><span class="step">1</span> Müşteri</h2>
+    <div class="card-head"><h2>Müşteri</h2>
       <?php if ($cozum !== null && $cozum['hasta'] !== ''): ?><small class="muted">Medula: <b><?= e($cozum['hasta']) ?></b></small><?php endif; ?>
     </div>
     <div class="pick-list">
@@ -301,7 +222,7 @@ if ($form === null): ?>
   </section>
 
   <section class="card">
-    <div class="card-head"><h2><span class="step">2</span> Reçete</h2></div>
+    <div class="card-head"><h2>Reçete</h2></div>
     <div class="grid cols-4">
       <label class="field"><span>e-Reçete no</span><input name="erecete" value="<?= e($o('erecete')) ?>" autocapitalize="characters"></label>
       <label class="field"><span>Reçete tarihi</span><input type="date" name="prescription_date" value="<?= e($o('prescription_date')) ?>" max="<?= date('Y-m-d') ?>"></label>
@@ -337,43 +258,10 @@ if ($form === null): ?>
     </div>
   </section>
 
-  <section class="card">
-    <div class="card-head"><h2><span class="step">3</span> Cam ve çerçeve</h2></div>
-    <div class="grid cols-4">
-      <label class="field span-2"><span>Cam tipi *</span>
-        <select name="lens_type" required><option value="">Seçin</option><?= select_options(lens_type_options(), old('lens_type'), false) ?></select>
-      </label>
-      <label class="field"><span>Uzak camlar</span><select name="stock_uzak"><?= select_options(['stokta_var' => 'Stokta', 'stokta_yok' => 'Eksik — depodan'], old('stock_uzak', 'stokta_var')) ?></select></label>
-      <?php if ($nearGoster): ?>
-        <label class="field"><span>Yakın camlar</span><select name="stock_yakin"><?= select_options(['stokta_var' => 'Stokta', 'stokta_yok' => 'Eksik — depodan'], old('stock_yakin', 'stokta_var')) ?></select></label>
-      <?php endif; ?>
-      <label class="field span-2"><span>Stoktaki çerçeve <small class="muted">(seçince vitrinden düşer)</small></span>
-        <select name="frame_item_id"><option value="">— müşterinin kendi çerçevesi / stok dışı —</option><?= select_options(frame_stock_options(), old('frame_item_id')) ?></select>
-      </label>
-      <label class="field span-2"><span>Çerçeve açıklaması</span><input name="frame_info" value="<?= e(old('frame_info')) ?>" placeholder="ör. Ray-Ban 5154 52□21 ya da “kendi çerçevesi”"></label>
-    </div>
-    <p class="hint">Eksik işaretlenen camlar gün sonu “Depoya gidecek eksik camlar” listesine düşer.</p>
-  </section>
-
-  <section class="card">
-    <div class="card-head"><h2><span class="step">4</span> Ödeme ve teslim</h2></div>
-    <div class="grid cols-4">
-      <?php if (can_see_amounts()): ?>
-        <label class="field"><span>Tutar</span><input name="total_amount" inputmode="decimal" value="<?= e(old('total_amount')) ?>" placeholder="0,00" data-money></label>
-      <?php endif; ?>
-      <?php if (can_take_payments()): ?>
-        <label class="field"><span>Kapora</span><input name="deposit" inputmode="decimal" value="<?= e(old('deposit')) ?>" placeholder="0,00" data-money></label>
-        <label class="field"><span>Ödeme yöntemi</span><select name="deposit_method"><?= select_options(payment_methods(), old('deposit_method', 'nakit')) ?></select></label>
-      <?php endif; ?>
-      <label class="field"><span>Teslim sözü</span><input type="date" name="promised_date" value="<?= e(old('promised_date', tezgah_teslim_tarihi())) ?>"></label>
-      <label class="field span-all"><span>Not</span><textarea name="notes" rows="2" placeholder="Atölye için notlar"><?= e(old('notes')) ?></textarea></label>
-    </div>
-    <?php if ($form['erecete'] !== '' || $cozum !== null): ?><p class="hint">SGK katkı payı kayıttan sonra reçeteye göre tahmini işlenir; kalan tutar fişte görünür.</p><?php endif; ?>
-  </section>
-
   <div class="form-actions sticky-actions">
     <a class="btn btn-ghost" href="tezgah.php">Vazgeç</a>
-    <button class="btn btn-primary btn-lg"><?= icon('print') ?> Kaydet ve fişi yazdır</button>
+    <button class="btn" name="sonra" value="siparis">Teklifsiz siparişe geç</button>
+    <button class="btn btn-primary btn-lg" name="sonra" value="teklif">Kaydet, teklif hazırla</button>
   </div>
 </form>
 <?php endif; ?>

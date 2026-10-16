@@ -141,7 +141,6 @@ function page_start(string $title, string $active = '', array $opts = []): void
             ['customers', 'customers.php', 'Müşteriler', 'users', 0],
             ['basarilar', 'basarilar.php', 'Başarılar', 'spark', 0],
             ['hatirlatma', 'hatirlatma.php', 'Hatırlatmalar', 'bell', $hatirlatma],
-            ['sgk', 'sgk-aktar.php', 'SGK reçete aktar', 'download', 0],
             ['stock', 'stock.php', 'Depo · Stok', 'box', $missing],
             ['uts', 'uts-karekod.php', 'ÜTS karekod', 'print', 0, 'uts'],
             ['cerceve', 'cerceve.php', 'Çerçeve stoğu', 'glasses', function_exists('frame_alert_count') ? frame_alert_count() : 0],
@@ -222,7 +221,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
       <span class="brand-text"><b><?= e($shop) ?></b><small>OptiFlow</small></span>
     </a>
     <button type="button" class="icon-btn tema-dugme tema-dugme-ust" data-tema-dugme title="Görünüm: açık / koyu / otomatik" aria-label="Görünümü değiştir"><?= icon('moon', 'ic tema-ay') ?><?= icon('sun', 'ic tema-gunes') ?></button>
-    <a class="btn btn-block new-order" href="order-new.php"><?= icon('plus') ?> Yeni sipariş</a>
+    <a class="btn btn-block new-order" href="tezgah.php"><?= icon('plus') ?> Yeni müşteri · reçete</a>
     <div class="global-search" data-global-search>
       <?= icon('search') ?>
       <input type="search" placeholder="Müşteri, sipariş no, tedarikçi ara…" autocomplete="off" data-global-search-input aria-label="Genel arama">
@@ -277,14 +276,14 @@ function bottom_nav(string $active = ''): string
     $ogeler = [
         ['orders',   'index.php',    'Siparişler', 'orders'],
         ['workshop', 'workshop.php', 'Atölye',     'glasses'],
-        null, // orta: yeni sipariş
+        null, // orta: yeni müşteri · reçete (4.34.0 tek akış)
         ['customers','customers.php','Müşteriler', 'users'],
     ];
 
     $h = '<nav class="tabbar" aria-label="Alt gezinme">';
     foreach ($ogeler as $o) {
         if ($o === null) {
-            $h .= '<a class="tabbar-fab" href="order-new.php" aria-label="Yeni sipariş">' . icon('plus') . '</a>';
+            $h .= '<a class="tabbar-fab" href="tezgah.php" aria-label="Yeni müşteri · reçete">' . icon('plus') . '</a>';
             continue;
         }
         [$key, $href, $label, $ic] = $o;
@@ -375,9 +374,7 @@ function ozellik_menusu_ekle(array &$nav): void
         }
     };
     $a = &$nav['Atölye'];
-    if (ozellik_acik('kagitsiz')) {   // 4.33.0
-        $ekle($a, 'orders', ['tezgah', 'tezgah.php', 'Tezgâh', 'glasses', 0]);
-    }
+    // 4.34.0: Tezgâh artık menünün üstündeki "Yeni müşteri · reçete" düğmesi (tek akışın girişi, her mağazada)
     if (ozellik_acik('barkod')) {
         $ekle($a, 'orders', ['barkod', 'barkod.php', 'Barkod okut', 'barcode', 0]);
     }

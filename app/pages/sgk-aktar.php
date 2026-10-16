@@ -113,6 +113,10 @@ if (!is_post() && query_int('gelen') > 0) {
     if (ozellik_acik('sgk_hak') && sgk_hak_metni_mi($hamMetin)) {
         redirect('sgk-hak.php?gelen=' . $gelenId);
     }
+    // 4.34.0 tek akış: belirli bir siparişe yazılmayacaksa reçete "Yeni müşteri · reçete" akışında açılır
+    if ($hedefSiparis <= 0 && query('eski') !== '1') {
+        redirect('tezgah.php?gelen=' . $gelenId);
+    }
     $cozum = sgk_parse($hamMetin);
     $eslesenler = sgk_musteri_bul((string) $cozum['ad'], (string) $cozum['soyad']);
 }

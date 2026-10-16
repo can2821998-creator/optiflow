@@ -272,6 +272,7 @@ function teklif_form_degerleri(array $q): array
         'gozluk_ad'     => (string) ($q['gozluk_ad'] ?? ''),
         'discount_rate' => $oran > 0 ? rtrim(rtrim(number_format($oran, 2, ',', ''), '0'), ',') : '',
         'note'          => (string) ($q['note'] ?? ''),
+        'recete_id'     => (string) (int) ($q['recete_id'] ?? 0),
         'ek'            => [],
     ];
     foreach (rows('SELECT * FROM quote_gozlukler WHERE quote_id = ? ORDER BY sira', [(int) $q['id']]) as $e) {
@@ -373,7 +374,13 @@ function teklif_kaydet(array $g, array $kullanici, int $duzenleId = 0): int
             $musteri = find_customer($cid);
         }
         $adElle = trim(is_string($g['gozluk_ad'] ?? null) ? $g['gozluk_ad'] : '') !== '';
+        // 4.34.0: akıştan gelen bekleyen reçete (yalnızca bu müşterinin reçetesi bağlanır)
+        $receteId = (int) ($g['recete_id'] ?? 0);
+        if ($receteId > 0 && !(int) scalar('SELECT COUNT(*) FROM bekleyen_receteler WHERE id = ? AND customer_id = ?', [$receteId, $cid])) {
+            $receteId = 0;
+        }
         $veri = [
+            'recete_id'      => $receteId > 0 ? $receteId : null,
             'tip'            => 'katalog',
             'customer_id'    => $cid,
             'customer_name'  => mb_substr(trim($musteri['first_name'] . ' ' . $musteri['last_name']), 0, 160),

@@ -163,7 +163,14 @@ page_start($name, 'customers');
   </div>
   <div class="hero-actions">
     <?php if ($c['phone']): ?><a class="btn btn-wa" href="https://wa.me/<?= e($c['phone']) ?>" target="_blank" rel="noopener"><?= icon('chat') ?> WhatsApp</a><?php endif; ?>
-    <a class="btn btn-primary" href="order-new.php?customer_id=<?= $id ?>"><?= icon('plus') ?> Yeni sipariş</a>
+    <?php $bekleyenRecete = recete_son_bekleyen((int) $id);   // 4.34.0: akışta yarım kalan reçete ?>
+    <?php if ($bekleyenRecete): ?>
+      <a class="btn btn-primary" href="teklif-yeni.php?<?= e(http_build_query(['customer_id' => $id, 'recete' => $bekleyenRecete['id']])) ?>"><?= icon('spark') ?> Reçeteyle teklif hazırla</a>
+      <a class="btn" href="order-new.php?<?= e(http_build_query(['customer_id' => $id, 'recete' => $bekleyenRecete['id']])) ?>"><?= icon('plus') ?> Teklifsiz sipariş</a>
+    <?php else: ?>
+      <a class="btn" href="tezgah.php"><?= icon('glasses') ?> Yeni reçete</a>
+      <a class="btn btn-primary" href="order-new.php?customer_id=<?= $id ?>"><?= icon('plus') ?> Yeni sipariş</a>
+    <?php endif; ?>
   </div>
 </section>
 

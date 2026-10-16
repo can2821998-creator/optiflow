@@ -1,6 +1,24 @@
 OPTIFLOW
-Release: 4.33.0 (2026-10-15)
+Release: 4.34.0 (2026-10-16)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.34.0 (tek akış: reçete → müşteri → teklif → sipariş → döküm ve gönder; şema 34)
+  - Kullanıcı kararı (16.10): "her şey çok karıştı" — aynı iş için 4 giriş vardı (SGK reçete aktar sipariş açıyordu,
+    Tezgâh teklifi atlıyordu, teklif reçeteyi bilmiyordu, Yeni sipariş ayrıydı). Artık tek yol, her sayfada adım çubuğu:
+    ① Reçete (Medula'dan Pro aktarır ya da elle) → ② Müşteri (eşleşen kayıt / yeni) → ③ Teklif (atlanabilir) →
+    ④ Siparişe çevir (cam tipi + stok durumu) → ⑤ Döküm (fiş + müşteri nüshası) ve gönder.
+  - ② sipariş AÇMAZ: reçete "bekleyen reçete" olarak müşteriye bağlanır (yeni tablo bekleyen_receteler, göç v34).
+    "Kaydet, teklif hazırla" → teklif-yeni.php reçeteyle açılır (kullanım şekli + SGK işareti dolar; ayrı uzak + yakın
+    reçetede iki gözlük: Uzak / Yakın). "Teklifsiz siparişe geç" → order-new.php reçeteyle.
+  - Teklif reçeteyi taşır (quotes.recete_id); teklif sayfasında reçete özeti. Siparişe çevirince reçete, yakın değerler
+    ve cam satırları siparişe yazılır; teklifteki SGK payı korunur. Aynı reçete çok gözlüklü teklifin her siparişine yazılır.
+  - ⑤ Camlar stoktaysa sipariş kendiliğinden "Atölyede"ye geçer; eksik cam varsa "Sipariş alındı"da kalır ve eksikler gün
+    sonu depo listesine düşer. Kayıttan sonra fiş + müşteri nüshası basılır (artık her mağazada; "Sıradaki müşteri" bağlantısı).
+  - Menü: "Yeni sipariş" düğmesi ve telefon alt çubuğundaki + → "Yeni müşteri · reçete" (tezgah.php, özellik anahtarı
+    gerekmez). "SGK reçete aktar" menüden kalktı; Pro'nun aktarımı (sgk-aktar.php?gelen=) akışta açılır, belirli bir siparişe
+    yazma (?order=) ve hak sorgusu aynen çalışır. Müşteri kartında yarım kalan reçete için "Reçeteyle teklif hazırla".
+  - Testler: tests/tezgah 69 (bekleyen reçete, uzak/yakın uyarlama, atölye/depo ayrımı), tests/teklif 127.
+    Yerel MariaDB'de uçtan uca: elle reçete → teklif (2 gözlük) → uzak sipariş atölyede, yakın sipariş eksik camla; teklifsiz yol.
 
 DEĞİŞİKLİK NOTLARI — 4.33.0 / Pro 5.6.0 (tezgâh: reçete → Medula → tek ekran kayıt → fiş; özellik: kagitsiz)
   - Yeni "Tezgâh" sayfası (tezgah.php; menü Atölye › Tezgâh, Siparişler'de "Reçeteyle sipariş"): müşteri reçeteyi verir,

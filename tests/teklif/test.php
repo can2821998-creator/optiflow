@@ -75,9 +75,10 @@ esit(0, (int) scalar('SELECT COUNT(*) FROM quotes'), 'hatalı girişte kayıt yo
 esit(0, (int) scalar('SELECT COUNT(*) FROM customers'), 'hatalı girişte müşteri açılmaz');
 
 echo "5) Kayıt: yeni müşteri + stok çerçeve + iki seçenek\n";
-$id = teklif_kaydet($temel, $personel);
+$id = teklif_kaydet($temel + ['recete_id' => '77'], $personel);
 $q = row('SELECT * FROM quotes WHERE id = ?', [$id]);
 $mus = row('SELECT * FROM customers');
+ok($q['recete_id'] === null, '4.34.0: başka müşterinin / olmayan reçete teklife bağlanmaz');
 esit('Ayşe Yılmaz', $mus['first_name'] . ' ' . $mus['last_name'], 'müşteri adı düzeltilerek kaydedildi');
 esit('905321112233', $mus['phone'], 'telefon 90… biçiminde');
 esit((int) $mus['id'], (int) $q['customer_id'], 'teklif müşteriye bağlı');
@@ -234,5 +235,20 @@ $katalogSekme = substr($st, (int) strpos($st, "elseif (\$tab === 'katalog'):"), 
 ok(!str_contains($katalogSekme, 'onchange=') && str_contains($katalogSekme, 'data-auto-submit'), 'katalog filtresi CSP uyumlu (satır içi onchange yok)');
 $rxs = (string) file_get_contents($kok . '/assets/rx.js');
 ok(str_contains($rxs, 'p.coatings && p.coatings.length'), 'öneri asistanı çoklu kaplamayı puanlar');
+
+echo "4.34.0) Akıştan gelen reçete teklife bağlanır\n";
+$rcMus = (int) $mus['id'];
+$rcId = insert('bekleyen_receteler', ['customer_id' => $rcMus, 'erecete' => '1A2B3C4', 'veri' => '{"rx":{},"near":null}', 'created_at' => date('Y-m-d H:i:s')]);
+$baskaRc = insert('bekleyen_receteler', ['customer_id' => $rcMus + 50, 'veri' => '{}', 'created_at' => date('Y-m-d H:i:s')]);
+$tRc = teklif_kaydet(['customer_id' => (string) $rcMus, 'recete_id' => (string) $rcId] + $temel, $GLOBALS['__kullanici']);
+esit($rcId, (int) scalar('SELECT recete_id FROM quotes WHERE id = ?', [$tRc]), 'müşterinin reçetesi teklife yazılır');
+esit((string) $rcId, teklif_form_degerleri(row('SELECT * FROM quotes WHERE id = ?', [$tRc]))['recete_id'], 'düzenlemede reçete korunur');
+$tBaska = teklif_kaydet(['customer_id' => (string) $rcMus, 'recete_id' => (string) $baskaRc] + $temel, $GLOBALS['__kullanici']);
+ok(scalar('SELECT recete_id FROM quotes WHERE id = ?', [$tBaska]) === null, 'başka müşterinin reçetesi bağlanmaz');
+$on = (string) file_get_contents($kok . '/app/pages/order-new.php');
+ok(str_contains($on, "\$quote['recete_id']") && str_contains($on, 'recete_siparise_uygula('), 'siparişe çevirirken teklifin reçetesi siparişe yazılır');
+ok(str_contains($on, "print.php?type=order&id=' . \$orderId . '&tezgah=1"), 'reçeteli siparişten sonra döküm yazdırılır');
+$ty = (string) file_get_contents($kok . '/app/pages/teklif-yeni.php');
+ok(strpos($ty, '$recete && !is_post()') < strpos($ty, '$kaynak = static fn'), 'reçete ön dolumu form değerleri okunmadan önce');
 
 bitir();

@@ -37,17 +37,38 @@ if (is_post()) {
     $g = teklif_form_degerleri($duzenlenen);
 }
 
-/** Gözlük n'nin form değerleri: 1 formun kökü, 2–3 ek[n]. */
-$kaynak = static fn(int $n): array => $n === 1 ? $g : (is_array($g['ek'][$n] ?? null) ? $g['ek'][$n] : []);
-$ad = static fn(int $n, string $k): string => $n === 1 ? $k : "ek[$n][$k]";
-$deger = static fn(array $k, string $alan, string $d = ''): string => is_string($k[$alan] ?? null) ? $k[$alan] : $d;
-$degerI = static fn(array $k, string $alan, int $i): string => is_array($k[$alan] ?? null) && is_string($k[$alan][$i] ?? null) ? $k[$alan][$i] : '';
-
 $musteri = null;
 $mid = (int) ($g['customer_id'] ?? query_int('customer_id'));
 if ($mid > 0) {
     $musteri = find_customer($mid);
 }
+
+/* 4.34.0 — Akıştan (tezgah.php ②) gelen bekleyen reçete: kullanım şekli ve SGK işareti reçeteden dolar,
+   teklif reçeteyi taşır (quotes.recete_id), siparişe çevirince reçete siparişe yazılır. */
+$recete = null;
+$receteNo = (int) ($g['recete_id'] ?? query_int('recete'));
+if ($musteri) {
+    $aday = $receteNo > 0 ? recete_bekleyen($receteNo) : (!$duzenlenen ? recete_son_bekleyen((int) $musteri['id']) : null);
+    if ($aday && $aday['customer_id'] === (int) $musteri['id']) {
+        $recete = $aday;
+    }
+}
+if ($recete && !is_post() && !$duzenlenen) {
+    $tasarim = (string) ($recete['rx']['lens_design'] ?? 'tek_odak_uzak');
+    $sgk = $recete['erecete'] !== '' ? '1' : '0';
+    if ($tasarim === 'ayri_uzak_yakin') {   // ayrı uzak + yakın reçete: iki gözlük
+        $g += ['gozluk_ad' => 'Uzak', 'lens_design' => 'tek_odak_uzak', 'sgk_var' => $sgk];
+        $g['ek'][2] = ['aktif' => '1', 'ad' => 'Yakın', 'lens_design' => 'tek_odak_yakin', 'sgk_var' => $sgk];
+    } else {
+        $g += ['lens_design' => $tasarim, 'sgk_var' => $sgk];
+    }
+}
+
+/** Gözlük n'nin form değerleri: 1 formun kökü, 2–3 ek[n]. */
+$kaynak = static fn(int $n): array => $n === 1 ? $g : (is_array($g['ek'][$n] ?? null) ? $g['ek'][$n] : []);
+$ad = static fn(int $n, string $k): string => $n === 1 ? $k : "ek[$n][$k]";
+$deger = static fn(array $k, string $alan, string $d = ''): string => is_string($k[$alan] ?? null) ? $k[$alan] : $d;
+$degerI = static fn(array $k, string $alan, int $i): string => is_array($k[$alan] ?? null) && is_string($k[$alan][$i] ?? null) ? $k[$alan][$i] : '';
 
 $urunler = teklif_cam_urunleri();
 $urunGruplu = [];
@@ -75,6 +96,9 @@ page_header($baslik,
         ? 'Teklif #' . (int) $duzenlenen['id'] . ' · ' . $duzenlenen['customer_name'] . '. Değişiklikler kaydedilince döküm de güncellenir.'
         : 'Müşteriyi seçin; her gözlük için çerçeveyi ve 1–3 cam seçeneğini katalogdan seçin. Uzak + yakın gibi ikinci bir gözlük de ekleyebilirsiniz.',
     '', $duzenlenen ? 'quote.php?id=' . (int) $duzenlenen['id'] : 'quotes.php', 'Satış');
+if ($recete) {
+    echo akis_cubugu(3);
+}
 ?>
 <?php if ($hata !== ''): ?><div class="alert alert-error" role="alert"><?= e($hata) ?></div><?php endif; ?>
 <?php if (!$urunler): ?>
@@ -85,6 +109,15 @@ page_header($baslik,
       data-sgk-tahmin="<?= e(json_encode($sgkTahmin)) ?>" data-iskonto-max="<?= e((string) $sinir) ?>">
   <?= csrf_field() ?>
   <?php if ($duzenlenen): ?><input type="hidden" name="duzenle_id" value="<?= (int) $duzenlenen['id'] ?>"><?php endif; ?>
+  <?php if ($recete): ?>
+    <input type="hidden" name="recete_id" value="<?= (int) $recete['id'] ?>">
+    <section class="card akis-recete">
+      <div class="card-head"><h2><?= icon('glasses') ?> Reçete</h2>
+        <a class="btn btn-ghost btn-sm" href="order-new.php?<?= e(http_build_query(['customer_id' => $recete['customer_id'], 'recete' => $recete['id']])) ?>">Teklifsiz siparişe geç</a></div>
+      <p><b><?= e(lens_designs()[$recete['rx']['lens_design'] ?? ''] ?? '') ?></b> · <?= e(recete_ozet($recete)) ?></p>
+      <p class="hint"><?= $recete['erecete'] !== '' ? 'e-Reçete ' . e($recete['erecete']) . ' · Medula payı düşülür.' : 'e-Reçete yok (ücretli).' ?> Teklif siparişe çevrilince reçete siparişe kendiliğinden yazılır.</p>
+    </section>
+  <?php endif; ?>
 
   <section class="card">
     <div class="card-head"><h2><span class="step">1</span> Müşteri</h2></div>

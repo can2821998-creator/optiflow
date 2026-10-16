@@ -187,7 +187,7 @@ setting_set('asistan_mesaj', '1');
 echo "9) Kaynak denetimleri\n";
 $kok = dirname(__DIR__, 2);
 $mig = (string) file_get_contents($kok . '/app/migrations.php');
-ok(str_contains($mig, 'const SCHEMA_VERSION = 33;') && str_contains($mig, 'migrate_v33_telefon_asistani'), 'göç v33');
+ok(str_contains($mig, 'migrate_v33_telefon_asistani'), 'göç v33');
 $api = (string) file_get_contents($kok . '/app/pages/asistan-api.php');
 ok(str_contains($api, "in_array('telefon_asistan'") && str_contains($api, 'asistan_cihaz_dogrula(') && str_contains($api, "merkez_hiz_asildi('asistan_bagla'"), 'uç nokta: özellik + cihaz anahtarı + deneme sınırı');
 $bs = (string) file_get_contents($kok . '/app/bootstrap.php');

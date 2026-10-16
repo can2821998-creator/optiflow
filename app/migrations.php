@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 33;
+const SCHEMA_VERSION = 34;
 
 function run_migrations(): void
 {
@@ -71,6 +71,7 @@ function run_migrations(): void
         if ($current < 31) { migrate_v31_katalog_teklif(); set_schema_version(31); }
         if ($current < 32) { migrate_v32_teklif_gozlukler(); set_schema_version(32); }
         if ($current < 33) { migrate_v33_telefon_asistani(); set_schema_version(33); }
+        if ($current < 34) { migrate_v34_bekleyen_recete(); set_schema_version(34); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1670,4 +1671,24 @@ function migrate_v33_telefon_asistani(): void
         INDEX idx_asistan_geri (geri_ara, tamamlandi_at),
         INDEX idx_asistan_tarih (created_at)
     ) " . t_opts());
+}
+
+/** 4.34.0 — Tek akış: Medula'dan gelen reçete sipariş açılmadan müşteriye bağlanır, teklife taşınır,
+    siparişe çevrilince prescription_records'a yazılır (app/tezgah.php). */
+function migrate_v34_bekleyen_recete(): void
+{
+    db()->exec("CREATE TABLE IF NOT EXISTS bekleyen_receteler (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        customer_id INT UNSIGNED NOT NULL,
+        gelen_id INT UNSIGNED NULL,
+        erecete VARCHAR(20) NULL,
+        veri TEXT NOT NULL,
+        used_order_id INT UNSIGNED NULL,
+        used_at DATETIME NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL,
+        INDEX idx_bekleyen_musteri (customer_id, created_at),
+        INDEX idx_bekleyen_gelen (gelen_id)
+    ) " . t_opts());
+    add_column('quotes', 'recete_id', 'INT UNSIGNED NULL');
 }

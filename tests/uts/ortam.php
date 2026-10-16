@@ -137,7 +137,10 @@ function sema_kur(PDO $p): void
         opt3_name TEXT NULL, opt3_desc TEXT NULL, opt3_price REAL NULL, converted_order_id INTEGER NULL, created_by INTEGER NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         tip TEXT NOT NULL DEFAULT 'serbest', frame_item_id INTEGER NULL, frame_desc TEXT NULL, frame_price REAL NOT NULL DEFAULT 0, lens_design TEXT NULL,
         sgk_amount REAL NOT NULL DEFAULT 0, discount_rate REAL NOT NULL DEFAULT 0, opt1_product_id INTEGER NULL, opt2_product_id INTEGER NULL, opt3_product_id INTEGER NULL,
-        secilen INTEGER NULL, gozluk_ad TEXT NULL, updated_at TEXT NULL, updated_by INTEGER NULL)");
+        secilen INTEGER NULL, gozluk_ad TEXT NULL, updated_at TEXT NULL, updated_by INTEGER NULL, recete_id INTEGER NULL)");
+    // migrate_v34_bekleyen_recete ile aynı sütunlar (4.34.0: reçete → müşteri → teklif → sipariş)
+    $p->exec("CREATE TABLE bekleyen_receteler (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER NOT NULL, gelen_id INTEGER NULL, erecete TEXT NULL,
+        veri TEXT NOT NULL, used_order_id INTEGER NULL, used_at TEXT NULL, created_by INTEGER NULL, created_at TEXT NOT NULL)");
     // migrate_v32_teklif_gozlukler ile aynı sütunlar (4.26.0: teklifte 2. ve 3. gözlük)
     $p->exec("CREATE TABLE quote_gozlukler (id INTEGER PRIMARY KEY AUTOINCREMENT, quote_id INTEGER NOT NULL REFERENCES quotes(id) ON DELETE CASCADE, sira INTEGER NOT NULL,
         ad TEXT NOT NULL, frame_item_id INTEGER NULL, frame_desc TEXT NULL, frame_price REAL NOT NULL DEFAULT 0, lens_design TEXT NULL, sgk_amount REAL NOT NULL DEFAULT 0,

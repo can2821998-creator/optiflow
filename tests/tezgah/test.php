@@ -57,9 +57,85 @@ esit('2026-10-16', tezgah_teslim_tarihi($cuma), '0 gün = bugün');
 setting_set('tezgah_teslim_gun', '1');
 esit('2026-10-17', tezgah_teslim_tarihi($cuma), 'cumartesi iş günü sayılır');
 
-echo "7) Sayfa ve fiş kaynakları\n";
+echo "7) 4.34.0 tek akış: bekleyen reçete → sipariş\n";
+// app/domain.php testte yüklenmez: kullanılan yardımcıların sade eşleri (cam satırı stok durumuyla yazılır)
+if (!function_exists('lens_designs')) {
+    function lens_designs(): array { return ['tek_odak_uzak' => 'Tek odak uzak', 'tek_odak_yakin' => 'Tek odak yakın', 'ayri_uzak_yakin' => 'Ayrı uzak + yakın', 'progressive' => 'Progressive']; }
+    function rx_line(array $r, string $s): string { return trim(($r[$s . '_sph'] ?? '') . ' ' . ($r[$s . '_cyl'] ?? '')); }
+    function near_sphere(string $sph, string $add): string { return $add === '' ? $sph : sprintf('%+.2f', (float) $sph + (float) $add); }
+    function stage_label(?string $k): string { return (string) $k; }
+    function sync_lens_items(int $rxId, array $rx, ?array $near, array $stock): void {
+        if ($rx['lens_design'] !== 'tek_odak_yakin') {
+            insert('prescription_lens_items', ['prescription_id' => $rxId, 'lens_no' => 1, 'stock_status' => $stock['uzak'] ?? 'stokta_var', 'lens_type' => $rx['lens_type']]);
+        }
+        if ($near !== null) {
+            insert('prescription_lens_items', ['prescription_id' => $rxId, 'lens_no' => 3, 'stock_status' => $stock['yakin'] ?? 'stokta_var', 'lens_type' => $near['lens_type'], 'item_group' => 'yakin']);
+        }
+    }
+    function sgk_katki_uygula(int $o, int $c, array $rx): array { $GLOBALS['__sgk'][] = $o; return ['tutar' => 120.0, 'uyari' => null, 'korundu' => false]; }
+}
+foreach (['prescription_date', 'lens_design', 'lens_eyes', 'lens_type', 'right_sph', 'right_cyl', 'right_axis', 'right_add', 'right_pd', 'right_height',
+          'left_sph', 'left_cyl', 'left_axis', 'left_add', 'left_pd', 'left_height', 'pd', 'prescription_note', 'doctor', 'customer_id', 'sgk_rapor_no', 'sgk_rapor_tarihi', 'created_by', 'created_at'] as $s) {
+    db()->exec("ALTER TABLE prescription_records ADD COLUMN $s TEXT NULL");
+}
+db()->exec('CREATE TABLE near_prescription_details (id INTEGER PRIMARY KEY AUTOINCREMENT, prescription_id INTEGER, usage_type TEXT, lens_type TEXT, right_sph TEXT, right_cyl TEXT, right_axis TEXT, left_sph TEXT, left_cyl TEXT, left_axis TEXT)');
+db()->exec('ALTER TABLE orders ADD COLUMN status TEXT NULL');
+db()->exec('ALTER TABLE orders ADD COLUMN updated_at TEXT NULL');
+
+$rxVeri = ['prescription_date' => '2026-10-16', 'lens_design' => 'ayri_uzak_yakin', 'lens_eyes' => 'both', 'lens_type' => 'X', 'advisor_summary' => 'x', 'advisor_product_id' => null,
+    'right_sph' => '-2.00', 'right_cyl' => '-0.50', 'right_axis' => '90', 'right_add' => '+2.00', 'right_pd' => '', 'right_height' => '',
+    'left_sph' => '-1.75', 'left_cyl' => '', 'left_axis' => '', 'left_add' => '+2.00', 'left_pd' => '', 'left_height' => '', 'pd' => '62', 'prescription_note' => '', 'doctor' => 'Dr. Test'];
+$yakinVeri = ['usage_type' => 'ayri_uzak_yakin', 'lens_type' => 'X', 'right_sph' => '+0.00', 'right_cyl' => '-0.50', 'right_axis' => '90', 'left_sph' => '+0.25', 'left_cyl' => '', 'left_axis' => ''];
+$mus = insert('customers', ['first_name' => 'Ayşe', 'last_name' => 'Yılmaz', 'phone' => '05321112233']);
+$rc = recete_bekleyen_kaydet($mus, $rxVeri, $yakinVeri, '1A2B3C4', $g1, 1);
+$r = recete_bekleyen($rc);
+esit([$mus, '1A2B3C4', $g1, 0], [$r['customer_id'], $r['erecete'], $r['gelen_id'], $r['used_order_id']], 'müşteriye bağlı, e-reçete ve aktarım no');
+ok(!array_key_exists('lens_type', $r['rx']) && !array_key_exists('advisor_summary', $r['rx']), 'cam tipi reçetede saklanmaz (siparişte seçilir)');
+esit('-2.00', $r['rx']['right_sph'], 'değerler aynen');
+ok(!str_contains((string) scalar('SELECT veri FROM bekleyen_receteler WHERE id = ?', [$rc]), '12345678901'), 'T.C. no saklanmaz');
+esit(0, count(tezgah_bekleyenler(1)), 'müşteriye bağlanan aktarım "kaydedilmeyenler" listesinden düşer');
+esit($rc, recete_son_bekleyen($mus)['id'] ?? 0, 'müşterinin son bekleyen reçetesi');
+ok(str_contains(recete_ozet($r), 'PD 62'), 'özet satırı');
+
+[$uzakRx, $uzakYakin] = recete_kullanim_icin($r, 'tek_odak_uzak');
+ok($uzakRx['lens_design'] === 'tek_odak_uzak' && $uzakYakin === null, 'uzak gözlüğü: yakın değer yok');
+[$yRx, $yY] = recete_kullanim_icin($r, 'tek_odak_yakin');
+esit(['tek_odak_yakin', '+0.25'], [$yRx['lens_design'], $yY['left_sph']], 'yakın gözlüğü: reçetedeki yakın SPH');
+[, $hesap] = recete_kullanim_icin(['rx' => ['right_sph' => '-1.00', 'right_add' => '+2.50', 'left_sph' => '', 'left_add' => ''] + $rxVeri, 'near' => null], 'tek_odak_yakin');
+esit('+1.50', $hesap['right_sph'], 'yakın değeri yoksa SPH + ADD');
+
+$s1 = insert('orders', ['customer_id' => $mus, 'first_name' => 'Ayşe', 'order_stage' => 'siparis_verildi']);
+$u1 = recete_siparise_uygula($rc, $s1, 'tek_odak_uzak', 'Organik 1.60', '', ['uzak' => 'stokta_var'], 1);
+esit([0, true], [$u1['eksik'], $u1['atolye']], 'camlar stokta → atölyeye');
+esit('atolyede', scalar('SELECT order_stage FROM orders WHERE id = ?', [$s1]), 'sipariş atölyede');
+esit(['Organik 1.60', '1A2B3C4'], array_values(row('SELECT lens_type, sgk_erecete FROM orders WHERE id = ?', [$s1])), 'cam tipi ve e-reçete siparişte');
+esit(['1A2B3C4', 'tek_odak_uzak', (string) $mus], array_values(row('SELECT sgk_rapor_no, lens_design, customer_id FROM prescription_records WHERE id = ?', [$u1['rx']])), 'reçete siparişe yazıldı');
+esit([$s1, $s1], [(int) scalar('SELECT used_order_id FROM bekleyen_receteler WHERE id = ?', [$rc]), (int) scalar('SELECT used_order_id FROM sgk_incoming WHERE id = ?', [$g1])], 'reçete ve aktarım kullanıldı');
+ok(recete_son_bekleyen($mus) === null, 'kullanılan reçete bekleyenlerde yok');
+esit([$s1], $GLOBALS['__sgk'], 'e-reçeteli siparişte SGK katkısı işlenir');
+
+$s2 = insert('orders', ['customer_id' => $mus, 'first_name' => 'Ayşe', 'order_stage' => 'siparis_verildi']);
+$u2 = recete_siparise_uygula($rc, $s2, 'tek_odak_yakin', 'Organik 1.50', '', ['yakin' => 'stokta_yok'], 1);
+esit([1, false], [$u2['eksik'], $u2['atolye']], 'eksik cam → atölyeye geçmez, depo listesinde');
+esit('siparis_verildi', scalar('SELECT order_stage FROM orders WHERE id = ?', [$s2]), 'eksik camlı sipariş beklemede');
+esit(1, (int) scalar('SELECT COUNT(*) FROM near_prescription_details WHERE prescription_id = ?', [$u2['rx']]), 'yakın gözlüğün yakın değerleri');
+esit($s1, (int) scalar('SELECT used_order_id FROM bekleyen_receteler WHERE id = ?', [$rc]), 'ikinci gözlük ilk kullanımı ezmez');
+
+$baska = insert('customers', ['first_name' => 'Ali', 'last_name' => 'Kaya', 'phone' => '05320000000']);
+$s3 = insert('orders', ['customer_id' => $baska, 'order_stage' => 'siparis_verildi']);
+$hata = '';
+try { recete_siparise_uygula($rc, $s3, '', 'X', '', [], 1); } catch (DomainException $e) { $hata = $e->getMessage(); }
+ok(str_contains($hata, 'müşterisine ait değil'), 'başka müşterinin siparişine yazılmaz');
+ok(str_contains(akis_cubugu(3, []), 'aria-current="step"') && substr_count(akis_cubugu(4, [3]), 'atlandi') === 1, 'adım çubuğu: şimdiki ve atlanan adım');
+
+echo "8) Sayfa ve fiş kaynakları\n";
 $sayfa = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/tezgah.php');
-ok(str_contains($sayfa, "ozellik_gereksin('kagitsiz')"), 'özellik kapısı');
+ok(!str_contains($sayfa, "ozellik_gereksin('kagitsiz')"), '4.34.0: akışın girişi her mağazada açık');
+ok(str_contains($sayfa, 'recete_bekleyen_kaydet(') && !str_contains($sayfa, "insert('orders'"), '② sipariş açmaz, reçeteyi müşteriye bağlar');
+ok(str_contains($sayfa, "'teklif-yeni.php?'") && str_contains($sayfa, "'order-new.php?'"), 'teklif ya da teklifsiz sipariş');
+$lay = (string) file_get_contents(dirname(__DIR__, 2) . '/app/layout.php');
+ok(str_contains($lay, 'href="tezgah.php"><?= icon(\'plus\') ?> Yeni müşteri · reçete') && !str_contains($lay, "'SGK reçete aktar'"), 'menü: tek giriş, SGK reçete aktar kalktı');
+ok(str_contains((string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/sgk-aktar.php'), "redirect('tezgah.php?gelen='"), 'Pro aktarımı akışta açılır');
 ok(str_contains($sayfa, 'csrf_check()'), 'CSRF denetimi');
 ok(str_contains($sayfa, 'rx_from_post()'), 'reçete doğrulaması reçete ekranıyla aynı');
 ok(!preg_match('/<script>|onclick=/i', $sayfa), 'satır içi betik yok (CSP)');

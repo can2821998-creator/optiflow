@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 15 Ekim 2026 (4.33.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 16 Ekim 2026 (4.34.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
-- **Sunucu 4.33.0**, şema **33** (göç yok). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.32.1** (12.10 Actions "Canlıya al" başarılı). 4.33.0 main'e push edilince yayınlanır.
+- **Sunucu 4.34.0**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Canlı site: 4.33.0** (15.10 "Canlıya al" başarılı). 4.34.0 dal `oturum/sube`'de; main'e birleştirilince yayınlanır.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);
@@ -18,7 +18,20 @@
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.33.0 / Pro 5.6.0 — tezgâh akışı; Poyraz AB bilgisayarı, main)
+## Son oturum (4.34.0 — tek akış; TEKNOPLUS bilgisayarı, dal oturum/sube)
+- Kullanıcı (16.10): "akışı baştan kurgulayıp sadeleştirmemiz gerek, her şey çok karıştı: reçete → Medula → OptiFlow'a aktar,
+  müşteri kaydı → teklif → siparişe çevir → müşteriye kâğıt döküm → tezgâha gönder". Seçimler: "tezgâha gönder" = stoktaki
+  camlar atölyeye + eksikler depoya; eski girişler menüden kalksın; teklif atlanabilir.
+- Yapılan: tezgah.php = akışın girişi (① reçete, ② müşteri; sipariş AÇMAZ → `bekleyen_receteler`, göç v34); teklif
+  `quotes.recete_id` ile reçeteyi taşır; order-new.php reçeteyi siparişe yazar (`recete_siparise_uygula`, app/tezgah.php):
+  stoktaysa "Atölyede", eksikse depo listesi; fiş + müşteri nüshası her mağazada. Menü: "Yeni müşteri · reçete";
+  "SGK reçete aktar" menüden kalktı. Adım çubuğu `akis_cubugu()`. Ayrıntı: VERSION.txt 4.34.0.
+- Denendi: yerel MariaDB'de uçtan uca (elle reçete → 2 gözlüklü teklif → uzak sipariş atölyede, yakın eksik camla; teklifsiz
+  yol; fiş). Testler: tezgah 69, teklif 127; diğerleri geçti (Windows'ta bilinen seo + alis/sgk-fatura sayfa testleri hariç).
+- DOĞRULANMADI: Pro'dan gerçek Medula aktarımıyla (sgk-aktar.php?gelen= artık tezgah.php?gelen='e yönlenir).
+- Bekleyen: kullanıcı onayıyla main'e birleştirme (= canlıya çıkış).
+
+## Önceki oturum (4.33.0 / Pro 5.6.0 — tezgâh akışı; Poyraz AB bilgisayarı, main)
 - Kullanıcı (15.10): "müşteri reçeteyi verir, tüm kaydı OptiFlow üzerinden Medula'dan kontrol edip aktarıp tezgâha bir
   çıktı alacak şekilde kurgulayalım". Seçimler: Pro reçete no'yu Medula'ya kendisi yazsın; tek ekranda cam + stok,
   çerçeve, tutar + kapora, telefon; çıktı = fiş + müşteri nüshası.
@@ -286,7 +299,8 @@
 - Devir paketi incelendi; depo bu oturumda kuruldu (geçmiş 4.12.0 hosting paketinden başlar).
 
 ## Sıradaki iş
-0. **Tezgâh pilotu (4.33.0):** gerçek Medula sorgu ekranında Pro 5.6.0 numarayı yazıyor mu, fiş + nüsha düzeni uygun mu — kullanıcıdan geri bildirim.
+0. **Tek akış pilotu (4.34.0):** main'e birleştir (kullanıcı onayı) → pilot mağazada "Yeni müşteri · reçete" ile bir gün çalış:
+   Pro'dan gerçek Medula aktarımı, fiş + nüsha düzeni, atölye/depo ayrımı için geri bildirim.
 0. **Şube özelliği** (kullanıcı kararı): şube, şubeye göre yetki, merkezden görme, transfer; bitince pazarlama.php 'yakinda' kaldır.
 0. **SEO bağlantısı:** kullanıcı hizmet hesabını kurunca panelde ilk veriyi birlikte kontrol et; sorgulara göre yeni rehber yazıları planla.
 1. **T.C. no maskeleme (KVKK) — kullanıcı "bir süre ertele" dedi (01.10):** `app/sgk-hak.php` › `sgk_hak_coz` okunan satırları ham saklıyor;

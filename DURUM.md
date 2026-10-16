@@ -4,7 +4,7 @@
 
 ## Sürüm
 - **Sunucu 4.34.0**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.33.0** (15.10 "Canlıya al" başarılı). 4.34.0 dal `oturum/sube`'de; main'e birleştirilince yayınlanır.
+- **Canlı site: 4.34.0** (16.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.34.0-pro5.6.0).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);
@@ -29,7 +29,7 @@
 - Denendi: yerel MariaDB'de uçtan uca (elle reçete → 2 gözlüklü teklif → uzak sipariş atölyede, yakın eksik camla; teklifsiz
   yol; fiş). Testler: tezgah 69, teklif 127; diğerleri geçti (Windows'ta bilinen seo + alis/sgk-fatura sayfa testleri hariç).
 - DOĞRULANMADI: Pro'dan gerçek Medula aktarımıyla (sgk-aktar.php?gelen= artık tezgah.php?gelen='e yönlenir).
-- Bekleyen: kullanıcı onayıyla main'e birleştirme (= canlıya çıkış).
+- 16.10: main'e birleştirildi, canlıda (optiflow.com.tr/VERSION.txt = 4.34.0).
 
 ## Önceki oturum (4.33.0 / Pro 5.6.0 — tezgâh akışı; Poyraz AB bilgisayarı, main)
 - Kullanıcı (15.10): "müşteri reçeteyi verir, tüm kaydı OptiFlow üzerinden Medula'dan kontrol edip aktarıp tezgâha bir
@@ -299,7 +299,7 @@
 - Devir paketi incelendi; depo bu oturumda kuruldu (geçmiş 4.12.0 hosting paketinden başlar).
 
 ## Sıradaki iş
-0. **Tek akış pilotu (4.34.0):** main'e birleştir (kullanıcı onayı) → pilot mağazada "Yeni müşteri · reçete" ile bir gün çalış:
+0. **Tek akış pilotu (4.34.0, canlıda):** pilot mağazada "Yeni müşteri · reçete" ile bir gün çalış:
    Pro'dan gerçek Medula aktarımı, fiş + nüsha düzeni, atölye/depo ayrımı için geri bildirim.
 0. **Şube özelliği** (kullanıcı kararı): şube, şubeye göre yetki, merkezden görme, transfer; bitince pazarlama.php 'yakinda' kaldır.
 0. **SEO bağlantısı:** kullanıcı hizmet hesabını kurunca panelde ilk veriyi birlikte kontrol et; sorgulara göre yeni rehber yazıları planla.

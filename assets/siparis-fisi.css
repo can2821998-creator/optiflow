@@ -1,21 +1,30 @@
-/* 4.32.0 — Sipariş fişi, yarım sayfa: A4'ün üst yarısı (210 × 148,5 mm) + kesme çizgisi, ya da kesilmiş yarım sayfa.
-   Elle yazılan sipariş formunun yerine; siyah-beyaz yazıcıda okunur. @page boyutu sayfada (kâğıt seçimine göre). */
+/* Sipariş fişi, yarım sayfa: A4'ün üst yarısı (210 × 148,5 mm) atölye iş emri + kesme çizgisi + alt yarı müşteri nüshası,
+   ya da kesilmiş yarım sayfa. 4.35.0: kurumsal kimlik (bordo + gece, Manrope + IBM Plex Mono, göz eşeli, lensmetre nişangâhı).
+   Siyah-beyaz yazıcıda okunur: anlam renge değil biçime bağlı (kalın, kutu, mono). @page boyutu sayfada. */
 @font-face { font-family: "Manrope"; font-weight: 200 800; font-display: swap; src: url("fonts/manrope-latin-wght-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+20BA, U+2122, U+2212; }
 @font-face { font-family: "Manrope"; font-weight: 200 800; font-display: swap; src: url("fonts/manrope-latin-ext-wght-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F; }
-@font-face { font-family: "IBM Plex Mono"; font-weight: 700; font-display: swap; src: url("fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-display: swap; src: url("fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-display: swap; src: url("fonts/ibm-plex-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F; }
+:root {
+  --ink: #1b1416; --ink-2: #463b3e; --muted: #776b6e; --line: #e8e1e2; --line-2: #c9bec0;
+  --brand: #b4233c; --brand-deep: #7e1528; --brand-bright: #d0334f; --brand-ink: #8f1a2e; --brand-soft: #fbe4e8;
+  --night: #141012; --coral: #ff6b81; --paper: #f5f3f3;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
 * { box-sizing: border-box; }
 html, body { margin: 0; background: #e9e5e6; }
-body { font: 500 9pt/1.3 "Manrope", system-ui, Arial, sans-serif; color: #141012; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font: 500 9pt/1.3 "Manrope", system-ui, Arial, sans-serif; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.mono { font-family: var(--mono); letter-spacing: .02em; }
 
 /* araç çubuğu (ekranda) */
-.arac { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 16px; background: #141012; color: #d9cdd0; font-size: 13px; }
-.arac button { font: 700 14px system-ui, sans-serif; padding: 8px 16px; border-radius: 9px; border: 0; background: #d0334f; color: #fff; cursor: pointer; }
+.arac { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 16px; background: var(--night); color: #d9cdd0; font-size: 13px; }
+.arac button { font: 700 14px system-ui, sans-serif; padding: 8px 16px; border-radius: 9px; border: 0; background: linear-gradient(135deg, var(--brand-bright), var(--brand) 55%, var(--brand-deep)); color: #fff; cursor: pointer; }
 .arac button.ghost { background: transparent; border: 1px solid #5a4a4f; color: #fff; }
-.arac a.dugme { font: 700 14px system-ui, sans-serif; padding: 8px 16px; border-radius: 9px; background: #f3eef0; color: #141012; text-decoration: none; }
+.arac a.dugme { font: 700 14px system-ui, sans-serif; padding: 8px 16px; border-radius: 9px; background: #f3eef0; color: var(--night); text-decoration: none; }
 .arac a.dugme.ghost { background: transparent; border: 1px solid #5a4a4f; color: #fff; }
 .kagit-sec { display: inline-flex; border: 1px solid #5a4a4f; border-radius: 9px; overflow: hidden; }
 .kagit-sec a { padding: 7px 12px; color: #d9cdd0; text-decoration: none; font-weight: 700; }
-.kagit-sec a.secili { background: #f3eef0; color: #141012; }
+.kagit-sec a.secili { background: #f3eef0; color: var(--night); }
 .arac .tam { margin-left: auto; color: #ff95a6; font-weight: 700; }
 .arac span { flex: 1 1 320px; }
 
@@ -23,68 +32,156 @@ body { font: 500 9pt/1.3 "Manrope", system-ui, Arial, sans-serif; color: #141012
 .kagit { position: relative; width: 210mm; margin: 16px auto; background: #fff; box-shadow: 0 10px 30px -14px rgba(0,0,0,.45); }
 .kagit-a4 .kagit { height: 297mm; }
 .kagit-yarim .kagit { height: 148.5mm; }
-
-/* fiş: yatay yarım sayfa, iki sütun */
-.fis { height: 148.5mm; padding: 7mm 8mm 6mm; display: grid; grid-template-columns: 1.08fr 1fr; gap: 6mm; overflow: hidden; }
-.sol, .sag { min-width: 0; display: flex; flex-direction: column; gap: 2.6mm; }
-h2 { margin: 0 0 1.2mm; font-size: 7pt; letter-spacing: .14em; text-transform: uppercase; color: #8f1a2e; font-weight: 800; }
-h2 small { margin-left: 1.6mm; letter-spacing: 0; text-transform: none; color: #55494c; font-weight: 600; }
-small { color: #55494c; }
-.ust { display: flex; justify-content: space-between; align-items: flex-start; gap: 3mm; padding-bottom: 2mm; border-bottom: .6mm solid #141012; }
-.dukkan { display: block; font-size: 7pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
-.no { font: 800 21pt/1 "Manrope", sans-serif; letter-spacing: -.02em; margin-top: .8mm; }
-.tur { margin-top: .8mm; font-size: 8pt; color: #55494c; }
-.qr { display: grid; justify-items: center; gap: .3mm; }
-.qr svg { display: block; width: 17mm; height: 17mm; }
-.qr small { font-size: 6pt; }
-.musteri .ad { font-size: 13pt; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; }
-.bilgi, .olcu { display: flex; flex-wrap: wrap; gap: .6mm 4.5mm; margin-top: .8mm; }
-.bilgi span, .olcu span { display: grid; }
-.bilgi small, .olcu small { font-size: 6pt; text-transform: uppercase; letter-spacing: .08em; }
-.bilgi b, .olcu b { font-size: 9.5pt; font-variant-numeric: tabular-nums; }
-.bilgi .soz b { font-size: 10.5pt; color: #8f1a2e; }
-.recete table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-.recete th, .recete td { border: .3mm solid #b9adb0; padding: 1.8mm 1.6mm; text-align: center; }
-.recete thead th { font-size: 6.5pt; letter-spacing: .08em; color: #55494c; background: #f5f3f3; }
-.recete tbody th { width: 11mm; text-align: left; font-size: 8pt; }
-.recete td { font: 700 14pt/1.1 "IBM Plex Mono", ui-monospace, Consolas, monospace; }
-.recete tr.yakin td { font-size: 8.5pt; text-align: left; font-family: inherit; }
-.bos { color: #b9adb0; font-weight: 500; }
-.camlar { list-style: none; margin: 0; padding: 0; display: grid; gap: .8mm; }
-.camlar li { display: flex; flex-wrap: wrap; align-items: center; gap: .6mm 2mm; font-size: 8pt; padding-bottom: .8mm; border-bottom: .2mm dashed #d6cccd; }
-.cam-ad { flex: 1 1 auto; min-width: 0; }
-.kutucuk { display: inline-flex; align-items: center; gap: 1mm; font-size: 7pt; color: #55494c; }
-.kutucuk::before { content: ""; width: 2.6mm; height: 2.6mm; border: .35mm solid #141012; border-radius: .5mm; }
-.kutucuk.dolu { color: #141012; font-weight: 800; }
-.kutucuk.dolu::before { background: #141012; box-shadow: inset 0 0 0 .45mm #fff; }
-.cerceve { margin: 0 0 1.4mm; font-size: 9pt; font-weight: 700; }
-.hesap { margin: 0; display: grid; gap: .4mm; font-size: 8pt; font-variant-numeric: tabular-nums; }
-.hesap div { display: flex; justify-content: space-between; gap: 3mm; }
-.hesap dt { color: #55494c; } .hesap dd { margin: 0; font-weight: 700; }
-.hesap .kalan { border-top: .35mm solid #141012; padding-top: .6mm; font-size: 9.5pt; }
-.hesap .kalan dt { color: #141012; font-weight: 800; }
-.atolye { margin-top: auto; }
-.adimlar { display: flex; flex-wrap: wrap; gap: 1.2mm 3mm; }
-.adimlar span { display: inline-flex; align-items: center; gap: 1.1mm; font-size: 7.5pt; font-weight: 700; }
-.adimlar span::before { content: ""; width: 3mm; height: 3mm; border: .35mm solid #141012; border-radius: .5mm; }
-.not { margin-top: 1.6mm; min-height: 11mm; border: .3mm solid #b9adb0; border-radius: 1.2mm; padding: 1mm 1.6mm; }
-.not small { font-size: 6pt; text-transform: uppercase; letter-spacing: .08em; }
-.not p { margin: .4mm 0 0; font-size: 8pt; }
-footer { font-size: 6pt; color: #776b6e; text-align: right; }
-
-/* 4.33.0 müşteri nüshası (A4 alt yarı / kesilmiş yarım sayfada ikinci sayfa) */
 .kagit + .kagit { break-before: page; }
-.nusha .ozet { margin: 0; display: grid; gap: 1.4mm; font-size: 9pt; }
-.nusha .ozet div { display: grid; grid-template-columns: 20mm 1fr; gap: 2mm; }
-.nusha .ozet dt { font-size: 6.5pt; text-transform: uppercase; letter-spacing: .08em; color: #55494c; padding-top: .6mm; }
-.nusha .ozet dd { margin: 0; font-weight: 700; }
-.nusha .uyari { margin: auto 0 0; font-size: 8pt; color: #55494c; border-top: .3mm solid #b9adb0; padding-top: 2mm; }
-.nusha .iletisim { margin-top: auto; }
-.nusha .iletisim p { margin: 0; font-size: 8.5pt; line-height: 1.45; }
+
+/* ortak */
+.fis { height: 148.5mm; overflow: hidden; position: relative; }
+h2 { margin: 0 0 1.4mm; display: flex; align-items: center; gap: 2mm; font: 500 6.6pt/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--brand-ink); }
+h2::after { content: ""; flex: 1; height: .25mm; background: var(--line-2); order: 5; }
+h2 small { font: 600 6.5pt/1 "Manrope", sans-serif; letter-spacing: 0; text-transform: none; color: var(--muted); order: 2; }
+small { color: var(--muted); }
+.bos { color: var(--line-2); font-weight: 500; }
+.marka { display: flex; align-items: center; gap: 2.2mm; min-width: 0; }
+.marka .isaret { width: 9mm; height: 9mm; flex: none; }
+.marka span { display: grid; min-width: 0; }
+.marka b { font: 800 11pt/1.05 "Manrope", sans-serif; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.marka small { font: 500 6.3pt/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--brand-ink); margin-top: .5mm; }
+.goz { display: inline-grid; place-items: center; width: 4.6mm; height: 4.6mm; margin-right: 1.4mm; border-radius: 50%; border: .35mm solid var(--ink); font: 700 6.5pt/1 "Manrope", sans-serif; flex: none; }
+
+/* ============================ ATÖLYE İŞ EMRİ ============================ */
+.is-emri { padding: 5.5mm 7.5mm 4.5mm; display: flex; flex-direction: column; gap: 3mm; }
+.bant { display: grid; grid-template-columns: 1fr auto auto auto; align-items: stretch; gap: 3mm; padding-bottom: 2.6mm; border-bottom: .7mm solid var(--ink); position: relative; }
+.bant::after { content: ""; position: absolute; left: 0; bottom: -.7mm; width: 34mm; height: .7mm; background: linear-gradient(90deg, var(--brand-bright), var(--brand) 55%, var(--brand-deep)); }
+.bant .marka { align-self: center; }
+.no-kutu, .soz-kutu { display: grid; align-content: center; padding: 1.4mm 3.2mm; border-radius: 2mm; }
+.no-kutu { background: var(--night); color: #fff; }
+.no-kutu small { color: #c9bcc0; font: 500 5.8pt/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; }
+.no-kutu b { font: 500 17pt/1.05 var(--mono); letter-spacing: .01em; margin-top: .6mm; }
+.soz-kutu { border: .5mm solid var(--brand); text-align: center; min-width: 25mm; }
+.soz-kutu small { font: 500 5.8pt/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--brand-ink); }
+.soz-kutu b { font: 800 13pt/1.05 "Manrope", sans-serif; letter-spacing: -.01em; margin-top: .5mm; }
+.soz-kutu span { font-size: 7pt; font-weight: 700; color: var(--ink-2); }
+.qr-kucuk { display: grid; justify-items: center; align-content: center; }
+.qr-kucuk svg { display: block; width: 15mm; height: 15mm; }
+.qr-kucuk small { font: 500 5.4pt/1 var(--mono); letter-spacing: .06em; margin-top: -.6mm; }
+
+.govde { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.12fr 1fr; gap: 6mm; }
+.is-emri .sol, .is-emri .sag { min-width: 0; display: flex; flex-direction: column; gap: 2.8mm; }
+.kisi .ad { font: 800 15pt/1.1 "Manrope", sans-serif; letter-spacing: -.02em; }
+.bilgi, .alt-bilgi { display: flex; flex-wrap: wrap; gap: .6mm 4.5mm; margin-top: 1mm; }
+.bilgi span, .alt-bilgi span { display: grid; }
+.bilgi small, .alt-bilgi small { font: 500 6.2pt/1.2 var(--mono); text-transform: uppercase; letter-spacing: .1em; }
+.bilgi b, .alt-bilgi b { font-size: 8.6pt; font-variant-numeric: tabular-nums; }
+.bilgi b.mono { font: 500 9pt/1.2 var(--mono); }
+.alt-bilgi .pd b { font: 500 11pt/1.1 var(--mono); }
+.etiket { padding: .7mm 1.8mm; border-radius: 9mm; background: var(--brand-soft); color: var(--brand-ink); font: 700 6.5pt/1 "Manrope", sans-serif; letter-spacing: 0; text-transform: none; order: 1; }
+
+.recete table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; border: .35mm solid var(--ink); border-radius: 1.6mm; overflow: hidden; }
+.recete th, .recete td { padding: 2.7mm 1.2mm; text-align: center; border-left: .25mm solid var(--line-2); }
+.recete tr + tr > * { border-top: .25mm solid var(--line-2); }
+.recete thead th { font: 500 6pt/1 var(--mono); letter-spacing: .12em; color: var(--ink-2); background: var(--paper); border-top: 0; }
+.recete thead th:first-child, .recete tbody th { border-left: 0; }
+.recete tbody th { width: 15mm; text-align: left; font-size: 8pt; font-weight: 800; white-space: nowrap; }
+.recete td { font: 500 17pt/1 var(--mono); letter-spacing: -.02em; }
+.recete th.olcu, .recete td.olcu { background: var(--brand-soft); }
+.recete td.olcu { font-size: 11.5pt; color: var(--brand-deep); }
+.recete tr.yakin td { font: 600 8.5pt/1.2 "Manrope", sans-serif; text-align: left; letter-spacing: 0; }
+.recete tr.yakin td b { font: 500 11pt/1 var(--mono); }
+
+.cerceve-blok { }
+.cerceve-satir { display: flex; align-items: center; gap: 3mm; }
+.cerceve { flex: 1; margin: 0; font-size: 9.5pt; font-weight: 800; line-height: 1.2; }
+.olcu-rozet { display: grid; justify-items: center; padding: 1mm 2.6mm; border: .35mm dashed var(--ink); border-radius: 1.4mm; }
+.olcu-rozet small { font: 500 5.4pt/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.olcu-rozet b { font: 500 11pt/1.1 var(--mono); }
+.kucuk { display: block; margin-top: .6mm; font-size: 6.6pt; }
+
+.urun { margin: 0 0 1.4mm; padding: 1.3mm 2mm; border-left: .9mm solid var(--brand); background: var(--paper); font-size: 8.3pt; font-weight: 700; line-height: 1.25; }
+.camlar { list-style: none; margin: 0; padding: 0; display: grid; gap: .9mm; }
+.camlar li { display: flex; align-items: center; gap: 1.6mm; padding-bottom: .9mm; border-bottom: .2mm dashed var(--line-2); }
+.camlar li:last-child { border-bottom: 0; }
+.cam-ad { flex: 1 1 auto; min-width: 0; display: grid; }
+.cam-ad b { font-size: 8.3pt; }
+.cam-ad small { font: 500 7pt/1.2 var(--mono); color: var(--ink-2); }
+.kutucuk { display: inline-flex; align-items: center; gap: 1mm; font-size: 6.6pt; color: var(--muted); white-space: nowrap; }
+.kutucuk::before { content: ""; width: 2.8mm; height: 2.8mm; border: .35mm solid var(--ink); border-radius: .6mm; }
+.kutucuk.dolu { color: var(--ink); font-weight: 800; }
+.kutucuk.dolu::before { background: var(--ink); box-shadow: inset 0 0 0 .5mm #fff; }
+
+.adimlar ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2.1mm; }
+.adimlar li { display: grid; grid-template-columns: 4mm auto 1fr; align-items: end; gap: 2mm; font-size: 9pt; }
+.adimlar .kare { width: 4mm; height: 4mm; border: .4mm solid var(--ink); border-radius: .7mm; align-self: center; }
+.adimlar .paraf { border-bottom: .25mm dotted var(--muted); height: 3mm; }
+.not { min-height: 12mm; flex: 1; border: .3mm solid var(--line-2); border-radius: 1.4mm; padding: 1.2mm 2mm; background: repeating-linear-gradient(transparent 0 3.6mm, var(--line) 3.6mm 3.85mm); background-position: 0 4.2mm; }
+.not small { font: 500 5.6pt/1 var(--mono); text-transform: uppercase; letter-spacing: .12em; }
+.not p { margin: .6mm 0 0; font-size: 8pt; line-height: 1.38; font-weight: 600; }
+.is-emri footer { display: flex; justify-content: space-between; align-items: center; gap: 2mm; font: 500 5.8pt/1 var(--mono); color: var(--muted); }
+.kalan-not { padding: .8mm 1.8mm; border-radius: 1mm; background: var(--night); color: #fff; font: 700 7pt/1 "Manrope", sans-serif; }
+
+/* ============================ MÜŞTERİ NÜSHASI ============================ */
+.nusha { display: grid; grid-template-columns: 9mm 1fr; }
+.serit { background: linear-gradient(180deg, var(--brand-bright), var(--brand) 55%, var(--brand-deep)); color: #fff; display: grid; place-items: center; overflow: hidden; }
+.serit span { writing-mode: vertical-rl; transform: rotate(180deg); font: 500 6.4pt/1 var(--mono); letter-spacing: .26em; text-transform: uppercase; white-space: nowrap; opacity: .92; }
+.n-govde { min-width: 0; padding: 5.5mm 7.5mm 4mm 6.5mm; display: flex; flex-direction: column; justify-content: space-between; gap: 2.4mm; }
+.n-ust { display: flex; justify-content: space-between; align-items: center; gap: 3mm; }
+.n-no { display: grid; justify-items: end; }
+.n-no small { font: 500 5.8pt/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; }
+.n-no b { font: 500 13pt/1.1 var(--mono); }
+
+.n-orta { display: grid; grid-template-columns: 1fr 48mm; gap: 6mm; align-items: center; }
+/* göz eşeli: satır satır küçülen cümle, sağda keskinlik değeri */
+.esel { border-top: .9mm solid var(--ink); }
+.esel > div { display: flex; align-items: baseline; justify-content: space-between; gap: 3mm; padding: 1.1mm 0; border-bottom: .25mm solid var(--line); }
+.esel span { min-width: 0; letter-spacing: .01em; }
+.esel i { font: 500 6.4pt/1 var(--mono); font-style: normal; color: var(--muted); flex: none; }
+.esel-1 span { font: 800 30pt/1 "Manrope", sans-serif; letter-spacing: -.035em; background: linear-gradient(135deg, var(--brand-bright), var(--brand) 55%, var(--brand-deep)); -webkit-background-clip: text; background-clip: text; color: transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.esel-2 span { font: 800 20pt/1.05 "Manrope", sans-serif; letter-spacing: -.02em; }
+.esel-3 span { font: 700 14pt/1.1 "Manrope", sans-serif; letter-spacing: .02em; }
+.esel-4 span { font: 600 9.4pt/1.25 "Manrope", sans-serif; letter-spacing: .03em; color: var(--ink-2); }
+.esel-4 b { color: var(--brand-ink); font-weight: 800; }
+
+/* lensmetre nişangâhı içinde takip karekodu */
+.nisangah { position: relative; display: grid; justify-items: center; gap: 1mm; }
+.nisangah .halka { width: 48mm; height: 48mm; display: block; }
+.halka circle { fill: none; stroke: var(--brand); stroke-width: 1.6; }
+.halka circle.ince { stroke-width: .7; stroke: var(--line-2); }
+.halka line { stroke: var(--brand); stroke-width: .9; }
+.halka line.arti { stroke: var(--ink); stroke-width: 1.4; }
+.qr-merkez { position: absolute; top: 9.6mm; left: 50%; transform: translateX(-50%); width: 28.8mm; height: 28.8mm; background: #fff; border-radius: 1.6mm; display: grid; place-items: center; }
+.qr-merkez svg { width: 28.8mm; height: 28.8mm; display: block; }
+.qr-merkez.yok b { font: 500 9pt/1 var(--mono); }
+.nisangah small { font: 700 6.8pt/1.1 "Manrope", sans-serif; color: var(--ink); text-align: center; }
+
+/* durum çizgisi */
+.yol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); position: relative; }
+.yol::before { content: ""; position: absolute; left: 12.5%; right: 12.5%; top: 2.6mm; height: .4mm; background: var(--line-2); }
+.yol li { position: relative; display: grid; justify-items: center; gap: .8mm; text-align: center; }
+.yol .nokta { position: relative; z-index: 1; width: 5.2mm; height: 5.2mm; border-radius: 50%; display: grid; place-items: center; background: #fff; border: .4mm solid var(--line-2); font: 700 6.6pt/1 "Manrope", sans-serif; color: var(--muted); }
+.yol b { font-size: 7.2pt; color: var(--muted); }
+.yol .bitti .nokta { background: var(--ink); border-color: var(--ink); color: #fff; }
+.yol .bitti b { color: var(--ink-2); }
+.yol .simdi .nokta { background: var(--brand); border-color: var(--brand-deep); color: #fff; box-shadow: 0 0 0 .9mm var(--brand-soft); }
+.yol .simdi b { color: var(--ink); font-weight: 800; }
+.damga { position: absolute; top: -3.6mm; left: 55%; transform: rotate(-8deg); padding: .3mm 1.4mm; border: .35mm solid var(--brand); border-radius: .8mm; color: var(--brand); font: 500 5.6pt/1.2 var(--mono); font-style: normal; letter-spacing: .14em; text-transform: uppercase; background: #fff; white-space: nowrap; }
+
+.n-alt { display: grid; grid-template-columns: 1.4fr 1fr; gap: 5mm; align-items: start; }
+.kart { margin: 0; display: grid; gap: 1mm; padding: 2mm 2.6mm; border-radius: 1.8mm; background: var(--paper); }
+.kart div { display: grid; grid-template-columns: 16mm 1fr; gap: 2mm; align-items: baseline; }
+.kart dt { font: 500 5.8pt/1.2 var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+.kart dd { margin: 0; font-size: 8.2pt; font-weight: 700; line-height: 1.25; }
+.kart dd.mono { font: 500 8.6pt/1.2 var(--mono); }
+.hesap { margin: 0; display: grid; gap: .5mm; font-size: 8pt; font-variant-numeric: tabular-nums; }
+.hesap div { display: flex; justify-content: space-between; gap: 3mm; }
+.hesap dt { color: var(--muted); } .hesap dd { margin: 0; font-weight: 700; }
+.hesap .kalan { margin-top: .4mm; padding: 1.2mm 2mm; border-radius: 1.2mm; background: var(--night); color: #fff; font-size: 9.5pt; }
+.hesap .kalan dt { color: #fff; font-weight: 800; }
+.n-son { border-top: .3mm solid var(--line-2); padding-top: 1.6mm; display: grid; gap: .6mm; }
+.n-son p { margin: 0; font-size: 7.4pt; line-height: 1.35; color: var(--ink-2); }
+.n-son .ipucu { font-size: 6.6pt; color: var(--muted); }
 
 /* kesme çizgisi: A4'ün tam ortası */
-.kesim { position: absolute; left: 0; right: 0; top: 148.5mm; border-top: .35mm dashed #776b6e; }
-.kesim span { position: absolute; left: 50%; top: 0; transform: translate(-50%, -50%); padding: 0 3mm; background: #fff; font-size: 7pt; color: #776b6e; white-space: nowrap; }
+.kesim { position: absolute; left: 0; right: 0; top: 148.5mm; border-top: .35mm dashed var(--muted); }
+.kesim span { position: absolute; left: 50%; top: 0; transform: translate(-50%, -50%); padding: 0 3mm; background: #fff; font: 500 6.4pt/1 var(--mono); color: var(--muted); white-space: nowrap; }
 
 @media print {
   html, body { background: #fff; }
@@ -93,3 +190,12 @@ footer { font-size: 6pt; color: #776b6e; text-align: right; }
   .kagit-a4 .kagit { height: 296mm; }          /* tam 297 mm sonda boş ikinci sayfa açar */
   .kagit-yarim .kagit { height: 148mm; }
 }
+
+/* montaj ölçüleri: değer yoksa usta elle yazar */
+.olculer { display: grid; grid-template-columns: 1.25fr 1.25fr 1fr; border: .35mm solid var(--ink); border-radius: 1.6mm; overflow: hidden; }
+.olculer > div { display: grid; align-content: start; gap: 1mm; padding: 1.6mm 2.2mm 2mm; min-height: 13mm; background: var(--brand-soft); }
+.olculer > div + div { border-left: .25mm solid var(--line-2); }
+.olculer small { font: 500 6pt/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--brand-ink); }
+.olculer b { font: 500 12.5pt/1.05 var(--mono); letter-spacing: -.02em; white-space: nowrap; }
+.olculer b i { font-style: normal; font-size: 8pt; }
+.olculer .yaz { display: block; height: 6mm; border-bottom: .3mm dotted var(--ink-2); }

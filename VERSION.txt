@@ -1,6 +1,19 @@
 OPTIFLOW
-Release: 4.34.0 (2026-10-16)
+Release: 4.35.0 (2026-10-16)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.35.0 (sipariş fişi kurumsal kimlikle: atölye iş emri + müşteri nüshası)
+  - Kullanıcı (16.10): "fiş dökümünü kurumsal kimlikle güzelleştir; atölye tarafı daha detaylı, montaj personeli tüm
+    detayları rahat okusun; müşteri tarafı takip karekoduyla görsel, akılda kalıcı, yaratıcı olsun."
+  - Üst yarı ATÖLYE İŞ EMRİ: gece rengi sipariş no kutusu, bordo çerçeveli teslim sözü (gün adıyla), "Siparişi aç"
+    karekodu; reçete 17 pt mono (eksi işareti + virgül), yakın satırı; MONTAJ ÖLÇÜLERİ kutusu (PD sağ/sol ya da toplam,
+    yükseklik, çerçeve kalibre□köprü; boşsa usta yazar); camlar göz başına (R/L, uzak/yakın, değer, Stokta/Depodan);
+    tekliften seçilen katalog camı (marka · ürün · özellik); çerçeve marka/model/renk + raf + barkod; parafli atölye
+    adımları (Cam geldi, Kesim, Montaj, Kontrol · PD/aks, Haber verildi); not alanında teklifin fiyat satırları basılmaz.
+  - Alt yarı MÜŞTERİ NÜSHASI: bordo degrade şerit, göz eşeli selamlama ("Ayşe, / gözlüğünüz / hazırlanıyor. / Teslim
+    sözümüz 20 Ekim Salı." — satır satır küçülen, 0,1…1,0 keskinlik değerleriyle), lensmetre nişangâhının ortasında takip
+    karekodu, dört aşamalı durum çizgisi ("Şu an" damgası), gözlük kartı (cam, çerçeve, e-Reçete), ödeme özeti, bakım ipucu.
+  - Siyah-beyaz yazıcıda okunur; A4 tek sayfa, kesilmiş yarım sayfada iki sayfa (başsız Chrome PDF ile denendi).
 
 DEĞİŞİKLİK NOTLARI — 4.34.0 (tek akış: reçete → müşteri → teklif → sipariş → döküm ve gönder; şema 34)
   - Kullanıcı kararı (16.10): "her şey çok karıştı" — aynı iş için 4 giriş vardı (SGK reçete aktar sipariş açıyordu,

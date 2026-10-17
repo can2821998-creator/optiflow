@@ -4,7 +4,7 @@
 
 ## Sürüm
 - **Sunucu 4.38.0**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.36.1** (17.10; kesme çizgisi sadeleşti — makas ve yazı yok). 4.37.0 + 4.38.0 dal `oturum/sube`'de.
+- **Canlı site: 4.38.0** (17.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.38.0-pro5.6.0).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);

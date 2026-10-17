@@ -1,6 +1,18 @@
 OPTIFLOW
-Release: 4.35.0 (2026-10-16)
+Release: 4.36.0 (2026-10-17)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.36.0 (iş emri dikey kart, müşteri nüshası yeniden)
+  - Kullanıcı (17.10): "üst yarı atölye iş emrini daha güzelleştir, kesince diklemesine kullanacağız; müşteri kısmı yatay
+    kalsın ama daha yaratıcı olsun" + "bilet/gözlük çizimi gibi tasarımlar olmasın".
+  - İş emri: 148,5 × 210 mm DİK kart; A4'ün üst yarısına (ya da kesilmiş yarım sayfaya) 90° döndürülerek basılır — kesip
+    saat yönünde çevirince dik okunur. Gece bandında sipariş no (26 pt mono), teslim sözü (gün adıyla), "Siparişi aç"
+    karekodu; numaralı bölümler: 01 Reçete, 02 Montaj ölçüleri, 03 Camlar ve çerçeve, 04 Atölye (Tamam / Paraf / Saat
+    tablosu), not. Uzak + yakın, 4 camlı reçete de tek karta sığar (kalabalıkta .sik).
+  - Müşteri nüshası: müşterinin adı dört kez bulanıktan nete yazılır, altında kendi reçetesinden "net"e inen değerler
+    (ör. −3,25 → −2,00 → −0,75 → NET); "Gözlüğünüz hazırlanıyor." manşeti, durum çizgisi ("şu an"), gözlük kartı,
+    arka planda tek büyük nişangâh filigranı; sağ sütun: teslim sözü, nişangâh içinde takip karekodu, ödeme özeti.
+  - Başsız Chrome: A4 1 sayfa, kesilmiş yarım sayfa 2 sayfa; 3 örnek siparişte (en kalabalığı 4 cam) taşma yok.
 
 DEĞİŞİKLİK NOTLARI — 4.35.0 (sipariş fişi kurumsal kimlikle: atölye iş emri + müşteri nüshası)
   - Kullanıcı (16.10): "fiş dökümünü kurumsal kimlikle güzelleştir; atölye tarafı daha detaylı, montaj personeli tüm

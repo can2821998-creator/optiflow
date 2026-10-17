@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 16 Ekim 2026 (4.35.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 17 Ekim 2026 (4.36.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
-- **Sunucu 4.35.0**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.35.0** (16.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.35.0-pro5.6.0).
+- **Sunucu 4.36.0**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Canlı site: 4.35.0** (16.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.35.0-pro5.6.0). 4.36.0 dal `oturum/sube`'de.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);
@@ -18,7 +18,16 @@
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.35.0 — sipariş fişi kurumsal kimlikle; TEKNOPLUS, dal oturum/sube)
+## Son oturum (4.36.0 — iş emri dikey kart + müşteri nüshası; TEKNOPLUS, dal oturum/sube)
+- Kullanıcı (17.10): iş emri kesince dik kullanılacak, daha güzel olsun; müşteri nüshası yatay kalsın, daha yaratıcı;
+  "bilet / gözlük çizimi gibi tasarımları güzel yapamıyorsun" → çizim yerine tipografi.
+- Yapılan: iş emri 148,5 × 210 dikey kart, yarım sayfaya 90° döndürülerek basılır (gece bandı, 01–04 numaralı bölümler,
+  Tamam/Paraf/Saat tablosu; kalabalıkta `.sik`). Müşteri nüshası: ad dört kez bulanıktan nete + reçeteden "net"e inen
+  değerler, manşet, durum çizgisi, nişangâh filigranı; sağda teslim sözü, nişangâh içinde karekod, ödeme.
+- Denendi: başsız Chrome PDF (A4 1 sayfa, yarım sayfa 2), 3 sipariş (en kalabalığı 4 cam) taşmasız. Testler: tezgah 74.
+- Bekleyen: kullanıcı onayıyla main'e birleştirme (= canlıya çıkış); gerçek yazıcıda baskı + kesip dik okuma denemesi.
+
+## Önceki oturum (4.35.0 — sipariş fişi kurumsal kimlikle; TEKNOPLUS, dal oturum/sube)
 - Kullanıcı (16.10): fişi kurumsal kimlikle güzelleştir; atölye tarafı montaj personeli için detaylı ve rahat okunur,
   müşteri tarafı takip karekoduyla görsel, akılda kalıcı, yaratıcı.
 - app/partials/siparis-fisi.php + assets/siparis-fisi.css baştan: üst yarı İŞ EMRİ (17 pt mono reçete, montaj ölçüleri

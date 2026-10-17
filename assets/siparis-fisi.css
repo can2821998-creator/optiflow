@@ -1,6 +1,6 @@
-/* Sipariş fişi, yarım sayfa: A4'ün üst yarısı (210 × 148,5 mm) atölye iş emri + kesme çizgisi + alt yarı müşteri nüshası,
-   ya da kesilmiş yarım sayfa. 4.35.0: kurumsal kimlik (bordo + gece, Manrope + IBM Plex Mono, göz eşeli, lensmetre nişangâhı).
-   Siyah-beyaz yazıcıda okunur: anlam renge değil biçime bağlı (kalın, kutu, mono). @page boyutu sayfada. */
+/* Sipariş fişi, yarım sayfa: A4 üst yarısı = atölye iş emri (148,5 × 210 mm DİKEY kart, 90° döndürülmüş basılır), kesme
+   çizgisi, alt yarı = müşteri nüshası (yatay). Ya da kesilmiş yarım sayfa (A5 yatay). Kurumsal kimlik: bordo + gece,
+   Manrope + IBM Plex Mono, lensmetre nişangâhı. Siyah-beyaz yazıcıda okunur: anlam renge değil biçime bağlı. */
 @font-face { font-family: "Manrope"; font-weight: 200 800; font-display: swap; src: url("fonts/manrope-latin-wght-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+20BA, U+2122, U+2212; }
 @font-face { font-family: "Manrope"; font-weight: 200 800; font-display: swap; src: url("fonts/manrope-latin-ext-wght-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F; }
 @font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-display: swap; src: url("fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
@@ -47,139 +47,162 @@ small { color: var(--muted); }
 .marka b { font: 800 11pt/1.05 "Manrope", sans-serif; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .marka small { font: 500 6.3pt/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--brand-ink); margin-top: .5mm; }
 .goz { display: inline-grid; place-items: center; width: 4.6mm; height: 4.6mm; margin-right: 1.4mm; border-radius: 50%; border: .35mm solid var(--ink); font: 700 6.5pt/1 "Manrope", sans-serif; flex: none; }
+.kare-goz { border-radius: .8mm; }
+.marka.acik b { color: #fff; }
+.marka.acik small { color: var(--coral); }
 
-/* ============================ ATÖLYE İŞ EMRİ ============================ */
-.is-emri { padding: 5.5mm 7.5mm 4.5mm; display: flex; flex-direction: column; gap: 3mm; }
-.bant { display: grid; grid-template-columns: 1fr auto auto auto; align-items: stretch; gap: 3mm; padding-bottom: 2.6mm; border-bottom: .7mm solid var(--ink); position: relative; }
-.bant::after { content: ""; position: absolute; left: 0; bottom: -.7mm; width: 34mm; height: .7mm; background: linear-gradient(90deg, var(--brand-bright), var(--brand) 55%, var(--brand-deep)); }
-.bant .marka { align-self: center; }
-.no-kutu, .soz-kutu { display: grid; align-content: center; padding: 1.4mm 3.2mm; border-radius: 2mm; }
-.no-kutu { background: var(--night); color: #fff; }
-.no-kutu small { color: #c9bcc0; font: 500 5.8pt/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; }
-.no-kutu b { font: 500 17pt/1.05 var(--mono); letter-spacing: .01em; margin-top: .6mm; }
-.soz-kutu { border: .5mm solid var(--brand); text-align: center; min-width: 25mm; }
-.soz-kutu small { font: 500 5.8pt/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--brand-ink); }
-.soz-kutu b { font: 800 13pt/1.05 "Manrope", sans-serif; letter-spacing: -.01em; margin-top: .5mm; }
-.soz-kutu span { font-size: 7pt; font-weight: 700; color: var(--ink-2); }
-.qr-kucuk { display: grid; justify-items: center; align-content: center; }
-.qr-kucuk svg { display: block; width: 15mm; height: 15mm; }
-.qr-kucuk small { font: 500 5.4pt/1 var(--mono); letter-spacing: .06em; margin-top: -.6mm; }
+/* ============================ ATÖLYE İŞ EMRİ (dikey kart) ============================ */
+/* Yuva yatay yarım sayfa; kart 148,5 × 210 mm, saat yönünün tersine 90° döndürülür (üst kenarı kâğıdın solunda). */
+.is-emri-yuva { width: 210mm; }
+.is-emri { position: absolute; top: 0; left: 0; width: 148.5mm; height: 210mm; transform-origin: 0 0; transform: translate(0, 148.5mm) rotate(-90deg);
+  display: flex; flex-direction: column; gap: 2.1mm; padding: 0 6.5mm 4.5mm; }
+.ie-bant { margin: 0 -6.5mm; padding: 4.6mm 6.5mm 4.4mm; background: var(--night); color: #fff; position: relative; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 3mm; }
+.ie-sol { display: grid; gap: 2.4mm; min-width: 0; }
+.ie-bant::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.2mm; background: linear-gradient(90deg, var(--brand-bright), var(--brand) 55%, var(--brand-deep)); }
+.ie-qr { background: #fff; padding: 1mm; border-radius: 1.4mm; }
+.ie-qr svg { display: block; width: 17mm; height: 17mm; }
+.ie-no { display: flex; align-items: baseline; gap: 3mm; }
+.ie-no small, .ie-soz small { font: 500 6pt/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: #b9aaae; }
+.ie-no b { font: 500 26pt/1 var(--mono); letter-spacing: -.01em; }
+.ie-soz { display: grid; justify-items: center; gap: .9mm; padding: 2.2mm 3.4mm; border-radius: 1.8mm; border: .4mm solid var(--coral); background: rgba(255,107,129,.08); text-align: center; }
+.ie-soz b { font: 800 15pt/1 "Manrope", sans-serif; letter-spacing: -.02em; white-space: nowrap; }
+.ie-soz i { font-style: normal; font-size: 7.4pt; font-weight: 700; color: #d9cdd0; }
 
-.govde { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.12fr 1fr; gap: 6mm; }
-.is-emri .sol, .is-emri .sag { min-width: 0; display: flex; flex-direction: column; gap: 2.8mm; }
-.kisi .ad { font: 800 15pt/1.1 "Manrope", sans-serif; letter-spacing: -.02em; }
-.bilgi, .alt-bilgi { display: flex; flex-wrap: wrap; gap: .6mm 4.5mm; margin-top: 1mm; }
-.bilgi span, .alt-bilgi span { display: grid; }
-.bilgi small, .alt-bilgi small { font: 500 6.2pt/1.2 var(--mono); text-transform: uppercase; letter-spacing: .1em; }
-.bilgi b, .alt-bilgi b { font-size: 8.6pt; font-variant-numeric: tabular-nums; }
-.bilgi b.mono { font: 500 9pt/1.2 var(--mono); }
-.alt-bilgi .pd b { font: 500 11pt/1.1 var(--mono); }
-.etiket { padding: .7mm 1.8mm; border-radius: 9mm; background: var(--brand-soft); color: var(--brand-ink); font: 700 6.5pt/1 "Manrope", sans-serif; letter-spacing: 0; text-transform: none; order: 1; }
+.ie-kisi .ad { font: 800 16pt/1.05 "Manrope", sans-serif; letter-spacing: -.025em; }
+.bilgi { display: flex; flex-wrap: wrap; gap: .6mm 5mm; margin-top: 1.2mm; }
+.bilgi span { display: grid; }
+.bilgi small { font: 500 6pt/1.3 var(--mono); text-transform: uppercase; letter-spacing: .12em; }
+.bilgi b { font-size: 9pt; font-variant-numeric: tabular-nums; }
+.bilgi b.mono { font: 500 9.5pt/1.2 var(--mono); }
 
-.recete table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; border: .35mm solid var(--ink); border-radius: 1.6mm; overflow: hidden; }
-.recete th, .recete td { padding: 2.7mm 1.2mm; text-align: center; border-left: .25mm solid var(--line-2); }
+.ie-blok h2 { margin: 0 0 1.6mm; display: flex; align-items: center; gap: 2mm; font: 800 8pt/1 "Manrope", sans-serif; letter-spacing: .02em; text-transform: none; color: var(--ink); }
+.ie-blok h2 i { font: 500 6.6pt/1 var(--mono); font-style: normal; color: #fff; background: var(--brand); padding: .8mm 1.3mm; border-radius: .8mm; letter-spacing: .06em; }
+.ie-blok h2::after { content: ""; flex: 1; height: .25mm; background: var(--line-2); order: 5; }
+.ie-blok h2 small { order: 6; font: 500 6.4pt/1 var(--mono); color: var(--muted); }
+.etiket { padding: .8mm 2mm; border-radius: 9mm; background: var(--brand-soft); color: var(--brand-ink); font: 700 6.8pt/1 "Manrope", sans-serif; }
+
+.recete table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; border: .4mm solid var(--ink); border-radius: 1.8mm; overflow: hidden; }
+.recete th, .recete td { padding: 2mm 1mm; text-align: center; border-left: .25mm solid var(--line-2); }
 .recete tr + tr > * { border-top: .25mm solid var(--line-2); }
-.recete thead th { font: 500 6pt/1 var(--mono); letter-spacing: .12em; color: var(--ink-2); background: var(--paper); border-top: 0; }
+.recete thead th { padding: 1.4mm 1mm; font: 500 6.4pt/1 var(--mono); letter-spacing: .14em; color: var(--ink-2); background: var(--paper); border-top: 0; }
 .recete thead th:first-child, .recete tbody th { border-left: 0; }
-.recete tbody th { width: 15mm; text-align: left; font-size: 8pt; font-weight: 800; white-space: nowrap; }
-.recete td { font: 500 17pt/1 var(--mono); letter-spacing: -.02em; }
-.recete th.olcu, .recete td.olcu { background: var(--brand-soft); }
-.recete td.olcu { font-size: 11.5pt; color: var(--brand-deep); }
-.recete tr.yakin td { font: 600 8.5pt/1.2 "Manrope", sans-serif; text-align: left; letter-spacing: 0; }
-.recete tr.yakin td b { font: 500 11pt/1 var(--mono); }
+.recete tbody th { width: 15mm; text-align: left; padding-left: 2mm; font-size: 8.4pt; font-weight: 800; white-space: nowrap; }
+.recete td { font: 500 16.5pt/1 var(--mono); letter-spacing: -.03em; }
+.recete tr.yakin td { font: 600 8.6pt/1.2 "Manrope", sans-serif; text-align: left; letter-spacing: 0; }
+.recete tr.yakin td b { font: 500 11.5pt/1 var(--mono); }
 
-.cerceve-blok { }
-.cerceve-satir { display: flex; align-items: center; gap: 3mm; }
-.cerceve { flex: 1; margin: 0; font-size: 9.5pt; font-weight: 800; line-height: 1.2; }
-.olcu-rozet { display: grid; justify-items: center; padding: 1mm 2.6mm; border: .35mm dashed var(--ink); border-radius: 1.4mm; }
-.olcu-rozet small { font: 500 5.4pt/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
-.olcu-rozet b { font: 500 11pt/1.1 var(--mono); }
-.kucuk { display: block; margin-top: .6mm; font-size: 6.6pt; }
+.olculer { display: grid; grid-template-columns: 1.2fr 1.2fr 1fr; border: .4mm solid var(--ink); border-radius: 1.8mm; overflow: hidden; }
+.olculer > div { display: grid; align-content: start; gap: 1mm; padding: 1.6mm 2.4mm 1.8mm; min-height: 12.5mm; background: var(--brand-soft); }
+.olculer > div + div { border-left: .25mm solid var(--line-2); }
+.olculer small { font: 500 6pt/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--brand-ink); }
+.olculer b { font: 500 13pt/1.05 var(--mono); letter-spacing: -.02em; white-space: nowrap; }
+.olculer b i { font-style: normal; font-size: 8pt; margin-left: .8mm; }
+.olculer .yaz { display: block; height: 6.5mm; border-bottom: .3mm dotted var(--ink-2); }
 
-.urun { margin: 0 0 1.4mm; padding: 1.3mm 2mm; border-left: .9mm solid var(--brand); background: var(--paper); font-size: 8.3pt; font-weight: 700; line-height: 1.25; }
-.camlar { list-style: none; margin: 0; padding: 0; display: grid; gap: .9mm; }
-.camlar li { display: flex; align-items: center; gap: 1.6mm; padding-bottom: .9mm; border-bottom: .2mm dashed var(--line-2); }
-.camlar li:last-child { border-bottom: 0; }
-.cam-ad { flex: 1 1 auto; min-width: 0; display: grid; }
-.cam-ad b { font-size: 8.3pt; }
-.cam-ad small { font: 500 7pt/1.2 var(--mono); color: var(--ink-2); }
-.kutucuk { display: inline-flex; align-items: center; gap: 1mm; font-size: 6.6pt; color: var(--muted); white-space: nowrap; }
-.kutucuk::before { content: ""; width: 2.8mm; height: 2.8mm; border: .35mm solid var(--ink); border-radius: .6mm; }
+.urun { margin: 0 0 1.6mm; padding: 1.4mm 2.2mm; border-left: 1mm solid var(--brand); background: var(--paper); font-size: 8.6pt; font-weight: 800; line-height: 1.25; }
+.camlar { list-style: none; margin: 0; padding: 0; display: grid; gap: 1mm; }
+.camlar li { display: flex; align-items: center; gap: 1.8mm; padding-bottom: .8mm; border-bottom: .2mm dashed var(--line-2); }
+.cam-ad { flex: 1 1 auto; min-width: 0; display: flex; align-items: baseline; gap: 2mm; white-space: nowrap; overflow: hidden; }
+.cam-ad b { font-size: 8.6pt; }
+.cam-ad small { font: 500 7.2pt/1.2 var(--mono); color: var(--ink-2); }
+.kutucuk { display: inline-flex; align-items: center; gap: 1mm; font-size: 6.8pt; color: var(--muted); white-space: nowrap; }
+.kutucuk::before { content: ""; width: 3mm; height: 3mm; border: .35mm solid var(--ink); border-radius: .6mm; }
 .kutucuk.dolu { color: var(--ink); font-weight: 800; }
 .kutucuk.dolu::before { background: var(--ink); box-shadow: inset 0 0 0 .5mm #fff; }
+.cerceve { margin: 1.2mm 0 0; display: flex; align-items: center; gap: 1.8mm; flex-wrap: wrap; }
+.cerceve b { font-size: 9pt; }
+.cerceve small { font: 500 6.6pt/1 var(--mono); }
 
-.adimlar ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2.1mm; }
-.adimlar li { display: grid; grid-template-columns: 4mm auto 1fr; align-items: end; gap: 2mm; font-size: 9pt; }
-.adimlar .kare { width: 4mm; height: 4mm; border: .4mm solid var(--ink); border-radius: .7mm; align-self: center; }
-.adimlar .paraf { border-bottom: .25mm dotted var(--muted); height: 3mm; }
-.not { min-height: 12mm; flex: 1; border: .3mm solid var(--line-2); border-radius: 1.4mm; padding: 1.2mm 2mm; background: repeating-linear-gradient(transparent 0 3.6mm, var(--line) 3.6mm 3.85mm); background-position: 0 4.2mm; }
-.not small { font: 500 5.6pt/1 var(--mono); text-transform: uppercase; letter-spacing: .12em; }
-.not p { margin: .6mm 0 0; font-size: 8pt; line-height: 1.38; font-weight: 600; }
-.is-emri footer { display: flex; justify-content: space-between; align-items: center; gap: 2mm; font: 500 5.8pt/1 var(--mono); color: var(--muted); }
-.kalan-not { padding: .8mm 1.8mm; border-radius: 1mm; background: var(--night); color: #fff; font: 700 7pt/1 "Manrope", sans-serif; }
+.adimlar table { width: 100%; border-collapse: collapse; }
+.adimlar th, .adimlar td { border-bottom: .25mm solid var(--line-2); padding: 1mm 1.4mm; text-align: left; }
+.adimlar thead th { font: 500 5.8pt/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); border-bottom: .35mm solid var(--ink); padding-top: 0; }
+.adimlar tbody th { font-size: 8.6pt; font-weight: 800; width: 42%; }
+.adimlar td { width: 19%; border-left: .25mm dotted var(--line-2); }
+.adimlar td:nth-child(2) { width: 14%; text-align: center; }
+.adimlar .kare { display: inline-block; width: 3.8mm; height: 3.8mm; border: .4mm solid var(--ink); border-radius: .8mm; vertical-align: middle; }
 
-/* ============================ MÜŞTERİ NÜSHASI ============================ */
-.nusha { display: grid; grid-template-columns: 9mm 1fr; }
-.serit { background: linear-gradient(180deg, var(--brand-bright), var(--brand) 55%, var(--brand-deep)); color: #fff; display: grid; place-items: center; overflow: hidden; }
-.serit span { writing-mode: vertical-rl; transform: rotate(180deg); font: 500 6.4pt/1 var(--mono); letter-spacing: .26em; text-transform: uppercase; white-space: nowrap; opacity: .92; }
-.n-govde { min-width: 0; padding: 5.5mm 7.5mm 4mm 6.5mm; display: flex; flex-direction: column; justify-content: space-between; gap: 2.4mm; }
+.ie-not { flex: 1; min-height: 9mm; border: .3mm solid var(--line-2); border-radius: 1.6mm; padding: 1.4mm 2.2mm; background: repeating-linear-gradient(transparent 0 4mm, var(--line) 4mm 4.25mm); background-position: 0 4.6mm; }
+.ie-not small { font: 500 6pt/1 var(--mono); text-transform: uppercase; letter-spacing: .14em; }
+.ie-not p { margin: .8mm 0 0; font-size: 8.6pt; line-height: 1.45; font-weight: 600; }
+.ie-son { display: flex; justify-content: space-between; align-items: center; gap: 2mm; font: 500 6pt/1 var(--mono); color: var(--muted); }
+.kalan-not { padding: 1mm 2mm; border-radius: 1mm; background: var(--night); color: #fff; font: 800 7.6pt/1 "Manrope", sans-serif; }
+
+/* kalabalık iş emri (uzak + yakın, 3–4 cam): aynı kart, biraz sıkı */
+.is-emri.sik { gap: 1.6mm; }
+.sik .recete th, .sik .recete td { padding: 1.4mm 1mm; }
+.sik .recete td { font-size: 15pt; }
+.sik .adimlar th, .sik .adimlar td { padding: .6mm 1.4mm; }
+.sik .olculer > div { min-height: 11mm; padding: 1.2mm 2.2mm 1.4mm; }
+.sik .ie-kisi .ad { font-size: 14pt; }
+
+/* ============================ MÜŞTERİ NÜSHASI (yatay) ============================ */
+.nusha { display: grid; grid-template-columns: 1fr 58mm; }
+.filigran { position: absolute; left: -26mm; bottom: -38mm; width: 112mm; height: 112mm; pointer-events: none; }
+.filigran circle, .filigran line { fill: none; stroke: var(--brand-soft); stroke-width: 1.1; }
+.n-sol { position: relative; min-width: 0; padding: 6mm 6mm 4.5mm 8mm; display: flex; flex-direction: column; justify-content: space-between; gap: 3mm; }
 .n-ust { display: flex; justify-content: space-between; align-items: center; gap: 3mm; }
 .n-no { display: grid; justify-items: end; }
 .n-no small { font: 500 5.8pt/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; }
-.n-no b { font: 500 13pt/1.1 var(--mono); }
+.n-no b { font: 500 12pt/1.1 var(--mono); }
 
-.n-orta { display: grid; grid-template-columns: 1fr 48mm; gap: 6mm; align-items: center; }
-/* göz eşeli: satır satır küçülen cümle, sağda keskinlik değeri */
-.esel { border-top: .9mm solid var(--ink); }
-.esel > div { display: flex; align-items: baseline; justify-content: space-between; gap: 3mm; padding: 1.1mm 0; border-bottom: .25mm solid var(--line); }
-.esel span { min-width: 0; letter-spacing: .01em; }
-.esel i { font: 500 6.4pt/1 var(--mono); font-style: normal; color: var(--muted); flex: none; }
-.esel-1 span { font: 800 30pt/1 "Manrope", sans-serif; letter-spacing: -.035em; background: linear-gradient(135deg, var(--brand-bright), var(--brand) 55%, var(--brand-deep)); -webkit-background-clip: text; background-clip: text; color: transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.esel-2 span { font: 800 20pt/1.05 "Manrope", sans-serif; letter-spacing: -.02em; }
-.esel-3 span { font: 700 14pt/1.1 "Manrope", sans-serif; letter-spacing: .02em; }
-.esel-4 span { font: 600 9.4pt/1.25 "Manrope", sans-serif; letter-spacing: .03em; color: var(--ink-2); }
-.esel-4 b { color: var(--brand-ink); font-weight: 800; }
+/* netleşme şeridi: ad dört kez, bulanıktan nete */
+.netles { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1mm solid var(--ink); border-bottom: .25mm solid var(--line-2); }
+.netles > div { display: grid; gap: 1.6mm; padding: 4.5mm 1.5mm 2.6mm; border-left: .25mm solid var(--line); min-width: 0; text-align: center; }
+.netles > div:first-child { border-left: 0; }
+.netles b { font: 800 var(--ad-pt, 23pt)/1 "Manrope", sans-serif; letter-spacing: -.03em; white-space: nowrap; overflow: hidden; text-overflow: clip; }
+.netles i { font: 500 6.6pt/1 var(--mono); font-style: normal; color: var(--muted); letter-spacing: .06em; }
+.netles-1 b { filter: blur(1.6mm); opacity: .55; }
+.netles-2 b { filter: blur(.9mm); opacity: .75; }
+.netles-3 b { filter: blur(.35mm); }
+.netles-4 b { background: linear-gradient(135deg, var(--brand-bright), var(--brand) 55%, var(--brand-deep)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.netles-4 i { color: var(--brand-ink); font-weight: 700; text-transform: uppercase; letter-spacing: .2em; }
 
-/* lensmetre nişangâhı içinde takip karekodu */
-.nisangah { position: relative; display: grid; justify-items: center; gap: 1mm; }
-.nisangah .halka { width: 48mm; height: 48mm; display: block; }
-.halka circle { fill: none; stroke: var(--brand); stroke-width: 1.6; }
-.halka circle.ince { stroke-width: .7; stroke: var(--line-2); }
-.halka line { stroke: var(--brand); stroke-width: .9; }
-.halka line.arti { stroke: var(--ink); stroke-width: 1.4; }
-.qr-merkez { position: absolute; top: 9.6mm; left: 50%; transform: translateX(-50%); width: 28.8mm; height: 28.8mm; background: #fff; border-radius: 1.6mm; display: grid; place-items: center; }
-.qr-merkez svg { width: 28.8mm; height: 28.8mm; display: block; }
-.qr-merkez.yok b { font: 500 9pt/1 var(--mono); }
-.nisangah small { font: 700 6.8pt/1.1 "Manrope", sans-serif; color: var(--ink); text-align: center; }
+.manset { margin: 0; font: 800 19pt/1.1 "Manrope", sans-serif; letter-spacing: -.02em; }
+.manset span { display: block; font: 600 9.4pt/1.3 "Manrope", sans-serif; letter-spacing: 0; color: var(--ink-2); margin-top: .6mm; }
 
-/* durum çizgisi */
+/* durum: dört adım, ince çizgi üstünde */
 .yol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); position: relative; }
-.yol::before { content: ""; position: absolute; left: 12.5%; right: 12.5%; top: 2.6mm; height: .4mm; background: var(--line-2); }
-.yol li { position: relative; display: grid; justify-items: center; gap: .8mm; text-align: center; }
-.yol .nokta { position: relative; z-index: 1; width: 5.2mm; height: 5.2mm; border-radius: 50%; display: grid; place-items: center; background: #fff; border: .4mm solid var(--line-2); font: 700 6.6pt/1 "Manrope", sans-serif; color: var(--muted); }
-.yol b { font-size: 7.2pt; color: var(--muted); }
-.yol .bitti .nokta { background: var(--ink); border-color: var(--ink); color: #fff; }
+.yol::before { content: ""; position: absolute; left: 0; right: 0; top: 1.5mm; height: .35mm; background: var(--line-2); }
+.yol li { position: relative; display: grid; gap: 1.2mm; }
+.yol .nokta { position: relative; z-index: 1; width: 3.4mm; height: 3.4mm; border-radius: 50%; background: #fff; border: .4mm solid var(--line-2); }
+.yol b { font-size: 7.4pt; color: var(--muted); }
+.yol .bitti .nokta { background: var(--ink); border-color: var(--ink); }
 .yol .bitti b { color: var(--ink-2); }
-.yol .simdi .nokta { background: var(--brand); border-color: var(--brand-deep); color: #fff; box-shadow: 0 0 0 .9mm var(--brand-soft); }
-.yol .simdi b { color: var(--ink); font-weight: 800; }
-.damga { position: absolute; top: -3.6mm; left: 55%; transform: rotate(-8deg); padding: .3mm 1.4mm; border: .35mm solid var(--brand); border-radius: .8mm; color: var(--brand); font: 500 5.6pt/1.2 var(--mono); font-style: normal; letter-spacing: .14em; text-transform: uppercase; background: #fff; white-space: nowrap; }
+.yol .simdi .nokta { background: var(--brand); border-color: var(--brand); box-shadow: 0 0 0 1mm var(--brand-soft); }
+.yol .simdi b { color: var(--brand-ink); font-weight: 800; }
+.yol .simdi b::after { content: " · şu an"; font: 500 6pt/1 var(--mono); text-transform: uppercase; letter-spacing: .1em; }
 
-.n-alt { display: grid; grid-template-columns: 1.4fr 1fr; gap: 5mm; align-items: start; }
-.kart { margin: 0; display: grid; gap: 1mm; padding: 2mm 2.6mm; border-radius: 1.8mm; background: var(--paper); }
+.kart { margin: 0; display: grid; gap: 1.1mm; padding: 2.4mm 3mm; border-radius: 1.8mm; background: rgba(255,255,255,.88); border: .25mm solid var(--line); }
 .kart div { display: grid; grid-template-columns: 16mm 1fr; gap: 2mm; align-items: baseline; }
 .kart dt { font: 500 5.8pt/1.2 var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
-.kart dd { margin: 0; font-size: 8.2pt; font-weight: 700; line-height: 1.25; }
-.kart dd.mono { font: 500 8.6pt/1.2 var(--mono); }
-.hesap { margin: 0; display: grid; gap: .5mm; font-size: 8pt; font-variant-numeric: tabular-nums; }
-.hesap div { display: flex; justify-content: space-between; gap: 3mm; }
-.hesap dt { color: var(--muted); } .hesap dd { margin: 0; font-weight: 700; }
-.hesap .kalan { margin-top: .4mm; padding: 1.2mm 2mm; border-radius: 1.2mm; background: var(--night); color: #fff; font-size: 9.5pt; }
-.hesap .kalan dt { color: #fff; font-weight: 800; }
-.n-son { border-top: .3mm solid var(--line-2); padding-top: 1.6mm; display: grid; gap: .6mm; }
-.n-son p { margin: 0; font-size: 7.4pt; line-height: 1.35; color: var(--ink-2); }
+.kart dd { margin: 0; font-size: 8.4pt; font-weight: 700; line-height: 1.25; }
+.kart dd.mono { font: 500 8.8pt/1.2 var(--mono); }
+.n-son { display: grid; gap: .6mm; }
+.n-son p { margin: 0; font-size: 7.2pt; line-height: 1.35; color: var(--ink-2); }
 .n-son .ipucu { font-size: 6.6pt; color: var(--muted); }
 
-/* kesme çizgisi: A4'ün tam ortası */
+/* sağ sütun: teslim, nişangâh içinde karekod, ödeme */
+.n-sag { position: relative; padding: 6mm 7mm 4.5mm 6mm; border-left: .3mm solid var(--line-2); display: flex; flex-direction: column; align-items: center; gap: 2.4mm; background: linear-gradient(180deg, var(--paper), #fff 40%); }
+.teslim { width: 100%; display: grid; justify-items: center; padding-bottom: 2mm; border-bottom: .25mm solid var(--line-2); }
+.teslim small { font: 500 6pt/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--brand-ink); }
+.teslim b { font: 800 18pt/1.05 "Manrope", sans-serif; letter-spacing: -.03em; margin-top: 1mm; }
+.teslim i { font-style: normal; font-size: 8pt; font-weight: 700; color: var(--ink-2); }
+.nisangah { position: relative; width: 40mm; height: 40mm; }
+.nisangah .halka { width: 40mm; height: 40mm; display: block; }
+.halka circle { fill: none; stroke: var(--brand); stroke-width: 1.8; }
+.halka circle.ince { stroke-width: .8; stroke: var(--line-2); }
+.halka line { stroke: var(--brand); stroke-width: 1; }
+.qr-merkez { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 25mm; height: 25mm; background: #fff; display: grid; place-items: center; }
+.qr-merkez svg { width: 25mm; height: 25mm; display: block; }
+.qr-merkez.yok b { font: 500 8.6pt/1 var(--mono); }
+.okut { margin: 0; text-align: center; font-size: 7.2pt; font-weight: 700; line-height: 1.3; }
+.odeme { width: 100%; margin-top: auto; }
+.hesap { margin: 0; display: grid; gap: .5mm; font-size: 7.8pt; font-variant-numeric: tabular-nums; }
+.hesap div { display: flex; justify-content: space-between; gap: 3mm; }
+.hesap dt { color: var(--muted); } .hesap dd { margin: 0; font-weight: 700; }
+.hesap .kalan { margin-top: .6mm; padding: 1.4mm 2mm; border-radius: 1.2mm; background: var(--night); color: #fff; font-size: 9.5pt; }
+.hesap .kalan dt { color: #fff; font-weight: 800; }
+
 .kesim { position: absolute; left: 0; right: 0; top: 148.5mm; border-top: .35mm dashed var(--muted); }
 .kesim span { position: absolute; left: 50%; top: 0; transform: translate(-50%, -50%); padding: 0 3mm; background: #fff; font: 500 6.4pt/1 var(--mono); color: var(--muted); white-space: nowrap; }
 
@@ -191,11 +214,3 @@ small { color: var(--muted); }
   .kagit-yarim .kagit { height: 148mm; }
 }
 
-/* montaj ölçüleri: değer yoksa usta elle yazar */
-.olculer { display: grid; grid-template-columns: 1.25fr 1.25fr 1fr; border: .35mm solid var(--ink); border-radius: 1.6mm; overflow: hidden; }
-.olculer > div { display: grid; align-content: start; gap: 1mm; padding: 1.6mm 2.2mm 2mm; min-height: 13mm; background: var(--brand-soft); }
-.olculer > div + div { border-left: .25mm solid var(--line-2); }
-.olculer small { font: 500 6pt/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--brand-ink); }
-.olculer b { font: 500 12.5pt/1.05 var(--mono); letter-spacing: -.02em; white-space: nowrap; }
-.olculer b i { font-style: normal; font-size: 8pt; }
-.olculer .yaz { display: block; height: 6mm; border-bottom: .3mm dotted var(--ink-2); }

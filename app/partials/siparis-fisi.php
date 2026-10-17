@@ -4,14 +4,16 @@ declare(strict_types=1);
 /* ==========================================================================
    Sipariş fişi, yarım sayfa. print.php?type=order&id=<sipariş> (ayrıntılı A4 müşteri fişi: &tam=1).
    Kâğıt (&kagit=):
-     a4    (varsayılan) A4 dikey; ÜST YARI atölye iş emri (210 × 148,5 mm), ortada kesme çizgisi, ALT YARI müşteri nüshası.
+     a4    (varsayılan) A4 dikey; ÜST YARI atölye iş emri, ortada kesme çizgisi, ALT YARI müşteri nüshası.
      yarim kesilmiş yarım sayfa (A5 yatay) yazıcıya konunca; müşteri nüshası ikinci sayfa.
    &nusha=0 müşteri nüshasını kapatır. &tezgah=1 (akışın ⑤. adımı): yazdırma penceresi kendiliğinden açılır.
-   4.35.0 — Kurumsal kimlikle yeniden tasarım (docs/kurumsal-kimlik/project/README.md):
-     İş emri: montaj personeli için büyük mono dioptri, göz başına PD + yükseklik, cam kalemleri (göz, grup, stok),
-       çerçeve ölçüsü, seçilen katalog camı, imzalı atölye adımları; "Siparişi aç" karekodu.
-     Müşteri nüshası: göz eşeli selamlama (markanın tipografik imzası), lensmetre nişangâhı içinde takip karekodu,
-       dört aşamalı durum çizgisi, gözlük kartı ve ödeme özeti.
+   Kurumsal kimlik: docs/kurumsal-kimlik/project/README.md.
+     İş emri (4.36.0): kesildikten sonra DİK kullanılan 148,5 × 210 mm kart; yarım sayfaya 90° döndürülerek basılır
+       (CSS .is-emri). Gece bandı (sipariş no, teslim sözü, "Siparişi aç" karekodu), numaralı bölümler: 01 reçete
+       (büyük mono), 02 montaj ölçüleri (boşsa usta yazar), 03 camlar + çerçeve (göz, grup, stok), 04 atölye adımları
+       (tamam / paraf / saat), not. Kalabalık reçetede (3–4 cam ya da yakın + ADD) .sik ile sıkılaşır.
+     Müşteri nüshası (yatay): müşterinin adı dört kez bulanıktan nete (altında kendi reçetesinden sıfıra inen
+       değerler), durum çizgisi, gözlük kartı; sağ sütunda teslim sözü, lensmetre nişangâhı içinde takip karekodu, ödeme.
    Siyah-beyaz yazıcıda da okunur (renk yalnız vurgu). Tek dosya: assets/siparis-fisi.css + print.js.
    Tutarlar yalnız tutar görme yetkisi olana basılır.
    ========================================================================== */
@@ -145,136 +147,140 @@ $isaret = static function (string $id, string $tek = ''): string {
   <a class="tam" href="<?= e(url_with(['tam' => 1, 'kagit' => null, 'tezgah' => null])) ?>">Ayrıntılı A4 müşteri fişi</a>
 </div>
 <div class="kagit">
-<main class="fis is-emri">
-  <header class="bant">
-    <div class="marka"><?= $isaret('isIsaret') ?><span><b><?= e($dukkan) ?></b><small>Atölye iş emri</small></span></div>
-    <div class="no-kutu"><small>Sipariş</small><b><?= e($no) ?></b></div>
-    <div class="soz-kutu"><small>Teslim sözü</small><b><?= e($sozGun ?: '—') ?></b><span><?= e($sozHafta) ?></span></div>
-    <?php if ($qrSip !== ''): ?><div class="qr-kucuk"><?= $qrSip ?><small>Siparişi aç</small></div><?php endif; ?>
-  </header>
-  <div class="govde">
-    <div class="sol">
-      <section class="kisi">
-        <div class="ad"><?= e($ad) ?></div>
-        <div class="bilgi">
-          <span><small>Telefon</small><b><?= e(phone_display($o['c_phone'])) ?></b></span>
-          <span><small>Alındı</small><b><?= e(date_tr($o['created_at'])) ?></b></span>
-          <span><small>Satış</small><b><?= e((string) ($o['created_by_name'] ?: '—')) ?></b></span>
-          <?php if ((string) $o['sgk_erecete'] !== ''): ?><span><small>e-Reçete</small><b class="mono"><?= e((string) $o['sgk_erecete']) ?></b></span><?php endif; ?>
-        </div>
-      </section>
-      <?php if ($rx): ?>
-      <section class="recete">
-        <h2>Reçete<?php if ($kullanim !== ''): ?> <span class="etiket"><?= e($kullanim) ?></span><?php endif; ?></h2>
-        <table>
-          <thead><tr><th></th><th>SPH</th><th>CYL</th><th>AKS</th><?= $addVar ? '<th>ADD</th>' : '' ?></tr></thead>
-          <tbody><?= $satir ?>
-            <?php if ($yakinVar): ?><tr class="yakin"><th><span class="goz">Y</span>Yakın</th><td colspan="<?= $sutun - 1 ?>">Sağ <b><?= $hucre($dio($v('near_right_sph'))) ?></b> · Sol <b><?= $hucre($dio($v('near_left_sph'))) ?></b><?= $v('near_lens_type') !== '' ? ' · ' . e($v('near_lens_type')) : '' ?></td></tr><?php endif; ?>
-          </tbody>
-        </table>
-        <div class="alt-bilgi">
-          <span><small>Reçete</small><b><?= e(date_tr($rx['prescription_date'])) ?></b></span>
-          <?php if ($v('doctor') !== ''): ?><span><small>Doktor</small><b><?= e($v('doctor')) ?></b></span><?php endif; ?>
-        </div>
-      </section>
-      <?php endif; ?>
-      <section class="montaj">
-        <h2>Montaj ölçüleri <small>boşsa ölçüp yazın</small></h2>
-        <div class="olculer">
-          <div><small>PD</small><?php if ($v('right_pd') !== '' || $v('left_pd') !== ''): ?><b>R <?= $hucre($dio($v('right_pd'))) ?> · L <?= $hucre($dio($v('left_pd'))) ?></b><?php elseif ($v('pd') !== ''): ?><b><?= e($dio($v('pd'))) ?> <i>mm</i></b><?php else: ?><span class="yaz"></span><?php endif; ?></div>
-          <div><small>Yükseklik</small><?php if ($yukVar): ?><b>R <?= $hucre($dio($v('right_height'))) ?> · L <?= $hucre($dio($v('left_height'))) ?></b><?php else: ?><span class="yaz"></span><?php endif; ?></div>
-          <div><small>Çerçeve ölçüsü</small><?= $cerceveOlcu !== '' ? '<b>' . e($cerceveOlcu) . '</b>' : '<span class="yaz"></span>' ?></div>
-        </div>
-      </section>
-      <section class="cerceve-blok">
-        <h2>Çerçeve</h2>
-        <div class="cerceve-satir">
-          <p class="cerceve"><?= e($cerceveKayit ? trim(implode(' · ', array_filter([(string) $cerceveKayit['brand'], (string) $cerceveKayit['model'], (string) $cerceveKayit['color']]))) : ($cerceve ?: '—')) ?></p>
-        </div>
-        <?php if ($cerceveKayit && (trim((string) $cerceveKayit['shelf']) !== '' || trim((string) $cerceveKayit['barcode']) !== '')): ?><small class="kucuk"><?= e(trim(($cerceveKayit['shelf'] ? 'Raf ' . $cerceveKayit['shelf'] : '') . ($cerceveKayit['barcode'] ? '  ·  Barkod ' . $cerceveKayit['barcode'] : ''))) ?></small><?php endif; ?>
-      </section>
-    </div>
-    <div class="sag">
-      <section class="cam-blok">
-        <h2>Camlar</h2>
-        <?php if ($urun !== ''): ?><p class="urun"><?= e($urun) ?></p><?php endif; ?>
-        <ul class="camlar"><?= $camlar ?: '<li class="bos">—</li>' ?></ul>
-      </section>
-      <section class="adimlar">
-        <h2>Atölye <small>işaretleyin · paraf</small></h2>
-        <ol>
-          <?php foreach (['Cam geldi', 'Kesim', 'Montaj', 'Kontrol · PD/aks', 'Haber verildi'] as $adim): ?>
-            <li><span class="kare"></span><b><?= e($adim) ?></b><span class="paraf"></span></li>
+<?php /* İŞ EMRİ — 148,5 × 210 mm dikey kart; A4'ün üst yarısına (ya da kesilmiş yarım sayfaya) 90° döndürülerek basılır.
+         Kesince kâğıdı saat yönünde çevirin: kart dik okunur. */ ?>
+<main class="fis is-emri-yuva">
+  <div class="is-emri<?= count($kalemler) > 2 || ($yakinVar && $addVar) ? ' sik' : '' ?>">
+    <header class="ie-bant">
+      <div class="ie-sol">
+        <div class="marka acik"><?= $isaret('isIsaret') ?><span><b><?= e($dukkan) ?></b><small>Atölye iş emri</small></span></div>
+        <div class="ie-no"><small>Sipariş</small><b><?= e($no) ?></b></div>
+      </div>
+      <div class="ie-soz"><small>Teslim sözü</small><b><?= e($sozGun ?: '—') ?></b><i><?= e($sozHafta) ?></i></div>
+      <?php if ($qrSip !== ''): ?><div class="ie-qr"><?= $qrSip ?></div><?php endif; ?>
+    </header>
+
+    <section class="ie-kisi">
+      <div class="ad"><?= e($ad) ?></div>
+      <div class="bilgi">
+        <span><small>Telefon</small><b><?= e(phone_display($o['c_phone'])) ?></b></span>
+        <span><small>Alındı</small><b><?= e(date_tr($o['created_at'])) ?><?= $o['created_by_name'] ? ' · ' . e((string) $o['created_by_name']) : '' ?></b></span>
+        <?php if ((string) $o['sgk_erecete'] !== ''): ?><span><small>e-Reçete</small><b class="mono"><?= e((string) $o['sgk_erecete']) ?></b></span><?php endif; ?>
+        <?php if ($rx && $v('doctor') !== ''): ?><span><small>Doktor</small><b><?= e($v('doctor')) ?></b></span><?php endif; ?>
+      </div>
+    </section>
+
+    <?php if ($rx): ?>
+    <section class="ie-blok recete">
+      <h2><i>01</i>Reçete<?php if ($kullanim !== ''): ?> <span class="etiket"><?= e($kullanim) ?></span><?php endif; ?><small><?= e(date_tr($rx['prescription_date'])) ?></small></h2>
+      <table>
+        <thead><tr><th></th><th>SPH</th><th>CYL</th><th>AKS</th><?= $addVar ? '<th>ADD</th>' : '' ?></tr></thead>
+        <tbody><?= $satir ?>
+          <?php if ($yakinVar): ?><tr class="yakin"><th><span class="goz">Y</span>Yakın</th><td colspan="<?= $sutun - 1 ?>">Sağ <b><?= $hucre($dio($v('near_right_sph'))) ?></b> · Sol <b><?= $hucre($dio($v('near_left_sph'))) ?></b><?= $v('near_lens_type') !== '' ? ' · ' . e($v('near_lens_type')) : '' ?></td></tr><?php endif; ?>
+        </tbody>
+      </table>
+    </section>
+    <?php endif; ?>
+
+    <section class="ie-blok">
+      <h2><i>02</i>Montaj ölçüleri<small>boşsa ölçüp yazın</small></h2>
+      <div class="olculer">
+        <div><small>PD</small><?php if ($v('right_pd') !== '' || $v('left_pd') !== ''): ?><b>R <?= $hucre($dio($v('right_pd'))) ?> · L <?= $hucre($dio($v('left_pd'))) ?></b><?php elseif ($v('pd') !== ''): ?><b><?= e($dio($v('pd'))) ?><i>mm</i></b><?php else: ?><span class="yaz"></span><?php endif; ?></div>
+        <div><small>Yükseklik</small><?php if ($yukVar): ?><b>R <?= $hucre($dio($v('right_height'))) ?> · L <?= $hucre($dio($v('left_height'))) ?></b><?php else: ?><span class="yaz"></span><?php endif; ?></div>
+        <div><small>Çerçeve ölçüsü</small><?= $cerceveOlcu !== '' ? '<b>' . e($cerceveOlcu) . '</b>' : '<span class="yaz"></span>' ?></div>
+      </div>
+    </section>
+
+    <section class="ie-blok">
+      <h2><i>03</i>Camlar ve çerçeve</h2>
+      <?php if ($urun !== ''): ?><p class="urun"><?= e($urun) ?></p><?php endif; ?>
+      <ul class="camlar"><?= $camlar ?: '<li class="bos">—</li>' ?></ul>
+      <p class="cerceve"><span class="goz kare-goz">Ç</span><b><?= e($cerceveKayit ? trim(implode(' · ', array_filter([(string) $cerceveKayit['brand'], (string) $cerceveKayit['model'], (string) $cerceveKayit['color']]))) : ($cerceve ?: 'Belirtilmedi')) ?></b><?php if ($cerceveKayit && (trim((string) $cerceveKayit['shelf']) !== '' || trim((string) $cerceveKayit['barcode']) !== '')): ?><small><?= e(trim(($cerceveKayit['shelf'] ? 'Raf ' . $cerceveKayit['shelf'] : '') . ($cerceveKayit['barcode'] ? ' · ' . $cerceveKayit['barcode'] : ''))) ?></small><?php endif; ?></p>
+    </section>
+
+    <section class="ie-blok adimlar">
+      <h2><i>04</i>Atölye</h2>
+      <table>
+        <thead><tr><th>Adım</th><th>Tamam</th><th>Paraf</th><th>Saat</th></tr></thead>
+        <tbody>
+          <?php foreach (['Cam geldi', 'Kesim', 'Montaj', 'Kontrol · PD / aks', 'Müşteriye haber'] as $adim): ?>
+            <tr><th><?= e($adim) ?></th><td><span class="kare"></span></td><td></td><td></td></tr>
           <?php endforeach; ?>
-        </ol>
-      </section>
-      <section class="not">
-        <small>Not</small>
-        <p><?= $notlar ? nl2br(e(implode("\n", $notlar))) : '' ?></p>
-      </section>
-      <footer><?php if ($tutarlar && (string) $o['order_stage'] !== 'iptal' && (float) $o['balance'] > 0.009): ?><span class="kalan-not">Kalan <?= money($o['balance']) ?></span><?php endif; ?><span><?= e($no) ?> · <?= e(date('d.m.Y H:i')) ?></span></footer>
-    </div>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="ie-not">
+      <small>Not</small>
+      <p><?= $notlar ? nl2br(e(implode("\n", $notlar))) : '' ?></p>
+    </section>
+    <footer class="ie-son"><?php if ($tutarlar && (string) $o['order_stage'] !== 'iptal' && (float) $o['balance'] > 0.009): ?><span class="kalan-not">Kalan <?= money($o['balance']) ?></span><?php endif; ?><span><?= e($no) ?> · basım <?= e(date('d.m.Y H:i')) ?></span></footer>
   </div>
 </main>
 <?php if (!$yarim): ?>
-<div class="kesim" aria-hidden="true"><span>✂ Buradan kesin<?= $nusha ? ' · alt yarı müşteriye' : ' · alt yarıyı bir sonraki fiş için yazıcıya koyabilirsiniz' ?></span></div>
+<div class="kesim" aria-hidden="true"><span>✂ Buradan kesin · üst yarıyı saat yönünde çevirin, iş emri dik okunur<?= $nusha ? ' · alt yarı müşteriye' : '' ?></span></div>
 <?php endif; ?>
 <?php if ($nusha):
   $tel = trim(setting('shop_phone'));
   $adres = trim(setting('shop_address'));
   $camOzet = $urun !== '' ? $urun : (implode(' · ', array_unique(array_filter(array_map(static fn($k) => trim((string) $k['lens_type']), $kalemler)))) ?: trim((string) $o['lens_type']));
-  $ilkAd = tr_title(explode(' ', trim((string) $o['c_first']))[0] ?? '');
+  $ilkAd = tr_title(explode(' ', trim((string) $o['c_first']))[0] ?? '') ?: 'Merhaba';
   $asama = public_stage((string) $o['order_stage']);
-  $asamalar = [1 => 'Alındı', 2 => 'Atölyede', 3 => 'Hazır', 4 => 'Teslim'];
+  $asamalar = [1 => 'Sipariş alındı', 2 => 'Atölyede', 3 => 'Hazır', 4 => 'Teslim'];
+  /* Netleşme şeridi: müşterinin adı dört kez, bulanıktan nete; altında kendi reçetesinden sıfıra inen değerler. */
+  $sph = (float) str_replace(',', '.', $rx ? ($v('right_sph') ?: $v('left_sph')) : '');
+  if (abs($sph) < 0.24) {
+      $sph = -1.0;
+  }
+  $adimDeger = static fn(float $x): string => str_replace(['-', '.'], ['−', ','], sprintf('%+.2f', round($x * 4) / 4));
+  $netlik = [$adimDeger($sph), $adimDeger($sph * 0.6), $adimDeger($sph * 0.25), 'net'];
   if ($yarim): ?></div><div class="kagit"><?php endif; ?>
 <section class="fis nusha">
-  <div class="serit" aria-hidden="true"><span><?= e($dukkan) ?> · <?= e($no) ?></span></div>
-  <div class="n-govde">
+  <svg class="filigran" viewBox="0 0 200 200" aria-hidden="true">
+    <circle cx="100" cy="100" r="98" /><circle cx="100" cy="100" r="74" /><circle cx="100" cy="100" r="50" /><circle cx="100" cy="100" r="26" />
+    <line x1="100" y1="0" x2="100" y2="200" /><line x1="0" y1="100" x2="200" y2="100" />
+  </svg>
+  <div class="n-sol">
     <header class="n-ust">
       <div class="marka"><?= $isaret('nIsaret') ?><span><b><?= e($dukkan) ?></b><small>Müşteri nüshası</small></span></div>
       <div class="n-no"><small>Sipariş</small><b><?= e($no) ?></b></div>
     </header>
-    <div class="n-orta">
-      <div class="esel" aria-label="<?= e(($ilkAd !== '' ? $ilkAd . ', ' : '') . 'gözlüğünüz hazırlanıyor.') ?>">
-        <div class="esel-1"><span><?= e($ilkAd !== '' ? $ilkAd . ',' : 'Merhaba,') ?></span><i>0,1</i></div>
-        <div class="esel-2"><span>gözlüğünüz</span><i>0,3</i></div>
-        <div class="esel-3"><span><?= e($asama['adim'] >= 3 ? 'hazır.' : 'hazırlanıyor.') ?></span><i>0,6</i></div>
-        <div class="esel-4"><span><?= $sozGun !== '' ? 'Teslim sözümüz <b>' . e($sozGun . ' ' . $sozHafta) . '</b>.' : 'Hazır olunca size haber veriyoruz.' ?></span><i>1,0</i></div>
-      </div>
-      <div class="nisangah">
-        <svg class="halka" viewBox="0 0 200 200" aria-hidden="true">
-          <circle cx="100" cy="100" r="96" /><circle cx="100" cy="100" r="84" class="ince" /><circle cx="100" cy="100" r="72" class="ince" />
-          <?php for ($a = 0; $a < 360; $a += 15): $r1 = $a % 90 === 0 ? 84 : ($a % 45 === 0 ? 88 : 91); $rad = deg2rad($a); ?>
-            <line x1="<?= round(100 + $r1 * cos($rad), 2) ?>" y1="<?= round(100 + $r1 * sin($rad), 2) ?>" x2="<?= round(100 + 96 * cos($rad), 2) ?>" y2="<?= round(100 + 96 * sin($rad), 2) ?>" />
-          <?php endfor; ?>
-          <line x1="100" y1="0" x2="100" y2="20" class="arti" /><line x1="100" y1="180" x2="100" y2="200" class="arti" /><line x1="0" y1="100" x2="20" y2="100" class="arti" /><line x1="180" y1="100" x2="200" y2="100" class="arti" />
-        </svg>
-        <?php if ($qr !== ''): ?>
-          <div class="qr-merkez"><?= $qr ?></div>
-        <?php else: ?>
-          <div class="qr-merkez yok"><b><?= e($no) ?></b></div>
-        <?php endif; ?>
-        <small><?= $qr !== '' ? 'Okutun: siparişiniz nerede?' : 'Sipariş numaranız' ?></small>
-      </div>
+    <?php $adUzun = mb_strlen($ilkAd); $adPt = $adUzun <= 5 ? 23 : ($adUzun <= 6 ? 20 : ($adUzun <= 8 ? 16.5 : ($adUzun <= 10 ? 13.5 : 11))); ?>
+    <div class="netles" aria-label="<?= e($ilkAd) ?>" style="--ad-pt: <?= $adPt ?>pt">
+      <?php foreach ($netlik as $i => $deger): ?>
+        <div class="netles-<?= $i + 1 ?>"><b aria-hidden="true"><?= e($ilkAd) ?></b><i><?= e($deger) ?></i></div>
+      <?php endforeach; ?>
     </div>
+    <p class="manset"><?= $asama['adim'] >= 3 ? 'Gözlüğünüz hazır.' : 'Gözlüğünüz hazırlanıyor.' ?> <span>Her şey birazdan bu kadar net.</span></p>
     <ol class="yol" aria-label="Sipariş durumu">
       <?php foreach ($asamalar as $n => $etiket): $cls = $asama['adim'] > $n ? 'bitti' : ($asama['adim'] === $n ? 'simdi' : ''); ?>
-        <li class="<?= $cls ?>"><span class="nokta"><?= $asama['adim'] > $n ? '✓' : $n ?></span><b><?= e($etiket) ?></b><?php if ($cls === 'simdi'): ?><em class="damga">Şu an</em><?php endif; ?></li>
+        <li class="<?= $cls ?>"><span class="nokta"></span><b><?= e($etiket) ?></b></li>
       <?php endforeach; ?>
     </ol>
-    <div class="n-alt">
-      <dl class="kart">
-        <?php if ($camOzet !== ''): ?><div><dt>Cam</dt><dd><?= e($camOzet) ?></dd></div><?php endif; ?>
-        <div><dt>Çerçeve</dt><dd><?= e($cerceve ?: '—') ?></dd></div>
-        <?php if ((string) $o['sgk_erecete'] !== ''): ?><div><dt>e-Reçete</dt><dd class="mono"><?= e((string) $o['sgk_erecete']) ?></dd></div><?php endif; ?>
-      </dl>
-      <?= $hesap !== '' ? '<div class="odeme">' . $hesap . '</div>' : '' ?>
-    </div>
+    <dl class="kart">
+      <?php if ($camOzet !== ''): ?><div><dt>Cam</dt><dd><?= e($camOzet) ?></dd></div><?php endif; ?>
+      <div><dt>Çerçeve</dt><dd><?= e($cerceve ?: '—') ?></dd></div>
+      <?php if ((string) $o['sgk_erecete'] !== ''): ?><div><dt>e-Reçete</dt><dd class="mono"><?= e((string) $o['sgk_erecete']) ?></dd></div><?php endif; ?>
+    </dl>
     <footer class="n-son">
       <p><b><?= e($dukkan) ?></b><?= $tel !== '' ? ' · ' . e(phone_display($tel) ?: $tel) : '' ?><?= $adres !== '' ? ' · ' . e(preg_replace('/\s*\R\s*/u', ', ', $adres)) : '' ?></p>
-      <p class="ipucu">Teslim alırken bu nüshayı getirmeniz yeterli. Gözlüğünüzü iki elinizle takıp çıkarın; camları yalnız mikrofiber bezle silin.</p>
+      <p class="ipucu">Teslim alırken bu nüshayı getirin. Gözlüğü iki elle takıp çıkarın; camları yalnız mikrofiber bezle silin.</p>
     </footer>
   </div>
+  <aside class="n-sag">
+    <div class="teslim"><small>Teslim sözümüz</small><b><?= e($sozGun ?: '—') ?></b><i><?= e($sozHafta) ?></i></div>
+    <div class="nisangah">
+      <svg class="halka" viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="100" cy="100" r="96" /><circle cx="100" cy="100" r="84" class="ince" />
+        <?php for ($a = 0; $a < 360; $a += 10): $r1 = $a % 90 === 0 ? 82 : ($a % 30 === 0 ? 88 : 92); $rad = deg2rad($a); ?>
+          <line x1="<?= round(100 + $r1 * cos($rad), 2) ?>" y1="<?= round(100 + $r1 * sin($rad), 2) ?>" x2="<?= round(100 + 96 * cos($rad), 2) ?>" y2="<?= round(100 + 96 * sin($rad), 2) ?>" />
+        <?php endfor; ?>
+      </svg>
+      <?php if ($qr !== ''): ?><div class="qr-merkez"><?= $qr ?></div><?php else: ?><div class="qr-merkez yok"><b><?= e($no) ?></b></div><?php endif; ?>
+    </div>
+    <p class="okut"><?= $qr !== '' ? 'Telefonunuzla okutun,<br>siparişinizi anında görün.' : 'Sipariş numaranızla sorabilirsiniz.' ?></p>
+    <?= $hesap !== '' ? '<div class="odeme">' . $hesap . '</div>' : '' ?>
+  </aside>
 </section>
 <?php endif; ?>
 </div>

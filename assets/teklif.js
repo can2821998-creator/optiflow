@@ -245,3 +245,23 @@
   form.addEventListener('change', guncelle);
   guncelle();
 })();
+
+/* 4.38.1 — 2. ve 3. cam seçeneği istenince açılır ("Başka bir cam seçeneği"). */
+(function () {
+  'use strict';
+  document.querySelectorAll('[data-secenek-ekle]').forEach(function (dugme) {
+    var kap = dugme.closest('.teklif-secenekler');
+    if (!kap) return;
+    function gizliler() { return Array.prototype.slice.call(kap.querySelectorAll('[data-secenek][hidden]')); }
+    function guncelle() { dugme.hidden = gizliler().length === 0; }
+    dugme.addEventListener('click', function () {
+      var ilk = gizliler()[0];
+      if (!ilk) return;
+      ilk.hidden = false;
+      var sec = ilk.querySelector('[data-cam-sec]');
+      if (sec) sec.focus();
+      guncelle();
+    });
+    guncelle();
+  });
+})();

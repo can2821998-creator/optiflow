@@ -29,7 +29,7 @@ $chPersonel = rows('SELECT id, full_name FROM user_accounts WHERE is_active = 1 
       <?php endif; ?>
     </div>
   <?php endforeach; ?>
-  <details style="margin-top:10px" <?= $chListe ? '' : 'open' ?>>
+  <details style="margin-top:10px">
     <summary class="linkish"><?= icon('plus') ?> Hatalı cam kaydet</summary>
     <form method="post" class="stack" style="gap:10px;margin-top:10px">
       <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= (int) $id ?>"><input type="hidden" name="action" value="cam_hata_ekle">

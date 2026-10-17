@@ -136,6 +136,10 @@ ok(str_contains($sayfa, "post('sonra') === 'teklif' ? 'teklif' : 'siparis'") && 
 ok(str_contains($sayfa, '<details class="ek-alan"') && str_contains($sayfa, 'data-yakin-alan') && str_contains($sayfa, 'data-kapora-yontem'), 'isteğe bağlı alanlar katlanır / gerektiğinde görünür');
 $lay = (string) file_get_contents(dirname(__DIR__, 2) . '/app/layout.php');
 ok(str_contains($lay, 'function menu_gruplari(') && str_contains($lay, "'Atölye ve stok'"), 'menü iş gruplarına ayrılır');
+$sip = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/order.php');
+ok(str_contains($sip, 'class="hizli-asama"') && str_contains($sip, '<details class="card stage-changer">') && str_contains($sip, '<details class="card siparis-bilgi">') && str_contains($sip, '<details class="card gecmis">'), '4.39.0 sipariş sayfası: tek tık sonraki aşama, katlanır kartlar');
+$tk = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/teklif-yeni.php');
+ok(str_contains($tk, 'data-secenek-gizli') && str_contains($tk, 'data-secenek-ekle') && str_contains($tk, '<summary class="card-head"><h2>İskonto ve not</h2>'), '4.39.0 teklif formu: ek seçenekler istenince, iskonto katlanır');
 ok(str_contains($lay, 'href="tezgah.php"><?= icon(\'plus\') ?> Yeni müşteri · reçete') && !str_contains($lay, "'SGK reçete aktar'"), 'menü: tek giriş, SGK reçete aktar kalktı');
 ok(str_contains((string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/sgk-aktar.php'), "redirect('tezgah.php?gelen='"), 'Pro aktarımı akışta açılır');
 ok(str_contains($sayfa, 'csrf_check()'), 'CSRF denetimi');

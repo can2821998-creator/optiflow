@@ -116,7 +116,7 @@ page_start('Siparişler', 'orders');
 page_header(
     'Siparişler',
     e(date_long()),
-    ($depoAcik ? '<a class="btn btn-primary" href="tezgah.php">' . icon('glasses') . ' Reçeteyle sipariş</a> <a class="btn" href="order-new.php">' : '<a class="btn btn-primary" href="order-new.php">') . icon('plus') . ' Yeni sipariş</a>',
+    '<a class="btn btn-primary" href="tezgah.php">' . icon('plus') . ' Yeni müşteri · reçete</a> <a class="btn btn-ghost" href="order-new.php" title="Reçetesiz iş: tamir, güneş gözlüğü, lens">Reçetesiz sipariş</a>',   // 4.38.1 tek giriş
     '',
     greeting() . ', ' . explode(' ', (string) current_user()['full_name'])[0]
 );
@@ -126,40 +126,7 @@ page_header(
   <span class="fortune-text" data-fortune-text></span>
   <button type="button" class="icon-btn sm" data-fortune-close aria-label="Kapat">✕</button>
 </div>
-<?php if ($depoToplam > 0): ?>
-<section class="card depo-kart">
-  <div class="depo-ust">
-    <div>
-      <span class="depo-etiket">Gün sonu</span>
-      <h2>Depoya gidecek <?= $depoToplam ?> eksik cam</h2>
-      <p class="muted small">Türe ve numaraya göre gruplandı; depoya müşteri bilgisi gitmez. Gönderince camlar "Depoya sipariş verildi" olur.</p>
-    </div>
-    <form method="post" action="stock.php" target="_blank" class="depo-gonder" data-sonra-yenile>
-      <?= csrf_field() ?><input type="hidden" name="eylem" value="depo_whatsapp">
-      <?php if ($depoTedarikciler): ?>
-        <label class="field"><span>Depo</span><select name="supplier_id"><option value="">WhatsApp'ta kişi seçeceğim</option><?php foreach ($depoTedarikciler as $t): ?><option value="<?= (int) $t['id'] ?>"><?= e($t['name']) ?></option><?php endforeach; ?></select></label>
-      <?php endif; ?>
-      <button class="btn btn-primary"><?= icon('chat') ?> WhatsApp'ta depoya gönder</button>
-      <?php if ($depoTedarikci): ?><small class="muted"><?= e($depoTedarikci['name']) ?> · <?= e(phone_display($depoTedarikci['phone'])) ?></small><?php endif; ?>
-    </form>
-  </div>
-  <div class="depo-liste">
-    <?php foreach ($depoGruplar as $g): ?>
-      <div class="depo-grup"><b><?= e($g['tur']) ?> <span>(<?= (int) $g['adet'] ?>)</span></b>
-        <ul><?php foreach ($g['satirlar'] as $r): ?><li><code><?= e($r['numara']) ?></code><?= $r['adet'] > 1 ? ' <span>× ' . (int) $r['adet'] . '</span>' : '' ?></li><?php endforeach; ?></ul>
-      </div>
-    <?php endforeach; ?>
-  </div>
-  <a class="link small" href="stock.php">Eksik cam listesini aç →</a>
-</section>
-<?php endif; ?>
-<?php if ($depoSon): ?>
-<form method="post" action="stock.php" class="depo-son" data-confirm="Son depo gönderimi geri alınsın mı? Camlar yeniden &quot;Eksik&quot; olur (WhatsApp mesajı geri alınmaz).">
-  <?= csrf_field() ?><input type="hidden" name="eylem" value="depo_geri"><input type="hidden" name="geri" value="ana">
-  <span><?= icon('check') ?> Son depo gönderimi: <?= e(date('H:i', (int) $depoSon['at'])) ?> · <?= count((array) $depoSon['ids']) ?> cam<?= ($depoSon['tedarikci'] ?? '') !== '' ? ' · ' . e((string) $depoSon['tedarikci']) : '' ?></span>
-  <button class="btn btn-sm btn-ghost">Geri al</button>
-</form>
-<?php endif; ?>
+<?php require dirname(__DIR__) . '/partials/depo-karti.php'; ?>
 <?php $teamGoal = team_monthly_goal(); ?>
 <section class="card team-goal-card" <?= $teamGoal['pct'] >= 100 ? 'data-celebrate-big="🎉 Bu ayın takım hedefi tamamlandı! Hepiniz harikasınız! 🎉" data-celebrate-once="teamgoal-' . date('Y-m') . '"' : '' ?>>
   <div class="team-goal-head"><span>🚀 Bu ayın takım hedefi</span><b><?= $teamGoal['current'] ?> / <?= $teamGoal['goal'] ?> sipariş</b></div>

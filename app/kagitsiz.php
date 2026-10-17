@@ -128,16 +128,28 @@ function depo_gonder(?int $tedarikciId = null): array
     $tedarikci = $tedarikciId ? row('SELECT id, name, phone FROM suppliers WHERE id = ? AND is_active = 1', [$tedarikciId]) : depo_tedarikci();
     $ids = array_map(static fn($k) => (int) $k['id'], $kalemler);
     $in = in_placeholders($ids);
-    transaction(static function () use ($ids, $in, $tedarikci): void {
-        $set = "stock_status = 'siparis_verildi', ordered_at = ?, arrived_at = NULL";   // zaman PHP'de (SQL taşınabilir)
-        $p = array_merge([date('Y-m-d H:i:s')], $ids);
+    // 4.38.1: gönderim bir cam sipariş fişi olarak kaydedilir ("Cam siparişleri · depo" › Sipariş fişleri) — tek kayıt yolu
+    $fisId = transaction(static function () use ($ids, $in, $tedarikci): int {
+        $simdi = date('Y-m-d H:i:s');   // zaman PHP'de (SQL taşınabilir)
+        $fisId = insert('cam_siparisleri', [
+            'supplier_id' => $tedarikci ? (int) $tedarikci['id'] : null,
+            'durum'       => 'gonderildi',
+            'kanal'       => 'whatsapp',
+            'notlar'      => 'Gün sonu toplu gönderim (WhatsApp, müşteri bilgisi olmadan)',
+            'gonderim_at' => $simdi,
+            'created_by'  => (int) (current_user()['id'] ?? 0) ?: null,
+            'created_at'  => $simdi,
+        ]);
+        $set = "stock_status = 'siparis_verildi', ordered_at = ?, arrived_at = NULL, cam_siparis_id = ?";
+        $p = array_merge([$simdi, $fisId], $ids);
         if ($tedarikci) {
             $set .= ', supplier_id = ?';
-            $p = array_merge([date('Y-m-d H:i:s'), (int) $tedarikci['id']], $ids);
+            $p = array_merge([$simdi, $fisId, (int) $tedarikci['id']], $ids);
         }
         q("UPDATE prescription_lens_items SET $set WHERE id IN ($in) AND stock_status = 'stokta_yok'", $p);
+        return $fisId;
     });
-    setting_set('depo_son_gonderim', (string) json_encode(['ids' => $ids, 'at' => time(), 'tedarikci' => $tedarikci['name'] ?? ''], JSON_UNESCAPED_UNICODE));
+    setting_set('depo_son_gonderim', (string) json_encode(['ids' => $ids, 'at' => time(), 'tedarikci' => $tedarikci['name'] ?? '', 'fis' => $fisId], JSON_UNESCAPED_UNICODE));
     audit('depo_gonderim', 'stock', 0, ['adet' => count($ids), 'tedarikci' => $tedarikci['name'] ?? '']);
     $url = $tedarikci ? wa_url((string) $tedarikci['phone'], $metin) : '';
     if ($url === '') {
@@ -166,9 +178,13 @@ function depo_geri_al(): int
     $ids = array_map('intval', (array) $son['ids']);
     $in = in_placeholders($ids);
     $n = 0;
-    transaction(static function () use ($ids, $in, &$n): void {
+    $fisId = (int) ($son['fis'] ?? 0);
+    transaction(static function () use ($ids, $in, &$n, $fisId): void {
         $n = (int) scalar("SELECT COUNT(*) FROM prescription_lens_items WHERE id IN ($in) AND stock_status = 'siparis_verildi'", $ids);
-        q("UPDATE prescription_lens_items SET stock_status = 'stokta_yok', ordered_at = NULL WHERE id IN ($in) AND stock_status = 'siparis_verildi'", $ids);
+        q("UPDATE prescription_lens_items SET stock_status = 'stokta_yok', ordered_at = NULL, cam_siparis_id = NULL WHERE id IN ($in) AND stock_status = 'siparis_verildi'", $ids);
+        if ($fisId > 0) {
+            q("UPDATE cam_siparisleri SET durum = 'iptal' WHERE id = ? AND durum = 'gonderildi'", [$fisId]);   // fiş de geri alınır
+        }
     });
     setting_set('depo_son_gonderim', '');
     audit('depo_geri_al', 'stock', 0, ['adet' => $n]);

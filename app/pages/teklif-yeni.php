@@ -189,9 +189,10 @@ if ($recete) {
     <h3 class="gozluk-alt">Cam seçenekleri <small class="muted">1–3 seçenek; müşteri karşılaştırıp birini seçer</small></h3>
     <div class="teklif-secenekler">
       <?php for ($i = 1; $i <= TEKLIF_SECENEK_SAYISI; $i++): $secili = (int) $degerI($k, 'urun', $i); ?>
-        <div class="teklif-secenek" data-secenek="<?= $i ?>">
+        <?php $gizli = $i > 1 && $secili === 0 && $degerI($k, 'cam_fiyat', $i) === ''; /* 4.38.1: 2. ve 3. seçenek istenince açılır */ ?>
+        <div class="teklif-secenek" data-secenek="<?= $i ?>"<?= $gizli ? ' hidden data-secenek-gizli' : '' ?>>
           <b class="teklif-secenek-no"><?= $i ?></b>
-          <label class="field"><span>Başlık</span><input name="<?= e($ad($n, 'secenek_ad')) ?>[<?= $i ?>]" value="<?= e($degerI($k, 'secenek_ad', $i)) ?>" placeholder="<?= e($varsayilanAd[$i - 1]) ?>" maxlength="60" data-secenek-ad></label>
+          <label class="field teklif-baslik"><span>Başlık</span><input name="<?= e($ad($n, 'secenek_ad')) ?>[<?= $i ?>]" value="<?= e($degerI($k, 'secenek_ad', $i)) ?>" placeholder="<?= e($varsayilanAd[$i - 1]) ?>" maxlength="60" data-secenek-ad></label>
           <label class="field teklif-cam"><span>Cam (marka · ad · özellik)</span>
             <select name="<?= e($ad($n, 'urun')) ?>[<?= $i ?>]" data-cam-sec>
               <option value=""><?= $i === 1 ? '— Cam seçin —' : '— Bu seçeneği kullanma —' ?></option>
@@ -204,14 +205,15 @@ if ($recete) {
               <?php endforeach; ?>
             </select>
           </label>
-          <label class="field"><span>Cam fiyatı (çift, ₺)</span><input name="<?= e($ad($n, 'cam_fiyat')) ?>[<?= $i ?>]" inputmode="decimal" value="<?= e($degerI($k, 'cam_fiyat', $i)) ?>" placeholder="Katalog fiyatı" data-money data-cam-fiyat></label>
+          <label class="field"><span>Fiyat (çift, ₺)</span><input name="<?= e($ad($n, 'cam_fiyat')) ?>[<?= $i ?>]" inputmode="decimal" value="<?= e($degerI($k, 'cam_fiyat', $i)) ?>" placeholder="Katalog fiyatı" data-money data-cam-fiyat></label>
         </div>
       <?php endfor; ?>
+      <button type="button" class="btn btn-ghost btn-sm teklif-secenek-ekle" data-secenek-ekle><?= icon('plus') ?> Başka bir cam seçeneği</button>
     </div>
 
-    <h3 class="gozluk-alt">Kullanım ve Medula payı</h3>
+    <h3 class="gozluk-alt">Medula payı<?= $recete ? ' <small class="muted">kullanım reçeteden: ' . e($kullanimlar[$kullanim] ?? '') . '</small>' : '' ?></h3>
     <div class="grid cols-3">
-      <label class="field"><span>Kullanım şekli <small class="muted">(SGK uzak/yakın)</small></span>
+      <label class="field"<?= $recete ? ' hidden' : '' ?>><span>Kullanım şekli <small class="muted">(SGK uzak/yakın)</small></span>
         <select name="<?= e($ad($n, 'lens_design')) ?>" data-kullanim><?= select_options($kullanimlar, $kullanim) ?></select></label>
       <label class="field"><span>&nbsp;</span>
         <span class="check-field" style="min-height:46px"><input type="checkbox" name="<?= e($ad($n, 'sgk_var')) ?>" value="1" <?= $sgkVar ? 'checked' : '' ?> data-sgk-var> SGK'lı (Medula payı düşülsün)</span></label>
@@ -226,15 +228,15 @@ if ($recete) {
     <small class="muted">Uzak + yakın gibi ikinci (ya da üçüncü) bir gözlük. Her gözlüğün çerçevesi, camları ve SGK payı ayrıdır; siparişe ayrı ayrı döner.</small>
   </div>
 
-  <section class="card">
-    <div class="card-head"><h2>İskonto ve not</h2></div>
+  <details class="card"<?= $deger($g, 'discount_rate') !== '' || $deger($g, 'note') !== '' ? ' open' : '' ?>>
+    <summary class="card-head"><h2>İskonto ve not</h2><span class="muted small">isteğe bağlı</span></summary>
     <div class="grid cols-3">
       <label class="field"><span>İskonto (%) <small class="muted"><?= $sinir >= 100 ? 'sınırsız' : 'en çok %' . e($oranMetni($sinir)) ?></small></span>
         <input name="discount_rate" inputmode="decimal" value="<?= e($deger($g, 'discount_rate')) ?>" placeholder="0" data-iskonto></label>
       <label class="field span-2"><span>Not</span><input name="note" value="<?= e($deger($g, 'note')) ?>" maxlength="255" placeholder="örn. bilgisayar başında çok çalışıyor"></label>
     </div>
     <p class="hint">İskonto her gözlükte, SGK payı düşüldükten sonra kalan tutara uygulanır. SGK payı Ayarlar'daki taban tutara göre tahmindir; kesin tutar Medula'da belli olur.</p>
-  </section>
+  </details>
 
   <section class="card teklif-ozet" aria-live="polite">
     <div class="card-head"><h2>Hesap</h2></div>

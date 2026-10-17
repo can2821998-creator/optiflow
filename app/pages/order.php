@@ -644,9 +644,26 @@ page_start($name . ' ' . order_no($id), 'orders');
   </div>
 </div>
 
-<form method="post" class="card stage-changer">
+<?php
+  /* 4.38.1 sadeleştirme: sık yapılan tek adım tek düğme; elle durum seçimi katlanır bölümde. */
+  $sonrakiAsama = match ($order['order_stage']) {
+      'siparis_verildi', 'bekliyor', 'rx_siparis_verildi' => ['atolyede', 'Atölyeye al'],
+      'hazirlandi' => ['teslim_edildi', 'Teslim edildi'],
+      default => null,
+  };
+?>
+<?php if ($sonrakiAsama): ?>
+<form method="post" class="hizli-asama">
   <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="set_stage">
-  <div class="card-head"><h2>Durumu değiştir</h2><span class="muted small">Her değişiklikte kimin yaptığı kaydedilir ve fişte görünür.</span></div>
+  <input type="hidden" name="actor_id" value="<?= (int) $user['id'] ?>">
+  <button class="btn btn-primary" name="stage" value="<?= e($sonrakiAsama[0]) ?>"><?= icon('check') ?> <?= e($sonrakiAsama[1]) ?></button>
+  <small class="muted"><?= e($user['full_name']) ?> adına kaydedilir.</small>
+</form>
+<?php endif; ?>
+<details class="card stage-changer">
+<summary class="card-head"><h2>Durumu elle değiştir</h2><span class="muted small">Başka biri yaptıysa ya da geri almak için</span></summary>
+<form method="post">
+  <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="set_stage">
   <div class="grid cols-3">
     <label class="field"><span>Yeni durum</span>
       <select name="stage" required>
@@ -662,8 +679,9 @@ page_start($name . ' ' . order_no($id), 'orders');
       </label>
     <?php endif; ?>
   </div>
-  <button class="btn btn-primary">Uygula</button>
+  <button class="btn">Uygula</button>
 </form>
+</details>
 <?php else: ?>
   <div class="alert alert-error">Bu sipariş iptal edildi.
     <?php if (is_super()): ?>
@@ -787,8 +805,14 @@ page_start($name . ' ' . order_no($id), 'orders');
 
     <?php if (ozellik_acik('uts_bildirim') && $order['transaction_type'] !== 'tamir') { require dirname(__DIR__) . '/partials/uts-siparis-karti.php'; } ?>
 
-    <section class="card">
-      <div class="card-head"><h2>Sipariş bilgileri</h2></div>
+    <details class="card siparis-bilgi">
+      <summary class="card-head"><h2>Sipariş bilgileri</h2>
+        <span class="muted small"><?= e(implode(' · ', array_filter([
+            $order['transaction_type'] === 'tamir' ? ($order['service_type'] ? service_type_label($order['service_type']) : '') : (string) $order['lens_type'],
+            trim((string) $order['frame_info']),
+            $order['promised_date'] ? 'teslim ' . date_tr($order['promised_date']) : '',
+        ])) ?: 'Düzenlemek için açın') ?></span></summary>
+      <?php if (trim((string) $order['notes']) !== ''): ?><p class="siparis-not"><?= nl2br(e((string) $order['notes'])) ?></p><?php endif; ?>
       <form method="post" class="grid cols-2" data-guard>
         <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="update_order">
         <?php if ($order['transaction_type'] === 'tamir'): ?>
@@ -841,18 +865,21 @@ page_start($name . ' ' . order_no($id), 'orders');
           <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="set_stage"><input type="hidden" name="stage" value="iptal">
         </form>
       <?php endif; ?>
-    </section>
+    </details>
   </div>
 
   <aside class="split-side">
 
     <section class="card">
       <div class="card-head"><h2><?= icon('download') ?> SGK reçetesi</h2></div>
-      <p class="muted small">Medula Optik ekranındaki reçeteyi bu siparişe aktarın; değerler önizlemede
-         gösterilir, siz onaylayınca yazılır.</p>
-      <div class="btn-row" style="margin-top:12px">
-        <a class="btn btn-sm btn-primary" href="sgk-aktar.php?order=<?= (int) $id ?>">Reçeteyi aktar</a>
-      </div>
+      <?php if ((string) $order['sgk_erecete'] !== ''): ?>
+        <p class="small">e-Reçete <b class="mono"><?= e((string) $order['sgk_erecete']) ?></b> <a class="link small" href="sgk-aktar.php?order=<?= (int) $id ?>">yeniden aktar</a></p>
+      <?php else: ?>
+        <p class="muted small">Medula'daki reçeteyi bu siparişe aktarın; onaylayınca yazılır.</p>
+        <div class="btn-row" style="margin-top:12px">
+          <a class="btn btn-sm btn-primary" href="sgk-aktar.php?order=<?= (int) $id ?>">Reçeteyi aktar</a>
+        </div>
+      <?php endif; ?>
       <?php if ((ozellik_acik('efatura') || ozellik_acik('sgk_mutabakat')) && $order['order_stage'] !== 'iptal' && sgk_siparis_sgkli_mi($order)): ?>
         <div id="medula" class="stack" style="gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
           <?php if (!empty($order['medula_islendi_at'])): ?>
@@ -874,8 +901,8 @@ page_start($name . ' ' . order_no($id), 'orders');
     <?php if (ozellik_acik('garanti') && $order['order_stage'] !== 'iptal' && $order['transaction_type'] !== 'tamir') { require dirname(__DIR__) . '/partials/garanti-karti.php'; } ?>
 
     <?php $takipUrl = order_track_url($id); if ($takipUrl !== ''): ?>
-      <section class="card track-share">
-        <div class="card-head"><h2><?= icon('glasses') ?> Müşteri takip bağlantısı</h2></div>
+      <details class="card track-share"<?= track_page_exists() ? '' : ' open' ?>>
+        <summary class="card-head"><h2><?= icon('glasses') ?> Müşteri takip bağlantısı</h2><span class="muted small">kopyala · aç</span></summary>
         <p class="muted small">Fişteki karekod bu sayfayı açar. Müşteriye ayrıca WhatsApp ile de gönderebilirsiniz
            (mesaj şablonlarında <code>{takip_linki}</code> değişkeni kullanılabilir).</p>
         <div class="track-share-row">
@@ -892,7 +919,7 @@ page_start($name . ' ' . order_no($id), 'orders');
             dosyalarını da yükleyin.
           </div>
         <?php endif; ?>
-      </section>
+      </details>
     <?php endif; ?>
 
     <?php if (can_see_amounts()): ?>
@@ -957,9 +984,12 @@ page_start($name . ' ' . order_no($id), 'orders');
     </section>
     <?php endif; ?>
 
+    <?php if ((is_super() && ($lensCostKnown > 0 || $hasFrameCost)) || $otherOrders || $history): ?>
+    <details class="card gecmis">
+      <summary class="card-head"><h2>Geçmiş<?= is_super() && ($lensCostKnown > 0 || $hasFrameCost) ? ' ve kârlılık' : '' ?></h2><span class="muted small">diğer siparişler · hareketler</span></summary>
     <?php if (is_super() && ($lensCostKnown > 0 || $hasFrameCost)): ?>
-    <section class="card profit-card">
-      <div class="card-head"><h2><?= icon('lock') ?> Tahmini kârlılık</h2></div>
+    <section class="ic-bolum profit-card">
+      <h3><?= icon('lock') ?> Tahmini kârlılık</h3>
       <div class="money-summary">
         <div><small>Satış</small><b><?= money($order['total_amount']) ?></b></div>
         <div><small>Cam maliyeti<?= $lensCostMissing ? ' *' : '' ?></small><b><?= $lensCostKnown > 0 ? money($lensCostKnown) : '—' ?></b></div>
@@ -976,8 +1006,8 @@ page_start($name . ' ' . order_no($id), 'orders');
     <?php endif; ?>
 
     <?php if ($otherOrders): ?>
-    <section class="card">
-      <div class="card-head"><h2>Müşterinin diğer siparişleri</h2></div>
+    <section class="ic-bolum">
+      <h3>Müşterinin diğer siparişleri</h3>
       <ul class="mini-list">
         <?php foreach ($otherOrders as $oo): ?>
           <li><a href="order.php?id=<?= (int) $oo['id'] ?>"><span><?= order_no((int) $oo['id']) ?> · <?= date_tr($oo['created_at']) ?></span><?= stage_badge($oo['order_stage']) ?></a></li>
@@ -987,14 +1017,16 @@ page_start($name . ' ' . order_no($id), 'orders');
     <?php endif; ?>
 
     <?php if ($history): ?>
-    <section class="card">
-      <div class="card-head"><h2>Hareketler</h2><a class="link" href="logs.php?entity=order&id=<?= $id ?>">Tümü</a></div>
+    <section class="ic-bolum">
+      <h3>Hareketler <a class="link small" href="logs.php?entity=order&id=<?= $id ?>">Tümü</a></h3>
       <ul class="timeline compact">
         <?php foreach ($history as $h): ?>
           <li><div><b><?= e(audit_label($h['action'])) ?></b><small class="block"><?= date_tr($h['created_at'], true) ?> · <?= e($h['user_name']) ?></small></div></li>
         <?php endforeach; ?>
       </ul>
     </section>
+    <?php endif; ?>
+    </details>
     <?php endif; ?>
 
     <?php if (is_super()): ?>

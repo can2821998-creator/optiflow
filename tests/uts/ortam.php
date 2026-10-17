@@ -139,6 +139,9 @@ function sema_kur(PDO $p): void
         sgk_amount REAL NOT NULL DEFAULT 0, discount_rate REAL NOT NULL DEFAULT 0, opt1_product_id INTEGER NULL, opt2_product_id INTEGER NULL, opt3_product_id INTEGER NULL,
         secilen INTEGER NULL, gozluk_ad TEXT NULL, updated_at TEXT NULL, updated_by INTEGER NULL, recete_id INTEGER NULL)");
     // migrate_v34_bekleyen_recete ile aynı sütunlar (4.34.0: reçete → müşteri → teklif → sipariş)
+    // migrate_v22_moduller ile aynı sütunlar (cam sipariş fişi; 4.38.1 gün sonu depo gönderimi de fiş olur)
+    $p->exec("CREATE TABLE cam_siparisleri (id INTEGER PRIMARY KEY AUTOINCREMENT, supplier_id INTEGER NULL, durum TEXT NOT NULL DEFAULT 'taslak', kanal TEXT NULL,
+        tedarikci_ref TEXT NULL, notlar TEXT NULL, gonderim_at TEXT NULL, teslim_at TEXT NULL, created_by INTEGER NULL, created_at TEXT, updated_at TEXT NULL)");
     $p->exec("CREATE TABLE bekleyen_receteler (id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER NOT NULL, gelen_id INTEGER NULL, erecete TEXT NULL,
         veri TEXT NOT NULL, used_order_id INTEGER NULL, used_at TEXT NULL, created_by INTEGER NULL, created_at TEXT NOT NULL)");
     // migrate_v32_teklif_gozlukler ile aynı sütunlar (4.26.0: teklifte 2. ve 3. gözlük)

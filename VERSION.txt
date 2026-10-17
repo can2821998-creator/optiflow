@@ -1,6 +1,17 @@
 OPTIFLOW
-Release: 4.38.0 (2026-10-17)
+Release: 4.39.0 (2026-10-17)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.39.0 (sadeleştirme 2: sipariş sayfası, teklif formu, depo gönderimi tek yol)
+  - Sipariş sayfası: durum ilerlemesi tek düğme ("Atölyeye al" / "Teslim edildi", giriş yapan adına); elle durum
+    seçimi, sipariş bilgileri düzenleme, takip bağlantısı ve geçmiş/kârlılık katlanır kartlarda; hatalı cam formu kapalı
+    gelir; SGK kartında e-reçete varsa yalnız numara + "yeniden aktar".
+  - Teklif formu: 2. ve 3. cam seçeneği "Başka bir cam seçeneği" ile açılır; iskonto ve not katlanır; reçeteden gelen
+    teklifte kullanım şekli seçimi gizlenir (başlıkta yazar).
+  - Gün sonu "depoya WhatsApp" gönderimi artık bir cam sipariş fişi olarak kaydedilir (Sipariş fişleri sekmesinde
+    "gün sonu"); geri alınınca fiş iptal olur. Kart her mağazada "Cam siparişleri · depo › Eksik" sekmesinde
+    (app/partials/depo-karti.php); ana ekranda kâğıtsız tezgâh açıkken.
+  - Siparişler ana ekranı: tek giriş "Yeni müşteri · reçete" + "Reçetesiz sipariş" (tamir, güneş gözlüğü, lens).
 
 DEĞİŞİKLİK NOTLARI — 4.38.0 (sadeleştirme: teklif isteğe bağlı, tek ekran, menü grupları)
   - Kullanıcı (17.10): "teklifi zorunlu kılma, sözlü anlaşılanlar doğrudan seçilsin; menü, adım, görsel, alan olarak

@@ -79,6 +79,9 @@ ok((string) scalar('SELECT ordered_at FROM prescription_lens_items WHERE id = ?'
 esit('stokta_var', (string) scalar('SELECT stock_status FROM prescription_lens_items WHERE id = ?', [$e]), 'stoktaki cama dokunulmadı');
 esit('stokta_yok', (string) scalar('SELECT stock_status FROM prescription_lens_items WHERE id = ?', [$f]), 'iptal siparişin camına dokunulmadı');
 esit(0, count(depo_eksik_kalemler()), 'liste boşaldı');
+$fisNo = (int) (depo_son_gonderim()['fis'] ?? 0);
+ok($fisNo > 0 && row('SELECT durum, kanal, supplier_id FROM cam_siparisleri WHERE id = ?', [$fisNo]) === ['durum' => 'gonderildi', 'kanal' => 'whatsapp', 'supplier_id' => $t2], '4.38.1: gönderim cam sipariş fişi olarak kaydedildi');
+esit(5, (int) scalar('SELECT COUNT(*) FROM prescription_lens_items WHERE cam_siparis_id = ?', [$fisNo]), 'camlar fişe bağlandı');
 esit(0, depo_gonder()['adet'], 'ikinci gönderim boş');
 ok(depo_son_gonderim() !== null, 'son gönderim kayıtlı');
 q("UPDATE prescription_lens_items SET stock_status = 'stokta_var' WHERE id = ?", [$d]);   // biri bu arada geldi
@@ -86,6 +89,8 @@ esit(4, depo_geri_al(), 'geri al: gelmiş cam hariç');
 esit('stokta_yok', (string) scalar('SELECT stock_status FROM prescription_lens_items WHERE id = ?', [$a]), 'cam yeniden eksik');
 esit('stokta_var', (string) scalar('SELECT stock_status FROM prescription_lens_items WHERE id = ?', [$d]), 'gelmiş cam korunur');
 esit(null, depo_son_gonderim(), 'geri alınca kayıt silinir');
+esit('iptal', (string) scalar('SELECT durum FROM cam_siparisleri WHERE id = ?', [$fisNo]), 'geri alınca fiş iptal');
+ok(scalar('SELECT cam_siparis_id FROM prescription_lens_items WHERE id = ?', [$a]) === null, 'geri alınan cam fişten çıktı');
 esit(0, depo_geri_al(), 'ikinci geri alma etkisiz');
 setting_set('depo_son_gonderim', (string) json_encode(['ids' => [$a], 'at' => time() - (DEPO_GERI_AL_SAAT * 3600 + 5)]));
 esit(null, depo_son_gonderim(), 'süresi geçen gönderim geri alınamaz');

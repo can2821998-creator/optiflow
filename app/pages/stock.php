@@ -27,7 +27,7 @@ if (is_post() && post('eylem') === 'fis') {
 }
 
 /* 4.32.0 kâğıtsız tezgâh: gün sonu eksik camlar tek tuşla depoya (WhatsApp), son gönderimi geri al */
-if (is_post() && ozellik_acik('kagitsiz') && in_array(post('eylem'), ['depo_whatsapp', 'depo_geri'], true)) {
+if (is_post() && in_array(post('eylem'), ['depo_whatsapp', 'depo_geri'], true)) {   // 4.38.1: her mağazada (Eksik sekmesindeki kart)
     if (post('eylem') === 'depo_geri') {
         $n = depo_geri_al();
         flash($n > 0 ? $n . ' cam yeniden "Eksik" listesine alındı.' : 'Geri alınacak gönderim yok.');
@@ -40,7 +40,7 @@ if (is_post() && ozellik_acik('kagitsiz') && in_array(post('eylem'), ['depo_what
     $sonuc = depo_gonder($tedarikciSecim);
     if ($sonuc['adet'] === 0) {
         flash('Depoya gidecek eksik cam yok.');
-        redirect('index.php');
+        redirect(post('geri') === 'stok' ? 'stock.php' : 'index.php');
     }
     header('Location: ' . $sonuc['url'], true, 303);   // WhatsApp (yeni sekmede açılır; ana sekme kendini yeniler)
     exit;
@@ -175,6 +175,15 @@ page_header(
   <?php endforeach; ?>
 </nav>
 
+<?php if ($tab === 'eksik'):   // 4.38.1: gün sonu tek tuş depoya WhatsApp (fiş olarak kaydedilir)
+    $depoGruplar = depo_gruplari(depo_eksik_kalemler());
+    $depoToplam = array_sum(array_column($depoGruplar, 'adet'));
+    $depoTedarikci = depo_tedarikci();
+    $depoTedarikciler = !$depoTedarikci && $depoToplam ? rows('SELECT id, name FROM suppliers WHERE is_active = 1 ORDER BY name') : [];
+    $depoSon = depo_son_gonderim();
+    $depoGeri = 'stok';
+    require dirname(__DIR__) . '/partials/depo-karti.php';
+endif; ?>
 <?php if ($tab === 'fisler'): ?>
 <section class="card">
   <?php if (!$fisler): ?>
@@ -186,7 +195,7 @@ page_header(
         <?php foreach ($fisler as $fs): [$dAd, $dTon] = cam_fis_durumlari()[$fs['durum']] ?? [$fs['durum'], 'gray']; ?>
           <tr>
             <td><a class="link" href="cam-siparis.php?id=<?= (int) $fs['id'] ?>"><b>#<?= (int) $fs['id'] ?></b></a></td>
-            <td><?= e((string) $fs['tedarikci']) ?></td>
+            <td><?= e((string) $fs['tedarikci'] ?: ($fs['kanal'] === 'whatsapp' ? 'WhatsApp (kişi seçildi)' : '—')) ?><?= $fs['kanal'] === 'whatsapp' ? ' <small class="muted">gün sonu</small>' : '' ?></td>
             <td class="num"><?= (int) $fs['adet'] ?></td>
             <td class="hide-sm"><?= e(date_tr($fs['created_at'])) ?></td>
             <td><span class="badge tone-<?= e($dTon) ?>"><?= e($dAd) ?></span></td>
@@ -257,7 +266,7 @@ page_header(
   <?php endif; ?>
 </section>
 
-<?php if ($groups && $tab !== 'gelen'): ?>
+<?php if ($groups && $tab === 'siparis'): ?>
 <section class="card">
   <div class="card-head"><h2>Depo özeti</h2><small class="muted">Aynı cam ve numara birleştirildi · müşteri bilgisi içermez</small></div>
   <div class="table-wrap"><table class="table compact">

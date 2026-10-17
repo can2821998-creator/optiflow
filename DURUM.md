@@ -22,8 +22,8 @@
 - Kullanıcı (17.10): iş emri kesince dik kullanılacak, daha güzel olsun; müşteri nüshası yatay kalsın, daha yaratıcı;
   "bilet / gözlük çizimi gibi tasarımları güzel yapamıyorsun" → çizim yerine tipografi.
 - Yapılan: iş emri 148,5 × 210 dikey kart, yarım sayfaya 90° döndürülerek basılır (gece bandı, 01–04 numaralı bölümler,
-  Tamam/Paraf/Saat tablosu; kalabalıkta `.sik`). Müşteri nüshası: ad dört kez bulanıktan nete + reçeteden "net"e inen
-  değerler, manşet, durum çizgisi, nişangâh filigranı; sağda teslim sözü, nişangâh içinde karekod, ödeme.
+  Tamam/Paraf/Saat tablosu; kalabalıkta `.sik`). Müşteri nüshası: göz tablosu (harfler küçülerek "GÖZLÜĞÜNÜZ
+  HAZIRLANIYOR"), "Sırada ne var?" (ilerleme çubuğu kaldırıldı), nişangâh filigranı; sağda teslim, karekod, ödeme.
 - Denendi: başsız Chrome PDF (A4 1 sayfa, yarım sayfa 2), 3 sipariş (en kalabalığı 4 cam) taşmasız. Testler: tezgah 74.
 - Bekleyen: kullanıcı onayıyla main'e birleştirme (= canlıya çıkış); gerçek yazıcıda baskı + kesip dik okuma denemesi.
 

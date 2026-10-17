@@ -145,7 +145,7 @@ ok(str_contains($fis, 'Müşteri nüshası') && str_contains($fis, "query('nusha
 ok(str_contains($fis, 'Montaj ölçüleri') && str_contains($fis, "'Kontrol · PD / aks'") && str_contains($fis, '<th>Paraf</th>'), 'iş emri: montaj ölçüleri, parafli atölye adımları');
 ok(str_contains($fis, 'class="is-emri') && str_contains((string) file_get_contents(dirname(__DIR__, 2) . '/assets/siparis-fisi.css'), 'rotate(-90deg)'), '4.36.0 iş emri 148,5 × 210 dikey kart, döndürülerek basılır');
 ok(str_contains($fis, "preg_match('/^(Teklif #\\d+|Cam .*₺)/u'"), 'iş emri notunda teklifin fiyat satırları basılmaz');
-ok(str_contains($fis, 'class="netles"') && str_contains($fis, 'class="nisangah"') && str_contains($fis, 'public_stage('), '4.36.0 müşteri nüshası: netleşen ad şeridi, nişangâh içinde karekod, durum çizgisi');
+ok(str_contains($fis, 'class="tablo"') && str_contains($fis, "['LÜĞ', '0,3']") && str_contains($fis, 'Sırada ne var?') && !str_contains($fis, 'class="yol"'), '4.36.0 müşteri nüshası: göz tablosu, sırada ne var (ilerleme çubuğu yok)');
 ok(str_contains($fis, "str_replace(['-', '.'], ['−', ','], \$s)"), 'dioptri eksi işareti ve virgülle (kimlik kuralı)');
 ok(str_contains((string) file_get_contents(dirname(__DIR__, 2) . '/assets/print.js'), 'data-otomatik-yazdir'), 'tezgâhtan gelince otomatik yazdır');
 

@@ -12,8 +12,8 @@ declare(strict_types=1);
        (CSS .is-emri). Gece bandı (sipariş no, teslim sözü, "Siparişi aç" karekodu), numaralı bölümler: 01 reçete
        (büyük mono), 02 montaj ölçüleri (boşsa usta yazar), 03 camlar + çerçeve (göz, grup, stok), 04 atölye adımları
        (tamam / paraf / saat), not. Kalabalık reçetede (3–4 cam ya da yakın + ADD) .sik ile sıkılaşır.
-     Müşteri nüshası (yatay): müşterinin adı dört kez bulanıktan nete (altında kendi reçetesinden sıfıra inen
-       değerler), durum çizgisi, gözlük kartı; sağ sütunda teslim sözü, lensmetre nişangâhı içinde takip karekodu, ödeme.
+     Müşteri nüshası (yatay): göz tablosu (satır satır küçülen harfler "GÖZLÜĞÜNÜZ HAZIRLANIYOR" diye okunur),
+       "Sırada ne var?" (kâğıtta değişmeyen üç bilgi), gözlük kartı; sağ sütunda teslim sözü, nişangâh içinde karekod, ödeme.
    Siyah-beyaz yazıcıda da okunur (renk yalnız vurgu). Tek dosya: assets/siparis-fisi.css + print.js.
    Tutarlar yalnız tutar görme yetkisi olana basılır.
    ========================================================================== */
@@ -224,16 +224,16 @@ $isaret = static function (string $id, string $tek = ''): string {
   $tel = trim(setting('shop_phone'));
   $adres = trim(setting('shop_address'));
   $camOzet = $urun !== '' ? $urun : (implode(' · ', array_unique(array_filter(array_map(static fn($k) => trim((string) $k['lens_type']), $kalemler)))) ?: trim((string) $o['lens_type']));
-  $ilkAd = tr_title(explode(' ', trim((string) $o['c_first']))[0] ?? '') ?: 'Merhaba';
-  $asama = public_stage((string) $o['order_stage']);
-  $asamalar = [1 => 'Sipariş alındı', 2 => 'Atölyede', 3 => 'Hazır', 4 => 'Teslim'];
-  /* Netleşme şeridi: müşterinin adı dört kez, bulanıktan nete; altında kendi reçetesinden sıfıra inen değerler. */
-  $sph = (float) str_replace(',', '.', $rx ? ($v('right_sph') ?: $v('left_sph')) : '');
-  if (abs($sph) < 0.24) {
-      $sph = -1.0;
+  $ilkAd = tr_title(explode(' ', trim((string) $o['c_first']))[0] ?? '');
+  $hazir = public_stage((string) $o['order_stage'])['adim'] >= 3;
+  /* Göz eşeli: gerçek bir göz tablosu gibi satır satır küçülen harfler; yukarıdan aşağı okununca mesaj çıkar. */
+  $eselSatir = [['G', '0,1'], ['ÖZ', '0,2'], ['LÜĞ', '0,3'], ['ÜNÜZ', '0,5'], ['HAZIR', '0,7']];
+  if (!$hazir) {
+      $eselSatir[] = ['LANIYOR', '1,0'];
   }
-  $adimDeger = static fn(float $x): string => str_replace(['-', '.'], ['−', ','], sprintf('%+.2f', round($x * 4) / 4));
-  $netlik = [$adimDeger($sph), $adimDeger($sph * 0.6), $adimDeger($sph * 0.25), 'net'];
+  $harfler = static fn(string $s): string => implode(' ', mb_str_split($s));
+  $kontrol = strtotime('+1 year', strtotime((string) $o['created_at']) ?: time());
+  $kontrolAy = $aylar[(int) date('n', $kontrol)] . ' ' . date('Y', $kontrol);
   if ($yarim): ?></div><div class="kagit"><?php endif; ?>
 <section class="fis nusha">
   <svg class="filigran" viewBox="0 0 200 200" aria-hidden="true">
@@ -245,18 +245,23 @@ $isaret = static function (string $id, string $tek = ''): string {
       <div class="marka"><?= $isaret('nIsaret') ?><span><b><?= e($dukkan) ?></b><small>Müşteri nüshası</small></span></div>
       <div class="n-no"><small>Sipariş</small><b><?= e($no) ?></b></div>
     </header>
-    <?php $adUzun = mb_strlen($ilkAd); $adPt = $adUzun <= 5 ? 23 : ($adUzun <= 6 ? 20 : ($adUzun <= 8 ? 16.5 : ($adUzun <= 10 ? 13.5 : 11))); ?>
-    <div class="netles" aria-label="<?= e($ilkAd) ?>" style="--ad-pt: <?= $adPt ?>pt">
-      <?php foreach ($netlik as $i => $deger): ?>
-        <div class="netles-<?= $i + 1 ?>"><b aria-hidden="true"><?= e($ilkAd) ?></b><i><?= e($deger) ?></i></div>
-      <?php endforeach; ?>
+    <div class="n-orta">
+      <figure class="tablo" aria-label="<?= e($hazir ? 'Gözlüğünüz hazır.' : 'Gözlüğünüz hazırlanıyor.') ?>">
+        <figcaption><?= e(trim($ilkAd . ' ' . tr_title((string) $o['c_last']))) ?> için</figcaption>
+        <?php foreach ($eselSatir as $i => [$s, $deger]): ?>
+          <div class="t-<?= $i + 1 ?>"><i><?= e($deger) ?></i><b><?= e($harfler($s)) ?></b></div>
+        <?php endforeach; ?>
+        <p>Yukarıdan aşağı okuyun.</p>
+      </figure>
+      <div class="sirada">
+        <h3>Sırada ne var?</h3>
+        <ol>
+          <li><i>01</i><b>Hazır olunca haber veriyoruz</b><span><?= $o['c_phone'] ? e(phone_display($o['c_phone'])) . ' numarasına mesaj gelir.' : 'Size telefonla ulaşırız.' ?></span></li>
+          <li><i>02</i><b>Bu nüshayla teslim alın</b><span>Gözlüğü birlikte takıp ayarını yapıyoruz.</span></li>
+          <li><i>03</i><b>Bir yıl sonra göz kontrolü</b><span>Önerilen: <em><?= e($kontrolAy) ?></em>. Numaranız değişmiş olabilir.</span></li>
+        </ol>
+      </div>
     </div>
-    <p class="manset"><?= $asama['adim'] >= 3 ? 'Gözlüğünüz hazır.' : 'Gözlüğünüz hazırlanıyor.' ?> <span>Her şey birazdan bu kadar net.</span></p>
-    <ol class="yol" aria-label="Sipariş durumu">
-      <?php foreach ($asamalar as $n => $etiket): $cls = $asama['adim'] > $n ? 'bitti' : ($asama['adim'] === $n ? 'simdi' : ''); ?>
-        <li class="<?= $cls ?>"><span class="nokta"></span><b><?= e($etiket) ?></b></li>
-      <?php endforeach; ?>
-    </ol>
     <dl class="kart">
       <?php if ($camOzet !== ''): ?><div><dt>Cam</dt><dd><?= e($camOzet) ?></dd></div><?php endif; ?>
       <div><dt>Çerçeve</dt><dd><?= e($cerceve ?: '—') ?></dd></div>

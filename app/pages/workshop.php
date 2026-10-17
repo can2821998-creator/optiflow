@@ -110,24 +110,14 @@ page_start('Atölye panosu', 'workshop');
   <div>
     <small class="eyebrow">Atölye</small>
     <h1>Atölye <em>panosu</em></h1>
-    <p class="muted">Camın geldiği andan teslime kadar her siparişin nerede olduğunu tek ekranda görün — sürükleyip bırakarak ilerletin.</p>
+    <p class="muted">Camın geldiği andan teslime kadar her sipariş tek ekranda; kartı sürükleyip bırakarak ilerletin.</p>
   </div>
   <div class="quick-actions">
-    <a class="btn btn-primary" href="order-new.php"><?= icon('plus') ?> Yeni sipariş</a>
-    <a class="btn" href="teklif-yeni.php"><?= icon('spark') ?> Yeni teklif</a>
-    <a class="btn" href="kasa.php"><?= icon('wallet') ?> Kasa<?= $kasaClosedToday ? '' : ' <span class="badge sm tone-amber">açık</span>' ?></a>
+    <?php /* 4.40.0: yeni sipariş / teklif / kasa menüde; atölyeye ait olmayan sayılar (tahsilat, teklif, fatura) kaldırıldı */ ?>
     <a class="btn" href="ekran.php" target="_blank" rel="noopener"><?= icon('chart') ?> Ayrı ekranda aç</a>
   </div>
 </section>
 
-<div class="stats pano-stats">
-  <div class="stat"><small>Bugün alınan sipariş</small><b><?= $todayOrders ?></b><span>Bugün oluşturulan</span></div>
-  <?php if (can_see_amounts()): ?>
-  <div class="stat tone-green"><small>Bugün tahsilat</small><b><?= money($todayCollected) ?></b><span><a href="kasa.php">Kasayı gör →</a></span></div>
-  <?php endif; ?>
-  <div class="stat <?= $pendingQuotes ? '' : 'tone-green' ?>"><small>Cevap bekleyen teklif</small><b><?= $pendingQuotes ?></b><span><a href="quotes.php">Teklifler →</a></span></div>
-  <div class="stat <?= $pendingInvoices ? 'tone-amber' : 'tone-green' ?>"><small>Fatura bekleyen teslimat</small><b><?= $pendingInvoices ?></b><span><a href="deliveries.php">Teslimatlar →</a></span></div>
-</div>
 
 <div class="stats pano-stats">
   <div class="stat"><small>Şu an içeride</small><b><?= $totalInFlight ?></b><span>Cam bekleyen + atölyedeki</span></div>

@@ -1,6 +1,15 @@
 OPTIFLOW
-Release: 4.39.2 (2026-10-17)
+Release: 4.40.0 (2026-10-17)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.40.0 (sadeleştirme 3: ana ekran, atölye panosu, müşteri kartı)
+  - Siparişler ana ekranı: fal kutusu kaldırıldı; 4 sayı kutusu ve gecikme uyarısı "Bugün" paneliyle tekrar ettiği için
+    kaldırıldı, sayılar filtre çiplerinde (Aktif 26, Cam bekleyen 14, Hazır 4); toplam açık bakiye "Bugün" başlığında
+    dokununca görünür; takım hedefi listenin altında ince şerit.
+  - Atölye panosu: atölyeye ait olmayan 4 sayı (bugün sipariş, tahsilat, teklif, fatura bekleyen) ve menüyü tekrar eden
+    Yeni sipariş / Yeni teklif / Kasa düğmeleri kaldırıldı; 4 atölye sayısı ve "Ayrı ekranda aç" kaldı.
+  - Müşteri kartı: hatırlatma ekleme, kontakt lens ekleme, WhatsApp izni (kaydedilmişse) ve "Bilgiler" düzenleme
+    katlanır; müşteri notu başlıkta görünür.
 
 DEĞİŞİKLİK NOTLARI — 4.39.2 (fişte uzak / yakın ayrımı)
   - Kullanıcı: "döküm fişinde yakın uzağı daha net belirgin ayrıştıralım".

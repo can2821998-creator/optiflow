@@ -121,21 +121,11 @@ page_header(
     greeting() . ', ' . explode(' ', (string) current_user()['full_name'])[0]
 );
 ?>
-<div class="fortune-box" data-fortune-box hidden>
-  <span class="fortune-icon">🔮</span>
-  <span class="fortune-text" data-fortune-text></span>
-  <button type="button" class="icon-btn sm" data-fortune-close aria-label="Kapat">✕</button>
-</div>
 <?php require dirname(__DIR__) . '/partials/depo-karti.php'; ?>
-<?php $teamGoal = team_monthly_goal(); ?>
-<section class="card team-goal-card" <?= $teamGoal['pct'] >= 100 ? 'data-celebrate-big="🎉 Bu ayın takım hedefi tamamlandı! Hepiniz harikasınız! 🎉" data-celebrate-once="teamgoal-' . date('Y-m') . '"' : '' ?>>
-  <div class="team-goal-head"><span>🚀 Bu ayın takım hedefi</span><b><?= $teamGoal['current'] ?> / <?= $teamGoal['goal'] ?> sipariş</b></div>
-  <div class="badge-progress lg"><i style="width:<?= $teamGoal['pct'] ?>%"></i></div>
-  <small class="muted"><?= $teamGoal['pct'] >= 100 ? 'Hedef tamamlandı, tebrikler ekip! 🎉' : ('%' . $teamGoal['pct'] . ' tamamlandı — hep birlikte!') ?></small>
-</section>
 <?php if ($todayDue || $overdueList || $readyList || $dueBalanceList): ?>
 <section class="card today-board">
-  <div class="card-head"><h2><?= icon('spark') ?> Bugün</h2></div>
+  <div class="card-head"><h2><?= icon('spark') ?> Bugün</h2>
+    <?php if ($openBalance !== null): ?><button type="button" class="stat-secret bakiye-gizli is-masked" data-reveal aria-pressed="false"><small>Toplam açık bakiye</small> <b><?= money($openBalance) ?></b> <span><?= icon('eye') ?></span></button><?php endif; ?></div>
   <div class="today-cols">
     <div class="today-col">
       <b class="today-col-head tone-wine">Bugün teslim sözü verilen</b>
@@ -173,22 +163,6 @@ page_header(
   </div>
 </section>
 <?php endif; ?>
-<section class="stats">
-  <a class="stat" href="?durum=aktif"><small>Aktif sipariş</small><b><?= (int) ($stats['active'] ?? 0) ?></b><span><?= (int) ($stats['today'] ?? 0) ?> tanesi bugün</span></a>
-  <a class="stat" href="?durum=bekleyen"><small>Cam bekleyen</small><b><?= (int) ($stats['waiting'] ?? 0) ?></b><span>Sipariş / RX aşamasında</span></a>
-  <a class="stat tone-green" href="?durum=hazir"><small>Teslime hazır</small><b><?= (int) ($stats['ready'] ?? 0) ?></b><span>Müşteriye haber verin</span></a>
-  <?php if ($openBalance !== null): ?>
-    <button type="button" class="stat stat-secret is-masked" data-reveal aria-pressed="false">
-      <small>Toplam açık bakiye</small><b><?= money($openBalance) ?></b><span><?= icon('eye') ?> Göstermek için dokunun</span>
-    </button>
-  <?php else: ?>
-    <div class="stat <?= $overdue ? 'tone-red' : '' ?>"><small>Teslimi geciken</small><b><?= $overdue ?></b><span>Söz verilen tarih geçti</span></div>
-  <?php endif; ?>
-</section>
-
-<?php if ($overdue && $openBalance !== null): ?>
-  <div class="alert alert-warn"><?= icon('history') ?> Söz verilen teslim tarihi geçmiş <b><?= $overdue ?></b> sipariş var.</div>
-<?php endif; ?>
 
 <section class="card">
   <div class="toolbar">
@@ -199,7 +173,8 @@ page_header(
     </form>
     <nav class="chips" aria-label="Durum filtresi">
       <?php foreach ($filters as $key => $label): ?>
-        <a class="chip <?= $filter === $key ? 'active' : '' ?>" href="<?= e(url_with(['durum' => $key, 'sayfa' => null])) ?>"><?= e($label) ?></a>
+        <?php $chipSayi = ['aktif' => (int) ($stats['active'] ?? 0), 'bekleyen' => (int) ($stats['waiting'] ?? 0), 'hazir' => (int) ($stats['ready'] ?? 0)][$key] ?? 0;   /* 4.40.0: sayı kutuları yerine */ ?>
+        <a class="chip <?= $filter === $key ? 'active' : '' ?>" href="<?= e(url_with(['durum' => $key, 'sayfa' => null])) ?>"><?= e($label) ?><?= $chipSayi ? ' <em>' . $chipSayi . '</em>' : '' ?></a>
       <?php endforeach; ?>
     </nav>
   </div>
@@ -246,5 +221,12 @@ page_header(
     </div>
     <div class="list-foot"><span class="muted"><?= $total ?> kayıt</span><?= pagination_links($pg) ?></div>
   <?php endif; ?>
+</section>
+<?php /* 4.40.0: takım hedefi listenin altında, ince */ ?>
+<?php $teamGoal = team_monthly_goal(); ?>
+<section class="card team-goal-card ince" <?= $teamGoal['pct'] >= 100 ? 'data-celebrate-big="🎉 Bu ayın takım hedefi tamamlandı! Hepiniz harikasınız! 🎉" data-celebrate-once="teamgoal-' . date('Y-m') . '"' : '' ?>>
+  <div class="team-goal-head"><span>🚀 Bu ayın takım hedefi</span><b><?= $teamGoal['current'] ?> / <?= $teamGoal['goal'] ?> sipariş</b></div>
+  <div class="badge-progress lg"><i style="width:<?= $teamGoal['pct'] ?>%"></i></div>
+  <small class="muted"><?= $teamGoal['pct'] >= 100 ? 'Hedef tamamlandı, tebrikler ekip! 🎉' : ('%' . $teamGoal['pct'] . ' tamamlandı — hep birlikte!') ?></small>
 </section>
 <?php page_end();

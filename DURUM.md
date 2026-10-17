@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 17 Ekim 2026 (4.39.2 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 17 Ekim 2026 (4.40.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
-- **Sunucu 4.39.2**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.39.2** (17.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.39.2-pro5.6.0).
+- **Sunucu 4.40.0**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Canlı site: 4.39.2** (17.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.39.2-pro5.6.0). 4.40.0 dal `oturum/sube`'de.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);
@@ -17,6 +17,12 @@
   sayfa) ve seo testi ORTAM yüzünden düşer (`mktemp` /tmp yolu Windows PHP'ye geçmez, OpenSSL/dosya izni farkı);
   doğrulama CI'da (Linux).
 
+
+## Son oturum (4.40.0 — sadeleştirme 3: ana ekran, atölye panosu, müşteri kartı; TEKNOPLUS, dal oturum/sube)
+- Kullanıcı (17.10): "sadeleştirme işlerine dönelim". Ana ekranda tekrar eden sayı kutuları çiplere, fal kutusu kalktı,
+  takım hedefi alta; atölye panosunda ilgisiz sayılar/düğmeler kalktı; müşteri kartında formlar katlanır. Testler: tezgah 87.
+- Sıradaki aday (onay bekliyor): rx.php (reçete düzenleme) ve teklif görüntüleme (quote.php) sadeleştirme; Ayarlar
+  sekmelerini gruplama.
 
 ## Son düzeltme (4.39.2 — fişte UZAK / YAKIN ayrı bloklar, cam rozetleri, müşteri nüshasında gözlük türü) · (4.39.1 — Medula tek yakın gözlük aktarımı; TEKNOPLUS, dal oturum/sube)
 - Kullanıcı bildirdi: tek yakın gözlük aktarılırken ADD aranıyor, CYL'li yakın numaralar geçmiyordu. `sgk_lens_design`

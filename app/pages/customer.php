@@ -159,6 +159,7 @@ page_start($name, 'customers');
       <small class="eyebrow">Müşteri · kayıt <?= date_tr($c['created_at']) ?></small>
       <h1><?= e($name) ?></h1>
       <p><?= $c['phone'] ? e(phone_display($c['phone'])) : 'Telefon girilmemiş' ?><?= $age ? ' · ' . $age . ' yaş' : '' ?> · <?= count($orders) ?> sipariş</p>
+      <?php if (trim((string) $c['notes']) !== ''): ?><p class="musteri-not"><?= e(mb_strimwidth(trim((string) $c['notes']), 0, 160, '…')) ?></p><?php endif; ?>
     </div>
   </div>
   <div class="hero-actions">
@@ -236,7 +237,8 @@ page_start($name, 'customers');
           <span class="muted small"><?= e($h['note'] ?: 'Not yok') ?></span>
         </div>
       <?php endforeach; ?>
-      <form method="post" action="hatirlatma.php" class="stack" style="gap:10px;margin-top:<?= $hatirlatmalar ? '14px' : '0' ?>">
+      <details class="ek-alan"<?= $hatirlatmalar ? '' : ' style="border-top:0;margin-top:0;padding-top:0"' ?>><summary><?= icon('plus') ?> Hatırlatma ekle</summary>
+      <form method="post" action="hatirlatma.php" class="stack" style="gap:10px">
         <?= csrf_field() ?>
         <input type="hidden" name="eylem" value="ekle">
         <input type="hidden" name="customer_id" value="<?= $id ?>">
@@ -244,8 +246,9 @@ page_start($name, 'customers');
           <input type="date" name="due_date" value="<?= e(date('Y-m-d', strtotime('+1 month'))) ?>"></label>
         <label class="field"><span>Not</span>
           <input name="not" placeholder="örn. güneş gözlüğü için tekrar konuşulacak"></label>
-        <button class="btn btn-sm"><?= icon('plus') ?> Hatırlatma ekle</button>
+        <button class="btn btn-sm btn-primary">Ekle</button>
       </form>
+      </details>
       <?php if ($hatirlatmalar): ?>
         <p class="hint" style="margin-top:10px"><a class="link" href="hatirlatma.php?tur=manuel">Hatırlatma merkezinde gör</a></p>
       <?php endif; ?>
@@ -255,8 +258,8 @@ page_start($name, 'customers');
     <section class="card">
       <div class="card-head"><h2><?= icon('chat') ?> WhatsApp izni</h2>
         <span class="badge tone-<?= $izin === 'var' ? 'green' : ($izin === 'yok' ? 'red' : 'gray') ?>"><?= $izin === 'var' ? 'Verdi' : ($izin === 'yok' ? 'Vermedi' : 'Sorulmadı') ?></span></div>
-      <p class="hint" style="margin-top:0">Yenileme, SGK hakkı, lens ve yorum mesajları yalnızca izin veren müşteriye gider. Gözlük hazır ve ödeme linki gibi sipariş bilgilendirmeleri izinden bağımsızdır.</p>
       <?php if ($c['wa_izin_tarihi']): ?><p class="mini muted" style="margin:0 0 8px">Son kayıt: <?= e(date_tr($c['wa_izin_tarihi'], true)) ?> · <?= e(['sozlu' => 'sözlü', 'yazili' => 'yazılı form', 'form' => 'form', 'whatsapp' => 'WhatsApp', 'personel' => 'personel'][$c['wa_izin_kaynak']] ?? (string) $c['wa_izin_kaynak']) ?></p><?php endif; ?>
+      <details class="ek-alan" style="border-top:0;margin-top:0;padding-top:0"<?= $izin === 'sorulmadi' ? ' open' : '' ?>><summary><?= $izin === 'sorulmadi' ? 'İzni kaydet' : 'Değiştir' ?> <small>kampanya / hatırlatma mesajları için; sipariş bilgilendirmesi izinsiz de gider</small></summary>
       <form method="post" class="stack" style="gap:8px">
         <?= csrf_field() ?><input type="hidden" name="customer_id" value="<?= $id ?>"><input type="hidden" name="action" value="wa_izin">
         <label class="field"><span>İzin nasıl alındı</span>
@@ -267,6 +270,7 @@ page_start($name, 'customers');
           <?php if ($izin !== 'sorulmadi'): ?><button class="btn btn-sm btn-ghost" name="izin" value="">Sıfırla</button><?php endif; ?>
         </div>
       </form>
+      </details>
       <?php if ($waMesajlar): ?>
         <ul class="kv" style="margin-top:10px">
           <?php foreach ($waMesajlar as $wm): [$wEt] = wa_durum_etiketi((string) $wm['durum']); ?>
@@ -289,7 +293,7 @@ page_start($name, 'customers');
           <?php endif; ?>
         </div>
       <?php endforeach; ?>
-      <details <?= $lensler ? '' : 'open' ?> style="margin-top:<?= $lensler ? '10px' : '0' ?>">
+      <details style="margin-top:<?= $lensler ? '10px' : '0' ?>">
         <summary class="btn btn-sm"><?= icon('plus') ?> Lens satışı ekle</summary>
         <form method="post" class="stack" style="gap:8px;margin-top:10px">
           <?= csrf_field() ?><input type="hidden" name="customer_id" value="<?= $id ?>"><input type="hidden" name="action" value="lens_ekle">
@@ -312,8 +316,8 @@ page_start($name, 'customers');
     </section>
     <?php endif; ?>
 
-    <section class="card">
-      <div class="card-head"><h2>Bilgiler</h2></div>
+    <details class="card">
+      <summary class="card-head"><h2>Bilgiler</h2><span class="muted small">ad, telefon, not · düzenle</span></summary>
       <form method="post" class="grid cols-2" data-guard>
         <?= csrf_field() ?><input type="hidden" name="customer_id" value="<?= $id ?>"><input type="hidden" name="action" value="update">
         <label class="field"><span>Ad</span><input name="first_name" value="<?= e($c['first_name']) ?>" required></label>
@@ -329,7 +333,7 @@ page_start($name, 'customers');
       <?php if (is_super() && !$orders): ?>
         <form method="post" id="del-customer" data-confirm="Müşteri kaydı silinsin mi?"><?= csrf_field() ?><input type="hidden" name="customer_id" value="<?= $id ?>"><input type="hidden" name="action" value="delete"></form>
       <?php endif; ?>
-    </section>
+    </details>
   </aside>
 </div>
 <?php page_end();

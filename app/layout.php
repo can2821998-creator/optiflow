@@ -141,7 +141,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
             ['customers', 'customers.php', 'Müşteriler', 'users', 0],
             ['basarilar', 'basarilar.php', 'Başarılar', 'spark', 0],
             ['hatirlatma', 'hatirlatma.php', 'Hatırlatmalar', 'bell', $hatirlatma],
-            ['stock', 'stock.php', 'Depo · Stok', 'box', $missing],
+            ['stock', 'stock.php', 'Cam siparişleri · depo', 'box', $missing],   // 4.37.0: cam siparişleri bununla birleşti
             ['uts', 'uts-karekod.php', 'ÜTS karekod', 'print', 0, 'uts'],
             ['cerceve', 'cerceve.php', 'Çerçeve stoğu', 'glasses', function_exists('frame_alert_count') ? frame_alert_count() : 0],
             ['bagis', 'bagis.php', 'Gözlük bağışı', 'glasses', 0],
@@ -391,10 +391,6 @@ function ozellik_menusu_ekle(array &$nav): void
     }
     if (ozellik_acik('sgk_mutabakat')) {
         $ekle($a, 'sgk', ['sgk-mutabakat', 'sgk-mutabakat.php', 'SGK mutabakat', 'chart', 0]);
-    }
-    if (ozellik_acik('cam_siparis')) {
-        $ekle($a, 'stock', ['cam-siparis', 'cam-siparis.php', 'Cam siparişleri', 'truck',
-            $sayi("SELECT COUNT(*) FROM cam_siparisleri WHERE durum = 'taslak'")]);
     }
     if (ozellik_acik('cam_hata') && function_exists('cam_hata_rozet')) {   // 4.15.0
         $ekle($a, 'stock', ['cam-hatalari', 'cam-hatalari.php', 'Hatalı camlar', 'glasses', is_super() ? cam_hata_rozet() : 0]);

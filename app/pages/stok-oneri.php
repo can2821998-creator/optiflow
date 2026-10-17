@@ -34,7 +34,7 @@ page_header('Satın alma önerisi', 'Kritik seviyedeki çerçeveler ve sipariş 
 
 <section class="card">
   <div class="card-head"><h2><?= icon('eye') ?> Sipariş bekleyen camlar</h2>
-    <?php if ($camToplam && ozellik_acik('cam_siparis')): ?><a class="btn btn-sm btn-primary no-print" href="cam-siparis.php"><?= icon('truck') ?> Cam sipariş fişi oluştur</a><?php endif; ?></div>
+    <?php if ($camToplam): ?><a class="btn btn-sm btn-primary no-print" href="stock.php?tab=eksik"><?= icon('truck') ?> Cam sipariş fişi oluştur</a><?php endif; ?></div>
   <?php if (!$camlar): ?>
     <p class="hint">Eksik cam yok.</p>
   <?php else: ?>

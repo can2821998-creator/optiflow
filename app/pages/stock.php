@@ -3,11 +3,28 @@ declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 require_login();
 
+/* 4.37.0 — "Cam siparişleri" (cam-siparis.php) bu sayfayla birleşti: eksik camlar seçilip tedarikçiye sipariş fişi
+   buradan oluşturulur (fiş ekranı: cam-siparis.php?id=…), fişler "Fişler" sekmesinde. Tek sayfa: eksik → fiş →
+   siparişte → geldi (tüm camları gelen sipariş atölyeye). */
 $tabs = [
-    'eksik'   => ['Eksik camlar', "i.stock_status = 'stokta_yok'"],
-    'siparis' => ['Depoya sipariş verildi', "i.stock_status = 'siparis_verildi'"],
-    'gelen'   => ['Son gelenler (14 gün)', "i.stock_status = 'stokta_var' AND i.arrived_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)"],
+    'eksik'   => ['Eksik', "i.stock_status = 'stokta_yok'"],
+    'siparis' => ['Siparişte', "i.stock_status = 'siparis_verildi'"],
+    'gelen'   => ['Gelenler (14 gün)', "i.stock_status = 'stokta_var' AND i.arrived_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)"],
+    'fisler'  => ['Sipariş fişleri', ''],
 ];
+
+/* Eksik camlardan tedarikçiye sipariş fişi (app/tedarik.php) → fiş ekranında yazdır / WhatsApp / e-posta → "Gönderildi" */
+if (is_post() && post('eylem') === 'fis') {
+    csrf_check();
+    try {
+        $fid = cam_fis_olustur(post_int('supplier_id'), (array) ($_POST['items'] ?? []), '');
+        flash('Sipariş fişi hazır. Gönderin, sonra "Gönderildi" deyin; camlar "Siparişte" sekmesine geçer.');
+        redirect('cam-siparis.php?id=' . $fid);
+    } catch (DomainException $e) {
+        flash($e->getMessage(), 'error');
+        redirect('stock.php?tab=eksik');
+    }
+}
 
 /* 4.32.0 kâğıtsız tezgâh: gün sonu eksik camlar tek tuşla depoya (WhatsApp), son gönderimi geri al */
 if (is_post() && ozellik_acik('kagitsiz') && in_array(post('eylem'), ['depo_whatsapp', 'depo_geri'], true)) {
@@ -96,7 +113,7 @@ $lens = query('lens');
 $from = query('from');
 $until = query('until');
 $supplierFilter = query_int('supplier');
-$where = [$tabs[$tab][1], "o.order_stage <> 'iptal'"];
+$where = [$tab === 'fisler' ? '1 = 0' : $tabs[$tab][1], "o.order_stage <> 'iptal'"];
 $params = [];
 if ($lens !== '') { $where[] = 'i.lens_type = ?'; $params[] = $lens; }
 if ($from !== '' && valid_date($from)) { $where[] = 'i.created_at >= ?'; $params[] = $from . ' 00:00:00'; }
@@ -105,12 +122,13 @@ if ($supplierFilter && $tab !== 'eksik') { $where[] = 'i.supplier_id = ?'; $para
 $whereSql = implode(' AND ', $where);
 
 $items = rows(
-    "SELECT i.*, r.order_id, c.first_name, c.last_name, o.order_stage, o.promised_date, sup.name AS supplier_name
+    "SELECT i.*, r.order_id, c.first_name, c.last_name, o.order_stage, o.promised_date, sup.name AS supplier_name, cs.durum AS fis_durum
      FROM prescription_lens_items i
      JOIN prescription_records r ON r.id = i.prescription_id
      JOIN orders o ON o.id = r.order_id
      JOIN customers c ON c.id = o.customer_id
      LEFT JOIN suppliers sup ON sup.id = i.supplier_id
+     LEFT JOIN cam_siparisleri cs ON cs.id = i.cam_siparis_id
      WHERE $whereSql
      ORDER BY i.lens_type, i.sph, i.cyl, i.created_at
      LIMIT 500",
@@ -118,8 +136,17 @@ $items = rows(
 );
 $counts = [];
 foreach ($tabs as $k => [$label, $cond]) {
+    if ($k === 'fisler') {
+        $counts[$k] = (int) scalar("SELECT COUNT(*) FROM cam_siparisleri WHERE durum IN ('taslak', 'gonderildi')");   // açık fişler
+        continue;
+    }
     $counts[$k] = (int) scalar("SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id JOIN orders o ON o.id = r.order_id WHERE $cond AND o.order_stage <> 'iptal'");
 }
+$fisler = $tab === 'fisler' ? rows(
+    "SELECT c.*, s.name AS tedarikci, (SELECT COUNT(*) FROM prescription_lens_items i WHERE i.cam_siparis_id = c.id) AS adet
+       FROM cam_siparisleri c LEFT JOIN suppliers s ON s.id = c.supplier_id
+      WHERE c.durum <> 'iptal' ORDER BY c.id DESC LIMIT 100"
+) : [];
 $lensFilter = array_column(rows("SELECT DISTINCT lens_type FROM prescription_lens_items WHERE lens_type <> '' ORDER BY lens_type"), 'lens_type');
 $suppliers = supplier_options();
 
@@ -133,11 +160,11 @@ foreach ($items as $it) {
 $printQuery = http_build_query(array_filter(['type' => 'depot', 'tab' => $tab, 'lens' => $lens, 'from' => $from, 'until' => $until, 'supplier' => $supplierFilter ?: null]));
 $printLabel = $supplierFilter ? supplier_label($supplierFilter) . ' için PDF' : 'Tedarikçi listesi (PDF)';
 
-page_start('Depo ve stok', 'stock');
+page_start('Cam siparişleri · depo', 'stock');
 page_header(
-    'Depo / Stok',
-    'Reçeteden gelen cam satırları. Seçip toplu işaretleyin; tüm camları gelen siparişler otomatik atölyeye alınır.',
-    $items && $tab !== 'gelen' ? '<a class="btn" href="print.php?' . e($printQuery) . '" target="_blank">' . icon('print') . ' ' . e($printLabel) . '</a>' : '',
+    'Cam siparişleri · depo',
+    'Eksik camları seçip tedarikçiye sipariş fişi gönderin; gelince "Geldi" deyin. Tüm camları gelen sipariş kendiliğinden atölyeye geçer.',
+    $items && in_array($tab, ['eksik', 'siparis'], true) ? '<a class="btn" href="print.php?' . e($printQuery) . '" target="_blank">' . icon('print') . ' ' . e($printLabel) . '</a>' : '',
     '',
     'Cam takibi'
 );
@@ -147,6 +174,29 @@ page_header(
     <a class="tab <?= $tab === $k ? 'active' : '' ?>" href="<?= e(url_with(['tab' => $k])) ?>"><?= e($label) ?> <em><?= $counts[$k] ?></em></a>
   <?php endforeach; ?>
 </nav>
+
+<?php if ($tab === 'fisler'): ?>
+<section class="card">
+  <?php if (!$fisler): ?>
+    <?= empty_state('Henüz sipariş fişi yok', '“Eksik” sekmesinde camları seçip tedarikçiyle “Sipariş fişi oluştur”a basın.') ?>
+  <?php else: ?>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Fiş</th><th>Tedarikçi</th><th class="num">Cam</th><th class="hide-sm">Tarih</th><th>Durum</th></tr></thead>
+      <tbody>
+        <?php foreach ($fisler as $fs): [$dAd, $dTon] = cam_fis_durumlari()[$fs['durum']] ?? [$fs['durum'], 'gray']; ?>
+          <tr>
+            <td><a class="link" href="cam-siparis.php?id=<?= (int) $fs['id'] ?>"><b>#<?= (int) $fs['id'] ?></b></a></td>
+            <td><?= e((string) $fs['tedarikci']) ?></td>
+            <td class="num"><?= (int) $fs['adet'] ?></td>
+            <td class="hide-sm"><?= e(date_tr($fs['created_at'])) ?></td>
+            <td><span class="badge tone-<?= e($dTon) ?>"><?= e($dAd) ?></span></td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table></div>
+  <?php endif; ?>
+</section>
+<?php page_end(); exit; endif; ?>
 
 <section class="card">
   <form method="get" class="filters">
@@ -171,14 +221,16 @@ page_header(
     <div class="bulk-bar" data-bulk-bar>
       <label class="check"><input type="checkbox" data-check-all> <span data-selected-count>0 seçili</span></label>
       <div class="bulk-actions">
-        <?php if ($tab !== 'siparis'): ?>
+        <?php if ($tab === 'eksik'): ?>
           <?php if ($suppliers): ?>
             <select name="supplier_id" class="bulk-supplier" aria-label="Tedarikçi">
-              <option value="">Tedarikçi seç (opsiyonel)</option>
+              <option value="">Tedarikçi seçin</option>
               <?= select_options(array_column($suppliers, 'name', 'id'), null) ?>
             </select>
+            <button class="btn btn-sm" name="eylem" value="fis" disabled data-needs-selection><?= icon('truck') ?> Sipariş fişi oluştur</button>
+          <?php else: ?>
+            <button class="btn btn-sm" name="to" value="siparis_verildi" disabled data-needs-selection>Sipariş verildi</button>
           <?php endif; ?>
-          <button class="btn btn-sm" name="to" value="siparis_verildi" disabled data-needs-selection>Depoya sipariş verildi</button>
         <?php endif; ?>
         <?php if ($tab !== 'gelen'): ?><button class="btn btn-primary btn-sm" name="to" value="stokta_var" disabled data-needs-selection><?= icon('check') ?> Geldi</button><?php endif; ?>
         <?php if ($tab !== 'eksik'): ?><button class="btn btn-ghost btn-sm" name="to" value="stokta_yok" disabled data-needs-selection>Eksik’e geri al</button><?php endif; ?>
@@ -191,7 +243,7 @@ page_header(
           <?php foreach ($items as $it): ?>
             <tr>
               <td class="w-check"><input type="checkbox" name="items[]" value="<?= (int) $it['id'] ?>" aria-label="Seç"></td>
-              <td><b><?= e($it['lens_type']) ?></b><small class="block muted"><?= e(['uzak' => 'Uzak', 'yakin' => 'Yakın', 'cok_odak' => 'Çok odak'][$it['item_group']] ?? '') ?> · <?= $it['eye'] === 'R' ? 'Sağ' : 'Sol' ?></small></td>
+              <td><b><?= e($it['lens_type']) ?></b><small class="block muted"><?= e(['uzak' => 'Uzak', 'yakin' => 'Yakın', 'cok_odak' => 'Çok odak'][$it['item_group']] ?? '') ?> · <?= $it['eye'] === 'R' ? 'Sağ' : 'Sol' ?><?php if (!empty($it['cam_siparis_id'])): ?> · <a class="link" href="cam-siparis.php?id=<?= (int) $it['cam_siparis_id'] ?>">fiş #<?= (int) $it['cam_siparis_id'] ?><?= $it['fis_durum'] === 'taslak' ? ' (gönderilmedi)' : '' ?></a><?php endif; ?></small></td>
               <td><code class="rx-code"><?= e($it['lens_value']) ?></code></td>
               <td class="hide-sm"><a class="link" href="order.php?id=<?= (int) $it['order_id'] ?>"><?= e($it['first_name'] . ' ' . $it['last_name']) ?></a><small class="block muted"><?= order_no((int) $it['order_id']) ?> · <?= e(stage_label($it['order_stage'])) ?></small></td>
               <?php if ($tab !== 'eksik'): ?><td class="hide-md"><?= $it['supplier_name'] ? e($it['supplier_name']) : '<span class="muted">—</span>' ?></td><?php endif; ?>

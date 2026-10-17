@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 17 Ekim 2026 (4.36.1 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 17 Ekim 2026 (4.37.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
-- **Sunucu 4.36.1**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.36.1** (17.10; kesme çizgisi sadeleşti — makas ve yazı yok).
+- **Sunucu 4.37.0**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Canlı site: 4.36.1** (17.10; kesme çizgisi sadeleşti — makas ve yazı yok). 4.37.0 dal `oturum/sube`'de.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);
@@ -18,7 +18,15 @@
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.36.0 — iş emri dikey kart + müşteri nüshası; TEKNOPLUS, dal oturum/sube)
+## Son oturum (4.37.0 — cam siparişleri + depo tek sayfa; TEKNOPLUS, dal oturum/sube)
+- Kullanıcı (17.10): "cam siparişleri ile depo stok sekmesinin farkı nedir, ikisini birleştir teke düşür".
+- Yapılan: stock.php = "Cam siparişleri · depo" (Eksik / Siparişte / Gelenler / Sipariş fişleri); eksikten tedarikçiyle
+  fiş oluşturulur (cam-siparis.php?id= fiş ekranı kaldı, listesi buraya yönlenir); menüden "Cam siparişleri" ve özellik
+  anahtarı cam_siparis kalktı. Yerelde uçtan uca denendi (fiş → gönderildi → geldi → atölye). Testler: kagitsiz 52.
+- Bekleyen: kullanıcı onayıyla main'e birleştirme (= canlıya çıkış). Kâğıtsız tezgâhın "depoya WhatsApp" kartı ayrı
+  bir yol olarak duruyor (fişsiz, tek tuş); ileride fişle birleştirilebilir.
+
+## Önceki oturum (4.36.0 — iş emri dikey kart + müşteri nüshası; TEKNOPLUS, dal oturum/sube)
 - Kullanıcı (17.10): iş emri kesince dik kullanılacak, daha güzel olsun; müşteri nüshası yatay kalsın, daha yaratıcı;
   "bilet / gözlük çizimi gibi tasarımları güzel yapamıyorsun" → çizim yerine tipografi.
 - Yapılan: iş emri 148,5 × 210 dikey kart, yarım sayfaya 90° döndürülerek basılır (gece bandı, 01–04 numaralı bölümler,

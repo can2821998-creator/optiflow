@@ -107,6 +107,12 @@ ok(str_contains($zarf, 'class="kesim"') && str_contains($zarf, 'if (!$yarim)'), 
 $print = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/print.php');
 ok(str_contains($print, "\$type === 'order' && (ozellik_acik('kagitsiz') || query('tezgah') === '1' || query('fis') === '1') && !query_int('tam')"), 'siparişin Fiş düğmesi (ve 4.34.0 akışın döküm adımı) yarım sayfa fişi basar, &tam=1 ayrıntılı fiş');
 ok(str_contains($print, "if (\$type === 'zarf')"), 'eski zarf bağlantısı fişe yönlenir');
+$stok = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/stock.php');
+ok(str_contains($stok, "'fisler'  => ['Sipariş fişleri'") && str_contains($stok, 'cam_fis_olustur(') && str_contains($stok, 'name="eylem" value="fis"'), '4.37.0: cam siparişleri depo sayfasında (fiş oluştur + Fişler sekmesi)');
+$camSip = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/cam-siparis.php');
+ok(!str_contains($camSip, "ozellik_gereksin('cam_siparis')") && str_contains($camSip, "redirect('stock.php?tab=eksik');"), 'eski cam siparişleri listesi depo sayfasına yönlenir, özellik anahtarı yok');
+$lay = (string) file_get_contents(dirname(__DIR__, 2) . '/app/layout.php');
+ok(!str_contains($lay, "'cam-siparis.php'") && str_contains($lay, "'Cam siparişleri · depo'"), 'menüde tek madde');
 $index = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/index.php');
 ok(str_contains($index, "ozellik_acik('kagitsiz')"), 'ana ekran kartı özellik anahtarına bağlı');
 

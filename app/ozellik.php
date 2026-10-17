@@ -37,11 +37,7 @@ function ozellik_tanimlari(): array
             'kisa'     => 'Lens kutusu bitmeden müşteriye tekrar sipariş hatırlatması.',
             'masaustu' => false,
         ],
-        'cam_siparis' => [
-            'ad'       => 'Tedarikçiye cam siparişi',
-            'kisa'     => 'Siparişteki reçeteden laboratuvar sipariş formu; yazdır, WhatsApp veya e-posta ile gönder.',
-            'masaustu' => false,
-        ],
+        // 4.37.0: 'cam_siparis' kaldırıldı — cam sipariş fişi her mağazada, "Cam siparişleri · depo" (stock.php) içinde.
         'kagitsiz' => [
             'ad'       => 'Kâğıtsız tezgâh',
             'kisa'     => 'Tezgâh: e-reçete no → Medula (Pro) → tek ekranda müşteri, cam, çerçeve, kapora → yarım sayfa fiş + müşteri nüshası; gün sonunda eksik camlar tek tuşla depoya WhatsApp ile (müşteri bilgisi olmadan).',

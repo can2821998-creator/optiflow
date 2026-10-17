@@ -3,11 +3,11 @@ declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 
 /* ==========================================================================
-   4.12.0 — Tedarikçiye cam siparişi (sipariş fişi)
+   4.12.0 — Tedarikçiye cam siparişi (sipariş fişi). 4.37.0: yalnız fiş ekranı; liste stock.php'de
    ========================================================================== */
 
 $me = require_login();
-ozellik_gereksin('cam_siparis');
+// 4.37.0: özellik anahtarı yok — fiş her mağazada (stock.php ile birleşik)
 
 $fisId = is_post() ? post_int('fis_id') : query_int('id');
 
@@ -27,12 +27,12 @@ if (is_post()) {
         if ($eylem === 'iptal' && $fisId > 0) {
             cam_fis_iptal($fisId);
             flash('Fiş iptal edildi; camlar eksik listesine döndü.');
-            redirect('cam-siparis.php');
+            redirect('stock.php?tab=eksik');
         }
     } catch (DomainException $e) {
         flash($e->getMessage(), 'error');
     }
-    redirect($fisId > 0 ? 'cam-siparis.php?id=' . $fisId : 'cam-siparis.php');
+    redirect($fisId > 0 ? 'cam-siparis.php?id=' . $fisId : 'stock.php?tab=eksik');
 }
 
 $tedarikciler = rows('SELECT id, name, phone, email FROM suppliers WHERE is_active = 1 ORDER BY name');
@@ -50,9 +50,9 @@ if ($fisId > 0) {
         ? 'mailto:' . rawurlencode((string) $fis['t_eposta']) . '?subject=' . rawurlencode(setting('shop_name', 'OptiFlow') . ' cam siparişi #' . $fisId) . '&body=' . rawurlencode($metin)
         : '';
     [$dAd, $dTon] = cam_fis_durumlari()[$fis['durum']] ?? [$fis['durum'], 'gray'];
-    page_start('Cam siparişi #' . $fisId, 'cam-siparis');
+    page_start('Cam siparişi #' . $fisId, 'stock');
     ?>
-    <a class="back-link no-print" href="cam-siparis.php"><?= icon('arrow-left') ?> Cam siparişleri</a>
+    <a class="back-link no-print" href="stock.php?tab=fisler"><?= icon('arrow-left') ?> Cam siparişleri · depo</a>
     <?php page_header('Cam siparişi #' . $fisId, e((string) $fis['tedarikci']) . ' · ' . date_tr($fis['created_at']), '<span class="badge tone-' . e($dTon) . '">' . e($dAd) . '</span>', '', 'Tedarik'); ?>
     <section class="card cam-fis">
       <div class="card-head"><h2><?= e(setting('shop_name', 'OptiFlow')) ?> → <?= e((string) $fis['tedarikci']) ?></h2><small class="muted"><?= count($kalemler) ?> cam</small></div>
@@ -91,70 +91,12 @@ if ($fisId > 0) {
         <form method="post" data-confirm="Fiş iptal edilsin mi? Camlar eksik listesine döner." style="margin-top:8px"><?= csrf_field() ?><input type="hidden" name="eylem" value="iptal"><input type="hidden" name="fis_id" value="<?= $fisId ?>"><button class="linkish danger">Fişi iptal et</button></form>
       </section>
     <?php elseif ($fis['durum'] === 'gonderildi'): ?>
-      <p class="hint no-print"><?= e(date_tr($fis['gonderim_at'], true)) ?> tarihinde gönderildi<?= $fis['tedarikci_ref'] ? ' · tedarikçi no ' . e((string) $fis['tedarikci_ref']) : '' ?>. Camlar gelince <a class="link" href="stock.php?tab=siparis">Depo · Stok › Depoya sipariş verildi</a> sekmesinden "geldi" işaretleyin; fiş kendiliğinden tamamlanır.</p>
+      <p class="hint no-print"><?= e(date_tr($fis['gonderim_at'], true)) ?> tarihinde gönderildi<?= $fis['tedarikci_ref'] ? ' · tedarikçi no ' . e((string) $fis['tedarikci_ref']) : '' ?>. Camlar gelince <a class="link" href="stock.php?tab=siparis">Cam siparişleri · depo › Siparişte</a> sekmesinden "geldi" işaretleyin; fiş kendiliğinden tamamlanır.</p>
     <?php endif; ?>
     <?php
     page_end();
     exit;
 }
 
-/* ---------- Liste + yeni fiş ---------- */
-$eksikler = cam_eksikler();
-$fisler = rows(
-    "SELECT c.*, s.name AS tedarikci, (SELECT COUNT(*) FROM prescription_lens_items i WHERE i.cam_siparis_id = c.id) AS adet
-       FROM cam_siparisleri c LEFT JOIN suppliers s ON s.id = c.supplier_id
-      WHERE c.durum <> 'iptal' ORDER BY c.id DESC LIMIT 60"
-);
-
-page_start('Cam siparişleri', 'cam-siparis');
-page_header('Cam siparişleri', 'Eksik camları tedarikçiye tek fişte gönderin; gönderilince “Depoya sipariş verildi” olur.', '', '', 'Tedarik');
-?>
-<div class="split">
-  <div class="split-main">
-    <section class="card">
-      <div class="card-head"><h2>Sipariş verilecek camlar</h2><small class="muted"><?= count($eksikler) ?> cam · teslim sözü yakın olan üstte</small></div>
-      <?php if (!$eksikler): ?>
-        <?= empty_state('Eksik cam yok', 'Siparişlerde "stokta yok" işaretli ve henüz fişe girmemiş cam bulunmuyor.') ?>
-      <?php elseif (!$tedarikciler): ?>
-        <p class="hint">Önce <a class="link" href="suppliers.php">tedarikçi</a> ekleyin.</p>
-      <?php else: ?>
-        <form method="post">
-          <?= csrf_field() ?><input type="hidden" name="eylem" value="olustur">
-          <div class="table-wrap"><table class="table">
-            <thead><tr><th class="selc"><input type="checkbox" data-hepsini-sec="kalem[]" aria-label="Hepsini seç"></th><th>Sipariş</th><th>Cam</th><th>Değerler</th><th class="hide-sm">Tedarikçi</th></tr></thead>
-            <tbody>
-            <?php foreach ($eksikler as $i): ?>
-              <tr>
-                <td class="selc"><input type="checkbox" name="kalem[]" value="<?= (int) $i['id'] ?>" aria-label="Seç"></td>
-                <td><a class="link" href="order.php?id=<?= (int) $i['order_id'] ?>"><?= e(order_no((int) $i['order_id'])) ?></a><small class="block muted"><?= e($i['first_name'] . ' ' . $i['last_name']) ?><?= $i['promised_date'] ? ' · ' . e(date_tr($i['promised_date'])) : '' ?></small></td>
-                <td><?= e((string) ($i['lens_type'] ?: $i['lens_value'])) ?></td>
-                <td><small><?= e(cam_kalem_tarifi($i)) ?></small></td>
-                <td class="hide-sm"><small><?= e(supplier_label($i['supplier_id'] ? (int) $i['supplier_id'] : null)) ?></small></td>
-              </tr>
-            <?php endforeach; ?>
-            </tbody>
-          </table></div>
-          <div class="grid cols-3" style="align-items:end;margin-top:12px">
-            <label class="field"><span>Tedarikçi</span><select name="supplier_id" required><option value="">Seçin</option><?php foreach ($tedarikciler as $t): ?><option value="<?= (int) $t['id'] ?>"><?= e($t['name']) ?></option><?php endforeach; ?></select></label>
-            <label class="field"><span>Not (isteğe bağlı)</span><input name="not" maxlength="500" placeholder="örn. acil, yarın öğlene kadar"></label>
-            <div class="form-actions"><button class="btn btn-primary"><?= icon('truck') ?> Seçilenlerle fiş oluştur</button></div>
-          </div>
-        </form>
-      <?php endif; ?>
-    </section>
-  </div>
-  <aside class="split-side">
-    <section class="card">
-      <div class="card-head"><h2>Son fişler</h2></div>
-      <?php if (!$fisler): ?><p class="hint">Henüz fiş yok.</p><?php endif; ?>
-      <?php foreach ($fisler as $f): [$dAd, $dTon] = cam_fis_durumlari()[$f['durum']] ?? [$f['durum'], 'gray']; ?>
-        <a class="kv-line" href="cam-siparis.php?id=<?= (int) $f['id'] ?>" style="display:block;text-decoration:none">
-          <b>#<?= (int) $f['id'] ?> · <?= e((string) $f['tedarikci']) ?></b>
-          <span class="muted small"><?= (int) $f['adet'] ?> cam · <?= e(date_tr($f['created_at'])) ?></span>
-          <span class="badge tone-<?= e($dTon) ?>" style="float:right"><?= e($dAd) ?></span>
-        </a>
-      <?php endforeach; ?>
-    </section>
-  </aside>
-</div>
-<?php page_end();
+/* 4.37.0: liste ve yeni fiş "Cam siparişleri · depo" sayfasına (stock.php) taşındı; eski bağlantılar oraya gider. */
+redirect('stock.php?tab=eksik');

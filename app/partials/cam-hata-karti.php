@@ -42,7 +42,7 @@ $chPersonel = rows('SELECT id, full_name FROM user_accounts WHERE is_active = 1 
       </div>
       <?php if ($chCamlar): ?>
         <fieldset class="stack" style="gap:4px;border:0;padding:0;margin:0">
-          <legend class="muted small">Yeniden yapılacak camlar (Depo · Stok'ta "Eksik" olur, cam siparişine yeniden girer)</legend>
+          <legend class="muted small">Yeniden yapılacak camlar (Cam siparişleri · depo sayfasında yeniden "Eksik" olur)</legend>
           <?php foreach ($chCamlar as $cm): ?>
             <label class="check"><input type="checkbox" name="camlar[]" value="<?= (int) $cm['id'] ?>"> <?= e(($cm['eye'] === 'R' ? 'Sağ' : 'Sol') . ' · ' . ($cm['lens_type'] ?: $cm['lens_label'])) ?> <?= stock_badge((string) $cm['stock_status']) ?></label>
           <?php endforeach; ?>

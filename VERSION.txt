@@ -1,6 +1,16 @@
 OPTIFLOW
-Release: 4.36.1 (2026-10-17)
+Release: 4.37.0 (2026-10-17)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.37.0 (cam siparişleri + depo · stok tek sayfa)
+  - Kullanıcı (17.10): "cam siparişleri ile depo stok sekmesinin farkı nedir, ikisini birleştir teke düşür".
+  - Tek sayfa "Cam siparişleri · depo" (stock.php), sekmeler: Eksik / Siparişte / Gelenler (14 gün) / Sipariş fişleri.
+    Eksik sekmesinde camlar seçilip tedarikçiyle "Sipariş fişi oluştur" → fiş ekranı (yazdır, WhatsApp, e-posta) →
+    "Gönderildi" → camlar Siparişte → "Geldi" (tüm camları gelen sipariş atölyeye, fiş kendiliğinden tamamlanır).
+    Fişe girmiş camda "fiş #N" bağlantısı. Tedarikçi kaydı yoksa eski "Sipariş verildi" düğmesi kalır.
+  - Menüden "Cam siparişleri" kalktı; cam-siparis.php yalnız fiş ekranı (?id=), listesi depo sayfasına yönlenir.
+    Özellik anahtarı cam_siparis kaldırıldı (fiş her mağazada). Satın alma önerisindeki bağlantı da depo sayfasına.
+  - Yerelde uçtan uca: 2 eksik cam → fiş #1 → gönderildi → geldi → sipariş atölyede, fiş tamamlandı.
 
 DEĞİŞİKLİK NOTLARI — 4.36.1
   - Sipariş fişinde kesme yerinde makas işareti ve yazı kaldırıldı; yalnız kesik çizgi (kullanıcı isteği).

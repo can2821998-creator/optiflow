@@ -335,7 +335,7 @@ if (is_post()) {
                     'sorumlu_id' => post_int('sorumlu_id'), 'aciklama' => post('aciklama'), 'camlar' => (array) ($_POST['camlar'] ?? []), 'alacak' => post('alacak') === '1',
                 ]);
                 audit('cam_hata', 'order', $id, ['sebep' => cam_hata_nedenleri()[post('neden')] ?? post('neden'), 'maliyet' => $maliyet, 'kayıt' => $hid]);
-                flash('Hatalı cam kaydedildi.' . (!empty($_POST['camlar']) ? ' Seçilen camlar Depo · Stok\'ta "Eksik" olarak yeniden sipariş listesine düştü.' : ''));
+                flash('Hatalı cam kaydedildi.' . (!empty($_POST['camlar']) ? ' Seçilen camlar "Cam siparişleri · depo" sayfasında yeniden "Eksik" listesine düştü.' : ''));
             } elseif (is_super() && in_array($action, ['cam_hata_alacak', 'cam_hata_alacak_geri', 'cam_hata_sil'], true)) {
                 $hk = row('SELECT id FROM cam_hatalari WHERE id = ? AND order_id = ?', [post_int('hata_id'), $id]);
                 if (!$hk) {

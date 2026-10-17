@@ -167,7 +167,7 @@ function sgk_hak_tarihler(string $s): array
  */
 function sgk_hak_coz(string $metin): array
 {
-    $metin = str_replace(["\r\n", "\r"], "\n", $metin);
+    $metin = tc_maskele(str_replace(["\r\n", "\r"], "\n", $metin));   // 4.42.0 KVKK: satırlarda T.C. no kalmaz
     $kimlik = function_exists('sgk_parse') ? sgk_parse($metin) : ['ad' => '', 'soyad' => '', 'hasta' => ''];
     $sonuc = ['ad' => (string) ($kimlik['ad'] ?? ''), 'soyad' => (string) ($kimlik['soyad'] ?? ''), 'hasta' => (string) ($kimlik['hasta'] ?? ''), 'son_alim' => null, 'sonraki_hak' => null, 'hak' => 'belirsiz', 'satirlar' => []];
     $bugun = date('Y-m-d');

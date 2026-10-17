@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 34;
+const SCHEMA_VERSION = 35;
 
 function run_migrations(): void
 {
@@ -72,6 +72,7 @@ function run_migrations(): void
         if ($current < 32) { migrate_v32_teklif_gozlukler(); set_schema_version(32); }
         if ($current < 33) { migrate_v33_telefon_asistani(); set_schema_version(33); }
         if ($current < 34) { migrate_v34_bekleyen_recete(); set_schema_version(34); }
+        if ($current < 35) { migrate_v35_tc_maskele(); set_schema_version(35); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1691,4 +1692,13 @@ function migrate_v34_bekleyen_recete(): void
         INDEX idx_bekleyen_gelen (gelen_id)
     ) " . t_opts());
     add_column('quotes', 'recete_id', 'INT UNSIGNED NULL');
+}
+
+/** 4.42.0 — KVKK: eski Medula metinlerindeki T.C. kimlik numaraları gizlenir (app/sgk.php tc_eski_kayitlari_maskele). */
+function migrate_v35_tc_maskele(): void
+{
+    $n = tc_eski_kayitlari_maskele();
+    if ($n > 0) {
+        app_log('KVKK: ' . $n . ' eski Medula kaydında T.C. no gizlendi.');
+    }
 }

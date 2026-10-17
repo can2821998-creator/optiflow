@@ -1,6 +1,15 @@
 OPTIFLOW
-Release: 4.41.0 (2026-10-17)
+Release: 4.42.0 (2026-10-17)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.42.0 (KVKK: T.C. kimlik no saklanmaz; şema 35)
+  - Medula'dan gelen her metin KAYDETMEDEN önce T.C. numarasından arındırılır (app/sgk.php tc_maskele: 0 ile başlamayan
+    11 haneli sayılar → ***********; cep telefonu, e-reçete no, tarih etkilenmez): OptiFlow Pro aktarımı (masaustu.php),
+    eklenti köprüsü (sgk-aktar.php), reçete çözümü (sgk_parse 'tc' hep boş), SGK hak sorgusu satırları (sgk_hak_coz).
+  - SGK reçete aktarım ekranındaki "T.C. Kimlik" satırı kaldırıldı.
+  - Göç v35: eski kayıtlardaki T.C. numaraları gizlenir (sgk_incoming.raw_text + parsed, sgk_hak_sorgulari.satirlar;
+    tc_eski_kayitlari_maskele, tekrar çalışması zararsız).
+  - Test: tests/kvkk/test.php (29).
 
 DEĞİŞİKLİK NOTLARI — 4.41.0 (sadeleştirme 4: reçete, teklif görüntüleme, ayarlar)
   - Reçete sayfası: tablo SPH / CYL / AKS / ADD (tek odak uzakta ADD gizli); göz başına PD ve yükseklik katlanır bölümde

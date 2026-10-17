@@ -109,7 +109,7 @@ if ($eylem === 'aktar') {
         'user_id'    => (int) $me['id'],
         'kaynak'     => 'masaustu',
         'baslik'     => $baslik ?: null,
-        'raw_text'   => $metin,
+        'raw_text'   => tc_maskele($metin),   // 4.42.0 KVKK: T.C. no saklanmaz
         'parsed'     => json_encode($cozum, JSON_UNESCAPED_UNICODE),
         'created_at' => date('Y-m-d H:i:s'),
     ] + sgk_gelen_ek_alanlar($cozum));

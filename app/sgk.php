@@ -357,6 +357,19 @@ function sgk_etiket(string $metin, array $etiketler, string $desen = '(.+)'): st
     return '';
 }
 
+/** T.C. kimlik no yerine yazılan işaret (rakam içermez; sgk_parse bunu T.C. saymaz). */
+const TC_MASKE = '***********';
+
+/**
+ * 4.42.0 (KVKK): Metindeki T.C. kimlik numaralarını gizler — 0 ile başlamayan, önü/arkası rakam olmayan
+ * 11 haneli sayılar (cep telefonu 0 ile başlar, e-reçete/takip no daha kısa). Medula'dan gelen her metin
+ * KAYDETMEDEN önce buradan geçer; T.C. no veritabanına yazılmaz.
+ */
+function tc_maskele(string $metin): string
+{
+    return preg_replace('/(?<!\d)[1-9]\d{10}(?!\d)/', TC_MASKE, $metin) ?? $metin;
+}
+
 /**
  * SGK ekranından gelen metni reçete alanlarına çevirir.
  *
@@ -373,7 +386,7 @@ function sgk_etiket(string $metin, array $etiketler, string $desen = '(.+)'): st
  */
 function sgk_parse(string $metin): array
 {
-    $metin = str_replace(["\r\n", "\r"], "\n", $metin);
+    $metin = tc_maskele(str_replace(["\r\n", "\r"], "\n", $metin));   // 4.42.0: 'tc' hep boş döner (KVKK)
     $satirlar = array_values(array_filter(
         array_map(static fn($s) => trim(preg_replace('/[ ]{2,}/u', '  ', $s) ?? $s), explode("\n", $metin)),
         static fn($s) => $s !== ''
@@ -733,4 +746,53 @@ function sgk_gelen_ek_alanlar(array $cozum): array
     $tr = (string) ($cozum['recete_tarihi'] ?? '');
     $tarih = preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $tr, $m) && checkdate((int) $m[2], (int) $m[1], (int) $m[3]) ? "$m[3]-$m[2]-$m[1]" : null;
     return ['erecete' => $no !== '' ? mb_substr($no, 0, 20) : null, 'recete_tarihi' => $tarih];
+}
+
+/**
+ * 4.42.0 (KVKK): 4.42.0 öncesi kaydedilmiş Medula metinlerindeki T.C. numaralarını gizler
+ * (sgk_incoming.raw_text + parsed, sgk_hak_sorgulari.satirlar). Göç v35 çağırır; tekrar çalışması zararsızdır.
+ * Dönüş: değişen kayıt sayısı.
+ */
+function tc_eski_kayitlari_maskele(): int
+{
+    $degisen = 0;
+    $son = 0;
+    while (true) {
+        $grup = rows('SELECT id, raw_text, parsed FROM sgk_incoming WHERE id > ? ORDER BY id LIMIT 200', [$son]);
+        if (!$grup) {
+            break;
+        }
+        foreach ($grup as $r) {
+            $son = (int) $r['id'];
+            $ham = tc_maskele((string) $r['raw_text']);
+            $p = json_decode((string) $r['parsed'], true);
+            if (is_array($p) && (string) ($p['tc'] ?? '') !== '') {
+                $p['tc'] = '';
+                $p = json_encode($p, JSON_UNESCAPED_UNICODE);
+            } else {
+                $p = tc_maskele((string) $r['parsed']);
+            }
+            $p = tc_maskele((string) $p);   // satirlar vb. içinde kalanlar
+            if ($ham !== (string) $r['raw_text'] || $p !== (string) $r['parsed']) {
+                q('UPDATE sgk_incoming SET raw_text = ?, parsed = ? WHERE id = ?', [$ham, $p, $son]);
+                $degisen++;
+            }
+        }
+    }
+    $son = 0;
+    while (true) {
+        $grup = rows('SELECT id, satirlar FROM sgk_hak_sorgulari WHERE id > ? ORDER BY id LIMIT 500', [$son]);
+        if (!$grup) {
+            break;
+        }
+        foreach ($grup as $r) {
+            $son = (int) $r['id'];
+            $yeni = tc_maskele((string) $r['satirlar']);
+            if ($yeni !== (string) $r['satirlar']) {
+                q('UPDATE sgk_hak_sorgulari SET satirlar = ? WHERE id = ?', [$yeni, $son]);
+                $degisen++;
+            }
+        }
+    }
+    return $degisen;
 }

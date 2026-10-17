@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 17 Ekim 2026 (4.41.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 17 Ekim 2026 (4.42.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
-- **Sunucu 4.41.0**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.41.0** (17.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.41.0-pro5.6.0).
+- **Sunucu 4.42.0**, şema **35** (göç v35: eski Medula kayıtlarında T.C. no gizlenir). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Canlı site: 4.41.0** (17.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.41.0-pro5.6.0). 4.42.0 push edilince yayınlanır.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);
@@ -18,7 +18,13 @@
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.41.0 — sadeleştirme 4: reçete, teklif görüntüleme, ayarlar; TEKNOPLUS, dal oturum/sube)
+## Son oturum (4.42.0 — KVKK: T.C. kimlik no saklanmaz; Poyraz AB bilgisayarı, main)
+- Kullanıcı (17.10): "şubeyi sona bırakarak devam et" → bekleyen KVKK işi (T.C. maskeleme) yapıldı.
+- `tc_maskele` (app/sgk.php): Medula metni KAYDETMEDEN önce 0 ile başlamayan 11 haneli sayılar gizlenir — Pro aktarımı,
+  eklenti köprüsü, sgk_parse ('tc' hep boş), hak sorgusu satırları. Aktarım ekranında T.C. satırı kalktı.
+- Göç v35 (şema 35): eski sgk_incoming / sgk_hak_sorgulari kayıtları temizlenir. Test: kvkk 29; tümü geçti.
+
+## Önceki oturum (4.41.0 — sadeleştirme 4: reçete, teklif görüntüleme, ayarlar; TEKNOPLUS, dal oturum/sube)
 - Kullanıcı (17.10): önerilen üç adayla ("hepsiyle") devam. rx.php: PD/yükseklik ve öneri asistanı katlanır, tablo 4 sütun;
   quote.php: gözlük özeti tek satır, hesap dökümü katlanır, dönmüş gözlükte yalnız seçilen; settings.php: gruplu sekmeler +
   Genel bölüm başlıkları. Testler: tezgah 90; tümü geçti. Başsız Chrome ile ekranlar kontrol edildi.
@@ -355,14 +361,13 @@
 - Devir paketi incelendi; depo bu oturumda kuruldu (geçmiş 4.12.0 hosting paketinden başlar).
 
 ## Sıradaki iş
+*Kullanıcı (17.10): "şubeyi sona bırakarak devam et".*
 0. **Tek akış pilotu (4.34.0, canlıda):** pilot mağazada "Yeni müşteri · reçete" ile bir gün çalış:
    Pro'dan gerçek Medula aktarımı, fiş + nüsha düzeni, atölye/depo ayrımı için geri bildirim.
-0. **Şube özelliği** (kullanıcı kararı): şube, şubeye göre yetki, merkezden görme, transfer; bitince pazarlama.php 'yakinda' kaldır.
-0. **SEO bağlantısı:** kullanıcı hizmet hesabını kurunca panelde ilk veriyi birlikte kontrol et; sorgulara göre yeni rehber yazıları planla.
-1. **T.C. no maskeleme (KVKK) — kullanıcı "bir süre ertele" dedi (01.10):** `app/sgk-hak.php` › `sgk_hak_coz` okunan satırları ham saklıyor;
-   `sgk_hak_sorgulari.satirlar`'a 11 haneli numara girebiliyor. Kaydetmeden önce maskele + test ekle.
-2. İlk canlı yüklemeden sonra canlı veritabanı göçünü (22 → 27) ve sayfaları kontrol et; gerçek Medula PDF'iyle okuyucuyu doğrula.
+1. **SEO bağlantısı:** kullanıcı hizmet hesabını kurunca panelde ilk veriyi birlikte kontrol et; sorgulara göre yeni rehber yazıları planla.
+2. Gerçek Medula PDF'iyle SGK döküm okuyucusunu doğrula (kullanıcıdan kişisel verisi karartılmış örnek PDF).
 3. Kullanıcıya sor: sıradaki modül (karar bekleyen: SGK dönem sonu paketi + kesinti defteri).
+4. **Şube özelliği (en sona):** şube, şubeye göre yetki, merkezden görme, transfer; bitince pazarlama.php 'yakinda' kaldır.
 
 ## Açık sorunlar / doğrulanmamış
 - Güvenlik denetiminden (06.10), düzeltilmedi — tasarım kararı gerekir:

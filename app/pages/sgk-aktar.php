@@ -68,7 +68,7 @@ if (query('action') === 'kopru') {
         'user_id'    => $uid,
         'kaynak'     => 'kopru',
         'baslik'     => $baslik ?: null,
-        'raw_text'   => $metin,
+        'raw_text'   => tc_maskele($metin),   // 4.42.0 KVKK: T.C. no saklanmaz
         'parsed'     => json_encode($cozum, JSON_UNESCAPED_UNICODE),
         'created_at' => date('Y-m-d H:i:s'),
     ] + sgk_gelen_ek_alanlar($cozum));
@@ -429,7 +429,6 @@ page_header('SGK reçete aktar', 'Medula Optik ekranındaki reçeteyi siparişe 
           <h3 class="sub">Hasta ve reçete</h3>
           <ul class="kv">
             <li><span>Hasta</span><b><?= e($cozum['hasta'] ?: '—') ?></b></li>
-            <li><span>T.C. Kimlik</span><b><?= e($cozum['tc'] ?: '—') ?></b></li>
             <li><span>E-Reçete no</span><b><?= e($cozum['erecete'] ?: '—') ?></b></li>
             <li><span>Reçete tarihi</span><b><?= e($cozum['recete_tarihi'] ?: '—') ?></b></li>
             <li><span>Tesis</span><b><?= e($cozum['tesis'] ?: '—') ?></b></li>

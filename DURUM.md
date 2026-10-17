@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 17 Ekim 2026 (4.40.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 17 Ekim 2026 (4.41.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
-- **Sunucu 4.40.0**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.40.0** (17.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.40.0-pro5.6.0).
+- **Sunucu 4.41.0**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Canlı site: 4.40.0** (17.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.40.0-pro5.6.0). 4.41.0 dal `oturum/sube`'de.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);
@@ -18,7 +18,12 @@
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.40.0 — sadeleştirme 3: ana ekran, atölye panosu, müşteri kartı; TEKNOPLUS, dal oturum/sube)
+## Son oturum (4.41.0 — sadeleştirme 4: reçete, teklif görüntüleme, ayarlar; TEKNOPLUS, dal oturum/sube)
+- Kullanıcı (17.10): önerilen üç adayla ("hepsiyle") devam. rx.php: PD/yükseklik ve öneri asistanı katlanır, tablo 4 sütun;
+  quote.php: gözlük özeti tek satır, hesap dökümü katlanır, dönmüş gözlükte yalnız seçilen; settings.php: gruplu sekmeler +
+  Genel bölüm başlıkları. Testler: tezgah 90; tümü geçti. Başsız Chrome ile ekranlar kontrol edildi.
+
+## Önceki oturum (4.40.0 — sadeleştirme 3: ana ekran, atölye panosu, müşteri kartı; TEKNOPLUS, dal oturum/sube)
 - Kullanıcı (17.10): "sadeleştirme işlerine dönelim". Ana ekranda tekrar eden sayı kutuları çiplere, fal kutusu kalktı,
   takım hedefi alta; atölye panosunda ilgisiz sayılar/düğmeler kalktı; müşteri kartında formlar katlanır. Testler: tezgah 87.
 - Sıradaki aday (onay bekliyor): rx.php (reçete düzenleme) ve teklif görüntüleme (quote.php) sadeleştirme; Ayarlar

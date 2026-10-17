@@ -155,7 +155,7 @@ if ($copyFrom) {
     </div>
     <div class="table-wrap">
       <table class="rx-input">
-        <thead><tr><th></th><th>SPH</th><th>CYL</th><th>AKS</th><th data-col-add>ADD</th><th>PD</th><th data-col-height>Yükseklik</th></tr></thead>
+        <thead><tr><th></th><th>SPH</th><th>CYL</th><th>AKS</th><th data-col-add>ADD</th></tr></thead>
         <tbody>
           <?php foreach (['right' => ['Sağ', 'R'], 'left' => ['Sol', 'L']] as $side => [$label, $code]): ?>
             <tr data-eye-row="<?= $side ?>">
@@ -164,8 +164,6 @@ if ($copyFrom) {
               <td data-label="CYL"><input name="<?= $side ?>_cyl" value="<?= e($v($side . '_cyl')) ?>" inputmode="decimal" placeholder="0.00" data-diopter aria-label="<?= $label ?> CYL"></td>
               <td data-label="AKS"><input name="<?= $side ?>_axis" value="<?= e($v($side . '_axis')) ?>" inputmode="numeric" placeholder="°" maxlength="3" data-axis aria-label="<?= $label ?> aks"></td>
               <td data-col-add data-label="ADD"><input name="<?= $side ?>_add" value="<?= e($v($side . '_add')) ?>" inputmode="decimal" placeholder="+0.00" data-diopter data-add aria-label="<?= $label ?> ADD"></td>
-              <td data-label="PD"><input name="<?= $side ?>_pd" value="<?= e($v($side . '_pd')) ?>" inputmode="decimal" placeholder="mm" aria-label="<?= $label ?> PD"></td>
-              <td data-col-height data-label="Yükseklik"><input name="<?= $side ?>_height" value="<?= e($v($side . '_height')) ?>" inputmode="decimal" placeholder="mm" aria-label="<?= $label ?> montaj yüksekliği"></td>
             </tr>
           <?php endforeach; ?>
         </tbody>
@@ -173,8 +171,18 @@ if ($copyFrom) {
     </div>
     <div class="grid cols-4 mt">
       <label class="field"><span>Toplam PD (mm)</span><input name="pd" value="<?= e($v('pd')) ?>" inputmode="decimal" placeholder="ör. 63"></label>
-      <p class="hint span-3">Değerler 0.25 adımla kaydedilir; virgül veya nokta kullanabilirsiniz. CYL girilen gözde AKS zorunludur. Sıfır AKS 180 olarak kaydedilir.</p>
+      <p class="hint span-3">Virgül ya da nokta olur; CYL yazılan gözde AKS gerekir.</p>
     </div>
+    <?php /* 4.41.0: göz başına PD ve yükseklik tablodan çıktı, isteğe bağlı bölümde */ $ekOlcu = $v('right_pd') . $v('left_pd') . $v('right_height') . $v('left_height') !== ''; ?>
+    <details class="ek-alan"<?= $ekOlcu ? ' open' : '' ?>>
+      <summary>Göz başına PD ve montaj yüksekliği <small>isteğe bağlı · progresifte gerekir</small></summary>
+      <div class="grid cols-4">
+        <?php foreach (['right' => 'Sağ', 'left' => 'Sol'] as $side => $label): ?>
+          <label class="field"><span><?= $label ?> PD (mm)</span><input name="<?= $side ?>_pd" value="<?= e($v($side . '_pd')) ?>" inputmode="decimal" placeholder="mm"></label>
+          <label class="field" data-col-height><span><?= $label ?> yükseklik (mm)</span><input name="<?= $side ?>_height" value="<?= e($v($side . '_height')) ?>" inputmode="decimal" placeholder="mm"></label>
+        <?php endforeach; ?>
+      </div>
+    </details>
   </section>
 
   <section class="card" data-near-section <?= in_array($design, ['ayri_uzak_yakin', 'tek_odak_yakin'], true) ? '' : 'hidden' ?>>
@@ -208,7 +216,9 @@ if ($copyFrom) {
       </ul>
       <p class="hint">Numara veya cam tipi değişirse gelmemiş camlar yeniden “Eksik” olarak işaretlenir. Gelmiş camların durumu korunur.</p>
     <?php endif; ?>
-    <label class="field mt"><span>Reçete notu</span><textarea name="prescription_note" rows="2"><?= e($v('prescription_note')) ?></textarea></label>
+    <details class="ek-alan"<?= $v('prescription_note') !== '' ? ' open' : '' ?>><summary>Reçete notu <small>isteğe bağlı</small></summary>
+      <label class="field"><span>Not</span><textarea name="prescription_note" rows="2"><?= e($v('prescription_note')) ?></textarea></label>
+    </details>
   </section>
 
   <div class="form-actions sticky-actions">
@@ -217,11 +227,11 @@ if ($copyFrom) {
   </div>
 </form>
 
-<aside class="advisor" id="advisor" aria-label="Optik öneri asistanı">
-  <div class="advisor-head">
+<details class="advisor" id="advisor" aria-label="Optik öneri asistanı"<?= $v('advisor_summary') !== '' ? ' open' : '' ?>>
+  <summary class="advisor-head">
     <span class="advisor-ic"><?= icon('spark') ?></span>
-    <div><b>Öneri asistanı</b><small>Reçete ve kullanım alışkanlığına göre cam önerisi</small></div>
-  </div>
+    <div><b>Öneri asistanı</b><small>isteğe bağlı · kullanım alışkanlığına göre cam önerisi</small></div>
+  </summary>
   <div class="advisor-inputs grid cols-2">
     <label class="field"><span>Yaş</span><input type="number" min="3" max="100" data-a="age" value="<?= $age ?? '' ?>"></label>
     <label class="field"><span>Bütçe</span><select data-a="budget"><option value="ekonomik">Ekonomik</option><option value="dengeli" selected>Dengeli</option><option value="premium">Premium</option></select></label>
@@ -243,6 +253,6 @@ if ($copyFrom) {
   </div>
   <label class="advisor-attach"><input type="checkbox" data-advisor-attach <?= $v('advisor_summary') !== '' ? 'checked' : '' ?>> Öneri özetini reçeteye kaydet</label>
   <script type="application/json" id="advisor-data"><?= json_encode($advisorBoot, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?></script>
-</aside>
+</details>
 </div>
 <?php page_end(['rx.js']);

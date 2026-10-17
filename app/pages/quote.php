@@ -122,22 +122,22 @@ if ($teklifRecete): ?>
         <h2><span class="gozluk-rozet" aria-hidden="true"><?= icon('glasses') ?></span><?= e($gz['ad']) ?>
           <?php if ($gz['converted_order_id']): ?><a class="badge sm tone-green" href="order.php?id=<?= (int) $gz['converted_order_id'] ?>">Siparişe döndü · <?= e(order_no((int) $gz['converted_order_id'])) ?></a><?php endif; ?></h2>
       <?php endif; ?>
-      <section class="card">
-        <ul class="kv">
-          <li><span class="muted">Çerçeve</span><b><?= e((string) $gz['frame_desc']) ?><?= (float) $gz['frame_price'] > 0 ? ' — ' . money($gz['frame_price']) : '' ?></b></li>
-          <li><span class="muted">Kullanım şekli</span><b><?= e(lens_designs()[(string) $gz['lens_design']] ?? '—') ?></b></li>
-          <li><span class="muted">Medula (SGK) payı</span><b><?= (float) $gz['sgk_amount'] > 0 ? money($gz['sgk_amount']) . ' <small class="muted">(tahmini)</small>' : 'SGK\'sız' ?></b></li>
-          <?php if (!$cokGozluk): ?>
-            <li><span class="muted">İskonto</span><b><?= (float) $quote['discount_rate'] > 0 ? '%' . e($oranMetni((float) $quote['discount_rate'])) . ' <small class="muted">(SGK payı düşüldükten sonra)</small>' : 'Yok' ?></b></li>
-          <?php endif; ?>
-        </ul>
-      </section>
+      <?php /* 4.41.0: gözlük bilgisi tek satır; seçenekte büyük "Ödenecek", döküm katlanır; siparişe dönmüşse yalnız seçilen */ ?>
+      <p class="gozluk-ozet"><?= e(implode(' · ', array_filter([
+          lens_designs()[(string) $gz['lens_design']] ?? '',
+          trim((string) $gz['frame_desc']) . ((float) $gz['frame_price'] > 0 ? ' ' . money($gz['frame_price']) : ''),
+          (float) $gz['sgk_amount'] > 0 ? 'SGK payı ' . money($gz['sgk_amount']) . ' (tahmini)' : 'SGK\'sız',
+          !$cokGozluk && (float) $quote['discount_rate'] > 0 ? 'iskonto %' . $oranMetni((float) $quote['discount_rate']) : '',
+      ]))) ?></p>
+      <?php $gosterilen = $gz['converted_order_id'] && $secilen ? array_values(array_filter($gz['secenekler'], static fn($o) => $o['no'] === $secilen)) : $gz['secenekler']; ?>
       <div class="teklif-karsilastir">
-        <?php foreach ($gz['secenekler'] as $o): $h = $o['hesap']; ?>
+        <?php foreach ($gosterilen as $o): $h = $o['hesap']; ?>
           <section class="card teklif-kart <?= $secilen === $o['no'] ? 'is-secilen' : '' ?>">
             <h3><?= e($o['baslik']) ?><?php if ($secilen === $o['no']): ?> <span class="badge sm tone-green">Seçildi</span><?php endif; ?></h3>
             <span class="cam"><?= e($o['cam']) ?></span>
-            <?php if ($o['ozellik'] !== ''): ?><small class="muted"><?= e($o['ozellik']) ?></small><?php endif; ?><?php if ($o['not'] !== ''): ?><small class="muted"><i><?= e($o['not']) ?></i></small><?php endif; ?>
+            <?php if ($o['ozellik'] !== ''): ?><small class="muted"><?= e($o['ozellik']) ?></small><?php endif; ?>
+            <div class="odenecek"><span class="muted">Ödenecek</span><b><?= money($h['odenecek']) ?></b></div>
+            <details class="hesap-dokum"><summary>Hesap ayrıntısı</summary>
             <dl>
               <dt>Cam (çift)</dt><dd><?= money($h['cam']) ?></dd>
               <dt>Çerçeve</dt><dd><?= money($h['cerceve']) ?></dd>
@@ -145,7 +145,8 @@ if ($teklifRecete): ?>
               <?php if ($h['sgk'] > 0): ?><dt>Medula (SGK) payı</dt><dd>−<?= money($h['sgk']) ?></dd><dt>Kalan</dt><dd><?= money($h['kalan']) ?></dd><?php endif; ?>
               <?php if ($h['iskonto'] > 0): ?><dt>İskonto %<?= e($oranMetni($h['oran'])) ?></dt><dd>−<?= money($h['iskonto']) ?></dd><?php endif; ?>
             </dl>
-            <div class="odenecek"><span class="muted">Ödenecek</span><b><?= money($h['odenecek']) ?></b></div>
+            <?php if ($o['not'] !== ''): ?><small class="muted"><i><?= e($o['not']) ?></i></small><?php endif; ?>
+            </details>
             <?php if (!$gz['converted_order_id']): ?>
               <a class="btn btn-primary btn-block" href="order-new.php?quote_id=<?= $id ?>&amp;secenek=<?= $o['no'] ?><?= $gz['sira'] > 1 ? '&amp;gozluk=' . (int) $gz['sira'] : '' ?>"><?= icon('plus') ?> Bu seçenekle siparişe çevir</a>
             <?php endif; ?>

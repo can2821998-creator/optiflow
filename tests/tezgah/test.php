@@ -156,6 +156,12 @@ $ws = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/workshop.php'
 ok(!str_contains($ws, 'Cevap bekleyen teklif') && !str_contains($ws, 'href="teklif-yeni.php"'), '4.40.0 atölye panosu: atölyeye ait olmayan sayılar ve düğmeler yok');
 $cu = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/customer.php');
 ok(str_contains($cu, '<summary class="card-head"><h2>Bilgiler</h2>') && str_contains($cu, 'Hatırlatma ekle</summary>'), '4.40.0 müşteri kartı: formlar katlanır');
+$rxs = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/rx.php');
+ok(!str_contains($rxs, '<th>PD</th>') && str_contains($rxs, 'Göz başına PD ve montaj yüksekliği') && str_contains($rxs, '<details class="advisor"'), '4.41.0 reçete sayfası: PD/yükseklik katlanır, öneri asistanı katlanır');
+$qs = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/quote.php');
+ok(str_contains($qs, 'class="gozluk-ozet"') && str_contains($qs, 'Hesap ayrıntısı'), '4.41.0 teklif görüntüleme: gözlük özeti tek satır, döküm katlanır');
+$st = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/settings.php');
+ok(str_contains($st, 'class="ayar-sekmeleri"') && str_contains($st, '<h3 class="ayar-grup span-all">Hesaplama</h3>'), '4.41.0 ayarlar: gruplu sekmeler, bölüm başlıkları');
 ok(str_contains($lay, 'href="tezgah.php"><?= icon(\'plus\') ?> Yeni müşteri · reçete') && !str_contains($lay, "'SGK reçete aktar'"), 'menü: tek giriş, SGK reçete aktar kalktı');
 ok(str_contains((string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/sgk-aktar.php'), "redirect('tezgah.php?gelen='"), 'Pro aktarımı akışta açılır');
 ok(str_contains($sayfa, 'csrf_check()'), 'CSRF denetimi');

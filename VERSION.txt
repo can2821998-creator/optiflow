@@ -1,6 +1,14 @@
 OPTIFLOW
-Release: 4.40.0 (2026-10-17)
+Release: 4.41.0 (2026-10-17)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.41.0 (sadeleştirme 4: reçete, teklif görüntüleme, ayarlar)
+  - Reçete sayfası: tablo SPH / CYL / AKS / ADD (tek odak uzakta ADD gizli); göz başına PD ve yükseklik katlanır bölümde
+    (progresifte gerekir), reçete notu katlanır, öneri asistanı isteğe bağlı katlanır kart; tablo artık dar ekrana sığar.
+  - Teklif görüntüleme: her gözlük tek satır özet (kullanım · çerçeve · SGK payı); seçenekte büyük "Ödenecek", hesap
+    dökümü "Hesap ayrıntısı"nda; siparişe dönmüş gözlükte yalnız seçilen seçenek.
+  - Ayarlar: tek satırda taşan sekmeler gruplara ayrıldı (Mağaza / Katalog / Mesajlar / Modüller / Bakım); Genel sekmesi
+    bölüm başlıklı (Mağaza, Personel ve çalışma, Hesaplama), müşteri sayfası bağlantıları ve rengi katlanır.
 
 DEĞİŞİKLİK NOTLARI — 4.40.0 (sadeleştirme 3: ana ekran, atölye panosu, müşteri kartı)
   - Siparişler ana ekranı: fal kutusu kaldırıldı; 4 sayı kutusu ve gecikme uyarısı "Bugün" paneliyle tekrar ettiği için

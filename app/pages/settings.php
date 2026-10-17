@@ -347,9 +347,28 @@ function active_super_count(): int
 page_start('Ayarlar', 'settings');
 page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.', '', '', 'Yönetim');
 ?>
-<nav class="tabs" aria-label="Ayar bölümleri">
-  <?php foreach ($tabs as $k => $label): ?>
-    <a class="tab <?= $tab === $k ? 'active' : '' ?>" href="settings.php?tab=<?= e($k) ?>"><?= e($label) ?></a>
+<?php
+/* 4.41.0: sekmeler tek satırda taşıyordu → iş gruplarına ayrıldı (eşlemede olmayan yeni sekme "Modüller"e düşer). */
+$sekmeGrup = ['Mağaza' => ['genel', 'kullanicilar'], 'Katalog' => ['cam-tipleri', 'katalog'], 'Mesajlar' => ['sablonlar', 'hatirlatma', 'whatsapp'],
+    'Modüller' => ['odeme', 'efatura', 'lens', 'uts'], 'Bakım' => ['mukerrer']];
+$gruplu = [];
+foreach ($tabs as $k => $label) {
+    $g = 'Modüller';
+    foreach ($sekmeGrup as $ad => $anahtarlar) {
+        if (in_array($k, $anahtarlar, true)) {
+            $g = $ad;
+        }
+    }
+    $gruplu[$g][$k] = $label;
+}
+?>
+<nav class="ayar-sekmeleri" aria-label="Ayar bölümleri">
+  <?php foreach (array_keys($sekmeGrup) as $g): if (empty($gruplu[$g])) { continue; } ?>
+    <div class="ayar-sekme-grup"><small><?= e($g) ?></small>
+      <?php foreach ($gruplu[$g] as $k => $label): ?>
+        <a class="tab <?= $tab === $k ? 'active' : '' ?>" href="settings.php?tab=<?= e($k) ?>"<?= $tab === $k ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>
+      <?php endforeach; ?>
+    </div>
   <?php endforeach; ?>
 </nav>
 
@@ -357,12 +376,16 @@ page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.'
   <section class="card narrow">
     <form method="post" class="grid cols-2" data-guard>
       <?= csrf_field() ?><input type="hidden" name="tab" value="genel"><input type="hidden" name="action" value="general">
+      <h3 class="ayar-grup span-all">Mağaza</h3>
       <label class="field"><span>Mağaza adı</span><input name="shop_name" value="<?= e(setting('shop_name', 'OptiFlow')) ?>"></label>
       <label class="field"><span>Mağaza telefonu</span><input name="shop_phone" type="tel" inputmode="tel" autocomplete="tel" value="<?= e(setting('shop_phone')) ?>"></label>
       <label class="field span-all"><span>Adres (fişlerde ve müşteri sayfasında görünür)</span><input name="shop_address" value="<?= e(setting('shop_address')) ?>"></label>
+      <details class="ek-alan span-all"><summary>Müşteri sayfası: harita, çalışma saatleri, Google yorumu <small>isteğe bağlı</small></summary><div class="grid cols-2">
       <label class="field span-all"><span>Harita bağlantısı (isteğe bağlı)</span><input name="shop_map_url" inputmode="url" placeholder="https://maps.app.goo.gl/…" value="<?= e(setting('shop_map_url')) ?>"><small class="muted">Müşterinin “Yol tarifi” düğmesi buraya gider. Google Haritalar’da mağazanızı açın › Paylaş › Bağlantıyı kopyala ile alıp yapıştırın. Boş bırakırsanız yukarıdaki adres aranır.</small></label>
       <label class="field span-all"><span>Çalışma saatleri (müşteri sayfasında görünür)</span><textarea name="shop_hours" rows="3" maxlength="300" placeholder="Pazartesi – Cuma: 09:00 – 18:00&#10;Cumartesi: 09:00 – 14:00"><?= e(setting('shop_hours')) ?></textarea><small class="muted">Her satır ayrı gösterilir. Boş bırakırsanız müşteri sayfasında saat görünmez.</small></label>
       <label class="field span-all"><span>Google yorum bağlantısı (isteğe bağlı)</span><input name="shop_review_url" inputmode="url" placeholder="https://g.page/r/…/review" value="<?= e(setting('shop_review_url')) ?>"><small class="muted">Sipariş teslim edildikten sonra müşteri sayfasında "Google'da değerlendirin" düğmesi çıkar. Google İşletme Profili › "Yorum iste" bölümünden bağlantıyı kopyalayın. Boş bırakırsanız düğme görünmez.</small></label>
+      </div></details>
+      <h3 class="ayar-grup span-all">Personel ve çalışma</h3>
       <fieldset class="field span-all checks">
         <legend>Personel yetkileri</legend>
         <label><input type="checkbox" name="staff_see_amounts" <?= setting('staff_see_amounts', '1') === '1' ? 'checked' : '' ?>> Personel sipariş tutarlarını ve kalan bakiyeyi görebilir, yeni siparişte tutar girebilir</label>
@@ -386,6 +409,7 @@ page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.'
           <input type="number" min="0" max="23" name="daily_summary_hour" value="<?= e(setting('daily_summary_hour', '19')) ?>" style="max-width:90px"></label>
         <small class="muted">Özet, bu saatten sonra sisteme ilk girişte gönderilir (sunucuda zamanlanmış görev gerekmez) — günde bir kez.</small>
       </fieldset>
+      <details class="ek-alan span-all"><summary>Müşteri sayfasının rengi <small>isteğe bağlı</small></summary>
       <fieldset class="field span-all checks">
         <legend>Müşteriye giden sayfalarda marka rengi</legend>
         <div class="grid cols-2" style="gap:14px">
@@ -396,6 +420,8 @@ page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.'
         </div>
         <small class="muted">Müşterinin gördüğü sipariş durumu sayfası, garanti kartı ve fişlerde kullanılır. OptiFlow'un kendi ekranları sabit siyah-altın temadadır.</small>
       </fieldset>
+      </details>
+      <h3 class="ayar-grup span-all">Hesaplama</h3>
       <fieldset class="field span-all checks">
         <legend>SGK katkı payı (tahmini)</legend>
         <label class="field" style="max-width:220px"><span>Gözlük başına taban tutar (TL)</span>

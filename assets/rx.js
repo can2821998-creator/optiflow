@@ -42,7 +42,7 @@
     $('[data-near-section]').hidden = !near;
     $('[data-stock-near]').hidden = !near;
     $$('[data-col-height]').forEach(function (c) { c.classList.toggle('dim', MULTI.indexOf(d) < 0); });
-    $$('[data-col-add]').forEach(function (c) { c.classList.toggle('dim', d === 'tek_odak_uzak'); });
+    $$('[data-col-add]').forEach(function (c) { c.hidden = d === 'tek_odak_uzak'; });   // 4.41.0: tek odak uzakta ADD sütunu gizli
     updateNear();
   }
 

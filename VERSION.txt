@@ -1,6 +1,9 @@
 OPTIFLOW
-Release: 4.36.0 (2026-10-17)
+Release: 4.36.1 (2026-10-17)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.36.1
+  - Sipariş fişinde kesme yerinde makas işareti ve yazı kaldırıldı; yalnız kesik çizgi (kullanıcı isteği).
 
 DEĞİŞİKLİK NOTLARI — 4.36.0 (iş emri dikey kart, müşteri nüshası yeniden)
   - Kullanıcı (17.10): "üst yarı atölye iş emrini daha güzelleştir, kesince diklemesine kullanacağız; müşteri kısmı yatay

@@ -218,7 +218,7 @@ $isaret = static function (string $id, string $tek = ''): string {
   </div>
 </main>
 <?php if (!$yarim): ?>
-<div class="kesim" aria-hidden="true"><span>✂ Buradan kesin · üst yarıyı saat yönünde çevirin, iş emri dik okunur<?= $nusha ? ' · alt yarı müşteriye' : '' ?></span></div>
+<div class="kesim" aria-hidden="true"></div>
 <?php endif; ?>
 <?php if ($nusha):
   $tel = trim(setting('shop_phone'));

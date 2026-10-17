@@ -232,7 +232,7 @@ $lensTypes = lens_type_options();
 page_start('Yeni sipariş', 'orders');
 page_header('Yeni sipariş', $recete ? 'Cam tipini ve stok durumunu seçin; kaydedince döküm yazdırılır.' : 'Müşteriyi seçin veya ekleyin, ardından sipariş bilgilerini girin.', '', 'index.php', 'Yeni kayıt');
 if ($recete) {
-    echo akis_cubugu(4, $quote ? [] : [3]);
+    echo akis_cubugu(3, $quote ? 'tekliften' : '');
 }
 ?>
 <?php if ($quote && $onDolum): ?>

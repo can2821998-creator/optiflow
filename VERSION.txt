@@ -1,6 +1,18 @@
 OPTIFLOW
-Release: 4.37.0 (2026-10-17)
+Release: 4.38.0 (2026-10-17)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.38.0 (sadeleştirme: teklif isteğe bağlı, tek ekran, menü grupları)
+  - Kullanıcı (17.10): "teklifi zorunlu kılma, sözlü anlaşılanlar doğrudan seçilsin; menü, adım, görsel, alan olarak
+    mümkün olan sadeleştirmeleri yap".
+  - "Yeni müşteri · reçete" tek ekran: müşteri + reçete + sipariş (cam tipi, Stokta/Eksik, çerçeve, tutar, kapora, teslim,
+    atölye notu) → "Siparişi kaydet, fişi yazdır". Seçenek görmek isteyen müşteri için ikinci düğme "Önce teklif hazırla".
+  - Adımlar 5 → 4: Reçete · Müşteri · Sipariş (teklif isteğe bağlı, altyazı) · Fiş.
+  - Alanlar: göz başına PD / yükseklik / doktor katlanır "isteğe bağlı" bölümde; yakın SPH ve yakın cam stoku yalnız
+    yakın / ayrı uzak-yakın seçilince görünür (boşsa SPH + ADD); kapora yöntemi yalnız kapora girilince; stok seçimi iki
+    düğme (Stokta / Eksik).
+  - Menü: tek uzun "Atölye" listesi iş gruplarına ayrıldı — Satış / Atölye ve stok / SGK / Kasa / Diğer (+ Yönetim).
+  - Yerelde uçtan uca: tek ekrandan ayrı uzak + yakın sipariş (yakın camlar eksik → depo listesi, SGK payı); teklif yolu.
 
 DEĞİŞİKLİK NOTLARI — 4.37.0 (cam siparişleri + depo · stok tek sayfa)
   - Kullanıcı (17.10): "cam siparişleri ile depo stok sekmesinin farkı nedir, ikisini birleştir teke düşür".

@@ -13,19 +13,23 @@ declare(strict_types=1);
    quotes.recete_id ile taşır; order-new.php siparişe çevirirken recete_siparise_uygula() ile yazar.
    ========================================================================== */
 
-/** Akışın adımları. */
+/** Akışın adımları (4.38.0: teklif ayrı adım değil, siparişin isteğe bağlı ön adımı). */
 function akis_adimlari(): array
 {
-    return [1 => 'Reçete', 2 => 'Müşteri', 3 => 'Teklif', 4 => 'Sipariş', 5 => 'Döküm ve gönder'];
+    return [1 => 'Reçete', 2 => 'Müşteri', 3 => 'Sipariş', 4 => 'Fiş'];
 }
 
-/** Sayfanın üstündeki adım çubuğu. $atlanan: atlanmış adımlar (ör. teklifsiz siparişte 3). */
-function akis_cubugu(int $aktif, array $atlanan = []): string
+/** Sayfanın üstündeki adım çubuğu. $aktif: tek adım ya da aynı ekrandaki adımlar (ör. [2, 3]). $not: aktif adımın altyazısı. */
+function akis_cubugu(int|array $aktif, string $not = ''): string
 {
+    $aktifler = (array) $aktif;
+    $ilk = min($aktifler);
     $h = '<ol class="akis-cubugu" aria-label="Satış akışı">';
     foreach (akis_adimlari() as $no => $ad) {
-        $sinif = in_array($no, $atlanan, true) ? 'atlandi' : ($no < $aktif ? 'bitti' : ($no === $aktif ? 'simdi' : ''));
-        $h .= '<li class="' . $sinif . '"' . ($no === $aktif ? ' aria-current="step"' : '') . '><span class="akis-no">' . $no . '</span><span class="akis-ad">' . e($ad) . '</span></li>';
+        $simdi = in_array($no, $aktifler, true);
+        $sinif = $simdi ? 'simdi' : ($no < $ilk ? 'bitti' : '');
+        $alt = $simdi && $not !== '' && $no === max($aktifler) ? '<small>' . e($not) . '</small>' : '';
+        $h .= '<li class="' . $sinif . '"' . ($simdi ? ' aria-current="step"' : '') . '><span class="akis-no">' . $no . '</span><span class="akis-ad">' . e($ad) . $alt . '</span></li>';
     }
     return $h . '</ol>';
 }

@@ -1,10 +1,10 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 17 Ekim 2026 (4.37.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 17 Ekim 2026 (4.38.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
-- **Sunucu 4.37.0**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.36.1** (17.10; kesme çizgisi sadeleşti — makas ve yazı yok). 4.37.0 dal `oturum/sube`'de.
+- **Sunucu 4.38.0**, şema **34** (göç v34: bekleyen_receteler, quotes.recete_id). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Canlı site: 4.36.1** (17.10; kesme çizgisi sadeleşti — makas ve yazı yok). 4.37.0 + 4.38.0 dal `oturum/sube`'de.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);
@@ -18,13 +18,20 @@
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.37.0 — cam siparişleri + depo tek sayfa; TEKNOPLUS, dal oturum/sube)
+## Son oturum (4.38.0 — sadeleştirme: teklif isteğe bağlı, tek ekran, menü grupları; TEKNOPLUS, dal oturum/sube)
+- Kullanıcı (17.10): teklif zorunlu olmasın (sözlü anlaşma), menü / adım / görsel / alan olarak sadeleştir.
+- Yapılan: tezgah.php tek ekran (müşteri + reçete + sipariş → fiş; "Önce teklif hazırla" ikincil), adımlar 4
+  (Reçete · Müşteri · Sipariş · Fiş), isteğe bağlı alanlar katlanır/koşullu (tezgah.js), menü `menu_gruplari()` ile
+  Satış / Atölye ve stok / SGK / Kasa / Diğer. Testler: tezgah 76; tümü geçti. Yerelde uçtan uca denendi.
+- Sıradaki öneriler (onay bekliyor): sipariş sayfası (order.php, 1000+ satır) sadeleştirme; teklif formunda alan
+  azaltma; kâğıtsız "depoya WhatsApp" kartını cam sipariş fişiyle birleştirme.
+
+## Önceki oturum (4.37.0 — cam siparişleri + depo tek sayfa; TEKNOPLUS, dal oturum/sube)
 - Kullanıcı (17.10): "cam siparişleri ile depo stok sekmesinin farkı nedir, ikisini birleştir teke düşür".
 - Yapılan: stock.php = "Cam siparişleri · depo" (Eksik / Siparişte / Gelenler / Sipariş fişleri); eksikten tedarikçiyle
   fiş oluşturulur (cam-siparis.php?id= fiş ekranı kaldı, listesi buraya yönlenir); menüden "Cam siparişleri" ve özellik
   anahtarı cam_siparis kalktı. Yerelde uçtan uca denendi (fiş → gönderildi → geldi → atölye). Testler: kagitsiz 52.
-- Bekleyen: kullanıcı onayıyla main'e birleştirme (= canlıya çıkış). Kâğıtsız tezgâhın "depoya WhatsApp" kartı ayrı
-  bir yol olarak duruyor (fişsiz, tek tuş); ileride fişle birleştirilebilir.
+- Kâğıtsız tezgâhın "depoya WhatsApp" kartı ayrı bir yol olarak duruyor (fişsiz, tek tuş).
 
 ## Önceki oturum (4.36.0 — iş emri dikey kart + müşteri nüshası; TEKNOPLUS, dal oturum/sube)
 - Kullanıcı (17.10): iş emri kesince dik kullanılacak, daha güzel olsun; müşteri nüshası yatay kalsın, daha yaratıcı;

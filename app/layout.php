@@ -156,6 +156,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
         ]);
     }
     ozellik_menusu_ekle($nav);   // 4.12.0 merkezden açılan modüller
+    $nav = menu_gruplari($nav);   // 4.38.0 tek uzun liste yerine iş gruplarına
     if (is_super()) {
         $nav['Yönetim'] = [
             ['suppliers', 'suppliers.php', 'Tedarikçiler', 'wallet', 0],
@@ -411,4 +412,41 @@ function ozellik_menusu_ekle(array &$nav): void
         $ekle($a, 'kasa', ['faturalar', 'faturalar.php', 'Faturalar', 'receipt',
             $sayi("SELECT COUNT(*) FROM faturalar WHERE durum = 'taslak'")]);
     }
+}
+
+/**
+ * 4.38.0 — "Atölye" altındaki tek uzun liste iş gruplarına ayrılır (Satış / Atölye ve stok / SGK / Kasa / Diğer).
+ * Özellik öğeleri önce düz listeye eklenir (ozellik_menusu_ekle), sonra anahtarına göre gruba düşer;
+ * eşlemede olmayan yeni bir öğe "Diğer"e gider. Boş grup gösterilmez. Diğer başlıklar (Yönetim) aynen kalır.
+ */
+function menu_gruplari(array $nav): array
+{
+    $grup = [
+        'Satış'           => ['orders', 'barkod', 'hizli-satis', 'quotes', 'customers', 'garantiler', 'hatirlatma', 'mesajlar', 'telefon-asistani'],
+        'Atölye ve stok'  => ['workshop', 'stock', 'cam-hatalari', 'stok-oneri', 'uts-bildirim', 'uts', 'cerceve', 'urunler'],
+        'SGK'             => ['sgk-hak', 'sgk-mutabakat'],
+        'Kasa'            => ['tahsilat', 'kasa', 'faturalar', 'deliveries'],
+        'Diğer'           => ['bagis', 'basarilar'],
+    ];
+    $sira = [];
+    foreach ($grup as $ad => $anahtarlar) {
+        foreach ($anahtarlar as $i => $k) {
+            $sira[$k] = [$ad, $i];
+        }
+    }
+    $yeni = array_fill_keys(array_keys($grup), []);
+    foreach ($nav['Atölye'] ?? [] as $oge) {
+        [$ad, $i] = $sira[$oge[0]] ?? ['Diğer', 99];
+        $yeni[$ad][] = [$i, $oge];
+    }
+    $sonuc = [];
+    foreach ($yeni as $ad => $liste) {
+        if (!$liste) {
+            continue;
+        }
+        usort($liste, static fn($a, $b) => $a[0] <=> $b[0]);
+        $sonuc[$ad] = array_column($liste, 1);
+    }
+    unset($nav['Atölye']);
+    return $sonuc + $nav;
 }

@@ -72,3 +72,26 @@
     }, function () { yaz('Medula açılamadı.', true); });
   });
 })();
+
+/* 4.38.0 — tek ekran formu: yakın alanları yalnız yakın/ayrı gözlükte, ödeme yöntemi yalnız kapora girilince. */
+(function () {
+  'use strict';
+  var form = document.querySelector('.tezgah-form');
+  if (!form) return;
+  var tasarim = form.querySelector('select[name="lens_design"]');
+  var yakinlar = form.querySelectorAll('[data-yakin-alan]');
+  function yakinGuncelle() {
+    var v = tasarim ? tasarim.value : '';
+    var goster = v === 'ayri_uzak_yakin' || v === 'tek_odak_yakin';
+    for (var i = 0; i < yakinlar.length; i++) yakinlar[i].hidden = !goster;
+  }
+  if (tasarim) { tasarim.addEventListener('change', yakinGuncelle); yakinGuncelle(); }
+  var kapora = form.querySelector('[data-kapora]');
+  var yontem = form.querySelector('[data-kapora-yontem]');
+  function kaporaGuncelle() {
+    if (!kapora || !yontem) return;
+    var n = parseFloat(String(kapora.value).replace(/\./g, '').replace(',', '.'));
+    yontem.hidden = !(n > 0);
+  }
+  if (kapora) { kapora.addEventListener('input', kaporaGuncelle); kaporaGuncelle(); }
+})();

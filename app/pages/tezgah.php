@@ -74,6 +74,40 @@ if (is_post()) {
         $errors[] = 'e-Reçete numarası geçersiz.';
     }
 
+    // --- 4.38.0: sözlü anlaşmada sipariş aynı ekrandan (teklif isteğe bağlı) ---
+    $sonra = post('sonra') === 'teklif' ? 'teklif' : 'siparis';
+    $sip = null;
+    if ($sonra === 'siparis') {
+        $lensType = post('lens_type_sec');
+        if ($lensType === '' || !valid_lens_type($lensType)) {
+            $errors[] = 'Cam tipini seçin.';
+        }
+        $nearLens = post('near_lens_type_sec');
+        if (!valid_lens_type($nearLens)) {
+            $nearLens = '';
+        }
+        $stok = [];
+        foreach (['uzak', 'yakin'] as $sg) {
+            $stok[$sg] = post('stock_' . $sg) === 'stokta_yok' ? 'stokta_yok' : 'stokta_var';
+        }
+        $amount = can_see_amounts() ? parse_money(post('total_amount')) : 0.0;
+        if ($amount === null || $amount < 0) {
+            $errors[] = 'Sipariş tutarı geçersiz. Örnek: 4.250,00';
+        }
+        $deposit = can_take_payments() ? parse_money(post('deposit')) : 0.0;
+        if ($deposit === null || $deposit < 0) {
+            $errors[] = 'Kapora tutarı geçersiz.';
+        } elseif ($amount !== null && $amount > 0 && $deposit > $amount + 0.001) {
+            $errors[] = 'Kapora sipariş tutarından büyük olamaz.';
+        }
+        $method = isset(payment_methods()[post('deposit_method')]) ? post('deposit_method') : 'nakit';
+        $promised = post('promised_date');
+        if ($promised !== '' && !valid_date($promised)) {
+            $errors[] = 'Teslim tarihi geçersiz.';
+        }
+        $sip = ['lens' => $lensType, 'near' => $nearLens, 'stok' => $stok, 'tutar' => (float) $amount, 'kapora' => (float) $deposit, 'yontem' => $method, 'soz' => $promised];
+    }
+
     if ($errors) {
         remember_input();
         foreach (array_unique($errors) as $err) {
@@ -82,7 +116,7 @@ if (is_post()) {
         redirect($geriUrl);
     }
 
-    $sonuc = transaction(function () use ($customer, $me, $rxData, $nearData, $erecete, $gelenId) {
+    $sonuc = transaction(function () use ($customer, $me, $rxData, $nearData, $erecete, $gelenId, $sip) {
         $yeniMusteri = false;
         if ($customer) {
             $cid = (int) $customer['id'];
@@ -108,8 +142,44 @@ if (is_post()) {
         }
         $receteId = recete_bekleyen_kaydet($cid, $rxData, $nearData, $erecete, $gelenId, (int) $me['id']);
         audit('recete_bekleyen', 'customer', $cid, ['e-reçete' => $erecete ?: '—', 'sağ' => rx_line($rxData, 'right'), 'sol' => rx_line($rxData, 'left'), 'kaynak' => $gelenId > 0 ? 'Medula' : 'elle']);
-        return ['customer' => $cid, 'recete' => $receteId, 'yeni_musteri' => $yeniMusteri];
+        $sonuc = ['customer' => $cid, 'recete' => $receteId, 'yeni_musteri' => $yeniMusteri, 'order' => 0, 'uy' => null];
+        if ($sip !== null) {
+            // Teklifsiz sipariş: sipariş + çerçeve + kapora, ardından reçete ve camlar (stoktaysa atölyeye)
+            $c = find_customer($cid);
+            $simdi = date('Y-m-d H:i:s');
+            $orderId = insert('orders', [
+                'customer_id' => $cid, 'first_name' => $c['first_name'], 'last_name' => $c['last_name'], 'phone' => (string) $c['phone'],
+                'total_amount' => $sip['tutar'], 'status' => 'siparis_verildi', 'order_stage' => 'siparis_verildi', 'transaction_type' => 'gozluk',
+                'lens_type' => $sip['lens'], 'frame_info' => mb_substr(post('frame_info'), 0, 255), 'notes' => mb_substr(post('notes'), 0, 2000) ?: null,
+                'promised_date' => $sip['soz'] ?: null, 'sales_person' => $me['full_name'], 'created_by' => (int) $me['id'], 'created_at' => $simdi, 'updated_at' => $simdi,
+            ]);
+            audit('order_create', 'order', $orderId, ['müşteri' => $c['first_name'] . ' ' . $c['last_name'], 'tutar' => $sip['tutar'], 'kaynak' => 'tezgâh']);
+            $stokCerceve = post_int('frame_item_id');
+            if ($stokCerceve > 0) {
+                order_set_frame_item($orderId, $stokCerceve, null);
+                if (trim(post('frame_info')) === '' && ($sc = row('SELECT * FROM frame_items WHERE id = ?', [$stokCerceve]))) {
+                    q('UPDATE orders SET frame_info = ? WHERE id = ?', [mb_substr(frame_item_label($sc), 0, 255), $orderId]);
+                }
+            }
+            if ($sip['kapora'] > 0) {
+                $pid = insert('payments', ['order_id' => $orderId, 'amount' => $sip['kapora'], 'method' => $sip['yontem'], 'note' => 'Kapora', 'created_by' => (int) $me['id'], 'created_at' => $simdi]);
+                audit('payment_create', 'order', $orderId, ['tutar' => $sip['kapora'], 'yöntem' => $sip['yontem'], 'ödeme' => $pid]);
+            }
+            $sonuc['order'] = $orderId;
+            $sonuc['uy'] = recete_siparise_uygula($receteId, $orderId, '', $sip['lens'], $sip['near'], $sip['stok'], (int) $me['id']);
+        }
+        return $sonuc;
     });
+    if ($sonuc['order'] > 0) {
+        $uy = $sonuc['uy'];
+        if (!empty($uy['sgk']['uyari'])) {
+            flash($uy['sgk']['uyari'], 'warn');
+        }
+        flash('Sipariş ' . order_no((int) $sonuc['order']) . ' kaydedildi. '
+            . ($uy['atolye'] ? 'Camlar stokta: atölyeye gönderildi.' : '')
+            . ($uy['eksik'] ? $uy['eksik'] . ' eksik cam "Cam siparişleri · depo" listesine düştü.' : ''));
+        redirect('print.php?type=order&id=' . (int) $sonuc['order'] . '&tezgah=1');
+    }
 
     if ($erecete !== '' && ozellik_acik('sgk_hak')) {
         $hd = sgk_hak_durumu((int) $sonuc['customer'], 0);
@@ -117,10 +187,8 @@ if (is_post()) {
             flash('SGK hakkı: ' . $hd['mesaj'], $hd['durum'] === 'yok' ? 'warn' : 'info');
         }
     }
-    $sonra = post('sonra') === 'siparis' ? 'siparis' : 'teklif';
-    flash(($sonuc['yeni_musteri'] ? 'Müşteri kaydı açıldı, reçete' : 'Reçete') . ' müşteriye kaydedildi. '
-        . ($sonra === 'siparis' ? 'Cam tipini ve stok durumunu seçip siparişi kaydedin.' : 'Şimdi teklifi hazırlayın.'));
-    redirect($sonrakiAdim((int) $sonuc['customer'], (int) $sonuc['recete'], $sonra));
+    flash(($sonuc['yeni_musteri'] ? 'Müşteri kaydı açıldı, reçete' : 'Reçete') . ' müşteriye kaydedildi. Şimdi teklifi hazırlayın.');
+    redirect($sonrakiAdim((int) $sonuc['customer'], (int) $sonuc['recete'], 'teklif'));
 }
 
 /* ---------- Görünüm ---------- */
@@ -145,8 +213,8 @@ $bekleyenler = $form === null ? tezgah_bekleyenler((int) $me['id']) : [];
 $o = static fn(string $k): string => old($k, (string) ($form[$k] ?? ''));
 
 page_start('Yeni müşteri · reçete', 'tezgah');
-page_header('Yeni müşteri · reçete', 'Reçete → müşteri → teklif → sipariş → döküm, tek yolda', '', '', 'Satış');
-echo akis_cubugu($form === null ? 1 : 2);
+page_header('Yeni müşteri · reçete', 'Reçete, müşteri ve sipariş tek ekranda; teklif isteğe bağlı.', '', '', 'Satış');
+echo akis_cubugu($form === null ? 1 : [2, 3]);
 
 if ($form === null): ?>
 <div class="split">
@@ -244,24 +312,61 @@ if ($form === null): ?>
         </tbody>
       </table>
     </div>
-    <?php if ($nearGoster): ?>
-      <div class="grid cols-4">
-        <label class="field"><span>Yakın SPH · sağ</span><input name="near_right_sph" value="<?= e($o('near_right_sph')) ?>" inputmode="decimal"></label>
-        <label class="field"><span>Yakın SPH · sol</span><input name="near_left_sph" value="<?= e($o('near_left_sph')) ?>" inputmode="decimal"></label>
-      </div>
-    <?php endif; ?>
-    <div class="grid cols-4">
-      <label class="field"><span>PD (toplam)</span><input name="pd" value="<?= e($o('pd')) ?>" inputmode="decimal"></label>
-      <label class="field"><span>PD sağ / sol</span><span class="ikili"><input name="right_pd" value="<?= e(old('right_pd')) ?>" inputmode="decimal" aria-label="Sağ PD"><input name="left_pd" value="<?= e(old('left_pd')) ?>" inputmode="decimal" aria-label="Sol PD"></span></label>
-      <label class="field"><span>Yükseklik sağ / sol</span><span class="ikili"><input name="right_height" value="<?= e(old('right_height')) ?>" inputmode="decimal" aria-label="Sağ yükseklik"><input name="left_height" value="<?= e(old('left_height')) ?>" inputmode="decimal" aria-label="Sol yükseklik"></span></label>
-      <label class="field"><span>Doktor</span><input name="doctor" value="<?= e($o('doctor')) ?>"></label>
+    <div class="grid cols-4" data-yakin-alan <?= $nearGoster ? '' : 'hidden' ?>>
+      <label class="field"><span>Yakın SPH · sağ</span><input name="near_right_sph" value="<?= e($o('near_right_sph')) ?>" inputmode="decimal" placeholder="boşsa SPH + ADD"></label>
+      <label class="field"><span>Yakın SPH · sol</span><input name="near_left_sph" value="<?= e($o('near_left_sph')) ?>" inputmode="decimal" placeholder="boşsa SPH + ADD"></label>
     </div>
+    <div class="grid cols-4">
+      <label class="field"><span>PD (toplam)</span><input name="pd" value="<?= e($o('pd')) ?>" inputmode="decimal" placeholder="ör. 62"></label>
+    </div>
+    <?php $ekAcik = old('right_pd') . old('left_pd') . old('right_height') . old('left_height') !== '' || $o('doctor') !== ''; ?>
+    <details class="ek-alan"<?= $ekAcik ? ' open' : '' ?>>
+      <summary>Göz başına PD, yükseklik, doktor <small>isteğe bağlı</small></summary>
+      <div class="grid cols-4">
+        <label class="field"><span>PD sağ / sol</span><span class="ikili"><input name="right_pd" value="<?= e(old('right_pd')) ?>" inputmode="decimal" aria-label="Sağ PD"><input name="left_pd" value="<?= e(old('left_pd')) ?>" inputmode="decimal" aria-label="Sol PD"></span></label>
+        <label class="field"><span>Yükseklik sağ / sol</span><span class="ikili"><input name="right_height" value="<?= e(old('right_height')) ?>" inputmode="decimal" aria-label="Sağ yükseklik"><input name="left_height" value="<?= e(old('left_height')) ?>" inputmode="decimal" aria-label="Sol yükseklik"></span></label>
+        <label class="field span-2"><span>Doktor</span><input name="doctor" value="<?= e($o('doctor')) ?>"></label>
+      </div>
+    </details>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Sipariş</h2><small class="muted">Müşteriyle sözlü anlaştıysanız doldurun; seçenek görmek isterse aşağıdan teklif hazırlayın.</small></div>
+    <div class="grid cols-4">
+      <label class="field span-2"><span>Cam tipi *</span>
+        <select name="lens_type_sec"><option value="">Seçin</option><?= select_options(lens_type_options(), old('lens_type_sec'), false) ?></select></label>
+      <div class="field"><span>Camlar</span>
+        <div class="secim-cip" role="radiogroup" aria-label="Uzak camların stok durumu">
+          <?php foreach (['stokta_var' => 'Stokta', 'stokta_yok' => 'Eksik'] as $sk => $sl): ?>
+            <label><input type="radio" name="stock_uzak" value="<?= $sk ?>" <?= old('stock_uzak', 'stokta_var') === $sk ? 'checked' : '' ?>><span><?= $sl ?></span></label>
+          <?php endforeach; ?>
+        </div></div>
+      <div class="field" data-yakin-alan <?= $nearGoster ? '' : 'hidden' ?>><span>Yakın camlar</span>
+        <div class="secim-cip" role="radiogroup" aria-label="Yakın camların stok durumu">
+          <?php foreach (['stokta_var' => 'Stokta', 'stokta_yok' => 'Eksik'] as $sk => $sl): ?>
+            <label><input type="radio" name="stock_yakin" value="<?= $sk ?>" <?= old('stock_yakin', 'stokta_var') === $sk ? 'checked' : '' ?>><span><?= $sl ?></span></label>
+          <?php endforeach; ?>
+        </div></div>
+      <label class="field span-2"><span>Çerçeve <small class="muted">stoktan seçin</small></span>
+        <select name="frame_item_id"><option value="">— kendi çerçevesi / stok dışı —</option><?= select_options(frame_stock_options(), old('frame_item_id')) ?></select></label>
+      <label class="field span-2"><span>ya da yazın</span><input name="frame_info" value="<?= e(old('frame_info')) ?>" placeholder="ör. Ray-Ban 5154 52□21, kendi çerçevesi"></label>
+      <?php if (can_see_amounts()): ?>
+        <label class="field"><span>Tutar</span><input name="total_amount" inputmode="decimal" value="<?= e(old('total_amount')) ?>" placeholder="0,00" data-money></label>
+      <?php endif; ?>
+      <?php if (can_take_payments()): ?>
+        <label class="field"><span>Kapora</span><input name="deposit" inputmode="decimal" value="<?= e(old('deposit')) ?>" placeholder="0,00" data-money data-kapora></label>
+        <label class="field" data-kapora-yontem <?= (float) str_replace(',', '.', old('deposit')) > 0 ? '' : 'hidden' ?>><span>Kapora nasıl</span><select name="deposit_method"><?= select_options(payment_methods(), old('deposit_method', 'nakit')) ?></select></label>
+      <?php endif; ?>
+      <label class="field"><span>Teslim sözü</span><input type="date" name="promised_date" value="<?= e(old('promised_date', tezgah_teslim_tarihi())) ?>"></label>
+      <label class="field span-all"><span>Atölyeye not</span><input name="notes" value="<?= e(old('notes')) ?>" placeholder="ör. sağ sap kısaltılacak"></label>
+    </div>
+    <p class="hint">Camlar stoktaysa sipariş kaydedilince atölyeye geçer; eksikse "Cam siparişleri · depo" listesine düşer. SGK katkısı e-reçeteye göre işlenir.</p>
   </section>
 
   <div class="form-actions sticky-actions">
     <a class="btn btn-ghost" href="tezgah.php">Vazgeç</a>
-    <button class="btn" name="sonra" value="siparis">Teklifsiz siparişe geç</button>
-    <button class="btn btn-primary btn-lg" name="sonra" value="teklif">Kaydet, teklif hazırla</button>
+    <button class="btn" name="sonra" value="teklif" formnovalidate>Önce teklif hazırla</button>
+    <button class="btn btn-primary btn-lg" name="sonra" value="siparis"><?= icon('print') ?> Siparişi kaydet, fişi yazdır</button>
   </div>
 </form>
 <?php endif; ?>

@@ -92,7 +92,7 @@ page_start('Teklif · ' . $quote['customer_name'], 'quotes');
 /* 4.34.0 — akıştan gelen teklif: adım çubuğu + reçete (siparişe çevirince siparişe yazılır) */
 $teklifRecete = !empty($quote['recete_id']) ? recete_bekleyen((int) $quote['recete_id']) : null;
 if ($teklifRecete): ?>
-  <?= akis_cubugu($donmus ? 5 : 3) ?>
+  <?= akis_cubugu($donmus ? 4 : 3, $donmus ? '' : 'teklif') ?>
   <section class="card akis-recete">
     <div class="card-head"><h2><?= icon('glasses') ?> Reçete</h2></div>
     <p><b><?= e(lens_designs()[$teklifRecete['rx']['lens_design'] ?? ''] ?? '') ?></b> · <?= e(recete_ozet($teklifRecete)) ?><?= $teklifRecete['erecete'] !== '' ? ' · e-Reçete ' . e($teklifRecete['erecete']) : '' ?></p>

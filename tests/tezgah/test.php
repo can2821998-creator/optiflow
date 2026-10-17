@@ -126,14 +126,16 @@ $s3 = insert('orders', ['customer_id' => $baska, 'order_stage' => 'siparis_veril
 $hata = '';
 try { recete_siparise_uygula($rc, $s3, '', 'X', '', [], 1); } catch (DomainException $e) { $hata = $e->getMessage(); }
 ok(str_contains($hata, 'müşterisine ait değil'), 'başka müşterinin siparişine yazılmaz');
-ok(str_contains(akis_cubugu(3, []), 'aria-current="step"') && substr_count(akis_cubugu(4, [3]), 'atlandi') === 1, 'adım çubuğu: şimdiki ve atlanan adım');
+ok(substr_count(akis_cubugu([2, 3]), 'aria-current="step"') === 2 && str_contains(akis_cubugu(3, 'teklif'), '<small>teklif</small>') && count(akis_adimlari()) === 4, 'adım çubuğu: 4 adım, aynı ekranda iki adım, altyazı');
 
 echo "8) Sayfa ve fiş kaynakları\n";
 $sayfa = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/tezgah.php');
 ok(!str_contains($sayfa, "ozellik_gereksin('kagitsiz')"), '4.34.0: akışın girişi her mağazada açık');
-ok(str_contains($sayfa, 'recete_bekleyen_kaydet(') && !str_contains($sayfa, "insert('orders'"), '② sipariş açmaz, reçeteyi müşteriye bağlar');
-ok(str_contains($sayfa, "'teklif-yeni.php?'") && str_contains($sayfa, "'order-new.php?'"), 'teklif ya da teklifsiz sipariş');
+ok(str_contains($sayfa, 'recete_bekleyen_kaydet(') && str_contains($sayfa, 'recete_siparise_uygula($receteId, $orderId'), '4.38.0: reçete müşteriye bağlanır; sözlü anlaşmada sipariş aynı ekrandan');
+ok(str_contains($sayfa, "post('sonra') === 'teklif' ? 'teklif' : 'siparis'") && str_contains($sayfa, 'value="teklif" formnovalidate') && str_contains($sayfa, 'Siparişi kaydet, fişi yazdır'), 'teklif zorunlu değil: varsayılan sipariş, teklif isteğe bağlı');
+ok(str_contains($sayfa, '<details class="ek-alan"') && str_contains($sayfa, 'data-yakin-alan') && str_contains($sayfa, 'data-kapora-yontem'), 'isteğe bağlı alanlar katlanır / gerektiğinde görünür');
 $lay = (string) file_get_contents(dirname(__DIR__, 2) . '/app/layout.php');
+ok(str_contains($lay, 'function menu_gruplari(') && str_contains($lay, "'Atölye ve stok'"), 'menü iş gruplarına ayrılır');
 ok(str_contains($lay, 'href="tezgah.php"><?= icon(\'plus\') ?> Yeni müşteri · reçete') && !str_contains($lay, "'SGK reçete aktar'"), 'menü: tek giriş, SGK reçete aktar kalktı');
 ok(str_contains((string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/sgk-aktar.php'), "redirect('tezgah.php?gelen='"), 'Pro aktarımı akışta açılır');
 ok(str_contains($sayfa, 'csrf_check()'), 'CSRF denetimi');

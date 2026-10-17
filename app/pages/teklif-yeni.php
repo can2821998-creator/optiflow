@@ -97,7 +97,7 @@ page_header($baslik,
         : 'Müşteriyi seçin; her gözlük için çerçeveyi ve 1–3 cam seçeneğini katalogdan seçin. Uzak + yakın gibi ikinci bir gözlük de ekleyebilirsiniz.',
     '', $duzenlenen ? 'quote.php?id=' . (int) $duzenlenen['id'] : 'quotes.php', 'Satış');
 if ($recete) {
-    echo akis_cubugu(3);
+    echo akis_cubugu(3, 'teklif hazırlanıyor');
 }
 ?>
 <?php if ($hata !== ''): ?><div class="alert alert-error" role="alert"><?= e($hata) ?></div><?php endif; ?>

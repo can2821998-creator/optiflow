@@ -2319,3 +2319,18 @@ html.tema-koyu .tema-dugme .tema-ay { display: none; }
 .akis-cubugu li.atlandi { opacity: .55; text-decoration: line-through; }
 .akis-recete p { margin: 0 0 6px; }
 @media (max-width: 720px) { .akis-cubugu li:not(.simdi) .akis-ad { display: none; } .akis-cubugu li:not(.simdi) { flex: none; } }
+
+/* 4.38.0 sadeleştirme: iki seçenekli düğme grubu, katlanır isteğe bağlı alanlar, adım altyazısı */
+.secim-cip { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 12px; overflow: hidden; min-height: 46px; }
+.secim-cip label { display: flex; }
+.secim-cip input { position: absolute; opacity: 0; pointer-events: none; }
+.secim-cip span { display: grid; place-items: center; padding: 0 16px; font-weight: 700; color: var(--muted); cursor: pointer; }
+.secim-cip label + label span { border-left: 1px solid var(--line); }
+.secim-cip input:checked + span { background: var(--gold-soft); color: var(--gold-ink); }
+.secim-cip input[value="stokta_yok"]:checked + span { background: var(--ink); color: var(--paper); }
+.secim-cip input:focus-visible + span { box-shadow: var(--focus); }
+.ek-alan { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 10px; }
+.ek-alan summary { cursor: pointer; font-weight: 700; color: var(--ink-2); }
+.ek-alan summary small { color: var(--muted); font-weight: 500; margin-left: 6px; }
+.ek-alan[open] summary { margin-bottom: 10px; }
+.akis-cubugu .akis-ad small { display: block; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 1px; }

@@ -385,6 +385,11 @@ page_header('SGK reçete aktar', 'Medula Optik ekranındaki reçeteyi siparişe 
     <?php if ($cozum !== null):
       $yakinVar = $cozum['yakin_sag']['sph'] !== '' || $cozum['yakin_sol']['sph'] !== '';
       $design = sgk_lens_design($cozum);
+      if ($design === 'tek_odak_yakin') {   // 4.39.1: okuma gözlüğü — yakın SPH/CYL/AKS reçete satırına, ADD yok
+          foreach (['sag', 'sol'] as $g) {
+              $cozum[$g] = ['sph' => $cozum['yakin_' . $g]['sph'], 'cyl' => $cozum['yakin_' . $g]['cyl'], 'aks' => $cozum['yakin_' . $g]['aks'], 'add' => ''];
+          }
+      }
       $dogumTahmin = $cozum['yas'] !== '' ? (string) ((int) date('Y') - (int) $cozum['yas']) : '';
       $camYok = $cozum['sag']['sph'] === '' && $cozum['sol']['sph'] === '';
       ?>

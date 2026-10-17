@@ -33,6 +33,16 @@ $u = tezgah_on_dolum(sgk_parse($ornek('recete-uzak.metin.txt')));
 esit('tek_odak_uzak', $u['lens_design'], 'tek odak uzak');
 ok(!$u['yakin'] && $u['near_right_sph'] === '', 'yakın yok');
 
+echo "3b) 4.39.1 Tek yakın (okuma gözlüğü): CYL/AKS'li yakın, ADD yok\n";
+$tyc = sgk_parse((string) file_get_contents(__DIR__ . '/ornek/recete-tek-yakin.metin.txt'));
+esit('tek_odak_yakin', sgk_lens_design($tyc), 'yalnız YAKIN bölümü → tek odak yakın (ayrı uzak+yakın değil)');
+$ty = tezgah_on_dolum($tyc);
+esit(['+2.75', '-0.75', '170', ''], [$ty['right_sph'], $ty['right_cyl'], $ty['right_axis'], $ty['right_add']], 'sağ yakın SPH/CYL/AKS reçete satırında, ADD boş');
+esit(['+2.50', '-0.50', '15'], [$ty['left_sph'], $ty['left_cyl'], $ty['left_axis']], 'sol yakın CYL/AKS geçti');
+esit('ayri_uzak_yakin', sgk_lens_design(sgk_parse($ornek('recete-yakin.metin.txt'))), 'uzak + yakın birlikte → ayrı uzak yakın (değişmedi)');
+$dom = (string) file_get_contents(dirname(__DIR__, 2) . '/app/domain.php');
+ok(str_contains($dom, "(\$design === 'ayri_uzak_yakin' && !\$yakinYazili)") && !str_contains($dom, "'ayri_uzak_yakin', 'tek_odak_yakin'], true)\n        && \$data['right_add']"), 'tek odak yakında ADD zorunlu değil');
+
 echo "4) Boş (elle giriş) formu\n";
 $b = tezgah_on_dolum(['sag' => [], 'sol' => [], 'yakin_sag' => [], 'yakin_sol' => []]);
 esit(date('Y-m-d'), $b['prescription_date'], 'tarih bugün');

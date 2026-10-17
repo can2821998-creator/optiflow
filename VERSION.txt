@@ -1,6 +1,13 @@
 OPTIFLOW
-Release: 4.39.0 (2026-10-17)
+Release: 4.39.1 (2026-10-17)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.39.1 (düzeltme: Medula tek yakın gözlük aktarımı)
+  - Kullanıcı bildirdi: Medula'dan yalnız yakın gözlük aktarılırken sistem ADD arıyor, CYL'li yakın numaralar geçmiyordu.
+  - Yalnız "YAKIN GÖZLÜK" bölümü dolu reçete artık "Tek odak · yakın" tanınır (eskiden "ayrı uzak + yakın" sanılıyordu).
+  - Yakın SPH / CYL / AKS reçete satırına ve cam kalemlerine yazılır; ADD boş kalır (tezgâh formu ve SGK reçete aktar).
+  - Tek odak yakında ADD zorunlu değil; ayrı uzak + yakında yakın SPH yazıldıysa da ADD gerekmez.
+  - Test: tests/tezgah/ornek/recete-tek-yakin.metin.txt (uydurma veri). Yerelde: kayıt → yakın camlar CYL/AKS ile.
 
 DEĞİŞİKLİK NOTLARI — 4.39.0 (sadeleştirme 2: sipariş sayfası, teklif formu, depo gönderimi tek yol)
   - Sipariş sayfası: durum ilerlemesi tek düğme ("Atölyeye al" / "Teslim edildi", giriş yapan adına); elle durum

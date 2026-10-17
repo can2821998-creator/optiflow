@@ -626,7 +626,10 @@ function rx_from_post(): array
         $data[$side . '_pd'] = $pd ?? '';
         $data[$side . '_height'] = $height ?? '';
     }
-    if (in_array($design, ['progressive', 'ofis', 'bifokal', 'ayri_uzak_yakin', 'tek_odak_yakin'], true)
+    // 4.39.1: tek odak yakında ADD aranmaz (Medula okuma gözlüğünü doğrudan yakın değerleriyle verir: SPH/CYL/AKS);
+    // ayrı uzak + yakında yakın SPH yazılmışsa ADD gerekmez (yakın = yazılan değer).
+    $yakinYazili = trim(post('near_right_sph')) !== '' || trim(post('near_left_sph')) !== '';
+    if ((in_array($design, ['progressive', 'ofis', 'bifokal'], true) || ($design === 'ayri_uzak_yakin' && !$yakinYazili))
         && $data['right_add'] === '' && $data['left_add'] === '') {
         $errors[] = 'Seçilen kullanım şekli için ADD değeri gerekli.';
     }

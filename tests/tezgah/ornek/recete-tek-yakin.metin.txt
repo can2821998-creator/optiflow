@@ -1,0 +1,12 @@
+T.C. Kimlik No	12345678901	E-Reçete No	5T4R3E2
+Adı	FATMA	Soyadı	DEMİRTAŞ
+Reçete Tarihi	12.10.2026	Tesis Adı	DENEME DEVLET HASTANESİ
+Doktor Adı	MEHMET ÖRNEK	Hasta Tercihi	Yakın
+YAKIN GÖZLÜK
+
+SAĞ CAM
+Cam	+/-	Sferik	+/-	Silendirik	Aks
+«evet»	«+»	«2,75»	«-»	«0,75»	«170»
+SOL CAM
+Cam	+/-	Sferik	+/-	Silendirik	Aks
+«evet»	«+»	«2,50»	«-»	«0,50»	«15»

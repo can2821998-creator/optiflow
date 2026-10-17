@@ -591,11 +591,16 @@ function sgk_lens_design(array $cozum): string
 {
     $t = sgk_norm($cozum['tercih'] ?? '');
     $yakinVar = ($cozum['yakin_sag']['sph'] ?? '') !== '' || ($cozum['yakin_sol']['sph'] ?? '') !== '';
+    $uzakVar = ($cozum['sag']['sph'] ?? '') !== '' || ($cozum['sol']['sph'] ?? '') !== '';
     if (str_contains($t, 'PROGRES') || str_contains($t, 'COK ODAK')) {
         return 'progressive';
     }
     if (str_contains($t, 'BIFOKAL') || str_contains($t, 'CIFT ODAK')) {
         return 'bifokal';
+    }
+    // 4.39.1: yalnız YAKIN GÖZLÜK bölümü dolu (okuma gözlüğü) → tek odak yakın; eskiden "ayrı uzak + yakın" sanılıyordu
+    if ($yakinVar && (!$uzakVar || (str_contains($t, 'YAKIN') && !str_contains($t, 'UZAK')))) {
+        return 'tek_odak_yakin';
     }
     return $yakinVar ? 'ayri_uzak_yakin' : 'tek_odak_uzak';
 }

@@ -202,10 +202,12 @@ function tezgah_on_dolum(array $c): array
         'yakin'             => $yakinVar,
     ];
     foreach (['sag' => 'right', 'sol' => 'left'] as $g => $t) {
-        $d[$t . '_sph'] = (string) ($c[$g]['sph'] ?? '');
-        $d[$t . '_cyl'] = (string) ($c[$g]['cyl'] ?? '');
-        $d[$t . '_axis'] = (string) ($c[$g]['aks'] ?? '');
-        $d[$t . '_add'] = (string) ($c[$g]['add'] ?? '');
+        // 4.39.1: tek odak yakın (yalnız okuma gözlüğü): yakın SPH / CYL / AKS reçete satırına yazılır, ADD yok.
+        $kaynak = $design === 'tek_odak_yakin' ? ($c['yakin_' . $g] ?? []) : ($c[$g] ?? []);
+        $d[$t . '_sph'] = (string) ($kaynak['sph'] ?? '');
+        $d[$t . '_cyl'] = (string) ($kaynak['cyl'] ?? '');
+        $d[$t . '_axis'] = (string) ($kaynak['aks'] ?? '');
+        $d[$t . '_add'] = $design === 'tek_odak_yakin' ? '' : (string) ($c[$g]['add'] ?? '');
         $d['near_' . $t . '_sph'] = (string) ($c['yakin_' . $g]['sph'] ?? '');
     }
     return $d;

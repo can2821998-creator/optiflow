@@ -33,7 +33,7 @@ describe.skipIf(!havePhp)('parser regression (extractor → app/sgk.php)', () =>
     expect(r.sol).toEqual({ sph: '+2.00', cyl: '+0.50', aks: '180', add: '' });
     expect(r.pd).toBe('62');
     expect(r.hasta).toBe('AYŞE YILMAZ');
-    expect(r.tc).toBe('12345678901');
+    expect(r.tc).toBe(''); // 4.42.0 KVKK: T.C. no çözülmez, saklanmaz
     expect(r.erecete).toBe('1A2B3C');
     expect(r.doktor).toBe('MEHMET DEMİR');
     expect(r.tesis).toBe('ÖRNEK DEVLET HASTANESİ');
@@ -43,7 +43,7 @@ describe.skipIf(!havePhp)('parser regression (extractor → app/sgk.php)', () =>
     expect(r.tercih).toBe('Tek Odak'); // <select> value
     expect(r.yas).toBe('47');
     expect(r.lens_design).toBe('tek_odak_uzak');
-    expect(r.bulunan).toBeGreaterThanOrEqual(15);
+    expect(r.bulunan).toBeGreaterThanOrEqual(14); // 4.42.0: T.C. artık bulunan alan sayılmaz
   });
 
   it('near + distance: zero sphere, empty cyl/axis, near values, ADD derived, Turkish names', () => {
@@ -65,7 +65,7 @@ describe.skipIf(!havePhp)('parser regression (extractor → app/sgk.php)', () =>
     expect(r.sol).toEqual({ sph: '-4.00', cyl: '-0.25', aks: '170', add: '' });
     expect(r.hasta).toBe('FATMA NUR KAYA');
     expect(r.soyad).toBe('KAYA');
-    expect(r.tc).toBe('12345678901');
+    expect(r.tc).toBe(''); // 4.42.0 KVKK: T.C. no çözülmez, saklanmaz
     expect(r.erecete).toBe('4K5L6M');
     expect(r.doktor).toBe('');
   });

@@ -9,7 +9,7 @@ DEĞİŞİKLİK NOTLARI — 4.42.0 (KVKK: T.C. kimlik no saklanmaz; şema 35)
   - SGK reçete aktarım ekranındaki "T.C. Kimlik" satırı kaldırıldı.
   - Göç v35: eski kayıtlardaki T.C. numaraları gizlenir (sgk_incoming.raw_text + parsed, sgk_hak_sorgulari.satirlar;
     tc_eski_kayitlari_maskele, tekrar çalışması zararsız).
-  - Test: tests/kvkk/test.php (29).
+  - Test: tests/kvkk/test.php (29); masaüstü parser testi T.C.'nin artık boş döndüğüne göre güncellendi.
 
 DEĞİŞİKLİK NOTLARI — 4.41.0 (sadeleştirme 4: reçete, teklif görüntüleme, ayarlar)
   - Reçete sayfası: tablo SPH / CYL / AKS / ADD (tek odak uzakta ADD gizli); göz başına PD ve yükseklik katlanır bölümde

@@ -26,7 +26,9 @@ $yarim = query('kagit') === 'yarim';
 $nusha = query('nusha') !== '0';
 $tezgah = query('tezgah') === '1';
 $oid = (int) $o['id'];
-$rx = row('SELECT r.*, n.lens_type AS near_lens_type, n.right_sph AS near_right_sph, n.left_sph AS near_left_sph FROM prescription_records r LEFT JOIN near_prescription_details n ON n.prescription_id = r.id WHERE r.order_id = ? ORDER BY r.prescription_date DESC, r.id DESC LIMIT 1', [$oid]);
+$rx = row('SELECT r.*, n.lens_type AS near_lens_type, n.right_sph AS near_right_sph, n.left_sph AS near_left_sph,
+                  n.right_cyl AS near_right_cyl, n.right_axis AS near_right_axis, n.left_cyl AS near_left_cyl, n.left_axis AS near_left_axis
+             FROM prescription_records r LEFT JOIN near_prescription_details n ON n.prescription_id = r.id WHERE r.order_id = ? ORDER BY r.prescription_date DESC, r.id DESC LIMIT 1', [$oid]);
 $kalemler = $rx ? rows('SELECT lens_label, lens_type, lens_value, eye, item_group, stock_status FROM prescription_lens_items WHERE prescription_id = ? ORDER BY item_group, lens_no, id', [$rx['id']]) : [];
 $tutarlar = can_see_amounts();
 $v = static fn(string $k) => trim((string) ($rx[$k] ?? ''));
@@ -49,27 +51,47 @@ $soz = $o['promised_date'] ? strtotime((string) $o['promised_date']) : false;
 $sozGun = $soz ? date('j', $soz) . ' ' . $aylar[(int) date('n', $soz)] : '';
 $sozHafta = $soz ? $gunler[(int) date('w', $soz)] : '';
 
-/* --- Reçete tablosu: göz başına SPH CYL AKS ADD (montaj ölçüleri ayrı kutuda) --- */
+/* --- Reçete tablosu: UZAK ve YAKIN ayrı bloklar (4.39.2), göz başına SPH CYL AKS (+ADD çok odakta).
+       Tek odak yakın: yalnız YAKIN; ayrı uzak + yakın: iki blok; diğerleri: UZAK (ADD'li). Montaj ölçüleri ayrı kutuda. --- */
 $yukVar = $v('right_height') !== '' || $v('left_height') !== '';
-$satir = '';
+$tasarim = $rx ? (string) $rx['lens_design'] : '';
+$bloklar = [];
 if ($rx) {
+    $uzakDeger = static fn(string $t): array => [$v($t . '_sph'), $v($t . '_cyl'), $v($t . '_axis'), $v($t . '_add')];
+    // yakın: yakın tablosu doluysa o (eski aktarımlar), yoksa reçete satırı; boşsa SPH + ADD
+    $yakinDeger = static function (string $t) use ($v): array {
+        $sph = $v('near_' . $t . '_sph') !== '' ? $v('near_' . $t . '_sph') : near_sphere($v($t . '_sph'), $v($t . '_add'));
+        return [$sph, $v('near_' . $t . '_cyl') !== '' ? $v('near_' . $t . '_cyl') : $v($t . '_cyl'), $v('near_' . $t . '_axis') !== '' ? $v('near_' . $t . '_axis') : $v($t . '_axis'), ''];
+    };
+    if ($tasarim !== 'tek_odak_yakin') {
+        $bloklar[] = ['UZAK', 'uzak', $uzakDeger, $tasarim !== 'ayri_uzak_yakin' && $addVar];
+    }
+    if ($tasarim === 'tek_odak_yakin' || $tasarim === 'ayri_uzak_yakin' || ($yakinVar && $tasarim !== 'progressive')) {
+        $bloklar[] = ['YAKIN', 'yakin', $yakinDeger, false];
+    }
+}
+$addSutun = (bool) array_filter($bloklar, static fn($b) => $b[3]);
+$satir = '';
+foreach ($bloklar as [$etiket, $sinif, $deger, $addli]) {
     foreach (['right' => ['R', 'Sağ'], 'left' => ['L', 'Sol']] as $t => [$kod, $gozAd]) {
-        $satir .= '<tr><th><span class="goz">' . $kod . '</span>' . $gozAd . '</th>'
-            . '<td>' . $hucre($dio($v($t . '_sph'))) . '</td><td>' . $hucre($dio($v($t . '_cyl'))) . '</td>'
-            . '<td>' . $hucre($v($t . '_axis') !== '' ? $v($t . '_axis') . '°' : '') . '</td>'
-            . ($addVar ? '<td>' . $hucre($dio($v($t . '_add'))) . '</td>' : '')
+        [$sph, $cyl, $aks, $add] = $deger($t);
+        $satir .= '<tr class="blok-' . $sinif . ($t === 'right' ? ' blok-ilk' : '') . '">'
+            . ($t === 'right' ? '<th class="blok-ad" rowspan="2"><span>' . $etiket . '</span></th>' : '')
+            . '<th><span class="goz">' . $kod . '</span>' . $gozAd . '</th>'
+            . '<td>' . $hucre($dio($sph)) . '</td><td>' . $hucre($dio($cyl)) . '</td>'
+            . '<td>' . $hucre($aks !== '' ? $aks . '°' : '') . '</td>'
+            . ($addSutun ? '<td>' . ($addli ? $hucre($dio($add)) : '<span class="bos">—</span>') . '</td>' : '')
             . '</tr>';
     }
 }
-$sutun = 4 + ($addVar ? 1 : 0);
 
 /* --- Cam kalemleri --- */
-$gruplar = ['uzak' => 'Uzak', 'yakin' => 'Yakın', 'cok_odak' => 'Çok odak'];
+$gruplar = ['uzak' => 'UZAK', 'yakin' => 'YAKIN', 'cok_odak' => 'ÇOK ODAK'];   // 4.39.2: rozet olarak, belirgin
 $camlar = '';
 foreach ($kalemler as $k) {
     $stokta = $k['stock_status'] === 'stokta_var';
-    $camlar .= '<li><span class="goz">' . e((string) $k['eye']) . '</span>'
-        . '<span class="cam-ad"><b>' . e(trim((string) ($k['lens_type'] ?: 'Cam'))) . '</b><small>' . e($gruplar[(string) $k['item_group']] ?? '') . ($k['lens_value'] ? ' · ' . e($dio((string) $k['lens_value'])) : '') . '</small></span>'
+    $camlar .= '<li class="cam-' . e((string) $k['item_group']) . '"><span class="grup g-' . e((string) $k['item_group']) . '">' . e($gruplar[(string) $k['item_group']] ?? '') . '</span><span class="goz">' . e((string) $k['eye']) . '</span>'
+        . '<span class="cam-ad"><b>' . e(trim((string) ($k['lens_type'] ?: 'Cam'))) . '</b><small>' . ($k['lens_value'] ? e($dio((string) $k['lens_value'])) : '') . '</small></span>'
         . '<span class="kutucuk' . ($stokta ? ' dolu' : '') . '">Stokta</span><span class="kutucuk' . (!$stokta ? ' dolu' : '') . '">' . e($stokta ? 'Depodan' : ($durumlar[$k['stock_status']][0] ?? 'Depodan')) . '</span></li>';
 }
 if ($camlar === '' && trim((string) $o['lens_type']) !== '') {
@@ -150,7 +172,7 @@ $isaret = static function (string $id, string $tek = ''): string {
 <?php /* İŞ EMRİ — 148,5 × 210 mm dikey kart; A4'ün üst yarısına (ya da kesilmiş yarım sayfaya) 90° döndürülerek basılır.
          Kesince kâğıdı saat yönünde çevirin: kart dik okunur. */ ?>
 <main class="fis is-emri-yuva">
-  <div class="is-emri<?= count($kalemler) > 2 || ($yakinVar && $addVar) ? ' sik' : '' ?>">
+  <div class="is-emri<?= count($kalemler) > 2 || count($bloklar) > 1 ? ' sik' : '' ?>">
     <header class="ie-bant">
       <div class="ie-sol">
         <div class="marka acik"><?= $isaret('isIsaret') ?><span><b><?= e($dukkan) ?></b><small>Atölye iş emri</small></span></div>
@@ -174,10 +196,8 @@ $isaret = static function (string $id, string $tek = ''): string {
     <section class="ie-blok recete">
       <h2><i>01</i>Reçete<?php if ($kullanim !== ''): ?> <span class="etiket"><?= e($kullanim) ?></span><?php endif; ?><small><?= e(date_tr($rx['prescription_date'])) ?></small></h2>
       <table>
-        <thead><tr><th></th><th>SPH</th><th>CYL</th><th>AKS</th><?= $addVar ? '<th>ADD</th>' : '' ?></tr></thead>
-        <tbody><?= $satir ?>
-          <?php if ($yakinVar): ?><tr class="yakin"><th><span class="goz">Y</span>Yakın</th><td colspan="<?= $sutun - 1 ?>">Sağ <b><?= $hucre($dio($v('near_right_sph'))) ?></b> · Sol <b><?= $hucre($dio($v('near_left_sph'))) ?></b><?= $v('near_lens_type') !== '' ? ' · ' . e($v('near_lens_type')) : '' ?></td></tr><?php endif; ?>
-        </tbody>
+        <thead><tr><th colspan="2"></th><th>SPH</th><th>CYL</th><th>AKS</th><?= $addSutun ? '<th>ADD</th>' : '' ?></tr></thead>
+        <tbody><?= $satir ?></tbody>
       </table>
     </section>
     <?php endif; ?>
@@ -263,6 +283,8 @@ $isaret = static function (string $id, string $tek = ''): string {
       </div>
     </div>
     <dl class="kart">
+      <?php $gozlukTuru = match ($tasarim) { 'tek_odak_yakin' => 'Yakın (okuma) gözlüğü', 'tek_odak_uzak' => 'Uzak gözlüğü', 'ayri_uzak_yakin' => 'Uzak ve yakın · iki ayrı gözlük', 'progressive' => 'Çok odaklı (progresif)', default => $kullanim }; ?>
+      <?php if ($gozlukTuru !== ''): ?><div class="tur-satir"><dt>Gözlük</dt><dd><?= e($gozlukTuru) ?></dd></div><?php endif; ?>
       <?php if ($camOzet !== ''): ?><div><dt>Cam</dt><dd><?= e($camOzet) ?></dd></div><?php endif; ?>
       <div><dt>Çerçeve</dt><dd><?= e($cerceve ?: '—') ?></dd></div>
       <?php if ((string) $o['sgk_erecete'] !== ''): ?><div><dt>e-Reçete</dt><dd class="mono"><?= e((string) $o['sgk_erecete']) ?></dd></div><?php endif; ?>

@@ -131,9 +131,10 @@ small { color: var(--muted); }
 .is-emri.sik { gap: 1.6mm; }
 .sik .recete th, .sik .recete td { padding: 1.4mm 1mm; }
 .sik .recete td { font-size: 16pt; }
-.sik .adimlar th, .sik .adimlar td { padding: .6mm 1.4mm; }
+.sik .adimlar th, .sik .adimlar td { padding: .3mm 1.4mm; }
 .sik .olculer > div { padding: 1mm 2mm; }
 .sik .ie-kisi .ad { font-size: 14pt; }
+.sik .ie-not { min-height: 13mm; }
 
 /* ============================ MÜŞTERİ NÜSHASI (yatay) ============================ */
 .nusha { display: grid; grid-template-columns: 1fr 58mm; }
@@ -201,6 +202,25 @@ small { color: var(--muted); }
 .hesap dt { color: var(--muted); } .hesap dd { margin: 0; font-weight: 700; }
 .hesap .kalan { margin-top: .6mm; padding: 1.4mm 2mm; border-radius: 1.2mm; background: var(--night); color: #fff; font-size: 9.5pt; }
 .hesap .kalan dt { color: #fff; font-weight: 800; }
+
+/* 4.39.2 — UZAK / YAKIN ayrı bloklar: solda dikey bant (UZAK açık, YAKIN koyu), bloklar kalın çizgiyle ayrılır.
+   Siyah-beyaz baskıda da ayrışır (dolgu tonu + yazı). */
+.recete th.blok-ad { width: 8mm; padding: 0; border-left: 0; }
+.recete th.blok-ad span { display: block; writing-mode: vertical-rl; transform: rotate(180deg); margin: 0 auto; font: 800 8.5pt/1 "Manrope", sans-serif; letter-spacing: .22em; }
+.recete .blok-uzak th.blok-ad { background: var(--paper); color: var(--ink); border-right: .25mm solid var(--line-2); }
+.recete .blok-yakin th.blok-ad { background: var(--brand-deep); color: #fff; }
+.recete .blok-yakin td, .recete .blok-yakin th:not(.blok-ad) { background: var(--brand-soft); }
+.recete .blok-yakin td { color: var(--brand-deep); }
+.recete tr.blok-ilk > * { border-top: .7mm solid var(--ink); }
+.recete tbody tr.blok-ilk:first-child > * { border-top: 0; }
+.recete tbody th:not(.blok-ad) { border-left: 0; }
+
+/* cam satırlarında grup rozeti */
+.grup { flex: none; min-width: 11mm; text-align: center; padding: .7mm 1.2mm; border-radius: .8mm; font: 800 6.4pt/1 "Manrope", sans-serif; letter-spacing: .12em; border: .3mm solid var(--ink); }
+.grup.g-yakin { background: var(--brand-deep); border-color: var(--brand-deep); color: #fff; }
+.grup.g-cok_odak { background: var(--ink); color: #fff; }
+.camlar li.cam-yakin + li.cam-uzak, .camlar li.cam-uzak + li.cam-yakin { border-top: .5mm solid var(--ink); padding-top: 1mm; }
+.kart .tur-satir dd { font-weight: 800; color: var(--brand-ink); }
 
 .kesim { position: absolute; left: 0; right: 0; top: 148.5mm; border-top: .35mm dashed var(--muted); }
 

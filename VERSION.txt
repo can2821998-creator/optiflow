@@ -1,6 +1,15 @@
 OPTIFLOW
-Release: 4.39.1 (2026-10-17)
+Release: 4.39.2 (2026-10-17)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.39.2 (fişte uzak / yakın ayrımı)
+  - Kullanıcı: "döküm fişinde yakın uzağı daha net belirgin ayrıştıralım".
+  - İş emri reçetesi UZAK ve YAKIN bloklarına ayrıldı: solda dikey bant (UZAK açık, YAKIN koyu bordo), YAKIN satırları
+    açık bordo zeminli, bloklar kalın çizgiyle ayrılır; yakın satırında CYL/AKS tam yazılır. Tek odak yakında yalnız YAKIN,
+    ayrı uzak + yakında ikisi, çok odaklıda UZAK + ADD.
+  - Cam satırlarında UZAK / YAKIN rozeti (yakın koyu), gruplar arasında çizgi.
+  - Müşteri nüshasında "Gözlük" satırı: Yakın (okuma) gözlüğü / Uzak gözlüğü / Uzak ve yakın · iki ayrı gözlük / Çok odaklı.
+  - Başsız Chrome: 3 örnek siparişte (en kalabalığı 4 cam, iki blok) taşma yok.
 
 DEĞİŞİKLİK NOTLARI — 4.39.1 (düzeltme: Medula tek yakın gözlük aktarımı)
   - Kullanıcı bildirdi: Medula'dan yalnız yakın gözlük aktarılırken sistem ADD arıyor, CYL'li yakın numaralar geçmiyordu.

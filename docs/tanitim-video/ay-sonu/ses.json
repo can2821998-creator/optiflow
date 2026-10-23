@@ -1,0 +1,30 @@
+[
+ {
+  "id": "aksam",
+  "metin": "Ayın son günü, saat dokuz buçuk. Se ge ka faturası bekliyor."
+ },
+ {
+  "id": "eskiden",
+  "metin": "Eskiden reçeteleri tek tek sayar, toplar, Medula'yla karşılaştırırdınız."
+ },
+ {
+  "id": "dokum",
+  "metin": "Şimdi Medula dökümünü yüklersiniz."
+ },
+ {
+  "id": "karsilastir",
+  "metin": "OptiFlow kendi kayıtlarıyla karşılaştırır, eksik olanı önünüze koyar."
+ },
+ {
+  "id": "fatura",
+  "metin": "Tek tıkla ay sonu faturası hazır."
+ },
+ {
+  "id": "eve",
+  "metin": "Akşamınız size kalır."
+ },
+ {
+  "id": "son",
+  "metin": "Optiflo. Otuz gün ücretsiz deneyin."
+ }
+]

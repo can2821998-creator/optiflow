@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>OptiFlow · Tamir ve hizmet fişi (Reels 1080×1920)</title>
+<link rel="stylesheet" href="../ortak/stil.css">
+<style>
+.mus{display:flex;align-items:center;gap:18px;margin-bottom:14px}
+.mus .av{width:64px;height:64px;border-radius:50%;background:var(--d-soft);color:#ff95a6;display:grid;place-items:center;font-weight:800;font-size:25px}
+.mus b{font-size:29px;font-weight:800;display:block}.mus small{font:500 20px var(--mono);color:var(--d-m)}
+.blok{margin-bottom:14px}
+.blok .etiket{margin-bottom:9px;display:block}
+.cipler{display:flex;flex-wrap:wrap;gap:8px}
+.cipler span{font-weight:700;font-size:19px;padding:9px 13px;border-radius:14px;background:#151012;border:2px solid #3a2c30;color:var(--d-m);display:inline-flex;align-items:center;gap:8px}
+.cipler span.sec{background:var(--d-soft);border-color:#e0435f;color:#ffd5dc}
+.cipler span.sec.uy{background:#2a1f0d;border-color:#c9952f;color:#f3d9a6}
+.secim{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.secim span{padding:13px 16px;border-radius:16px;border:2px solid #3a2c30;background:#151012;font-weight:800;font-size:23px;color:var(--d-m)}
+.secim span small{display:block;font:500 17px var(--mono);margin-top:6px;color:var(--d-m)}
+.secim span.sec{border-color:#e0435f;background:var(--d-soft);color:#fff}
+.satir2{display:flex;gap:12px;margin-top:12px;align-items:center}
+.satir2 .kutu{flex:1;height:60px;border-radius:14px;border:2px solid var(--d-line);background:#120e0f;display:flex;align-items:center;padding:0 18px;font:500 24px var(--mono)}
+.anah{display:flex;align-items:center;gap:12px;font-weight:750;font-size:22px;color:var(--d-m)}
+.anah i{width:64px;height:36px;border-radius:999px;background:#3a2c30;position:relative;display:block}
+.anah i::after{content:"";position:absolute;left:4px;top:4px;width:28px;height:28px;border-radius:50%;background:#a6999d;transition:none}
+.anah.on{color:var(--d-ok)}.anah.on i{background:#1f6a3d}.anah.on i::after{left:32px;background:#fff}
+#kaydet{margin-top:12px}
+/* fiş (yarım A4 + yarım A4) */
+#fis{position:absolute;left:220px;top:600px;width:640px;height:906px;z-index:7;opacity:0;transform-origin:50% 100%}
+.yari{position:absolute;left:0;width:640px;height:453px;background:#fff;color:#1b1416;padding:30px 34px;box-shadow:0 18px 40px rgba(27,20,22,.18)}
+.yari.y1{top:0;border-radius:8px 8px 0 0}.yari.y2{top:453px;border-radius:0 0 8px 8px}
+.yari .bas{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1b1416;padding-bottom:12px;margin-bottom:14px}
+.yari .bas b{font-weight:800;font-size:25px;letter-spacing:.06em}
+.yari .bas span{font:500 15px var(--mono);letter-spacing:.12em;color:#776b6e;text-align:right}
+.yari .no{font:500 44px var(--mono);font-weight:500;color:#8f1a2e}
+.yari .s{display:flex;justify-content:space-between;font-size:18px;font-weight:600;padding:7px 0;border-bottom:1px solid #eee5e6}
+.yari .s span:first-child{color:#776b6e}
+.yari .s span:last-child{text-align:right;max-width:66%}
+.yari .not{font:500 14px var(--mono);color:#776b6e;margin-top:10px}
+.kes{position:absolute;left:-10px;right:-10px;top:450px;border-top:3px dashed #9b8d90;z-index:2}
+.kes span{position:absolute;right:20px;top:-14px;background:#f5f3f3;padding:0 8px;font:500 15px var(--mono);letter-spacing:.12em;color:#776b6e}
+.etk{position:absolute;z-index:8;font-weight:800;font-size:28px;color:#fff;background:linear-gradient(135deg,#d0334f,#b4233c 55%,#7e1528);padding:12px 20px;border-radius:999px;opacity:0;white-space:nowrap}
+.ar1{background:var(--d-sur);border:2px solid var(--d-line);border-radius:20px;padding:20px 24px;position:relative;overflow:hidden}
+.ar1 b{font-size:30px;font-weight:800}
+.ar1 .det{font-size:21px;color:var(--d-m);font-weight:600;margin:6px 0 14px}
+.ar1 .tus{display:flex;gap:10px}
+.ar1 .tus span{font-weight:750;font-size:20px;padding:10px 15px;border-radius:12px;background:#231b1e;border:2px solid #3a2c30;color:var(--d-ink);display:inline-flex;align-items:center;gap:8px;position:relative;overflow:hidden}
+.ar1 .sonuc{position:absolute;inset:0;display:flex;align-items:center;gap:14px;padding:0 26px;font-weight:800;font-size:28px;background:#10241a;color:var(--d-ok);opacity:0}
+</style>
+</head>
+<body>
+<div id="tuval"></div>
+<script src="../ortak/motor.js"></script>
+<script>
+const ISLEM = ['Vida sıkma / değişimi', 'Burunluk değişimi', 'Ayar (kulak / köprü)', 'Lehim / kaynak', 'Cam değişimi'];
+const GORULEN = ['Camda çizik', 'Cam kaplaması bozuk', 'Çerçevede çizik / boya atığı', 'Sap gevşek / eğri', 'Eksik vida / burunluk'];
+const fisSatir = (alt) => `
+  <div class="s"><span>Müşteri</span><span>${alt ? 'Mehmet K.' : 'Mehmet Kaya'}</span></div>
+  <div class="s"><span>İşlem</span><span>Vida sıkma / değişimi · Burunluk değişimi</span></div>
+  <div class="s"><span>Teslim alırken görülen</span><span>Camda çizik · Eksik vida</span></div>
+  <div class="s"><span>Hazır</span><span>Yarın 17:00</span></div>
+  <div class="s"><span>Ücret</span><span>Ücretsiz</span></div>`;
+
+FILM({
+  kisiler: { mehmet: { sac: 'kisa', sacRenk: '#2b2224', biyik: true, ceket: '#4f5966', kol: '#434c58', ten: '#dca27c', boyun: '#cf9470', atki: null, canta: false, pantolon: '#2e2a30' } },
+  gorunumler: {
+    vTamir: `<div class="ust"><h2>Tamir · hizmet</h2><span class="m">#00131</span></div>
+      <div class="mus"><div class="av">MK</div><div><b>Mehmet Kaya</b><small>0533 ••• •• 47</small></div></div>
+      <div class="blok"><span class="etiket">YAPILACAK İŞLEM</span><div class="cipler" id="islem">${ISLEM.map((x) => `<span>${x}</span>`).join('')}</div></div>
+      <div class="blok"><span class="etiket">TESLİM ALIRKEN GÖRÜLEN</span><div class="cipler" id="gorulen">${GORULEN.map((x) => `<span>${x}</span>`).join('')}</div></div>
+      <div class="blok" id="ucretBlok"><span class="etiket">ÜCRET VE ZAMAN</span>
+        <div class="secim"><span id="hemen">Hemen yapıldı<small>teslim edildi açılır</small></span><span id="birak">Bırakıldı · fiş bas<small>hazır olunca aranır</small></span></div>
+        <div class="satir2"><div class="kutu" id="tarih">—</div><div class="anah" id="ucretsiz"><i></i>Ücretsiz</div></div>
+        <div class="dugme" id="kaydet">Kaydet ve fişi bas</div></div>`,
+    vHazir: `<div class="ust"><h2>Bugün aranacaklar</h2><span class="m" style="color:#ff95a6">1 KİŞİ</span></div>
+      <div class="ar1" id="ar1"><b>Mehmet Kaya</b> <span class="cip ok" style="margin-left:14px">Tamiri bitti</span>
+        <div class="det">#00131 · bugün hazırlandı · vida + burunluk</div>
+        <div class="tus"><span>${IK.ok20}Ulaşıldı</span><span>Açmadı</span><span id="wa">${IK.mesaj}WhatsApp</span><span>Ertele</span></div>
+        <div class="sonuc" id="waSonuc">${IK.ok}WhatsApp gönderildi</div></div>`,
+  },
+  ekHTML: `<div id="fis">
+      <div class="yari y1" id="fisUst"><div class="bas"><div><b>ÖRNEK OPTİK</b><br><span style="text-align:left;display:block;margin-top:4px">TAMİR · HİZMET FİŞİ</span></div><span>MÜŞTERİ NÜSHASI<br>23.10.2026</span></div>
+        <div class="no">#00131</div>${fisSatir(false)}<div class="not">Gözlüğünüzü alırken bu fişi getirin.</div></div>
+      <div class="yari y2" id="fisAlt"><div class="bas"><div><b>ÖRNEK OPTİK</b><br><span style="text-align:left;display:block;margin-top:4px">GÖZLÜĞE İLİŞTİRİN</span></div><span>MAĞAZA NÜSHASI</span></div>
+        <div class="no">#00131</div>${fisSatir(true)}</div>
+      <div class="kes" id="kes"><span>BURADAN KESİN</span></div></div>
+    <div class="etk" id="etkUst" style="left:820px;top:700px">Müşteriye</div>
+    <div class="etk" id="etkAlt" style="left:50px;top:1300px">Gözlüğe</div>`,
+  sifirla() { $('fis').style.opacity = 0; $('etkUst').style.opacity = 0; $('etkAlt').style.opacity = 0; },
+  sahneler: [
+    { ad: 'gelis', sure: 3.4, katman: 'dukkan', eb: '15:20 · ÖRNEK OPTİK', h: 'Gözlüğün <span class="k">vidası düştü.</span>',
+      ses: 'Öğleden sonra. Mehmet Bey\'in gözlüğünün vidası düşmüş.',
+      ciz(u) {
+        dukkan({ t: u, kapi: eo(p(u, 0.05, 0.5)) * (1 - eio(p(u, 2.2, 2.8))), zil: 1 - p(u, 0, 2), el: u > 1.5 && u < 3 ? 1 : 0, gul: 1, saat: [15, 20], kirp: [2.3] });
+        kisi('mehmet', { t: u, x: lerp(1180, 720, eio(p(u, 0.2, 2.4))), yuru: u > 0.2 && u < 2.4, kirik: 1, gul: -2, kirp: [1.0] });
+      } },
+    { ad: 'kayit', sure: 4.8, katman: 'ui', zoom: true, gecis: 0.7, eb: 'TAMİR · HİZMET', h: 'İşlem de, <span class="k">gördüğünüz çizik de</span> kayıtta.',
+      ses: 'Yapılacak işlemi seçersiniz; teslim alırken gördüğünüz çiziği de kayda geçirirsiniz.',
+      ciz(u) {
+        gorunum('vTamir', 1);
+        const isl = $('islem').children, gor2 = $('gorulen').children;
+        const plan = [[isl[0], 0.9, ''], [isl[1], 1.6, ''], [gor2[0], 2.6, 'uy'], [gor2[4], 3.3, 'uy']];
+        const yol = [[0.5, 640, 700]];
+        plan.forEach(([el, a]) => { const [x, y] = uiNokta(el); yol.push([a - 0.2, x, y]); yol.push([a + 0.2, x, y]); });
+        imlecYol(u, yol, plan.map((x) => x[1]), gor(u, 0.5, 4.4, 0.2));
+        [...isl, ...gor2].forEach((el) => { el.className = ''; el.style.transform = 'none'; });
+        plan.forEach(([el, a, ek]) => {
+          if (u > a) el.className = 'sec ' + ek;
+          el.style.transform = `scale(${(1 + 0.08 * Math.sin(Math.PI * p(u, a, a + 0.25))).toFixed(3)})`;
+        });
+        $('ucretBlok').style.opacity = 0.35;
+        $('hemen').className = ''; $('birak').className = ''; $('tarih').textContent = '—'; $('ucretsiz').className = 'anah';
+      } },
+    { ad: 'secenek', sure: 4.2, katman: 'ui', eb: 'ÜCRET VE ZAMAN', h: 'Bırakıldı mı, hemen mi? <span class="k">Ücretsiz mi?</span>',
+      ses: 'Bırakılacaksa hazır olacağı gün yazılır. Ücretsizse tek dokunuş.',
+      ciz(u) {
+        gorunum('vTamir', 1);
+        const isl = $('islem').children, gor2 = $('gorulen').children;
+        [...isl, ...gor2].forEach((el) => { el.className = ''; el.style.transform = 'none'; });
+        isl[0].className = 'sec'; isl[1].className = 'sec'; gor2[0].className = 'sec uy'; gor2[4].className = 'sec uy';
+        $('ucretBlok').style.opacity = 0.35 + 0.65 * p(u, 0, 0.3);
+        const plan = [[$('birak'), 0.8], [$('ucretsiz'), 2.0], [$('kaydet'), 3.1]];
+        const yol = [[0.2, 640, 500]];
+        plan.forEach(([el, a]) => { const [x, y] = uiNokta(el); yol.push([a - 0.25, x, y]); yol.push([a + 0.2, x, y]); });
+        imlecYol(u, yol, plan.map((x) => x[1]), gor(u, 0.2, 3.9, 0.2));
+        $('birak').className = u > 0.8 ? 'sec' : '';
+        $('tarih').textContent = u > 1.1 ? 'Hazır: yarın 17:00'.slice(0, Math.round(p(u, 1.1, 1.6) * 18)) : '—';
+        $('ucretsiz').className = u > 2.0 ? 'anah on' : 'anah';
+        bas($('kaydet'), u, 3.1);
+      } },
+    { ad: 'fis', sure: 4.8, katman: 'dukkan', eb: 'YARIM A4 FİŞ', h: 'Üst yarı müşteriye, <span class="k">alt yarı gözlüğe.</span>',
+      ses: 'Fiş tek A4\'e basılır, ortadan kesilir: üst yarı müşteriye, alt yarı gözlüğe.',
+      ciz(u) {
+        dukkan({ t: u + 6, yazici: 1, tepsi: 0, gul: 1, saat: [15, 23], kirp: [1.2] });
+        kisi('mehmet', { t: u, x: 720, kirik: 0, gul: 6, kirp: [2.0] });
+        const c = eo(p(u, 0.2, 1.2));
+        const ayir = eio(p(u, 2.2, 2.9));
+        gorun($('fis'), p(u, 0.15, 0.35));
+        $('fis').style.transform = `translate(${((1 - c) * -320).toFixed(1)}px, ${((1 - c) * 520).toFixed(1)}px) scale(${(0.25 + 0.75 * c).toFixed(3)})`;
+        $('fisUst').style.transform = `translate(${(-ayir * 70).toFixed(1)}px, ${(-ayir * 26).toFixed(1)}px) rotate(${(-ayir * 3).toFixed(2)}deg)`;
+        $('fisAlt').style.transform = `translate(${(ayir * 70).toFixed(1)}px, ${(ayir * 26).toFixed(1)}px) rotate(${(ayir * 3).toFixed(2)}deg)`;
+        $('kes').style.opacity = (1 - ayir) * p(u, 1.0, 1.3);
+        gorun($('etkUst'), eo(p(u, 2.8, 3.1)));
+        gorun($('etkAlt'), eo(p(u, 3.0, 3.3)));
+      } },
+    { ad: 'hazir', sure: 3.6, katman: 'ui', eb: 'ERTESİ GÜN', h: 'Tamir bitince <span class="k">aranacaklara düşer.</span>',
+      ses: 'Tamir bitince müşteri, aranacaklar listesine kendiliğinden düşer.',
+      ciz(u) {
+        gorunum('vHazir', 1);
+        const q = eo(p(u, 0.2, 0.6));
+        css($('ar1'), { opacity: q, transform: `translateY(${((1 - q) * 40).toFixed(1)}px)` });
+        const [x, y] = uiNokta($('wa'));
+        imlecYol(u, [[0.6, 700, 700], [1.3, x, y]], [1.45], gor(u, 0.6, 2.6, 0.2));
+        bas($('wa'), u, 1.45);
+        $('waSonuc').style.opacity = eo(p(u, 1.6, 1.9));
+      } },
+    { ad: 'teslim', sure: 3.0, katman: 'dukkan', eb: 'TESLİM', h: 'Fiş gözlükte, <span class="k">teslim karışmaz.</span>',
+      ses: 'Fişin alt yarısı gözlüğün üstünde, teslim karışmaz.',
+      ciz(u) {
+        dukkan({ t: u + 9, sag: lerp(-8, -62, eo(p(u, 0, 0.5))), gul: 1.3, saat: [17, 5], kirp: [1.6] });
+        kisi('mehmet', { t: u, x: 720, gozluk: eo(p(u, 0.1, 0.5)), gul: 16, kirp: [1.1], par: u > 0.3 && u < 1.6 ? Math.sin(p(u, 0.3, 1.6) * Math.PI) : 0 });
+        damga(p(u, 0.7, 0.95), { metin: 'TESLİM EDİLDİ', x: 330, y: 1250 });
+      } },
+    { ad: 'son', sure: 3.6, son: true, ses: 'Optiflo. Otuz gün ücretsiz deneyin.' },
+  ],
+});
+</script>
+</body>
+</html>

@@ -55,6 +55,21 @@ jobs:
                       z.write(wav, f"{s['id']}.wav")
               print("hazır:", zp)
           EOF
+      - name: Anlaşılırlık kontrolü (Whisper ile geri yazdırma)
+        continue-on-error: true
+        run: |
+          pip install -q faster-whisper
+          python - <<'EOF' 2>&1 | tee -a gunluk.txt
+          import glob, json, os
+          from faster_whisper import WhisperModel
+          m = WhisperModel("small", device="cpu", compute_type="int8")
+          for js in sorted(glob.glob("docs/tanitim-video/*/ses.json")):
+              film = os.path.basename(os.path.dirname(js))
+              for s in json.load(open(js, encoding="utf-8")):
+                  seg, _ = m.transcribe(f"cikti/{film}-{s['id']}.wav", language="tr")
+                  print(f"[{film}/{s['id']}] metin : {s['metin']}")
+                  print(f"[{film}/{s['id']}] duyulan: {' '.join(x.text.strip() for x in seg)}")
+          EOF
       - name: Ön sürüme koy
         if: always()
         run: |

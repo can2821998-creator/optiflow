@@ -1,0 +1,30 @@
+[
+ {
+  "id": "gelis",
+  "metin": "Öğleden sonra. Mehmet Bey'in gözlüğünün vidası düşmüş."
+ },
+ {
+  "id": "kayit",
+  "metin": "Yapılacak işlemi seçersiniz; teslim alırken gördüğünüz çiziği de kayda geçirirsiniz."
+ },
+ {
+  "id": "secenek",
+  "metin": "Bırakılacaksa hazır olacağı gün yazılır. Ücretsizse tek dokunuş."
+ },
+ {
+  "id": "fis",
+  "metin": "Fiş tek A4'e basılır, ortadan kesilir: üst yarı müşteriye, alt yarı gözlüğe."
+ },
+ {
+  "id": "hazir",
+  "metin": "Tamir bitince müşteri, aranacaklar listesine kendiliğinden düşer."
+ },
+ {
+  "id": "teslim",
+  "metin": "Fişin alt yarısı gözlüğün üstünde, teslim karışmaz."
+ },
+ {
+  "id": "son",
+  "metin": "Optiflo. Otuz gün ücretsiz deneyin."
+ }
+]

@@ -166,7 +166,7 @@
         <g fill="none" stroke-width="5"><g stroke="#1b1416"><rect x="104" y="586" width="34" height="22" rx="9"/><rect x="144" y="586" width="34" height="22" rx="9"/></g><g stroke="#b4233c"><rect x="192" y="588" width="18" height="18" rx="6"/></g></g></g>
       <g id="pDefter" opacity="0"><path d="M84 626 L160 604 L236 626 L236 632 L84 632Z" fill="#fbf8f7" stroke="#cdbcb7" stroke-width="2"/><path d="M160 604 L160 632" stroke="#b4233c" stroke-width="3"/>
         <g stroke="#9b8d90" stroke-width="2">${[0, 1, 2].map((i) => `<line x1="${100 + i * 4}" y1="${618 - i * 4}" x2="${148}" y2="${612 - i * 4}"/><line x1="${172}" y1="${612 - i * 4}" x2="${222 - i * 4}" y2="${618 - i * 4}"/>`).join('')}</g>
-        <rect x="250" y="590" width="26" height="40" rx="4" fill="#ffe08a" transform="rotate(-8 263 610)"/><rect x="232" y="560" width="26" height="30" rx="4" fill="#ffc6cf" transform="rotate(10 245 575)"/></g>
+        <rect x="246" y="614" width="44" height="14" rx="3" fill="#ffe08a" transform="rotate(-4 268 621)"/><rect x="292" y="612" width="40" height="16" rx="3" fill="#ffc6cf" transform="rotate(5 312 620)"/><rect x="58" y="612" width="34" height="16" rx="3" fill="#ffe08a" transform="rotate(8 75 620)"/></g>
       <g id="pKagit" opacity="0">${kagit}<g transform="translate(236 572)"><rect width="66" height="58" rx="8" fill="#3a3033"/><rect x="8" y="7" width="50" height="14" rx="3" fill="#cfe3c8"/>
         ${[0, 1, 2].map((r) => [0, 1, 2].map((c) => `<rect x="${8 + c * 18}" y="${27 + r * 10}" width="14" height="7" rx="2" fill="#8a7d80"/>`).join('')).join('')}</g></g>
       <g id="pYazici" opacity="0"><rect x="70" y="556" width="200" height="74" rx="14" fill="#3a3033"/><rect x="84" y="552" width="172" height="12" rx="5" fill="#241b1e"/>

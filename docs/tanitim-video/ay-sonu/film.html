@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>OptiFlow · Ay sonu SGK faturası (Reels 1080×1920)</title>
+<link rel="stylesheet" href="../ortak/stil.css">
+<style>
+.yukle{height:230px;border:3px dashed #4a3a3f;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--d-m);font-size:24px;font-weight:650;position:relative;overflow:hidden}
+.yukle .ik{color:#ff95a6}
+.dosya{position:absolute;left:50%;top:50%;width:420px;margin-left:-210px;margin-top:-46px;height:92px;border-radius:16px;background:#231b1e;border:2px solid #4a3a3f;display:flex;align-items:center;gap:16px;padding:0 22px;color:var(--d-ink);font:500 25px var(--mono);opacity:0}
+.cubuk{height:14px;border-radius:999px;background:#231b1e;margin-top:22px;overflow:hidden}
+.cubuk i{display:block;height:100%;width:0;background:linear-gradient(90deg,#d0334f,#e0435f)}
+.bulundu{margin-top:22px;font-weight:800;font-size:34px;opacity:0;display:flex;align-items:center;gap:14px;color:var(--d-ok)}
+.kar{display:flex;flex-direction:column;gap:14px}
+.ks{display:flex;align-items:center;gap:18px;padding:22px 24px;border-radius:18px;border:2px solid var(--d-line);background:var(--d-sur);font-size:25px;font-weight:700;opacity:0;position:relative}
+.ks .sy{font:500 34px var(--mono);min-width:70px;text-align:right}
+.ks.ok{border-color:#1f4a33;background:#0f1d16}.ks.ok .sy{color:var(--d-ok)}
+.ks.warn{border-color:#5a4316;background:#1e170b}.ks.warn .sy{color:var(--d-warn)}
+.ks .ac{margin-left:auto;font-weight:750;font-size:20px;padding:10px 16px;border-radius:12px;background:#231b1e;border:2px solid #3a2c30;color:var(--d-ink);position:relative;overflow:hidden;white-space:nowrap}
+.ks small{display:block;font:500 19px var(--mono);color:var(--d-m);margin-top:4px}
+.fatura{position:absolute;left:34px;right:34px;top:250px;z-index:3;box-shadow:0 30px 60px rgba(0,0,0,.6);border-radius:22px;padding:28px 30px;background:linear-gradient(160deg,#2a1219,#171213 60%);border:2px solid #6b2433;opacity:0}
+.fatura .et{font:500 19px var(--mono);letter-spacing:.14em;color:#ff95a6}
+.fatura h3{font-weight:800;font-size:40px;margin:10px 0 18px}
+.fatura .sat{display:flex;justify-content:space-between;font-size:26px;font-weight:650;color:var(--d-m);padding:10px 0;border-top:1px solid #3a2c30}
+.fatura .sat b{color:var(--d-ink);font-weight:800}
+.fatura .top b{font-size:40px;color:#fff}
+#olustur{margin-top:20px}
+</style>
+</head>
+<body>
+<div id="tuval"></div>
+<script src="../ortak/motor.js"></script>
+<script>
+FILM({
+  gorunumler: {
+    vDokum: `<div class="ust"><h2>SGK ay sonu faturası</h2><span class="m">EKİM</span></div>
+      <div class="kart"><div class="etiket" style="margin-bottom:14px">MEDULA DÖKÜMÜ (PDF)</div>
+        <div class="yukle" id="yukle"><span class="ik">${IK.belge}</span><span id="yukleYazi">Medula'dan aldığınız ay sonu dökümünü bırakın</span>
+          <div class="dosya" id="dosya">${IK.belge}ekim-dokum.pdf</div></div>
+        <div class="cubuk"><i id="cubuk"></i></div>
+        <div class="bulundu" id="bulundu">${IK.ok}48 e-Reçete numarası bulundu</div></div>`,
+    vKarsi: `<div class="ust"><h2>Medula dökümüyle karşılaştır</h2><span class="m">EKİM</span></div>
+      <div class="kar">
+        <div class="ks ok" id="ks0"><span class="sy" id="sy0">47</span><div>reçete iki tarafta da var<small>Medula ✓ · OptiFlow ✓</small></div></div>
+        <div class="ks warn" id="ks1"><span class="sy" id="sy1">1</span><div>Medula'da var, OptiFlow'da işaretli değil<small>#00109 · Kemal A.</small></div><span class="ac" id="isaretle">Medula'ya işlendi</span></div>
+        <div class="ks warn" id="ks2"><span class="sy">1</span><div>OptiFlow'da işaretli, dökümde yok<small>#00126 · kontrol edin</small></div><span class="ac">Göster</span></div>
+      </div>
+      <div class="dugme" id="olustur" style="opacity:0">Seçilenlerle SGK faturası taslağı oluştur</div>
+      <div class="fatura" id="fatura"><div class="et">SGK FATURASI · TASLAK</div><h3>Ekim 2026</h3>
+        <div class="sat"><span>Reçete</span><b>48</b></div><div class="sat"><span>Reçete başına SGK payı</span><b>460 ₺</b></div>
+        <div class="sat top"><span>Toplam</span><b>22.080 ₺</b></div></div>
+      <div class="damga" id="tamam" style="left:600px;top:300px">TAMAM</div>`,
+  },
+  sahneler: [
+    { ad: 'aksam', sure: 3.4, katman: 'dukkan', eb: 'AYIN SON GÜNÜ · 21:30', h: 'Ay sonu. <span class="k">SGK faturası</span> bekliyor.',
+      ses: 'Ayın son günü, saat dokuz buçuk. Se ge ka faturası bekliyor.',
+      ciz(u) { dukkan({ t: u, aksam: 1, lamba: 1, kagit: 1, tepsi: 0, gul: -0.5, kas: 0.6, sag: lerp(-8, -24, Math.abs(Math.sin(u * 1.6))), saat: [21, 30], kirp: [1.1, 2.8] }); } },
+    { ad: 'eskiden', sure: 3.4, katman: 'dukkan', eb: 'ESKİDEN', h: '<span class="s">Saymak,</span> <span class="s">toplamak,</span> <span class="s">karşılaştırmak…</span>',
+      cizgi: [1.0, 1.45, 1.9], ses: 'Eskiden reçeteleri tek tek sayar, toplar, Medula\'yla karşılaştırırdınız.',
+      ciz(u) { dukkan({ t: u + 4, aksam: 1, lamba: 1, kagit: 1, tepsi: 0, gul: -0.8, kas: 1, sag: lerp(-8, -30, Math.abs(Math.sin(u * 2.4))), saat: [21, 31], kirp: [1.7] }); } },
+    { ad: 'dokum', sure: 4.4, katman: 'ui', zoom: true, gecis: 0.7, eb: '1 · DÖKÜM', h: 'Medula dökümünü <span class="k">yüklersiniz.</span>',
+      ses: 'Şimdi Medula dökümünü yüklersiniz.',
+      ciz(u) {
+        gorunum('vDokum', 1);
+        const d = eo(p(u, 0.7, 1.3));
+        css($('dosya'), { opacity: d, transform: `translateY(${((1 - d) * -180).toFixed(1)}px) rotate(${((1 - d) * -6).toFixed(1)}deg)` });
+        $('yukleYazi').style.opacity = 1 - d;
+        $('yukle').style.borderColor = u > 1.0 && u < 1.6 ? '#e0435f' : '#4a3a3f';
+        $('cubuk').style.width = (eio(p(u, 1.4, 2.6)) * 100).toFixed(1) + '%';
+        const b = eo(p(u, 2.7, 3.0));
+        css($('bulundu'), { opacity: b, transform: `translateY(${((1 - b) * 14).toFixed(1)}px)` });
+      } },
+    { ad: 'karsilastir', sure: 4.8, katman: 'ui', eb: '2 · KARŞILAŞTIR', h: 'Eksik olan <span class="k">önünüze gelir.</span>',
+      ses: 'OptiFlow kendi kayıtlarıyla karşılaştırır, eksik olanı önünüze koyar.',
+      ciz(u) {
+        gorunum('vKarsi', 1);
+        ['ks0', 'ks1', 'ks2'].forEach((id, i) => { const q = eo(p(u, 0.3 + i * 0.3, 0.75 + i * 0.3)); css($(id), { opacity: q, transform: `translateX(${((1 - q) * 50).toFixed(1)}px)` }); });
+        const [x, y] = uiNokta($('isaretle'));
+        imlecYol(u, [[1.6, 600, 760], [2.4, x, y]], [2.55], gor(u, 1.6, 3.6, 0.2));
+        bas($('isaretle'), u, 2.55);
+        const ok = u > 2.75;
+        $('ks1').className = 'ks ' + (ok ? 'ok' : 'warn');
+        $('isaretle').textContent = ok ? 'İşlendi' : 'Medula\'ya işlendi';
+        $('sy0').textContent = ok ? '48' : '47';
+        $('sy0').style.transform = `scale(${(1 + 0.3 * Math.sin(Math.PI * p(u, 2.75, 3.1))).toFixed(3)})`;
+      } },
+    { ad: 'fatura', sure: 4.0, katman: 'ui', eb: '3 · FATURA', h: 'Ay sonu faturası <span class="k">tek tıkla.</span>',
+      ses: 'Tek tıkla ay sonu faturası hazır.',
+      ciz(u) {
+        gorunum('vKarsi', 1);
+        ['ks0', 'ks1', 'ks2'].forEach((id) => css($(id), { opacity: 1, transform: 'none' }));
+        $('ks1').className = 'ks ok'; $('isaretle').textContent = 'İşlendi'; $('sy0').textContent = '48';
+        const o = $('olustur');
+        o.style.opacity = eo(p(u, 0.1, 0.4));
+        const [x, y] = uiNokta(o);
+        imlecYol(u, [[0.2, 700, 800], [0.8, x, y]], [0.95], gor(u, 0.2, 2.0, 0.2));
+        bas(o, u, 0.95);
+        const f = eo(p(u, 1.2, 1.7));
+        css($('fatura'), { opacity: f, transform: `translateY(${((1 - f) * 40).toFixed(1)}px)` });
+        ['ks0', 'ks1', 'ks2'].forEach((id) => { $(id).style.opacity = 1 - 0.7 * f; });
+        const st = p(u, 2.2, 2.45);
+        css($('tamam'), { opacity: st > 0 ? Math.min(1, st * 1.5) : 0, transform: `rotate(-12deg) scale(${(1.7 - 0.7 * eo(st)).toFixed(3)})` });
+      } },
+    { ad: 'eve', sure: 3.0, katman: 'dukkan', eb: 'AY SONU', h: 'Akşamınız <span class="k">size kalır.</span>',
+      ses: 'Akşamınız size kalır.',
+      ciz(u) { dukkan({ t: u, aksam: 1, lamba: 1 - 0.6 * p(u, 1.6, 2.4), kagit: 0, tepsi: 1, gul: 1.3, el: u > 0.6 && u < 2.4 ? 1 : 0, saat: [21, 38], kirp: [0.4] }); } },
+    { ad: 'son', sure: 3.6, son: true, ses: 'Optiflo. Otuz gün ücretsiz deneyin.' },
+  ],
+});
+</script>
+</body>
+</html>

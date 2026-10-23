@@ -1,0 +1,30 @@
+[
+ {
+  "id": "sabah",
+  "metin": "Sabah dokuz. Güne hep aynı soruyla başlarsınız: bugün kimi arayacağım?"
+ },
+ {
+  "id": "eskiden",
+  "metin": "Defter, yapışkan notlar, hafızanız... Biri mutlaka unutulur."
+ },
+ {
+  "id": "liste",
+  "metin": "OptiFlow listeyi her sabah kendisi çıkarır: gözlüğü hazır olanlar, gelmeyenler, ödeme sözü geçenler."
+ },
+ {
+  "id": "isaretle",
+  "metin": "Ulaşıldı, açmadı ya da WhatsApp: tek dokunuş. Açmayan yarın yine listede."
+ },
+ {
+  "id": "bitti",
+  "metin": "Kimse unutulmaz."
+ },
+ {
+  "id": "gelis",
+  "metin": "Aranan müşteri, gözlüğünü almaya gelir."
+ },
+ {
+  "id": "son",
+  "metin": "Optiflo. Otuz gün ücretsiz deneyin."
+ }
+]

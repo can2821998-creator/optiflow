@@ -8,6 +8,9 @@ DEĞİŞİKLİK NOTLARI — 4.46.0 (Gece: Yalın düzeni + iş emrinin dili)
   - Bant veri şeridi (layout.php bant_veri): ana ekran (aktif / atölyede / hazır / geciken), atölye panosu, veresiye
     defteri sayıları bandın içinde büyük mono rakamla; eski ayrı sayı kutuları kalktı.
   - Sayı kartları tonlu (üst renk çizgisi, renkli mono rakam), kartlar hafif derinlikli, birincil düğme bordo ışıklı.
+  - Belirginlik turu (kullanıcı: "üstteki barları ve kutucukları belirginleştir"): bant daha büyük ve canlı, bant sayıları
+    ayrı cam kutucuklarda; seçili bölüm sekmesi dolu bordo; kartlar net kenar + gölge + tonlu başlık şeridi; sayı
+    kartlarında kalın renk çizgisi; Bugün sütunları ve atölye sütunları renkli başlıklı ayrı kutular.
   - Üst çubuk / PWA rengi gece (#140e10). Test: arayuz 63.
 
 DEĞİŞİKLİK NOTLARI — 4.45.0 (Veresiye defteri: taksit planı, müşteri ekstresi, küpür sayımı, yarına devir; şema 37)

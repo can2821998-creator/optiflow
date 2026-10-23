@@ -2944,3 +2944,117 @@ a.stat:hover, button.stat:hover { transform: translateY(-1px); box-shadow: var(-
   .bant-veri dt { font-size: 9.5px; letter-spacing: .08em; }
 }
 .page-head .btn-primary .ic { color: #b4233c; }
+
+/* ==========================================================================
+   4.46.1 — GECE belirgin: kullanıcı "pek değişiklik yok; üstteki barları ve kutucukları belirginleştir"
+   • Gece bandı daha büyük, bordo ışık daha güçlü, halkalar görünür; bant sayıları ayrı kutucuklarda.
+   • Bölüm sekmeleri beyaz şerit üzerinde dolu bordo hap (seçili sekme net).
+   • Kutular: güçlü kenar + gölge, tonlu başlık şeridi; sayı kartlarında kalın renk çizgisi ve renkli zemin.
+   ========================================================================== */
+:root { --halka: repeating-radial-gradient(circle at center, transparent 0 33px, rgba(255, 140, 160, .16) 33px 34.5px); }
+
+/* ---- Gece bandı: daha büyük, daha canlı ---- */
+.page-head, .hero, html.tema-koyu .page-head, html.tema-koyu .hero {
+  padding: 32px 36px 28px; border-radius: 22px;
+  background:
+    radial-gradient(70% 160% at 100% 0%, rgba(224, 58, 88, .75), transparent 58%),
+    radial-gradient(50% 120% at 0% 100%, rgba(180, 35, 60, .28), transparent 60%),
+    linear-gradient(115deg, #120c0e 0%, #2a0f17 55%, #4a1322 100%);
+  box-shadow: 0 28px 50px -28px rgba(110, 16, 40, .75), inset 0 1px 0 rgba(255, 255, 255, .06), inset 0 0 0 1px rgba(255, 107, 129, .14);
+}
+.page-head::before, .hero::before { width: 420px; height: 420px; right: -90px; opacity: 1; }
+.page-head::after, .hero::after { right: 120px; background: linear-gradient(transparent, rgba(255, 255, 255, .22), transparent); }
+.page-head h1, .hero h1 { font-size: clamp(30px, 3vw, 40px); font-weight: 800; text-shadow: 0 2px 18px rgba(0, 0, 0, .35); }
+.page-head p, .hero p { font-size: 15px; color: rgba(244, 238, 240, .8); }
+
+/* bant sayıları: her biri ayrı cam kutucuk */
+.bant-veri { gap: 12px; margin-top: 22px; padding-top: 0; border-top: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.bant-veri > a, .bant-veri > div {
+  position: relative; margin: 0; padding: 14px 16px 15px; min-width: 0; border-right: 0;
+  border-radius: 14px; background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06); backdrop-filter: blur(2px); gap: 10px;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.bant-veri > a:hover { background: rgba(255, 255, 255, .13); border-color: rgba(255, 255, 255, .24); transform: translateY(-1px); }
+.bant-veri > a::after { content: "→"; position: absolute; top: 12px; right: 14px; font: 600 13px/1 var(--mono); color: rgba(255, 255, 255, .35); }
+.bant-veri dt { font-size: 11px; color: rgba(244, 238, 240, .7); }
+.bant-veri dd { font-size: 36px; font-weight: 600; }
+.bant-veri > :has(dd.ton-red) { background: rgba(255, 107, 129, .14); border-color: rgba(255, 107, 129, .4); }
+.bant-veri > :has(dd.ton-green) { background: rgba(127, 224, 168, .1); border-color: rgba(127, 224, 168, .32); }
+.bant-veri > :has(dd.ton-amber) { background: rgba(255, 197, 107, .1); border-color: rgba(255, 197, 107, .32); }
+
+/* ---- Bölüm sekmeleri: beyaz şerit, seçili sekme dolu bordo ---- */
+.bolum-sekme {
+  margin: -22px -40px 20px; padding: 10px 28px; gap: 6px; align-items: center;
+  background: var(--surface); border-bottom: 1px solid var(--line-strong);
+  box-shadow: 0 6px 18px -14px rgba(40, 14, 22, .35);
+}
+.bolum-sekme a { min-height: 38px; padding: 0 14px; border-radius: 10px; color: var(--ink-2); font-weight: 650; }
+.bolum-sekme a:hover { background: var(--surface-3); color: var(--ink); }
+.bolum-sekme a.active, html.tema-koyu .bolum-sekme a.active {
+  color: #fff; background: linear-gradient(135deg, #d0334f 0%, #8f1a2e 100%);
+  box-shadow: 0 8px 18px -10px rgba(180, 35, 60, .9);
+}
+.bolum-sekme a.active::after { content: none; }
+.bolum-sekme a.active .count { background: rgba(255, 255, 255, .22); color: #fff; }
+@media (max-width: 1023px) {
+  .bolum-sekme { margin: -16px -16px 16px; padding: 8px 10px; }
+}
+
+/* ---- Kutular: net kenar, belirgin gölge, tonlu başlık şeridi ---- */
+.card, details.card {
+  border: 1px solid var(--line-strong); border-radius: 18px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .7) inset, 0 2px 4px rgba(40, 14, 22, .05), 0 18px 34px -24px rgba(60, 14, 28, .45);
+}
+.card > .card-head, details.card > summary.card-head {
+  margin: -22px -24px 18px; padding: 16px 24px; border-bottom: 1px solid var(--line);
+  border-radius: 18px 18px 0 0; background: linear-gradient(180deg, var(--surface-2), var(--surface));
+}
+details.card:not([open]) > summary.card-head { margin-bottom: -22px; border-bottom: 0; border-radius: 18px; }
+.card-head h2 { font-size: 17.5px; font-weight: 800; }
+.card-head h2 .ic { width: 36px; height: 36px; padding: 8px; border-radius: 11px; background: linear-gradient(135deg, #d0334f, #8f1a2e); color: #fff; box-shadow: 0 8px 16px -10px rgba(180, 35, 60, .9); }
+html.tema-koyu .card, html.tema-koyu details.card { box-shadow: 0 0 0 1px rgba(255, 255, 255, .02), 0 18px 34px -24px rgba(0, 0, 0, .9); }
+html.tema-koyu .card > .card-head, html.tema-koyu details.card > summary.card-head { background: linear-gradient(180deg, var(--surface-3), var(--surface)); }
+
+/* sayı kartları: kalın renk çizgisi, renkli zemin, büyük rakam */
+.stat, .stat.tone-green, .stat.tone-red, .stat.tone-amber, .stat.tone-teal, .stat.tone-violet, .stat.tone-blue {
+  padding: 20px 20px 18px 24px; border: 1px solid var(--line-strong); border-radius: 16px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tb) 85%, var(--surface)) 0%, var(--surface) 75%);
+  box-shadow: 0 14px 28px -22px rgba(60, 14, 28, .5);
+}
+.stat::before { top: 0; bottom: 0; left: 0; right: auto; width: 5px; height: auto; opacity: 1; }
+.stat:not([class*="tone-"])::before { opacity: .9; }
+.stat b { font-size: clamp(28px, 2.4vw, 36px); }
+.stat small { color: var(--ink-2); }
+
+/* Bugün panosu: her sütun ayrı kutucuk */
+.today-cols { gap: 14px; }
+.today-col { padding: 14px 14px 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
+.today-col-head { margin: -14px -14px 10px; padding: 11px 14px; border-bottom: 0; border-radius: 14px 14px 0 0; font-size: 11.5px; letter-spacing: .08em; }
+.today-col-head.tone-wine { background: var(--brand-soft); color: var(--brand-ink); }
+.today-col-head.tone-red { background: var(--red-bg); color: var(--red); }
+.today-col-head.tone-green { background: var(--green-bg); color: var(--green); }
+.today-col-head.tone-amber { background: var(--amber-bg); color: var(--amber); }
+.today-row { background: var(--surface); border: 1px solid var(--line); margin-bottom: 6px; padding: 8px 10px; }
+.today-row:hover { border-color: var(--line-strong); background: var(--surface); }
+
+/* Atölye panosu sütunları: dolu renkli başlık, net kutu */
+.pano-col { border: 1px solid var(--line-strong); border-radius: 18px; box-shadow: 0 14px 28px -22px rgba(60, 14, 28, .45); background: var(--surface-2); }
+.pano-col-head { padding: 14px 16px; border-radius: 17px 17px 0 0; font-size: 14px; font-weight: 800; }
+.pano-col-head.tone-amber { background: linear-gradient(135deg, #e89a2c, #b56b07); color: #fff; }
+.pano-col-head.tone-teal { background: linear-gradient(135deg, #1fa596, #0f6f66); color: #fff; }
+.pano-col-head.tone-violet { background: linear-gradient(135deg, #7a5cf0, #4b2fb8); color: #fff; }
+.pano-col-head.tone-green { background: linear-gradient(135deg, #2bb36b, #157347); color: #fff; }
+.pano-col-head.tone-wine { background: linear-gradient(135deg, #d0334f, #8f1a2e); color: #fff; }
+.pano-col-head b { background: rgba(255, 255, 255, .22); color: #fff; }
+.pano-col-sub { padding-top: 10px; background: var(--surface); }
+.pano-card { background: var(--surface); border: 1px solid var(--line); border-left-width: 4px; box-shadow: 0 6px 14px -12px rgba(60, 14, 28, .5); }
+
+@media (max-width: 640px) {
+  .page-head, .hero, html.tema-koyu .page-head, html.tema-koyu .hero { padding: 24px 18px 20px; }
+  .bant-veri { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .bant-veri > a, .bant-veri > div { padding: 11px 12px; margin: 0; }
+  .bant-veri dd { font-size: 28px; }
+  .card > .card-head, details.card > summary.card-head { margin: -18px -16px 14px; padding: 14px 16px; }
+  details.card:not([open]) > summary.card-head { margin-bottom: -18px; }
+}

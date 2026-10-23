@@ -1,6 +1,6 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 23 Ekim 2026 (4.48.0 dalda `oturum/tasarim`, canlı 4.45.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 23 Ekim 2026 (4.48.0 main'de, yayın sürüyor; canlı 4.45.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 **Sunucu taşındı (23.10, ~16:50 canlı):** TürkTicaret paylaşımlı Plesk → kiralık sunucu (Plesk Obsidian, Administrator).
 Rehber `docs/SUNUCU-TASIMA.md`. DNS (TürkTicaret paneli) A `optiflow.com.tr` → yeni IP; www/ftp CNAME; MX/mail TürkTicaret'te
@@ -14,8 +14,8 @@ Domain Names "resolve to other servers" yeniden açılabilir; Plesk güncellemes
 dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. TürkTicaret hostingi iptal edilirse e-posta da gider.
 
 ## Sürüm
-- **Sunucu 4.48.0** (dal `oturum/tasarim`, 4.46.0–4.48.0; main'e birleştirilmedi — önce GitHub FTP sırları yeni sunucuya çevrilmeli,
-  yoksa "Canlıya al" eski hostinge yükler), şema **39** (v36 atölye parafları + raf; v37 taksit + kasa devir/küpür; v38 arama_kayitlari; v39 hizmet_detay). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Sunucu 4.48.0** (23.10 main'e birleştirildi: 4.46.0–4.48.0; kullanıcı GitHub FTP sırlarını yeni sunucuya çevirdi,
+  "Canlıya al" artık yeni sunucuya yükler), şema **39** (v36 atölye parafları + raf; v37 taksit + kasa devir/küpür; v38 arama_kayitlari; v39 hizmet_detay). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
 - **Canlı site: 4.45.0** (23.10 "Sürüm yayınla" + "Canlıya al" başarılı, eski hostinge; sonra kullanıcı sunucuyu taşıdı).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).

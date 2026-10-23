@@ -110,6 +110,18 @@ Sırlar güncellenmezse sonraki sürüm **eski hostinge** yüklenir. Güncelledi
   Yeni mağaza kaydolunca veritabanı Plesk'in kendi aracıyla (`plesk bin database` / Plesk API) otomatik açılabilir. Böylece Plesk yedeklerine de girer.
   Şimdilik "beklemede" modu sürer: yeni mağaza için veritabanını Plesk'te açıp merkez panelden etkinleştirirsiniz.
 
+## Test yapılamazsa: doğrudan geçiş (23.10'da seçilen yol)
+Bilgisayarda hosts değişikliği yapılamadı (erişim engellendi), kullanıcı doğrudan geçişi seçti. Mağaza kapalıyken:
+1. Eski Plesk › Databases › iki veritabanından **son** Export dump (localhost2 = merkez, poyrazoptik = mağaza).
+2. Yeni Plesk › aynı veritabanlarına Import dump (eskisinin üzerine yazar).
+3. Yeni Plesk › localhost2 › phpMyAdmin › `magazalar` tablosu › Poyraz Optik satırı › Düzenle:
+   `db_host` = localhost, `db_name` = poyrazoptik, `db_user` = yeni kullanıcı, `db_sifre` = yeni şifre (düz metin).
+   (Merkez panelin "Veritabanı bağlantısı" formunun yaptığı işin aynısı; her içe aktarmadan SONRA yapılır.)
+4. DNS: `@` ve `www` A kayıtları → yeni IP. MX'e dokunulmaz.
+5. Eski Plesk › httpdocs › `config.php` adını `config.php.eski` yap: eski site hata sayfası gösterir, DNS yayılırken eski
+   veritabanına kayıt yazılmaz, eski zamanlanmış görev de çalışmaz. Geri dönüş: adı geri al + A kaydını eski IP'ye çevir.
+6. DNS yayılınca: Let's Encrypt (site + panel), zamanlanmış görev, GitHub FTP sırları (8. adım).
+
 ## Kontrol listesi
 - [ ] TTL 300
 - [ ] Add Domain + PHP 8.3 + e-posta hizmeti kapalı

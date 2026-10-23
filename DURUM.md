@@ -4,7 +4,7 @@
 
 **Sunucu taşıma (23.10):** kullanıcı sunucu kiraladı — Plesk Obsidian, Administrator erişimli, boş (ilk "cPanel" dendi,
 sonra Plesk olduğu görüldü). Rehber `docs/SUNUCU-TASIMA.md` (aynı ad/kullanıcı/şifreyle DB açılırsa config değişmez).
-Henüz taşınmadı. Bekleyen: alan adı DNS'i nerede, eski hostingte e-posta var mı. İleride: `plesk bin database` ile
+Yapılan (23.10): yeni Plesk'te optiflow.com.tr açıldı (PHP 8.3), DB localhost2 + poyrazoptik (kullanıcı optiflowdb) deneme dökümüyle dolu, httpdocs yüklendi, config.php güncellendi. hosts testi yapılamadı → doğrudan geçiş (rehberde "doğrudan geçiş" bölümü). Bekleyen: son döküm + magazalar satırı + DNS + eski config adı + SSL + cron + GitHub FTP sırları; yeni sunucuda info@ açıldı (MX kararı bekliyor). İleride: `plesk bin database` ile
 yeni mağazaya otomatik veritabanı.
 
 ## Sürüm

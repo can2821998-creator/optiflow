@@ -27,7 +27,8 @@ jobs:
       - name: Coqui TTS kur
         run: |
           pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
-          pip install -q coqui-tts
+          pip install -q "coqui-tts[codec]"
+          sudo apt-get install -y -qq ffmpeg >/dev/null
           sudo apt-get install -y -qq espeak-ng >/dev/null
       - name: Seslendir
         env:

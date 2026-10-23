@@ -251,6 +251,11 @@
     }
     imlec(x, y, op, tik.some((a) => u > a && u < a + 0.18));
   };
+  /** Bir öğenin panel içindeki orta noktası (imleç hedefi için; ucun tam üstüne gelmesi için hafif kaydırılır). */
+  window.uiNokta = (el, dx = 0, dy = 0) => {
+    const r = el.getBoundingClientRect(), u = $('ui').getBoundingClientRect(), s = u.width / 988;
+    return [(r.left + r.width / 2 - u.left) / s - 8 + dx, (r.top + r.height / 2 - u.top) / s - 6 + dy];
+  };
   window.damga = (q, o) => {
     const d = $('damga');
     d.textContent = o.metin;

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>OptiFlow · Bugün aranacaklar (Reels 1080×1920)</title>
+<link rel="stylesheet" href="../ortak/stil.css">
+<style>
+.liste{display:flex;flex-direction:column;gap:12px;position:relative}
+.ar{background:var(--d-sur);border:2px solid var(--d-line);border-radius:20px;padding:18px 22px;height:150px;position:relative;overflow:hidden;opacity:0}
+.ar .ust1{display:flex;align-items:center;gap:14px}
+.ar b{font-size:30px;font-weight:800}
+.ar .no{font:500 20px var(--mono);color:var(--d-m)}
+.ar .det{font-size:21px;color:var(--d-m);font-weight:600;margin:6px 0 12px}
+.ar .tus{display:flex;gap:10px}
+.ar .tus span{font-weight:750;font-size:19px;padding:9px 14px;border-radius:12px;background:#231b1e;border:2px solid #3a2c30;color:var(--d-ink);display:inline-flex;align-items:center;gap:8px;position:relative;overflow:hidden}
+.ar .tus span.u{background:#10241a;border-color:#1f4a33;color:var(--d-ok)}
+.ar .sonuc{position:absolute;inset:0;display:flex;align-items:center;gap:14px;padding:0 26px;font-weight:800;font-size:28px;opacity:0}
+.ar .sonuc.ok{background:#10241a;color:var(--d-ok)}
+.ar .sonuc.warn{background:#2a1f0d;color:var(--d-warn)}
+.ar .sonuc small{font:500 20px var(--mono);margin-left:auto;opacity:.85}
+.bos{position:absolute;left:0;right:0;top:220px;text-align:center;opacity:0}
+.bos .halka{width:150px;height:150px;border-radius:50%;margin:0 auto 26px;background:#10241a;border:3px solid #1f4a33;color:var(--d-ok);display:grid;place-items:center}
+.bos b{display:block;font-size:40px;font-weight:800}
+.bos span{font:500 22px var(--mono);color:var(--d-m)}
+#sayac{font:500 22px var(--mono);color:#ff95a6}
+</style>
+</head>
+<body>
+<div id="tuval"></div>
+<script src="../ortak/motor.js"></script>
+<script>
+const KISI = [
+  ['Mehmet Kaya', '0533 ••• •• 47', 'Gözlüğü hazır', 'ok', 'bugün hazırlandı', '#00131'],
+  ['Selin Arslan', '0544 ••• •• 02', 'Haber verildi, gelmedi', 'warn', '4 gündür bekliyor', '#00119'],
+  ['Hasan Tunç', '0505 ••• •• 63', 'Ödeme sözü geçti', 'br', 'söz 2 gün geçti', '#00122'],
+  ['Zeynep Demir', '0532 ••• •• 81', 'Planlı arama', '', 'kontrol randevusu', '#00117'],
+];
+const SONUC = [['ok', 'Ulaşıldı', 'geliyor'], ['warn', 'Açmadı', 'yarın yine listede'], ['ok', 'WhatsApp gönderildi', 'mesaj gitti'], ['ok', 'Ulaşıldı', 'perşembe 14:00']];
+const TIK = [1, 2, 3, 1]; // hangi tuş: 0 Ulaşıldı, 1 Açmadı, 2 WhatsApp... (aşağıda tus indeksi)
+const TUSLAR = (i) => `<div class="tus"><span class="u">${IK.ok20}Ulaşıldı</span><span>Açmadı</span><span>${IK.mesaj}WhatsApp</span><span>Ertele</span></div>`;
+
+FILM({
+  kisiler: { mehmet: { sac: 'kisa', sacRenk: '#2b2224', biyik: true, ceket: '#4f5966', kol: '#434c58', ten: '#dca27c', boyun: '#cf9470', atki: null, canta: false, pantolon: '#2e2a30' } },
+  gorunumler: {
+    vListe: `<div class="ust"><h2>Bugün aranacaklar</h2><span id="sayac">4 KİŞİ</span></div>
+      <div class="liste">${KISI.map((k, i) => `<div class="ar" id="ar${i}"><div class="ust1"><b>${k[0]}</b><span class="no">${k[1]}</span>
+        <span class="cip ${k[3]}" style="margin-left:auto">${k[2]}</span></div><div class="det">${k[5]} · ${k[4]}</div>${TUSLAR(i)}
+        <div class="sonuc ${SONUC[i][0]}">${SONUC[i][0] === 'ok' ? IK.ok : IK.tel}${SONUC[i][1]}<small>${SONUC[i][2]}</small></div></div>`).join('')}</div>
+      <div class="bos" id="bos"><div class="halka"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+        <b>Bugün aranacak kimse kalmadı</b><span>4 / 4 · 11:30</span></div>`,
+  },
+  sahneler: [
+    { ad: 'sabah', sure: 3.4, katman: 'dukkan', eb: '09:05 · ÖRNEK OPTİK', h: 'Güne bir soruyla başlarsınız: <span class="k">Kimi arayacağım?</span>',
+      ses: 'Sabah dokuz. Güne hep aynı soruyla başlarsınız: bugün kimi arayacağım?',
+      ciz(u) { dukkan({ t: u, tel: 1, gul: -0.4, kas: 1, tepsi: 0, defter: 1, saat: [9, 5], kirp: [1.2, 2.9] }); } },
+    { ad: 'eskiden', sure: 3.2, katman: 'dukkan', eb: 'ESKİDEN', h: '<span class="s">Defter,</span> <span class="s">not kâğıdı,</span> <span class="s">hafıza…</span>',
+      cizgi: [0.9, 1.35, 1.8], ses: 'Defter, yapışkan notlar, hafızanız... Biri mutlaka unutulur.',
+      ciz(u) { dukkan({ t: u + 4, tel: 0, sag: lerp(-8, -30, Math.abs(Math.sin(u * 2))), gul: -0.6, kas: 1, tepsi: 0, defter: 1, saat: [9, 7], kirp: [1.6] }); } },
+    { ad: 'liste', sure: 4.6, katman: 'ui', zoom: true, gecis: 0.7, eb: 'BUGÜN ARANACAKLAR', h: 'Liste her sabah <span class="k">kendiliğinden hazır.</span>',
+      ses: 'OptiFlow listeyi her sabah kendisi çıkarır: gözlüğü hazır olanlar, gelmeyenler, ödeme sözü geçenler.',
+      ciz(u) {
+        gorunum('vListe', 1);
+        KISI.forEach((_, i) => {
+          const q = eo(p(u, 0.5 + i * 0.35, 1.0 + i * 0.35));
+          css($('ar' + i), { opacity: q, transform: `translateX(${((1 - q) * 60).toFixed(1)}px)` });
+          $('ar' + i).querySelector('.sonuc').style.opacity = 0;
+          $('ar' + i).querySelector('.cip').style.transform = `scale(${(1 + 0.12 * Math.sin(Math.PI * p(u, 2.2 + i * 0.35, 2.6 + i * 0.35))).toFixed(3)})`;
+        });
+        $('sayac').textContent = '4 KİŞİ';
+      } },
+    { ad: 'isaretle', sure: 4.8, katman: 'ui', eb: 'TEK DOKUNUŞ', h: 'Ulaşıldı, açmadı, WhatsApp. <span class="k">Açmayan yarın yine listede.</span>',
+      ses: 'Ulaşıldı, açmadı ya da WhatsApp: tek dokunuş. Açmayan yarın yine listede.',
+      ciz(u) {
+        gorunum('vListe', 1);
+        // tıklama sırası: satır 0 Ulaşıldı, satır 1 Açmadı, satır 2 WhatsApp
+        const plan = [[0, 0, 0.9], [1, 1, 2.0], [2, 2, 3.1]];
+        const tusXY = (r, k) => uiNokta($('ar' + r).querySelectorAll('.tus span')[k]);
+        const yol = [[0, 700, 780]];
+        plan.forEach(([r, k, a]) => { const [x, y] = tusXY(r, k); yol.push([a - 0.15, x, y]); yol.push([a + 0.35, x, y]); });
+        imlecYol(u, yol, plan.map((x) => x[2]), gor(u, 0, 4.2, 0.2));
+        let kalan = 4;
+        KISI.forEach((_, i) => {
+          const el = $('ar' + i); el.style.opacity = 1; el.style.transform = 'none';
+          const pl = plan.find((x) => x[0] === i);
+          const so = el.querySelector('.sonuc');
+          if (pl) {
+            bas(el.querySelectorAll('.tus span')[pl[1]], u, pl[2]);
+            const q = eo(p(u, pl[2] + 0.15, pl[2] + 0.45));
+            css(so, { opacity: q, transform: `translateX(${((1 - q) * -40).toFixed(1)}px)` });
+            if (u > pl[2] + 0.3 && SONUC[i][0] === 'ok') kalan--;
+          } else so.style.opacity = 0;
+        });
+        $('sayac').textContent = `${kalan} KİŞİ`;
+      } },
+    { ad: 'bitti', sure: 3.0, katman: 'ui', eb: '11:30', h: 'Kimse <span class="k">unutulmaz.</span>',
+      ses: 'Kimse unutulmaz.',
+      ciz(u) {
+        gorunum('vListe', 1);
+        const [hx, hy] = uiNokta($('ar3').querySelectorAll('.tus span')[0]);
+        imlecYol(u, [[0, 640, 560], [0.4, hx, hy]], [0.5], gor(u, 0, 1.2, 0.2));
+        const sil = eio(p(u, 1.0, 1.5));
+        KISI.forEach((_, i) => {
+          const el = $('ar' + i);
+          const so = el.querySelector('.sonuc');
+          so.style.opacity = i === 3 ? eo(p(u, 0.6, 0.9)) : 1; so.style.transform = 'none';
+          if (i === 3) bas(el.querySelectorAll('.tus span')[0], u, 0.5);
+          css(el, { opacity: (1 - sil).toFixed(3), transform: `translateX(${(sil * 120 * (1 + i * 0.3)).toFixed(1)}px)` });
+        });
+        const b = eo(p(u, 1.4, 1.9));
+        css($('bos'), { opacity: b, transform: `scale(${(0.9 + 0.1 * geri(p(u, 1.4, 1.9))).toFixed(3)})` });
+        $('sayac').textContent = u > 0.8 ? '0 KİŞİ' : '1 KİŞİ';
+      } },
+    { ad: 'gelis', sure: 3.2, katman: 'dukkan', eb: 'AYNI GÜN', h: 'Aranan <span class="k">gelir.</span>',
+      ses: 'Aranan müşteri, gözlüğünü almaya gelir.',
+      ciz(u) {
+        dukkan({ t: u, kapi: eo(p(u, 0.05, 0.5)) * (1 - eio(p(u, 2.2, 2.8))), zil: 1 - p(u, 0, 2), el: u > 1.4 && u < 3 ? 1 : 0, gul: 1.3, tepsi: 1, saat: [14, 10], kirp: [2.1] });
+        kisi('mehmet', { t: u, x: lerp(1180, 720, eio(p(u, 0.2, 2.4))), yuru: u > 0.2 && u < 2.4, gul: 14, kirp: [1.0] });
+      } },
+    { ad: 'son', sure: 3.6, son: true, ses: 'Optiflo. Otuz gün ücretsiz deneyin.' },
+  ],
+});
+</script>
+</body>
+</html>

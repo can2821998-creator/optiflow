@@ -425,6 +425,22 @@ dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. T
 - Devir paketi incelendi; depo bu oturumda kuruldu (geçmiş 4.12.0 hosting paketinden başlar).
 
 ## Sıradaki iş
+*Kullanıcı (23.10, Poyraz AB): "kullanım aşamaları ve kullanım kolaylaştırmasına odaklanalım" → dördü de seçildi, bu sırayla:*
+- **K1. İlk gün kurulum yolu** (kayıttan sonra, yalnız yönetici): ana ekranda "Mağazanızı hazırlayın" kartı + ilerleme;
+  adımlar KENDİLİĞİNDEN işaretlenir: mağaza bilgileri (setting shop_phone/shop_address), personel (user_accounts > 1 ya da
+  "tek çalışıyorum"), depo (suppliers telefonlu ≥ 1), cam fiyat listesi (lens_products ≥ 1), eski müşteriler (customers
+  sayısı ya da "yok"; Excel aktarımı bizden → WhatsApp), Pro + Medula (sgk_incoming kaynak='masaustu' ≥ 1; ya da
+  is_optiflow_desktop() görülünce setting), yazıcı denemesi (deneme fişi açılınca setting), ilk sipariş (orders ≥ 1).
+  "Atla" (setting json) + "Kurulumu gizle". Bulgu: sistemde hiç onboarding yok; müşteri Excel içe aktarma aracı da yok.
+- **K2. Günün aşamaları:** ana ekranda saate göre "Günün işi" şeridi (sabah: kasa devri, bugün teslim, aranacaklar) +
+  gün sonu kontrol listesi (depoya eksik camlar, kasa sayımı, Medula'ya işlenecekler, yarın teslim hazırlığı).
+- **K3. Hız:** Ctrl+K her yerden arama/komut (müşteri, telefon, sipariş no, e-reçete, eylemler) + tuş kısayolları
+  (N yeni sipariş, / arama) + kısayol listesi. Bulgu: app.js'te yalnız Esc ve gizli "disko" (Konami) var.
+- **K4. Yardım + ölçüm:** boş ekranlarda "ne gelir / nasıl başlarım" + tek düğme; sayfa başı kısa ipuçları; merkez
+  panelde mağaza başına kullanım özeti (sipariş sayısı, kullanılan özellikler, son etkinlik) → deneme mağazalarını aramak için.
+- Not: Bu bilgisayarda MariaDB yok; ekranları gerçek veriyle denemek için TEKNOPLUS'taki yerel kurulum ya da buraya
+  taşınabilir MariaDB gerekir (yeni modüllerin mantığı tests/uts/ortam.php ile test edilir).
+
 *Kullanıcı (23.10): öncelik kâğıt-kalemi bitirmek + Yalın arayüz. Kullanıcı (17.10): "şubeyi sona bırakarak devam et".*
 - **Kâğıtsız + Yalın yol haritası (sırayla):** (1) ✔ iskelet 4.43.0; (2) ✔ atölye iş takibi 4.44.0 (kutu/raf, paraf, zarfsız); (3) ✔ veresiye/kasa defteri 4.45.0 (taksit, ekstre, küpür, devir);
   (4) ✔ aranacaklar listesi 4.47.0 (tek liste, arama sonucu, deneme sayısı);

@@ -11,6 +11,9 @@ DEĞİŞİKLİK NOTLARI — 4.46.0 (Gece: Yalın düzeni + iş emrinin dili)
   - Belirginlik turu (kullanıcı: "üstteki barları ve kutucukları belirginleştir"): bant daha büyük ve canlı, bant sayıları
     ayrı cam kutucuklarda; seçili bölüm sekmesi dolu bordo; kartlar net kenar + gölge + tonlu başlık şeridi; sayı
     kartlarında kalın renk çizgisi; Bugün sütunları ve atölye sütunları renkli başlıklı ayrı kutular.
+  - İnce ayar (kullanıcı: önerilerin "hepsi"): bordo daha derin; tonsuz sayı kutusunda pembe zemin yok; yalnız sayılı
+    bantlar büyük, diğer sayfalarda bant ince; kutularda gölge az, köşeler keskin; kasa yöntem kutuları 4 + 3;
+    telefonda sipariş başlığı sıkı (küçük avatar, iki sütun düğme).
   - Üst çubuk / PWA rengi gece (#140e10). Test: arayuz 63.
 
 DEĞİŞİKLİK NOTLARI — 4.45.0 (Veresiye defteri: taksit planı, müşteri ekstresi, küpür sayımı, yarına devir; şema 37)

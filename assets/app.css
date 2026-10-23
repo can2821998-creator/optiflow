@@ -3058,3 +3058,75 @@ html.tema-koyu .card > .card-head, html.tema-koyu details.card > summary.card-he
   .card > .card-head, details.card > summary.card-head { margin: -18px -16px 14px; padding: 14px 16px; }
   details.card:not([open]) > summary.card-head { margin-bottom: -18px; }
 }
+
+/* ==========================================================================
+   4.46.2 — GECE ince ayar (kullanıcı: önerilen değişikliklerin "hepsi")
+   1) Renk: bordo daha derin; tonsuz/sıfır sayı kutusunda pembe zemin yok.
+   2) Bant: yalnız sayılı bantlar (bant_veri: ana ekran, atölye, veresiye) büyük; diğer sayfalarda ince.
+   3) Kutular: gölge az, köşeler keskin.  4) Kasa, sipariş, telefon ince ayarları.
+   ========================================================================== */
+:root { --brand: #a51d36; --brand-deep: #6f1123; --brand-ink: #861729; --brand-soft: #f6e1e5; --koyu-bordo: linear-gradient(135deg, #b8243f 0%, #6f1123 100%); }
+
+/* 1) Renk: derin bordo her yerde aynı degrade */
+.new-order.btn, .new-order.btn:hover, .btn-primary, .btn-primary:hover,
+.bolum-sekme a.active, html.tema-koyu .bolum-sekme a.active, .card-head h2 .ic, .sidebar .avatar,
+.pano-col-head.tone-wine, .tabbar a.tabbar-fab, html.tema-koyu .tabbar a.tabbar-fab { background: var(--koyu-bordo); }
+.page-head, .hero, html.tema-koyu .page-head, html.tema-koyu .hero {
+  background:
+    radial-gradient(70% 160% at 100% 0%, rgba(184, 36, 63, .62), transparent 58%),
+    linear-gradient(115deg, #110b0d 0%, #240c13 60%, #3b0f1b 100%);
+}
+.stat:not([class*="tone-"]), .stat:not([class*="tone-"]):hover { background: var(--surface); }
+.stat:not([class*="tone-"])::before { background: var(--line-strong); }
+.stat.tone-green, .stat.tone-red, .stat.tone-amber, .stat.tone-teal, .stat.tone-violet, .stat.tone-blue {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tb) 55%, var(--surface)) 0%, var(--surface) 70%);
+}
+
+/* 2) Bant: varsayılan ince; sayılı bant büyük */
+.page-head, .hero, html.tema-koyu .page-head, html.tema-koyu .hero { padding: 20px 26px; border-radius: 14px; margin-bottom: 18px; }
+.page-head h1, .hero h1 { font-size: clamp(22px, 2.1vw, 28px); }
+.page-head p, .hero p { font-size: 14px; margin-top: 4px; }
+.page-head::before, .hero::before { width: 300px; height: 300px; right: -110px; }
+.page-head:has(.bant-veri), html.tema-koyu .page-head:has(.bant-veri) { padding: 30px 34px 26px; border-radius: 18px; margin-bottom: 22px; }
+.page-head:has(.bant-veri) h1 { font-size: clamp(30px, 3vw, 40px); }
+.page-head:has(.bant-veri)::before { width: 420px; height: 420px; right: -90px; }
+
+/* 3) Kutular: keskin köşe, az gölge, net kenar kalır */
+.card, details.card { border-radius: 12px; box-shadow: 0 1px 2px rgba(40, 14, 22, .06); }
+.card > .card-head, details.card > summary.card-head { border-radius: 12px 12px 0 0; }
+details.card:not([open]) > summary.card-head { border-radius: 12px; }
+.stat, .stat.tone-green, .stat.tone-red, .stat.tone-amber, .stat.tone-teal, .stat.tone-violet, .stat.tone-blue { border-radius: 10px; box-shadow: 0 1px 2px rgba(40, 14, 22, .06); }
+.bant-veri > a, .bant-veri > div { border-radius: 10px; }
+.pano-col { border-radius: 12px; box-shadow: 0 1px 2px rgba(40, 14, 22, .06); }
+.pano-col-head { border-radius: 11px 11px 0 0; }
+.today-col, .today-col-head { border-radius: 10px; }
+.today-col-head { border-radius: 10px 10px 0 0; }
+.pano-card { box-shadow: none; }
+.bolum-sekme a { border-radius: 8px; }
+.card-head h2 .ic { border-radius: 9px; box-shadow: none; }
+.btn { border-radius: 9px; }
+
+/* 4) Ekran ince ayarları */
+/* kasa: yöntem kutuları tek sıra, rakam bir tık küçük (7 kutu kalabalık görünmesin) */
+.stats:has(> .stat:nth-child(7)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.stats:has(> .stat:nth-child(7)) .stat b { font-size: clamp(20px, 1.6vw, 25px); }
+/* sipariş: başlıkta avatar ve düğmeler sıkı, ince bantla uyumlu */
+.hero .avatar.lg, html.tema-koyu .hero .avatar.lg { width: 56px; height: 56px; font-size: 19px; }
+.hero-main { gap: 16px; }
+.hero-actions { margin-top: 2px; }
+/* telefon: bant ve kutular sıkı, sekme hapları küçük */
+@media (max-width: 640px) {
+  .page-head, .hero, html.tema-koyu .page-head, html.tema-koyu .hero { padding: 16px 16px; border-radius: 12px; }
+  .page-head:has(.bant-veri), html.tema-koyu .page-head:has(.bant-veri) { padding: 20px 16px 16px; }
+  .page-head:has(.bant-veri) h1 { font-size: 28px; }
+  .bant-veri { margin-top: 16px; }
+  .bant-veri dd { font-size: 26px; }
+  .bolum-sekme a { min-height: 34px; padding: 0 12px; font-size: 13.5px; }
+  .card, details.card { border-radius: 10px; }
+}
+@media (max-width: 640px) {
+  .hero .avatar.lg, html.tema-koyu .hero .avatar.lg { width: 44px; height: 44px; font-size: 15px; box-shadow: inset 0 0 0 2px var(--coral); }
+  .hero-main { gap: 12px; align-items: flex-start; }
+  .hero-actions { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+  .hero-actions > *, .hero-actions > .btn, .hero-actions > form .btn { width: 100%; min-width: 0; }
+}

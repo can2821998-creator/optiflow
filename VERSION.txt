@@ -1,6 +1,14 @@
 OPTIFLOW
-Release: 4.45.0 (2026-10-23)
+Release: 4.46.0 (2026-10-23)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.46.0 (Gece: Yalın düzeni + iş emrinin dili)
+  - Kullanıcı: Yalın fazla çıplak; daha şık ve görsel olarak dolu, ama sade. Yapı (6 bölüm, sekmeler) aynen kaldı.
+  - Menü gece rengi, bölümler 01–06 numaralı; sayfa başlığı gece bandı (bordo ışık + nişangâh halkaları, çizim yok).
+  - Bant veri şeridi (layout.php bant_veri): ana ekran (aktif / atölyede / hazır / geciken), atölye panosu, veresiye
+    defteri sayıları bandın içinde büyük mono rakamla; eski ayrı sayı kutuları kalktı.
+  - Sayı kartları tonlu (üst renk çizgisi, renkli mono rakam), kartlar hafif derinlikli, birincil düğme bordo ışıklı.
+  - Üst çubuk / PWA rengi gece (#140e10). Test: arayuz 63.
 
 DEĞİŞİKLİK NOTLARI — 4.45.0 (Veresiye defteri: taksit planı, müşteri ekstresi, küpür sayımı, yarına devir; şema 37)
   - "Bakiye takibi" → "Veresiye defteri": varsayılan sekme "Müşteri defteri" (müşteri başına tek satır: borç, sözü geçen,

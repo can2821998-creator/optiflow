@@ -1,6 +1,6 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 23 Ekim 2026 (4.45.0 canlıda / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 23 Ekim 2026 (4.46.0 dalda `oturum/tasarim`, canlı 4.45.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 **Sunucu taşındı (23.10, ~16:50 canlı):** TürkTicaret paylaşımlı Plesk → kiralık sunucu (Plesk Obsidian, Administrator).
 Rehber `docs/SUNUCU-TASIMA.md`. DNS (TürkTicaret paneli) A `optiflow.com.tr` → yeni IP; www/ftp CNAME; MX/mail TürkTicaret'te
@@ -14,10 +14,9 @@ Domain Names "resolve to other servers" yeniden açılabilir; Plesk güncellemes
 dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. TürkTicaret hostingi iptal edilirse e-posta da gider.
 
 ## Sürüm
-- **Sunucu 4.45.0** (23.10 main'e birleştirildi: 4.43.0–4.45.0), şema **37** (v36: atölye parafları + orders.raf_yeri; v37: odeme_plani + kasa devir/küpür). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.45.0** (23.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.45.0-pro5.6.0; göç v36–v37 ilk istekte çalışır).
-  Not: TEKNOPLUS bilgisayarının hosts dosyasında taşıma denemesinden kalan `optiflow.com.tr → 31.186.24.236` (yeni sunucu,
-  henüz SSL yok) satırları var; bu PC'de site sertifika uyarısıyla yeni sunucudan açılır. Genel DNS eski hostingi gösterir.
+- **Sunucu 4.46.0** (dal `oturum/tasarim`; main'e birleştirilmedi — önce GitHub FTP sırları yeni sunucuya çevrilmeli,
+  yoksa "Canlıya al" eski hostinge yükler), şema **37** (v36: atölye parafları + orders.raf_yeri; v37: odeme_plani + kasa devir/küpür). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Canlı site: 4.45.0** (23.10 "Sürüm yayınla" + "Canlıya al" başarılı, eski hostinge; sonra kullanıcı sunucuyu taşıdı).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);
@@ -31,7 +30,14 @@ dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. T
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.45.0 — Veresiye defteri: taksit, ekstre, küpür, devir; TEKNOPLUS, dal oturum/sube)
+## Son oturum (4.46.0 — Gece: Yalın düzeni + iş emrinin dili; TEKNOPLUS, dal oturum/tasarim)
+- Kullanıcı (23.10): "genel tasarım yeniliğini beğenmedim, daha şık ve görsel olarak dolu bir dil, ama sadelik sürsün".
+- Yapılan: assets/app.css "4.46.0 — GECE" katmanı (gece menü, 01–06 numaralı bölümler, gece bandı başlık + nişangâh
+  halkaları, tonlu sayı kartları, bordo ışıklı birincil düğme); `bant_veri()` ile ana ekran / atölye / veresiye
+  sayıları bandın içinde. Yerelde masaüstü, telefon, koyu görünüm kontrol edildi (koyuda bant düğmesi yazısı düzeltildi).
+- Testler: arayuz 63; tümü geçti. Kullanıcıdan görsel onay bekleniyor; onaylarsa FTP sırları sonrası main'e.
+
+## Önceki oturum (4.45.0 — Veresiye defteri: taksit, ekstre, küpür, devir; TEKNOPLUS, dal oturum/sube)
 - Kullanıcı (23.10): "canlıya almadan 3. adıma geç: veresiye / kasa defteri".
 - Yapılan: app/defter.php (taksit planı kur/dağıt/eşitle, ekstre, borçlu müşteriler, küpür, devir); tahsilat.php →
   "Veresiye defteri" (varsayılan Müşteri defteri sekmesi), defter.php ekstre (tahsilat, taksitlendir, yazdır, WhatsApp

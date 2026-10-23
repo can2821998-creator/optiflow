@@ -23,7 +23,7 @@
     var koyu = secim === 'oto' ? sistemKoyu() : secim === 'koyu';
     kok.classList.toggle('tema-koyu', koyu);
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', koyu ? '#151316' : '#ffffff');
+    if (meta) meta.setAttribute('content', koyu ? '#0a0708' : '#140e10');   // 4.46.0 üst çubuk her iki görünümde gece
     var ad = secim === 'koyu' ? 'Koyu' : secim === 'acik' ? 'Açık' : 'Otomatik (' + (koyu ? 'koyu' : 'açık') + ')';
     var dugmeler = document.querySelectorAll('[data-tema-dugme]');
     for (var i = 0; i < dugmeler.length; i++) {

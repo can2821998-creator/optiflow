@@ -78,6 +78,7 @@ $stats = row(
         SUM(order_stage NOT IN ('teslim_edildi','iptal')) AS active,
         SUM(order_stage IN ('siparis_verildi','bekliyor','rx_siparis_verildi')) AS waiting,
         SUM(order_stage = 'hazirlandi') AS ready,
+        SUM(order_stage = 'atolyede') AS workshop,
         SUM(DATE(created_at) = CURDATE() AND order_stage <> 'iptal') AS today
      FROM orders"
 ) ?? [];
@@ -118,7 +119,13 @@ page_header(
     e(date_long()),
     '<a class="btn btn-primary" href="tezgah.php">' . icon('plus') . ' Yeni müşteri · reçete</a> <a class="btn btn-ghost" href="order-new.php" title="Reçetesiz iş: tamir, güneş gözlüğü, lens">Reçetesiz sipariş</a>',   // 4.38.1 tek giriş
     '',
-    greeting() . ', ' . explode(' ', (string) current_user()['full_name'])[0]
+    greeting() . ', ' . explode(' ', (string) current_user()['full_name'])[0],
+    bant_veri([   // 4.46.0 gece bandında günün sayıları
+        ['Aktif', (int) ($stats['active'] ?? 0), '', 'index.php?durum=aktif'],
+        ['Atölyede', (int) ($stats['workshop'] ?? 0), '', 'workshop.php'],
+        ['Hazır', (int) ($stats['ready'] ?? 0), (int) ($stats['ready'] ?? 0) > 0 ? 'green' : '', 'index.php?durum=hazir'],
+        ['Geciken', $overdue, $overdue > 0 ? 'red' : '', 'index.php?durum=aktif'],
+    ])
 );
 ?>
 <?php require dirname(__DIR__) . '/partials/depo-karti.php'; ?>

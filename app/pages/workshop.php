@@ -149,8 +149,6 @@ $totalInFlight = count($waiting) + count($montajda) + count($kontrol);
 
 page_start('Atölye panosu', 'workshop');
 ?>
-<a class="back-link" href="index.php"><?= icon('arrow-left') ?> Siparişler</a>
-
 <section class="page-head">
   <div>
     <small class="eyebrow">Atölye</small>
@@ -161,15 +159,15 @@ page_start('Atölye panosu', 'workshop');
     <?php /* 4.40.0: yeni sipariş / teklif / kasa menüde; atölyeye ait olmayan sayılar (tahsilat, teklif, fatura) kaldırıldı */ ?>
     <a class="btn" href="ekran.php" target="_blank" rel="noopener"><?= icon('chart') ?> Ayrı ekranda aç</a>
   </div>
+  <?= bant_veri([   // 4.46.0 sayılar gece bandında (eski sayı kutuları)
+      ['Şu an içeride', $totalInFlight, '', ''],
+      ['Teslimi geciken', $overdueCount, $overdueCount ? 'red' : '', ''],
+      ['Çerçeve bekleyen', $framePendingCount, $framePendingCount ? 'amber' : '', ''],
+      ['15+ gündür hazır', $staleReadyCount, $staleReadyCount ? 'red' : 'green', 'index.php?durum=hazir'],
+  ]) ?>
 </section>
 
 
-<div class="stats pano-stats">
-  <div class="stat"><small>Şu an içeride</small><b><?= $totalInFlight ?></b><span>Cam bekleyen + atölyedeki</span></div>
-  <div class="stat <?= $overdueCount ? 'tone-red' : '' ?>"><small>Teslimi geciken</small><b><?= $overdueCount ?></b><span>Montajda veya kontrolde</span></div>
-  <div class="stat <?= $framePendingCount ? 'tone-amber' : '' ?>"><small>Çerçeve bekleyen</small><b><?= $framePendingCount ?></b><span>Müşteri getirecek</span></div>
-  <div class="stat <?= $staleReadyCount ? 'tone-red' : 'tone-green' ?>"><small>15+ gündür hazır</small><b><?= $staleReadyCount ?></b><span>Haber verilmeli</span></div>
-</div>
 
 <div class="pano" data-pano>
 

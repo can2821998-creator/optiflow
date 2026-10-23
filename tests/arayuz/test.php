@@ -44,7 +44,7 @@ $bs = (string) file_get_contents($kok . '/app/bootstrap.php');
 dogru('manifest oturumsuz da açılır (veritabanı seçilmez)', str_contains($bs, "=== 'manifest.php' && !tenant_oturum()") && str_contains($bs, '!$anaSayfaMisafir && !$manifestMisafir'));
 $mf = (string) file_get_contents($kok . '/manifest.php');
 dogru('manifest: mağaza adı yalnızca mağaza oturumunda okunur', str_contains($mf, 'if (tenant_oturum()) {'));
-dogru('manifest: açılış rengi tema rengiyle aynı (4.43.0 açık)', str_contains($mf, "'background_color'  => '#ffffff'") && str_contains($mf, "'theme_color'       => '#ffffff'"));
+dogru('manifest: açılış rengi tema rengiyle aynı (4.46.0 gece)', str_contains($mf, "'background_color'  => '#140e10'") && str_contains($mf, "'theme_color'       => '#140e10'"));
 dogru('manifest: ortak önbelleğe alınmaz', str_contains($mf, 'Cache-Control: private'));
 foreach (['telefon.webp', 'liste.webp', 'atolye.webp'] as $g) {
     dogru("manifest ekran görüntüsü var: $g", str_contains($mf, 'assets/onizleme/' . $g) && is_file($kok . '/assets/onizleme/' . $g));
@@ -130,5 +130,16 @@ dogru('başlık bandı süsü kalktı', str_contains($css, '.page-head::before, 
 $tj = (string) file_get_contents($kok . '/assets/tema.js');
 dogru('görünüm: kayıt yoksa açık', str_contains($tj, "return v === 'koyu' || v === 'oto' ? v : 'acik';"));
 
+/* 4.46.0 Gece katmanı: Yalın düzeni + iş emri dili */
+dogru('Gece katmanı Yalın katmanından sonra', strpos($css, '4.46.0 — GECE') > strpos($css, '4.43.0 — YALIN'));
+dogru('menü bölümleri numaralı (01–06)', str_contains($css, 'content: counter(bolum, decimal-leading-zero)'));
+dogru('koyu görünümde bant düğmesi okunur (sabit koyu yazı)', str_contains($css, 'html.tema-koyu .page-head .btn-primary:hover { background: #fff; color: #18120f;'));
+if (!function_exists('e')) {
+    function e(mixed $v): string { return htmlspecialchars((string) $v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }   // app/helpers.php ile aynı
+}
+$bv = bant_veri([['Aktif', 26, '', 'index.php?durum=aktif'], ['Geciken', 3, 'red', ''], ['<b>', 'x"y', '', '']]);
+dogru('bant verisi: bağlantılı ve düz öğe', str_contains($bv, '<a href="index.php?durum=aktif"><dt>Aktif</dt><dd>26</dd></a>') && str_contains($bv, '<div><dt>Geciken</dt><dd class="ton-red">3</dd></div>'));
+dogru('bant verisi kaçışlı', str_contains($bv, '<dt>&lt;b&gt;</dt><dd>x&quot;y</dd>'));
+dogru('ana ekran, atölye ve veresiye bandı sayılı', str_contains((string) file_get_contents($kok . '/app/pages/index.php'), 'bant_veri([') && str_contains((string) file_get_contents($kok . '/app/pages/workshop.php'), 'bant_veri([') && str_contains((string) file_get_contents($kok . '/app/pages/tahsilat.php'), 'bant_veri(['));
 echo "Arayüz/merkez düzeltme testleri: $gecen geçti, $kalan kaldı\n";
 exit($kalan ? 1 : 0);

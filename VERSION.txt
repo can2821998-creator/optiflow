@@ -1,6 +1,15 @@
 OPTIFLOW
-Release: 4.42.0 (2026-10-17)
+Release: 4.43.0 (2026-10-23)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.43.0 (Yalın arayüz 1: görev odaklı iskelet)
+  - Menü 34 bağlantıdan 6 bölüme indi: Tezgâh, Siparişler, Atölye, Müşteriler, Kasa, Yönetim (yetkisizde "Diğer").
+    Bölümün sayfaları içerik üstünde yapışkan sekme şeridi (app/layout.php bolumler / bolum_bul, BOLUMLER eşlemesi;
+    eşlenmeyen yeni öğe Yönetim'e düşer). Bölüm rozeti tek anlamlı sayı (atölyede, hatırlatma, geciken bakiye, yedek).
+  - "Yalın" tasarım katmanı (assets/app.css sonu): başlık bandı, gözlük çizimi, parıltı ve bulanık giriş hareketleri
+    kalktı; başlık tipografik, sayılar mono, kartlar gölgesiz ince çizgi, düğmeler düz (bordo yalnız birincil eylem).
+  - Açık görünüm varsayılan (tema.js: kayıt yoksa açık; düğme açık → koyu → otomatik). PWA rengi beyaz.
+  - Test: arayuz 57 (bölüm eşlemesi, rozet, varsayılan görünüm).
 
 DEĞİŞİKLİK NOTLARI — 4.42.0 (KVKK: T.C. kimlik no saklanmaz; şema 35)
   - Medula'dan gelen her metin KAYDETMEDEN önce T.C. numarasından arındırılır (app/sgk.php tc_maskele: 0 ile başlamayan

@@ -1,9 +1,9 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 17 Ekim 2026 (4.42.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 23 Ekim 2026 (4.43.0 dalda, canlı 4.42.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 ## Sürüm
-- **Sunucu 4.42.0**, şema **35** (göç v35: eski Medula kayıtlarında T.C. no gizlenir). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Sunucu 4.43.0** (dal oturum/sube; main'e birleştirilmedi, canlı değil), şema **35** (göç v35: eski Medula kayıtlarında T.C. no gizlenir). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
 - **Canlı site: 4.42.0** (17.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.42.0-pro5.6.0; göç v35 ilk istekte çalışır).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
@@ -18,7 +18,15 @@
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.42.0 — KVKK: T.C. kimlik no saklanmaz; Poyraz AB bilgisayarı, main)
+## Son oturum (4.43.0 — Yalın arayüz 1: görev odaklı iskelet; TEKNOPLUS, dal oturum/sube)
+- Kullanıcı (23.10): "mağazaların kâğıt kalem alışkanlığını bitirmeye eğil, önce köklü arayüz güncellemesi ve
+  sadeleştirme"; "tasarım dilinde mükemmeliyetçiliği koru, kullananlar tekrar kullanmak istesin". Seçimler: görev odaklı
+  6 bölüm; kâğıt işleri: atölye iş takibi, veresiye/kasa defteri, aranacaklar listesi, tamir/hizmet fişi; herkese birden.
+- Yapılan: menü 6 bölüm + bölüm sekme şeridi (app/layout.php `bolumler`), "Yalın" CSS katmanı (bant/süs/hareket yok,
+  tipografik başlık, mono sayılar, düz düğmeler), açık görünüm varsayılan. Yerelde masaüstü/telefon/koyu ekranlarla denendi.
+- Testler: arayuz 57 (+13); tümü geçti. main'e birleştirme (= canlıya çıkış) kullanıcı onayı bekliyor.
+
+## Önceki oturum (4.42.0 — KVKK: T.C. kimlik no saklanmaz; Poyraz AB bilgisayarı, main)
 - Kullanıcı (17.10): "şubeyi sona bırakarak devam et" → bekleyen KVKK işi (T.C. maskeleme) yapıldı.
 - `tc_maskele` (app/sgk.php): Medula metni KAYDETMEDEN önce 0 ile başlamayan 11 haneli sayılar gizlenir — Pro aktarımı,
   eklenti köprüsü, sgk_parse ('tc' hep boş), hak sorgusu satırları. Aktarım ekranında T.C. satırı kalktı.
@@ -361,7 +369,12 @@
 - Devir paketi incelendi; depo bu oturumda kuruldu (geçmiş 4.12.0 hosting paketinden başlar).
 
 ## Sıradaki iş
-*Kullanıcı (17.10): "şubeyi sona bırakarak devam et".*
+*Kullanıcı (23.10): öncelik kâğıt-kalemi bitirmek + Yalın arayüz. Kullanıcı (17.10): "şubeyi sona bırakarak devam et".*
+- **Kâğıtsız + Yalın yol haritası (sırayla):** (1) ✔ iskelet 4.43.0; (2) atölye iş takibi — zarf/pano yerine raf yeri,
+  kim yaptı (paraf), aşama ekranda; (3) veresiye/kasa defteri — kapora, taksit sözü, gün sonu tek ekranda;
+  (4) aranacaklar listesi — hazır, kontrol zamanı, tamir: tek liste + tek tuş WhatsApp/arama sonucu;
+  (5) tamir/hizmet fişi — vida/nazal/ayar/tamire bırakılan gözlük (yeni, siparişten hafif). Her adımda kalan ekranları
+  Yalın dile geçir (masaüstü + telefon + koyu ekran görüntüsüyle kontrol).
 0. **Tek akış pilotu (4.34.0, canlıda):** pilot mağazada "Yeni müşteri · reçete" ile bir gün çalış:
    Pro'dan gerçek Medula aktarımı, fiş + nüsha düzeni, atölye/depo ayrımı için geri bildirim.
 1. **SEO bağlantısı:** kullanıcı hizmet hesabını kurunca panelde ilk veriyi birlikte kontrol et; sorgulara göre yeni rehber yazıları planla.

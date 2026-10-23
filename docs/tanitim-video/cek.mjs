@@ -1,10 +1,12 @@
-// OptiFlow tanıtım filmlerini kare kare çeker ve MP4'e çevirir.
-//   node docs/tanitim-video/cek.mjs <film.html> <cikti.mp4> [--fps 30] [--kare 3.5,8.2]
-//   --kare verilirse yalnızca o saniyelerin PNG'leri çıkar (hızlı kontrol için).
-// Gerekenler: Node 18+, playwright (Chromium), ffmpeg.
+// OptiFlow tanıtım filmlerini kare kare çeker, seslendirmeyi yerleştirir ve MP4'e çevirir.
+//   node docs/tanitim-video/cek.mjs <film.html> <cikti.mp4> [--fps 30] [--kare 3.5,8.2] [--ses <klasör>] [--sesjson <ses.json>]
+//   --kare     : yalnızca o saniyelerin PNG'leri (hızlı kontrol)
+//   --ses      : <sahne-adı>.wav dosyalarının klasörü; sahneler ses süresine göre uzar, ses sahne başına yerleşir
+//   --sesjson  : filmin seslendirme metinlerini ses.json olarak yazar (Seslendir iş akışı bunu okur) ve çıkar
+// Gerekenler: Node 18+, playwright (Chromium), ffmpeg/ffprobe.
 import { chromium } from 'playwright';
-import { spawn } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { spawn, execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync, existsSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -15,13 +17,34 @@ const cikti = path.resolve(arg[1] || 'film.mp4');
 const deger = (ad, v) => { const i = arg.indexOf(ad); return i >= 0 ? arg[i + 1] : v; };
 const fps = Number(deger('--fps', 30));
 const kareler = deger('--kare', '');
+const sesKlasor = deger('--ses', '');
+const sesJson = deger('--sesjson', '');
+
+const sureler = {};
+if (sesKlasor) {
+  for (const f of readdirSync(sesKlasor).filter((x) => x.endsWith('.wav'))) {
+    const s = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path.join(sesKlasor, f)]).toString().trim();
+    sureler[f.replace(/\.wav$/, '')] = Number(s);
+  }
+}
 
 const tarayici = await chromium.launch({ executablePath: process.env.CHROME || undefined });
 const sayfa = await tarayici.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
+await sayfa.addInitScript((s) => { window.SES_SURE = s; }, sureler);
+sayfa.on('pageerror', (e) => console.error('sayfa hatası:', e.message));
 await sayfa.goto(pathToFileURL(film).href + '?cek=1');
 await sayfa.evaluate(() => document.fonts.ready);
 await sayfa.waitForTimeout(300);
 const sure = await sayfa.evaluate(() => window.SURE);
+const SES = await sayfa.evaluate(() => window.SES || []);
+console.log('süre', sure.toFixed(2), 's ·', JSON.stringify(await sayfa.evaluate(() => window.SAHNELER)));
+
+if (sesJson) {
+  writeFileSync(sesJson, JSON.stringify(SES.map(({ id, metin }) => ({ id, metin })), null, 1) + '\n');
+  console.log('yazıldı:', sesJson);
+  await tarayici.close();
+  process.exit(0);
+}
 
 if (kareler) {
   for (const s of kareler.split(',').map(Number)) {
@@ -39,14 +62,25 @@ const toplam = Math.round(sure * fps);
 for (let i = 0; i < toplam; i++) {
   await sayfa.evaluate((t) => window.ciz(t), i / fps);
   await sayfa.screenshot({ path: path.join(klasor, `k${String(i).padStart(5, '0')}.png`) });
-  if (i % 60 === 0) process.stdout.write(`kare ${i}/${toplam}\n`);
+  if (i % 120 === 0) process.stdout.write(`kare ${i}/${toplam}\n`);
 }
 await tarayici.close();
 
-await new Promise((ok, hata) => {
-  const f = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', path.join(klasor, 'k%05d.png'),
-    '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-crf', '17', '-preset', 'slow', '-movflags', '+faststart', cikti], { stdio: 'inherit' });
+const ff = (a) => new Promise((ok, hata) => {
+  const f = spawn('ffmpeg', ['-y', '-loglevel', 'error', ...a], { stdio: 'inherit' });
   f.on('exit', (k) => (k === 0 ? ok() : hata(new Error('ffmpeg ' + k))));
 });
+const video = sesKlasor ? path.join(klasor, 'v.mp4') : cikti;
+await ff(['-framerate', String(fps), '-i', path.join(klasor, 'k%05d.png'), '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
+  '-crf', '17', '-preset', 'slow', '-movflags', '+faststart', video]);
+
+if (sesKlasor) {
+  const parca = SES.filter((s) => existsSync(path.join(sesKlasor, s.id + '.wav')));
+  const girdi = parca.flatMap((s) => ['-i', path.join(sesKlasor, s.id + '.wav')]);
+  const filtre = parca.map((s, i) => `[${i + 1}:a]aresample=48000,adelay=${Math.round(s.t * 1000)}:all=1[a${i}]`).join(';')
+    + ';' + parca.map((_, i) => `[a${i}]`).join('') + `amix=inputs=${parca.length}:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11,apad[ses]`;
+  await ff(['-i', video, ...girdi, '-filter_complex', filtre, '-map', '0:v', '-map', '[ses]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+    '-shortest', '-movflags', '+faststart', cikti]);
+}
 rmSync(klasor, { recursive: true, force: true });
 console.log('hazır:', cikti);

@@ -28,11 +28,13 @@ jobs:
         run: |
           pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
           pip install -q coqui-tts
+          sudo apt-get install -y -qq espeak-ng >/dev/null
       - name: Seslendir
         env:
           HIZ: ${{ inputs.hiz }}
         run: |
-          python - <<'EOF'
+          set -o pipefail
+          python - <<'EOF' 2>&1 | tee gunluk.txt
           import json, os, glob, zipfile
           from TTS.api import TTS
           tts = TTS("tts_models/tr/common-voice/glow-tts", progress_bar=False)
@@ -53,8 +55,10 @@ jobs:
               print("hazır:", zp)
           EOF
       - name: Ön sürüme koy
+        if: always()
         run: |
+          mkdir -p cikti && cp gunluk.txt cikti/seslendir-gunluk.txt 2>/dev/null || true
           gh release view seslendirme --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
             gh release create seslendirme --repo "$GITHUB_REPOSITORY" --prerelease --target "$GITHUB_SHA" \
               --title "Seslendirme (tanıtım filmi, iç kullanım)" --notes "Tanıtım filmlerinin taslak seslendirmesi (Coqui TTS Türkçe, MIT). Kurulum dosyası değildir."
-          gh release upload seslendirme --repo "$GITHUB_REPOSITORY" --clobber cikti/ses-*.zip
+          gh release upload seslendirme --repo "$GITHUB_REPOSITORY" --clobber cikti/seslendir-gunluk.txt $(ls cikti/ses-*.zip 2>/dev/null)

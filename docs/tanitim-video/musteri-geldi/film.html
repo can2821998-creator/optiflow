@@ -3,69 +3,28 @@
 <head>
 <meta charset="utf-8">
 <title>OptiFlow · Bir müşteri geldi (Reels 1080×1920)</title>
-<!--
-  Zaman tabanlı animasyon: ciz(t) her kareyi t saniyesine göre çizer (rastgelelik yok, kare kare aynı sonuç).
-  Önizleme: dosyayı tarayıcıda açın (gerçek zamanlı döner). Video: cek.mjs kare kare çekip ffmpeg ile MP4 yapar.
-  Müşteri, mağaza ve veriler uydurmadır ("Örnek Optik"); gerçek müşteri verisi kullanılmaz (KVKK).
--->
+<link rel="stylesheet" href="../ortak/stil.css">
 <style>
-@font-face{font-family:Manrope;font-weight:200 800;src:url(../../kurumsal-kimlik/project/fonts/manrope-latin-wght-normal.woff2) format('woff2');
-  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:Manrope;font-weight:200 800;src:url(../../kurumsal-kimlik/project/fonts/manrope-latin-ext-wght-normal.woff2) format('woff2');
-  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
-@font-face{font-family:'IBM Plex Mono';font-weight:500;src:url(../../kurumsal-kimlik/project/fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2');
-  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:'IBM Plex Mono';font-weight:500;src:url(../../kurumsal-kimlik/project/fonts/ibm-plex-mono-latin-ext-500-normal.woff2) format('woff2');
-  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+/* Medula sekmesi: OptiFlow Pro içinde açılan web sayfası (logosuz, genel görünüm) */
+.web{position:absolute;inset:0;background:#eef1f4;color:#1d2733;padding:0}
+.web .adres{height:58px;background:#dfe4ea;display:flex;align-items:center;gap:12px;padding:0 24px;font:500 20px var(--mono);color:#5b6878}
+.web .adres b{width:14px;height:14px;border-radius:50%;background:#7fae8f;display:block}
+.web .ic{padding:28px 30px}
+.web h3{font-weight:800;font-size:32px;color:#1d2733;margin-bottom:6px}
+.web .alt{font-size:21px;color:#5b6878;font-weight:600;margin-bottom:24px}
+.web .satir{display:flex;gap:16px;align-items:center}
+.web .gir{flex:1;height:78px;border:2px solid #b9c3cf;border-radius:10px;background:#fff;display:flex;align-items:center;padding:0 22px;font:500 32px var(--mono);color:#1d2733}
+.web .gir .imc{width:3px;height:36px;background:#1d2733;margin-left:3px}
+.web .sorgula{height:78px;padding:0 30px;border-radius:10px;background:#2f5f8a;color:#fff;font-weight:750;font-size:25px;display:flex;align-items:center;gap:10px;position:relative;overflow:hidden}
+.web .sonuc{margin-top:26px;background:#fff;border:2px solid #cfd7e0;border-radius:12px;overflow:hidden}
+.web .sonuc .s{display:flex;justify-content:space-between;padding:16px 22px;border-bottom:1px solid #e3e8ee;font-size:23px;font-weight:600;opacity:0}
+.web .sonuc .s span:first-child{color:#5b6878}
+.web .sonuc .s.on{background:#e8f3ec;color:#1f6a3d;font-weight:800}
+.web .rxw{display:grid;grid-template-columns:110px repeat(4,1fr);font:500 24px var(--mono);padding:10px 22px 18px;opacity:0}
+.web .rxw div{padding:8px 4px}
+.web .rxw .h{color:#5b6878;font-size:18px;letter-spacing:.1em}
+.parla{box-shadow:0 0 0 0 rgba(224,67,95,.0)}
 
-:root{
-  --paper:#f5f3f3;--ink:#1b1416;--ink2:#463b3e;--muted:#776b6e;--line:#e8e1e2;
-  --brand:#b4233c;--deep:#7e1528;--bright:#d0334f;--brandink:#8f1a2e;--soft:#fbe4e8;
-  --night:#141012;--night2:#221a1d;--onnight:#f3eef0;--onnightm:#ab9fa3;--coral:#ff6b81;
-  --d-bg:#0e0b0c;--d-sur:#171213;--d-line:#2f2528;--d-ink:#f4eef0;--d-m:#a6999d;--d-brand:#e0435f;--d-soft:#3a1820;--d-ok:#66d699;
-  --mono:'IBM Plex Mono',ui-monospace,monospace;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{width:1080px;height:1920px;overflow:hidden;background:var(--paper)}
-body{font-family:Manrope,system-ui,sans-serif;color:var(--ink);font-feature-settings:"tnum" 1}
-#tuval{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--paper)}
-.abs{position:absolute}
-
-/* ---- altyazılar ---- */
-.cap{position:absolute;left:80px;top:250px;width:920px;opacity:0}
-.cap .eb{font:500 26px/1 var(--mono);letter-spacing:.14em;color:var(--brandink);display:flex;align-items:center;gap:16px;margin-bottom:26px}
-.cap .eb::before{content:"";width:44px;height:3px;background:var(--brand);display:block}
-.cap h1{font-weight:800;font-size:66px;line-height:1.08;letter-spacing:-.03em;color:var(--ink)}
-.cap .w{display:inline-block;will-change:transform,opacity;position:relative}
-.cap .k{color:var(--brand)}
-.cap .s i{position:absolute;left:-4px;top:54%;height:7px;width:calc(100% + 8px);background:var(--brand);border-radius:4px;transform-origin:left center;transform:scaleX(0)}
-
-/* ---- sahne ---- */
-#sahne{position:absolute;left:0;top:560px;width:1080px;height:960px;overflow:hidden}
-#sahne svg{position:absolute;left:0;top:0;width:1080px;height:960px}
-#dukkan{transform-origin:520px 545px}
-
-.balon{position:absolute;background:#fff;border-radius:28px;padding:26px 30px;font-weight:700;font-size:34px;line-height:1.25;color:var(--ink);
-  box-shadow:0 18px 50px rgba(27,20,22,.16);width:520px;opacity:0}
-.balon::after{content:"";position:absolute;right:70px;bottom:-26px;border:16px solid transparent;border-top:18px solid #fff;border-right:18px solid #fff}
-
-/* ---- uygulama paneli (koyu görünüm, OptiFlow Pro) ---- */
-#ui{position:absolute;left:46px;top:600px;width:988px;height:900px;border-radius:30px;background:var(--d-bg);overflow:hidden;opacity:0;
-  box-shadow:0 40px 90px rgba(27,20,22,.35),0 0 0 1px #2a2124;color:var(--d-ink);transform-origin:520px 505px}
-.bar{height:92px;display:flex;align-items:center;gap:16px;padding:0 24px;border-bottom:2px solid #3a1d24;background:#120e0f}
-.bar .ad{font-weight:800;font-size:28px;letter-spacing:-.02em}
-.pro{font:800 15px/1 Manrope;letter-spacing:.08em;background:var(--brand);color:#fff;border-radius:8px;padding:6px 8px}
-.sekme{display:flex;background:#1d1719;border-radius:14px;padding:5px;margin-left:10px}
-.sekme span{font-weight:650;font-size:21px;padding:9px 16px;border-radius:10px;color:var(--d-m)}
-.sekme span.on{background:#f4eef0;color:#141012}
-.aktar{margin-left:auto;display:flex;align-items:center;gap:12px;font-weight:750;font-size:23px;color:#fff;padding:15px 22px;border-radius:14px;
-  background:linear-gradient(135deg,#d0334f,#b4233c 55%,#7e1528);box-shadow:0 8px 22px rgba(180,35,60,.45);position:relative;overflow:hidden}
-.aktar .dalga{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px;border-radius:50%;background:rgba(255,255,255,.55);transform:scale(0);opacity:0}
-.gorunum{position:absolute;left:0;top:92px;right:0;bottom:0;padding:34px 34px;opacity:0}
-.ust{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:26px}
-.ust h2{font-weight:800;font-size:40px;letter-spacing:-.03em}
-.ust .m{font:500 21px var(--mono);color:var(--d-m);letter-spacing:.06em}
-.kart{background:var(--d-sur);border:2px solid var(--d-line);border-radius:22px;padding:24px 26px}
 .musteri{display:flex;align-items:center;gap:20px;margin-bottom:22px}
 .av{width:72px;height:72px;border-radius:50%;background:var(--d-soft);color:#ff95a6;display:grid;place-items:center;font-weight:800;font-size:28px}
 .musteri b{font-size:31px;font-weight:800;display:block}
@@ -81,9 +40,6 @@ body{font-family:Manrope,system-ui,sans-serif;color:var(--ink);font-feature-sett
 .rx .c .val{position:relative}
 .rx .c .fl{position:absolute;inset:0;background:var(--d-brand);opacity:0}
 .alan{display:flex;justify-content:space-between;align-items:center;margin-top:22px;padding:22px 24px;border-radius:16px;border:2px dashed #3a2c30;color:var(--d-m);font-size:24px;font-weight:600}
-.toast{position:absolute;right:34px;top:30px;display:flex;align-items:center;gap:14px;background:#10241a;border:2px solid #1f4a33;color:var(--d-ok);
-  font-weight:750;font-size:24px;padding:16px 22px;border-radius:16px;opacity:0}
-#imlec{position:absolute;left:0;top:0;width:46px;height:46px;opacity:0;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
 
 .teklifler{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .tk{background:var(--d-sur);border:2px solid var(--d-line);border-radius:22px;padding:26px 22px;height:600px;position:relative;opacity:0}
@@ -97,7 +53,6 @@ body{font-family:Manrope,system-ui,sans-serif;color:var(--ink);font-feature-sett
 .tk .yeni{font-weight:800;font-size:46px;letter-spacing:-.02em;opacity:0}
 .tk .yeni small{font:500 18px var(--mono);color:var(--d-m);display:block;letter-spacing:.06em;margin-bottom:4px}
 .tk .onr{position:absolute;top:-2px;right:18px;transform:translateY(-50%);font:800 16px/1 Manrope;letter-spacing:.06em;background:var(--d-brand);color:#fff;padding:8px 12px;border-radius:999px;opacity:0}
-.damga{position:absolute;border:6px solid var(--coral);color:var(--coral);font:800 42px/1 Manrope;letter-spacing:.12em;padding:12px 18px;border-radius:12px;opacity:0;white-space:nowrap}
 
 .pano{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;height:640px;position:relative}
 .sut{background:#120e0f;border:2px solid var(--d-line);border-radius:22px;padding:20px 16px}
@@ -109,532 +64,156 @@ body{font-family:Manrope,system-ui,sans-serif;color:var(--ink);font-feature-sett
 .is b{display:block;font-size:25px;font-weight:800;margin-top:6px}
 .is small{font-size:19px;color:var(--d-m);font-weight:600}
 #bizim{border-color:var(--d-brand);box-shadow:0 14px 34px rgba(0,0,0,.45);z-index:3;border-left-width:8px}
-#bizim .cip{position:absolute;right:12px;top:14px;font:750 16px/1 Manrope;background:#10241a;color:var(--d-ok);border:2px solid #1f4a33;padding:6px 9px;border-radius:999px;opacity:0}
+#bizim .cipx{position:absolute;right:12px;top:14px;opacity:0}
 #bizim .durum{color:var(--d-ok);font-weight:750}
-
-/* ---- bildirim ---- */
-#bildirim{position:absolute;left:90px;top:548px;width:900px;background:rgba(255,255,255,.97);border-radius:34px;padding:30px 34px 32px;
-  box-shadow:0 30px 70px rgba(27,20,22,.28);opacity:0}
-#bildirim .bas{display:flex;align-items:center;gap:14px;font-weight:700;font-size:23px;color:var(--muted)}
-#bildirim .ik{width:44px;height:44px;border-radius:12px;background:#e9e2e3;display:grid;place-items:center}
-#bildirim .bas span:last-child{margin-left:auto;font-weight:600}
-#bildirim h4{font-weight:800;font-size:33px;margin:18px 0 8px}
-#bildirim p{font-size:29px;line-height:1.38;font-weight:550;color:var(--ink2)}
-#bildirim .link{font:500 23px var(--mono);color:var(--brandink);margin-top:14px}
-
-#teslim{left:330px;top:1250px;transform-origin:center;border-color:var(--brand);color:var(--brand);background:rgba(245,243,243,.85)}
-
-/* ---- kapanış ---- */
-#son{position:absolute;inset:0;background:var(--night);opacity:0;color:var(--onnight);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 90px}
-#nisan{position:absolute;left:50%;top:44%;width:1500px;height:1500px;margin:-750px 0 0 -750px;opacity:.22}
-#son .isaret{width:230px;height:230px;position:relative}
-#son .kel{font-weight:800;font-size:132px;letter-spacing:-.02em;margin-top:26px;position:relative}
-#son .koken{font-weight:700;font-size:42px;line-height:1.3;color:var(--onnight);margin-top:40px;max-width:860px;position:relative}
-#son .koken .ciz{position:relative;color:var(--onnightm)}
-#son .koken .ciz i{position:absolute;left:-4px;right:-4px;top:55%;height:6px;background:var(--coral);border-radius:3px;transform-origin:left;transform:scaleX(0)}
-#son .cta{margin-top:60px;font-weight:800;font-size:36px;padding:24px 40px;border-radius:999px;color:#fff;
-  background:linear-gradient(135deg,#d0334f,#b4233c 55%,#7e1528);position:relative}
-#son .url{margin-top:34px;font:500 32px var(--mono);color:var(--onnightm);letter-spacing:.04em;position:relative}
-#son .url b{color:var(--coral);font-weight:500}
-
-#kunye{position:absolute;left:80px;top:1560px;display:flex;align-items:center;gap:16px;font-weight:800;font-size:40px;letter-spacing:-.02em;color:var(--ink)}
-#kunye svg{width:60px;height:60px}
 </style>
 </head>
 <body>
-<div id="tuval">
+<div id="tuval"></div>
+<script src="../ortak/motor.js"></script>
+<script>
+const RX = [['SAĞ', '−2,00', '−0,75', '90', '—'], ['SOL', '−1,75', '−0,50', '85', '—']];
+const rxHucre = () => RX.map((r) => `<div class="g">${r[0]}</div>` + r.slice(1).map((v) => `<div class="c"><span class="ph">—</span><span class="fl"></span><span class="val">${v}</span></div>`).join('')).join('');
+const TK = [['Standart 1.50', 'Sert kaplama<br>Yansıma önleyici', '1.900', '1.440'], ['Mavi ışık 1.60', 'Mavi ışık filtresi<br>Süper hidrofobik', '3.650', '3.190'], ['İnce 1.67', '%30 daha ince<br>Çizilmeye dayanıklı', '5.200', '4.740']];
 
-  <!-- ===== altyazılar ===== -->
-  <div class="cap" id="c1"><div class="eb">10:42 · ÖRNEK OPTİK</div><h1>Kapı açıldı. Elinde <span class="k">reçete</span> var.</h1></div>
-  <div class="cap" id="c2"><div class="eb">ESKİDEN</div><h1><span class="s">Medula,</span> <span class="s">defter,</span> <span class="s">hesap makinesi…</span></h1></div>
-  <div class="cap" id="c3"><div class="eb">OptiFlow Pro</div><h1>Reçete Medula'dan <span class="k">tek tıkla</span> gelir.</h1></div>
-  <div class="cap" id="c4"><div class="eb">TEKLİF</div><h1>SGK payı düşülmüş fiyat, <span class="k">müşterinin önünde.</span></h1></div>
-  <div class="cap" id="c5"><div class="eb">ATÖLYE PANOSU</div><h1>Cam geldi mi? <span class="k">Pano söyler.</span></h1></div>
-  <div class="cap" id="c6"><div class="eb">2 GÜN SONRA</div><h1>Gözlük hazır. Haber, <span class="k">müşterinin telefonunda.</span></h1></div>
-  <div class="cap" id="c7"><div class="eb">TESLİM</div><h1>Telefon çalmadan, <span class="k">defter açılmadan.</span></h1></div>
-
-  <!-- ===== çizim sahnesi ===== -->
-  <div id="sahne">
-    <!-- dükkân -->
-    <svg id="dukkan" viewBox="0 0 1080 960">
-      <rect width="1080" height="960" fill="#f1e9e6"/>
-      <rect y="860" width="1080" height="100" fill="#e3d6d1"/>
-      <g stroke="#d6c7c1" stroke-width="3"><line x1="0" y1="900" x2="1080" y2="900"/><line x1="160" y1="860" x2="120" y2="960"/><line x1="420" y1="860" x2="400" y2="960"/><line x1="700" y1="860" x2="710" y2="960"/><line x1="960" y1="860" x2="990" y2="960"/></g>
-      <text x="70" y="104" font-family="Manrope" font-weight="800" font-size="40" letter-spacing="6" fill="#463b3e">ÖRNEK OPTİK</text>
-      <rect x="70" y="122" width="96" height="6" rx="3" fill="#b4233c"/>
-      <g id="raflar"></g>
-      <!-- kapı -->
-      <rect x="836" y="226" width="214" height="636" rx="6" fill="#3a3033"/>
-      <rect x="852" y="242" width="182" height="620" fill="#fff6ef"/>
-      <rect x="852" y="560" width="182" height="302" fill="#f3e3d6"/>
-      <g id="kapiKanat"><rect x="852" y="242" width="182" height="620" fill="#dfe5e4" stroke="#3a3033" stroke-width="10"/>
-        <path d="M880 280 L930 280 L880 380 Z" fill="#fff" opacity=".55"/><rect x="866" y="520" width="12" height="70" rx="6" fill="#c49a45"/>
-        <text x="943" y="430" text-anchor="middle" font-family="Manrope" font-weight="800" font-size="24" fill="#3a3033" letter-spacing="3">AÇIK</text></g>
-      <g id="zil" transform="translate(1012 214)"><line x1="0" y1="-14" x2="0" y2="4" stroke="#3a3033" stroke-width="4"/>
-        <path d="M-16 26 Q-16 4 0 4 Q16 4 16 26 Z" fill="#c49a45"/><circle cx="0" cy="30" r="5" fill="#a07a2c"/></g>
-      <g id="dinn" stroke="#c49a45" stroke-width="5" stroke-linecap="round" opacity="0"><line x1="1040" y1="196" x2="1058" y2="184"/><line x1="1044" y1="216" x2="1066" y2="214"/><line x1="984" y1="196" x2="966" y2="184"/></g>
-      <!-- optisyen -->
-      <g id="optisyen" transform="translate(300 640)">
-        <g id="oKolSol" transform="translate(-98 -168)"><rect x="-19" y="0" width="38" height="170" rx="19" fill="#f4eeec"/></g>
-        <g id="oKolSag" transform="translate(98 -168)"><rect x="-19" y="0" width="38" height="170" rx="19" fill="#ebe1de" stroke="#cdbcb7" stroke-width="3"/><circle cx="0" cy="176" r="20" fill="#c98d66"/></g>
-        <path d="M-112 10 L-102 -168 Q-60 -214 0 -217 Q60 -214 102 -168 L112 10 Z" fill="#fbf8f7"/>
-        <path d="M-72 10 L-62 -150 L-30 -150 L-30 -118 L30 -118 L30 -150 L62 -150 L72 10 Z" fill="#b4233c"/>
-        <path d="M-46 -150 L-28 -206 M46 -150 L28 -206" stroke="#b4233c" stroke-width="9" stroke-linecap="round"/>
-        <rect x="-50" y="-100" width="58" height="22" rx="5" fill="#fff"/><rect x="-44" y="-93" width="38" height="5" rx="2" fill="#b4233c"/>
-        <rect x="-15" y="-240" width="30" height="34" fill="#c08560"/>
-        <g id="oKafa" transform="translate(0 -282)">
-          <circle cx="-60" cy="4" r="13" fill="#c08560"/><circle cx="60" cy="4" r="13" fill="#c08560"/>
-          <circle r="60" fill="#c98d66"/>
-          <path d="M-62 -6 Q-68 -74 0 -76 Q68 -74 62 -6 Q56 -42 4 -44 Q-40 -46 -62 -6Z" fill="#2a2022"/>
-          <g id="oGoz"><circle cx="-22" cy="2" r="5.5" fill="#1b1416"/><circle cx="22" cy="2" r="5.5" fill="#1b1416"/></g>
-          <g fill="none" stroke="#1b1416" stroke-width="5"><circle cx="-22" cy="2" r="18"/><circle cx="22" cy="2" r="18"/><path d="M-4 0 Q0 -5 4 0"/></g>
-          <path id="oAgiz" d="M-16 28 Q0 40 16 28" fill="none" stroke="#6b2f24" stroke-width="5" stroke-linecap="round"/>
-        </g>
-      </g>
-      <!-- tezgâh -->
-      <rect x="86" y="606" width="150" height="22" rx="7" fill="#cdbcb7"/>
-      <g fill="none" stroke-width="5"><g stroke="#1b1416"><rect x="104" y="586" width="34" height="22" rx="9"/><rect x="144" y="586" width="34" height="22" rx="9"/></g><g stroke="#b4233c"><rect x="192" y="588" width="18" height="18" rx="6"/></g></g>
-      <g id="monitor"><rect x="507" y="588" width="26" height="44" fill="#3a3033"/><ellipse cx="520" cy="630" rx="56" ry="8" fill="#3a3033"/>
-        <rect x="430" y="470" width="180" height="124" rx="12" fill="#141012" stroke="#3a3033" stroke-width="7"/>
-        <rect x="440" y="481" width="160" height="12" rx="3" fill="#b4233c"/><rect x="446" y="503" width="90" height="8" rx="3" fill="#3d3236"/><rect x="446" y="520" width="140" height="22" rx="5" fill="#221a1d"/><rect x="446" y="550" width="140" height="22" rx="5" fill="#221a1d"/></g>
-      <rect x="30" y="628" width="620" height="26" rx="9" fill="#d9c9c5"/>
-      <rect x="40" y="654" width="600" height="206" fill="#2a2124"/>
-      <rect x="40" y="700" width="600" height="10" fill="#b4233c"/>
-      <rect x="40" y="654" width="600" height="8" fill="#1b1416" opacity=".35"/>
-    </svg>
-
-    <!-- ev -->
-    <svg id="ev" viewBox="0 0 1080 960" style="opacity:0">
-      <rect width="1080" height="960" fill="#f3e8e2"/>
-      <rect y="860" width="1080" height="100" fill="#e0cfc6"/>
-      <defs><linearGradient id="aksam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f9c9a8"/><stop offset="1" stop-color="#f29a86"/></linearGradient></defs>
-      <rect x="560" y="140" width="400" height="420" rx="10" fill="#4a3c3f"/>
-      <rect x="576" y="156" width="368" height="388" fill="url(#aksam)"/>
-      <circle cx="840" cy="420" r="54" fill="#ffe0c2" opacity=".85"/>
-      <path d="M576 500 L650 430 L720 480 L800 400 L944 500 L944 544 L576 544Z" fill="#c9776a" opacity=".55"/>
-      <rect x="756" y="156" width="10" height="388" fill="#4a3c3f"/><rect x="576" y="346" width="368" height="10" fill="#4a3c3f"/>
-      <rect x="40" y="560" width="470" height="210" rx="40" fill="#7e1528"/>
-      <rect x="20" y="660" width="510" height="200" rx="40" fill="#8f1a2e"/>
-      <rect x="70" y="600" width="170" height="110" rx="26" fill="#d0334f"/>
-      <rect x="40" y="850" width="24" height="40" fill="#3a3033"/><rect x="486" y="850" width="24" height="40" fill="#3a3033"/>
-      <line x1="140" y1="200" x2="140" y2="560" stroke="#3a3033" stroke-width="6"/>
-      <path d="M80 200 L200 200 L170 120 L110 120Z" fill="#f6d9a8"/>
-      <ellipse cx="560" cy="910" rx="380" ry="34" fill="#d7c2b8"/>
-    </svg>
-
-    <!-- müşteri (Ayşe Hanım) -->
-    <svg id="musteriSvg" viewBox="0 0 1080 960">
-      <g id="musteri" transform="translate(1180 900)">
-        <ellipse cx="0" cy="4" rx="96" ry="13" fill="#1b1416" opacity=".09"/>
-        <g id="mBacakSol" transform="translate(-26 -212)"><rect x="-18" y="0" width="36" height="206" rx="16" fill="#3a2f33"/><rect x="-26" y="192" width="52" height="24" rx="12" fill="#1f1719"/></g>
-        <g id="mBacakSag" transform="translate(26 -212)"><rect x="-18" y="0" width="36" height="206" rx="16" fill="#3a2f33"/><rect x="-26" y="192" width="52" height="24" rx="12" fill="#1f1719"/></g>
-        <g id="mKolSol" transform="translate(-82 -428)"><rect x="-19" y="0" width="38" height="196" rx="19" fill="#a87a50"/><circle cx="0" cy="200" r="21" fill="#eab38c"/></g>
-        <path d="M-80 -440 Q-98 -300 -104 -186 L104 -186 Q98 -300 80 -440 Q0 -472 -80 -440Z" fill="#b98a5e"/>
-        <path d="M0 -455 L0 -190" stroke="#a87a50" stroke-width="4"/>
-        <circle cx="-14" cy="-380" r="6" fill="#7a5638"/><circle cx="-14" cy="-320" r="6" fill="#7a5638"/><circle cx="-14" cy="-260" r="6" fill="#7a5638"/>
-        <path d="M62 -446 L118 -262" stroke="#5a1320" stroke-width="7"/>
-        <rect x="88" y="-276" width="82" height="72" rx="16" fill="#7e1528"/><rect x="104" y="-262" width="50" height="8" rx="4" fill="#b4233c"/>
-        <g id="mKolSag" transform="translate(82 -428)"><rect x="-19" y="0" width="38" height="196" rx="19" fill="#a87a50"/><circle cx="0" cy="200" r="21" fill="#eab38c"/></g>
-        <rect x="-16" y="-500" width="32" height="40" fill="#e0a57d"/>
-        <rect x="-52" y="-474" width="104" height="36" rx="17" fill="#b4233c"/><rect x="12" y="-452" width="28" height="92" rx="12" fill="#b4233c"/>
-        <g id="mTelefon" opacity="0" transform="translate(0 -300)">
-          <rect x="-40" y="-70" width="80" height="140" rx="14" fill="#1b1416"/><rect x="-33" y="-60" width="66" height="118" rx="9" fill="#f6eef0"/>
-          <rect x="-26" y="-48" width="52" height="18" rx="6" fill="#b4233c"/><rect x="-26" y="-22" width="40" height="7" rx="3" fill="#cbbfc2"/><rect x="-26" y="-8" width="50" height="7" rx="3" fill="#cbbfc2"/>
-          <circle cx="-34" cy="40" r="20" fill="#eab38c"/><circle cx="34" cy="40" r="20" fill="#eab38c"/>
-        </g>
-        <g id="mKafa" transform="translate(0 -556)">
-          <path d="M-74 10 Q-84 -80 0 -82 Q84 -80 74 10 L74 46 Q52 54 42 34 L42 -20 Q0 -46 -42 -20 L-42 34 Q-52 54 -74 46 Z" fill="#3b2a24"/>
-          <circle r="62" fill="#eab38c"/>
-          <path d="M-62 -26 Q-44 -78 8 -70 Q60 -64 64 -18 Q34 -46 -6 -40 Q-40 -36 -62 -26Z" fill="#3b2a24"/>
-          <circle cx="-38" cy="18" r="11" fill="#f08f8f" opacity=".35"/><circle cx="38" cy="18" r="11" fill="#f08f8f" opacity=".35"/>
-          <g id="mGoz"><ellipse cx="-22" cy="0" rx="6" ry="7.5" fill="#2a1f1c"/><ellipse cx="22" cy="0" rx="6" ry="7.5" fill="#2a1f1c"/></g>
-          <path d="M-32 -18 Q-22 -24 -12 -18 M12 -18 Q22 -24 32 -18" stroke="#3b2a24" stroke-width="4" fill="none" stroke-linecap="round"/>
-          <path d="M-2 4 Q-6 14 2 16" stroke="#c98a66" stroke-width="4" fill="none" stroke-linecap="round"/>
-          <path id="mAgiz" d="M-18 28 Q0 38 18 28" fill="none" stroke="#7a3b2e" stroke-width="5" stroke-linecap="round"/>
-          <g id="mGozluk" opacity="0" fill="rgba(255,255,255,.18)" stroke="#b4233c" stroke-width="5.5"><rect x="-44" y="-15" width="40" height="30" rx="12"/><rect x="4" y="-15" width="40" height="30" rx="12"/><path d="M-4 -4 Q0 -8 4 -4" fill="none"/></g>
-        </g>
-        <g id="parilti" stroke="#b4233c" stroke-width="5" stroke-linecap="round" opacity="0"><line x1="-88" y1="-610" x2="-110" y2="-632"/><line x1="-96" y1="-560" x2="-124" y2="-560"/><line x1="88" y1="-610" x2="110" y2="-632"/><line x1="96" y1="-560" x2="124" y2="-560"/></g>
-      </g>
-    </svg>
-    <div class="balon" id="balon">“Doktorum gözlük yazdı. Ne zaman hazır olur?”</div>
-  </div>
-
-  <!-- ===== uygulama ===== -->
-  <div id="ui">
-    <div class="bar">
-      <svg width="40" height="40" viewBox="0 0 100 100" id="uiLogo"></svg>
-      <span class="ad">OptiFlow</span><span class="pro">PRO</span>
-      <div class="sekme"><span class="on">OptiFlow</span><span>SGK · Medula</span></div>
-      <div class="aktar" id="aktar"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h12M11 6l6 6-6 6M20 5v14"/></svg>Reçeteyi aktar<i class="dalga" id="dalga"></i></div>
-    </div>
-
-    <div class="gorunum" id="vSiparis">
-      <div class="ust"><h2>Yeni sipariş</h2><span class="m">TEZGÂH 1</span></div>
-      <div class="kart">
-        <div class="musteri"><div class="av">AY</div><div><b>Ayşe Yılmaz</b><small>0532 ••• •• 18</small></div>
-          <div class="erec"><div class="l">E-REÇETE</div><div class="v" id="erecNo"></div></div></div>
-        <div class="rx" id="rx">
-          <div></div><div class="h">SPH</div><div class="h">CYL</div><div class="h">AKS</div><div class="h">ADD</div>
-          <div class="g">SAĞ</div><div class="c"><span class="ph">—</span><span class="fl"></span><span class="val">−2,00</span></div><div class="c"><span class="ph">—</span><span class="fl"></span><span class="val">−0,75</span></div><div class="c"><span class="ph">—</span><span class="fl"></span><span class="val">90</span></div><div class="c"><span class="ph">—</span><span class="fl"></span><span class="val">—</span></div>
-          <div class="g">SOL</div><div class="c"><span class="ph">—</span><span class="fl"></span><span class="val">−1,75</span></div><div class="c"><span class="ph">—</span><span class="fl"></span><span class="val">−0,50</span></div><div class="c"><span class="ph">—</span><span class="fl"></span><span class="val">85</span></div><div class="c"><span class="ph">—</span><span class="fl"></span><span class="val">—</span></div>
-        </div>
+FILM({
+  kisiler: { ayse: {} },
+  gorunumler: {
+    vMedula: `<div class="web"><div class="adres"><b></b>medula · optik · e-Reçete sorgulama</div><div class="ic">
+      <h3>e-Reçete sorgulama</h3><div class="alt">Gözlük reçetesi · reçete numarasıyla</div>
+      <div class="satir"><div class="gir" id="medGir"><span id="medNo"></span><span class="imc" id="medImc"></span></div><div class="sorgula" id="sorgula">${IK.ara}Sorgula</div></div>
+      <div class="sonuc">
+        <div class="s"><span>Hasta</span><span>A**** Y****</span></div>
+        <div class="s"><span>Doktor</span><span>Dr. E. Kaya · Göz hastalıkları</span></div>
+        <div class="s"><span>Reçete türü</span><span>Uzak · tek odak</span></div>
+        <div class="rxw"><div></div><div class="h">SPH</div><div class="h">CYL</div><div class="h">AKS</div><div class="h">ADD</div>
+          ${RX.map((r) => r.map((v) => `<div>${v}</div>`).join('')).join('')}</div>
+        <div class="s on"><span>Durum</span><span>Onaylı</span></div>
+      </div></div></div>`,
+    vSiparis: `<div class="ust"><h2>Yeni sipariş</h2><span class="m">TEZGÂH 1</span></div>
+      <div class="kart"><div class="musteri"><div class="av">AY</div><div><b>Ayşe Yılmaz</b><small>0532 ••• •• 18</small></div>
+        <div class="erec"><div class="l">E-REÇETE</div><div class="v" id="erecNo"></div></div></div>
+        <div class="rx" id="rx"><div></div><div class="h">SPH</div><div class="h">CYL</div><div class="h">AKS</div><div class="h">ADD</div>${rxHucre()}</div>
         <div class="alan"><span>Cam</span><span>teklifle seçilecek</span></div>
-        <div class="alan"><span>Doktor · Tarih</span><span id="dok"></span></div>
-      </div>
-      <div class="toast" id="toast"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#66d699" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Medula'dan aktarıldı</div>
-    </div>
-
-    <div class="gorunum" id="vTeklif">
-      <div class="ust"><h2>Teklif · Ayşe Yılmaz</h2><span class="m">3 SEÇENEK</span></div>
-      <div class="teklifler">
-        <div class="tk" id="tk1"><div class="o">TEK ODAK</div><h3>Standart 1.50</h3><p>Sert kaplama<br>Yansıma önleyici</p>
-          <div class="fiyat"><div class="eski">1.900 ₺<i></i></div><div class="sgk">SGK payı −460 ₺</div><div class="yeni"><small>ÖDENECEK</small>1.440 ₺</div></div></div>
-        <div class="tk" id="tk2"><span class="onr" id="onr">ÖNERİLEN</span><div class="o">TEK ODAK</div><h3>Mavi ışık 1.60</h3><p>Mavi ışık filtresi<br>Süper hidrofobik</p>
-          <div class="fiyat"><div class="eski">3.650 ₺<i></i></div><div class="sgk">SGK payı −460 ₺</div><div class="yeni"><small>ÖDENECEK</small>3.190 ₺</div></div></div>
-        <div class="tk" id="tk3"><div class="o">TEK ODAK</div><h3>İnce 1.67</h3><p>%30 daha ince<br>Çizilmeye dayanıklı</p>
-          <div class="fiyat"><div class="eski">5.200 ₺<i></i></div><div class="sgk">SGK payı −460 ₺</div><div class="yeni"><small>ÖDENECEK</small>4.740 ₺</div></div></div>
-      </div>
-      <div class="damga" id="tamam">TAMAM</div>
-    </div>
-
-    <div class="gorunum" id="vPano">
-      <div class="ust"><h2>Atölye panosu</h2><span class="m">BUGÜN</span></div>
-      <div class="pano" id="pano">
-        <div class="sut"><div class="b"><i style="background:#7aa7ff"></i>Sipariş alındı<em id="say1">2</em></div></div>
+        <div class="alan"><span>Doktor · Tarih</span><span id="dok">Dr. E. Kaya · bugün</span></div></div>
+      <div class="toast" id="toast">${IK.ok}Medula'dan aktarıldı</div>`,
+    vTeklif: `<div class="ust"><h2>Teklif · Ayşe Yılmaz</h2><span class="m">3 SEÇENEK</span></div>
+      <div class="teklifler">${TK.map((k, i) => `<div class="tk" id="tk${i}">${i === 1 ? '<span class="onr">ÖNERİLEN</span>' : ''}<div class="o">TEK ODAK</div><h3>${k[0]}</h3><p>${k[1]}</p>
+        <div class="fiyat"><div class="eski">${k[2]} ₺<i></i></div><div class="sgk">SGK payı −460 ₺</div><div class="yeni"><small>ÖDENECEK</small>${k[3]} ₺</div></div></div>`).join('')}</div>
+      <div class="damga" id="tamam" style="left:330px;top:330px">TAMAM</div>`,
+    vPano: `<div class="ust"><h2>Atölye panosu</h2><span class="m">BUGÜN</span></div>
+      <div class="pano"><div class="sut"><div class="b"><i style="background:#7aa7ff"></i>Sipariş alındı<em id="say1">2</em></div></div>
         <div class="sut"><div class="b"><i style="background:#4fd1c5"></i>Atölyede<em id="say2">2</em></div></div>
         <div class="sut"><div class="b"><i style="background:#66d699"></i>Hazır<em id="say3">1</em></div></div>
         <div class="is" style="left:16px;top:226px;opacity:.75"><div class="no">#00125</div><b>Mehmet K.</b><small>Progresif 1.60</small></div>
         <div class="is" style="left:327px;top:84px;opacity:.75"><div class="no">#00119</div><b>Selin A.</b><small>Lens · aylık</small></div>
         <div class="is" style="left:327px;top:226px;opacity:.75"><div class="no">#00122</div><b>Hasan T.</b><small>Güneş 1.50</small></div>
         <div class="is" style="left:638px;top:84px;opacity:.75"><div class="no">#00117</div><b>Zeynep D.</b><small>Mavi ışık 1.60</small></div>
-        <div class="is" id="bizim"><div class="no">#00128</div><b>Ayşe Y.</b><small class="alt">Mavi ışık 1.60</small><span class="cip" id="cip">Cam geldi</span></div>
-      </div>
-    </div>
-
-    <svg id="imlec" viewBox="0 0 24 24"><path d="M4 2 L4 20 L9 15.5 L12.5 22 L15.5 20.6 L12 14 L19 14 Z" fill="#fff" stroke="#141012" stroke-width="1.6" stroke-linejoin="round"/></svg>
-  </div>
-
-  <!-- ===== bildirim + damga ===== -->
-  <div id="bildirim">
-    <div class="bas"><span class="ik"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#776b6e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg></span><span>Mesajlar</span><span>şimdi</span></div>
-    <h4>Örnek Optik</h4>
-    <p>Merhaba Ayşe Hanım, 00128 numaralı gözlüğünüz hazır. Dilediğiniz zaman Örnek Optik'ten teslim alabilirsiniz.</p>
-    <div class="link">Sipariş durumu › optiflow.com.tr/t/…</div>
-  </div>
-  <div class="damga" id="teslim">TESLİM EDİLDİ</div>
-
-  <div id="kunye"><svg viewBox="0 0 100 100" id="kunyeLogo"></svg>OptiFlow</div>
-
-  <!-- ===== kapanış ===== -->
-  <div id="son">
-    <svg id="nisan" viewBox="-100 -100 200 200" fill="none" stroke="#ff6b81" stroke-width=".5">
-      <circle r="92"/><circle r="64"/><circle r="34"/><path d="M-100 0H100M0 -100V100"/>
-      <g id="centik"></g>
-    </svg>
-    <div class="isaret" id="sonLogo"></div>
-    <div class="kel" id="sonKel">OptiFlow</div>
-    <div class="koken" id="koken">OptiFlow bir <span class="ciz">yazılım ofisinde<i id="kokenCiz"></i></span> değil, bir optik atölyesinde doğdu.</div>
-    <div class="cta" id="cta">30 gün ücretsiz · kart gerekmez</div>
-    <div class="url" id="url">optiflow.com.tr · <b>@optiflowtr</b></div>
-  </div>
-</div>
-
-<script>
-/* ---------- yardımcılar ---------- */
-const SURE = 27.5;
-const $ = (id) => document.getElementById(id);
-const cl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
-const p = (t, a, b) => cl((t - a) / (b - a));
-const eo = (x) => 1 - Math.pow(1 - x, 3);
-const eio = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
-const geri = (x) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
-const lerp = (a, b, x) => a + (b - a) * x;
-const gor = (t, a, b, f = 0.35) => Math.min(p(t, a, a + f), 1 - p(t, b - f, b));
-const css = (el, o) => { for (const k in o) el.style[k] = o[k]; };
-const at = (el, k, v) => el.setAttribute(k, v);
-
-/* logo (app/pazarlama.php pz_logo ile birebir) */
-function logo(id) {
-  return `<svg viewBox="0 0 100 100" width="100%" height="100%"><defs><linearGradient id="${id}" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6b81"/><stop offset=".55" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/></linearGradient></defs><g transform="rotate(-10 50 50)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z" fill="url(#${id})"/><circle cx="50" cy="50" r="7" fill="url(#${id})"/></g></svg>`;
-}
-$('uiLogo').outerHTML = `<span style="width:40px;height:40px;display:block">${logo('lg1')}</span>`;
-$('kunyeLogo').outerHTML = `<span style="width:60px;height:60px;display:block">${logo('lg2')}</span>`;
-$('sonLogo').innerHTML = logo('lg3');
-
-/* raflar ve gözlükler */
-(function () {
-  const renk = ['#1b1416', '#b4233c', '#8a5a3c', '#c49a45', '#463b3e', '#d0334f', '#1b1416', '#8a5a3c'];
-  let s = '';
-  [200, 320, 440].forEach((y, r) => {
-    s += `<rect x="60" y="${y}" width="720" height="14" rx="5" fill="#d9c9c5"/>`;
-    for (let i = 0; i < 7; i++) {
-      const x = 92 + i * 98, c = renk[(i + r * 3) % renk.length], yy = y - 30;
-      s += `<g fill="none" stroke="${c}" stroke-width="5"><rect x="${x}" y="${yy}" width="34" height="24" rx="9"/><rect x="${x + 40}" y="${yy}" width="34" height="24" rx="9"/><path d="M${x + 34} ${yy + 8} q3 -4 6 0"/></g>`;
-    }
-  });
-  $('raflar').innerHTML = s;
-  let c = '';
-  for (let a = 0; a < 360; a += 10) {
-    const r1 = a % 30 === 0 ? 84 : 88, rad = (a * Math.PI) / 180;
-    c += `<line x1="${(Math.cos(rad) * r1).toFixed(2)}" y1="${(Math.sin(rad) * r1).toFixed(2)}" x2="${(Math.cos(rad) * 92).toFixed(2)}" y2="${(Math.sin(rad) * 92).toFixed(2)}"/>`;
-  }
-  $('centik').innerHTML = c;
-})();
-
-/* altyazı kelimeleri */
-const CAP = [
-  ['c1', 0, 3.2], ['c2', 3.2, 6.2], ['c3', 6.2, 10.8], ['c4', 10.8, 14.6],
-  ['c5', 14.6, 18.4], ['c6', 18.4, 21.8], ['c7', 21.8, 24.2],
-];
-CAP.forEach(([id]) => {
-  const h = $(id).querySelector('h1');
-  const parca = (node) => {
-    [...node.childNodes].forEach((n) => {
-      if (n.nodeType === 3) {
-        const frag = document.createDocumentFragment();
-        n.textContent.split(/(\s+)/).forEach((w) => {
-          if (!w) return;
-          if (/^\s+$/.test(w)) { frag.appendChild(document.createTextNode(' ')); return; }
-          const sp = document.createElement('span'); sp.className = 'w'; sp.textContent = w; frag.appendChild(sp);
+        <div class="is" id="bizim"><div class="no">#00128</div><b>Ayşe Y.</b><small class="alt">Mavi ışık 1.60</small><span class="cip ok cipx" id="cip">Cam geldi</span></div></div>`,
+  },
+  sahneler: [
+    { ad: 'kapi', sure: 3.4, katman: 'dukkan', eb: '10:42 · ÖRNEK OPTİK', h: 'Kapı açıldı. Elinde <span class="k">reçete</span> var.',
+      ses: 'Saat on kırk iki. Kapı açıldı, Ayşe Hanım reçetesiyle geldi.',
+      ciz(u) {
+        dukkan({ t: u, kapi: eo(p(u, 0.05, 0.55)) * (1 - eio(p(u, 2.3, 2.9))), zil: 1 - p(u, 0, 2.2), el: u > 1.6 && u < 3.2 ? 1 : 0, gul: u > 1.4 ? 1.2 : 0.7, kirp: [2.2], saat: [10, 42] });
+        kisi('ayse', { t: u, x: lerp(1180, 720, eio(p(u, 0.25, 2.7))), yuru: u > 0.25 && u < 2.7, gul: 4, kirp: [1.4] });
+      } },
+    { ad: 'eskiden', sure: 3.2, katman: 'dukkan', eb: 'ESKİDEN', h: '<span class="s">Medula,</span> <span class="s">defter,</span> <span class="s">hesap makinesi…</span>',
+      cizgi: [1.0, 1.45, 1.9], ses: 'Eskiden Medula, defter ve hesap makinesi arasında koşardınız.',
+      ciz(u, s) {
+        dukkan({ t: u + 5, gul: 0.6, kirp: [1.9], saat: [10, 43] });
+        kisi('ayse', { t: u, x: 720, gul: lerp(4, 10, p(u, 0.1, 0.6)), kirp: [0.9] });
+        balon(gor(u, 0.2, s.sure - 0.1, 0.25) * cl(p(u, 0.2, 0.55) * 1.5), '“Doktorum gözlük yazdı. Ne zaman hazır olur?”');
+      } },
+    { ad: 'medula', sure: 4.6, katman: 'ui', zoom: true, gecis: 0.7, eb: '1 · MEDULA', h: 'Önce Medula’dan <span class="k">reçeteyi sorgularsınız.</span>',
+      ses: 'Şimdi önce Medula\'dan reçeteyi sorgularsınız.',
+      ciz(u) {
+        sekme('medula'); gorunum('vMedula', 1);
+        const no = '4KD7Q2M';
+        $('medNo').textContent = no.slice(0, Math.round(p(u, 0.75, 1.5) * no.length));
+        $('medImc').style.opacity = u < 1.9 && Math.floor(u * 3) % 2 === 0 ? 1 : 0;
+        imlecYol(u, [[0.6, 560, 720], [1.4, 560, 720], [1.8, 840, 260]], [1.95], gor(u, 0.6, 3.6, 0.2));
+        bas($('sorgula'), u, 1.95);
+        document.querySelectorAll('#vMedula .sonuc .s, #vMedula .rxw').forEach((r, i) => {
+          const q = eo(p(u, 2.25 + i * 0.16, 2.55 + i * 0.16));
+          css(r, { opacity: q, transform: `translateY(${((1 - q) * 14).toFixed(1)}px)` });
         });
-        n.replaceWith(frag);
-      } else if (n.classList && n.classList.contains('s')) {
-        n.classList.add('w'); n.appendChild(document.createElement('i'));
-      } else if (n.nodeType === 1) parca(n);
-    });
-  };
-  parca(h);
+        const sorgu = $('vMedula').querySelector('.sonuc');
+        sorgu.style.opacity = p(u, 2.1, 2.3);
+      } },
+    { ad: 'aktar', sure: 4.6, katman: 'ui', eb: '2 · AKTAR', h: 'Tek tıkla <span class="k">siparişe aktarırsınız.</span>',
+      ses: 'Reçeteyi aktar\'a basarsınız. Değerler siparişe kendiliğinden gelir.',
+      ciz(u) {
+        const gec = u > 1.05;
+        sekme(gec ? 'optiflow' : 'medula');
+        gorunum('vMedula', gec ? 0 : 1); gorunum('vSiparis', gec ? p(u, 1.05, 1.3) : 0);
+        document.querySelectorAll('#vMedula .sonuc .s, #vMedula .rxw').forEach((r) => { r.style.opacity = 1; r.style.transform = 'none'; });
+        $('vMedula').querySelector('.sonuc').style.opacity = 1; $('medNo').textContent = '4KD7Q2M'; $('medImc').style.opacity = 0;
+        const parla = 0.5 + 0.5 * Math.sin(u * 9);
+        $('aktar').style.boxShadow = u < 0.95 ? `0 0 0 ${(4 + 6 * parla).toFixed(1)}px rgba(255,107,129,.35), 0 8px 22px rgba(180,35,60,.45)` : '0 8px 22px rgba(180,35,60,.45)';
+        imlecYol(u, [[0.1, 840, 260], [0.8, 835, 46]], [0.9], gor(u, 0, 2.2, 0.2));
+        bas($('aktar'), u, 0.9);
+        const no = '4KD7Q2M';
+        $('erecNo').textContent = no.slice(0, Math.round(p(u, 1.25, 1.7) * no.length));
+        $('dok').style.opacity = p(u, 2.3, 2.6);
+        document.querySelectorAll('#rx .c').forEach((c, i) => {
+          const a = 1.4 + i * 0.12, q = eo(p(u, a, a + 0.25));
+          c.querySelector('.ph').style.opacity = 1 - q;
+          const v = c.querySelector('.val'); v.style.opacity = q; v.style.transform = `translateY(${((1 - q) * 18).toFixed(1)}px)`;
+          c.querySelector('.fl').style.opacity = (q > 0 ? 0.55 * (1 - p(u, a + 0.1, a + 0.7)) : 0).toFixed(3);
+          c.style.borderColor = q > 0 && u < a + 0.8 ? '#e0435f' : '#2f2528';
+        });
+        css($('toast'), { opacity: p(u, 1.4, 1.65), transform: `translateY(${((1 - eo(p(u, 1.4, 1.7))) * -20).toFixed(1)}px)` });
+      } },
+    { ad: 'teklif', sure: 3.8, katman: 'ui', eb: 'TEKLİF', h: 'SGK payı düşülmüş fiyat, <span class="k">müşterinin önünde.</span>',
+      ses: 'Se ge ka payı düşülmüş teklif, müşterinin önünde.',
+      ciz(u) {
+        gorunum('vTeklif', p(u, 0, 0.25));
+        ['tk0', 'tk1', 'tk2'].forEach((id, i) => {
+          const el = $(id), q = eo(p(u, 0.2 + i * 0.14, 0.7 + i * 0.14));
+          el.style.opacity = q * (i !== 1 ? 1 - 0.45 * p(u, 1.9, 2.2) : 1);
+          el.style.transform = `translateY(${((1 - q) * 70).toFixed(1)}px) scale(${i === 1 ? (1 + 0.035 * eo(p(u, 1.9, 2.2))).toFixed(3) : 1})`;
+          el.querySelector('.eski i').style.transform = `scaleX(${eio(p(u, 1.05 + i * 0.1, 1.45 + i * 0.1))})`;
+          el.querySelector('.sgk').style.opacity = eo(p(u, 0.95 + i * 0.1, 1.25 + i * 0.1));
+          const y = el.querySelector('.yeni'), yq = eo(p(u, 1.35 + i * 0.1, 1.7 + i * 0.1));
+          y.style.opacity = yq; y.style.transform = `translateY(${((1 - yq) * 16).toFixed(1)}px)`;
+          el.style.borderColor = i === 1 && u > 1.9 ? '#e0435f' : '#2f2528';
+        });
+        document.querySelector('#tk1 .onr').style.opacity = p(u, 1.95, 2.15);
+        const st = p(u, 2.5, 2.75);
+        css($('tamam'), { opacity: st > 0 ? Math.min(1, st * 1.5) : 0, transform: `rotate(-12deg) scale(${(1.7 - 0.7 * eo(st)).toFixed(3)})` });
+      } },
+    { ad: 'pano', sure: 3.8, katman: 'ui', eb: 'ATÖLYE PANOSU', h: 'Cam geldi mi? <span class="k">Pano söyler.</span>',
+      ses: 'Sipariş atölyeye düşer. Cam gelince pano haber verir.',
+      ciz(u) {
+        gorunum('vPano', p(u, 0, 0.25));
+        const SUT = [16, 327, 638];
+        const a1 = eio(p(u, 0.75, 1.35)), a2 = eio(p(u, 2.35, 2.95));
+        const bx = lerp(lerp(SUT[0], SUT[1], a1), SUT[2], a2), by = lerp(lerp(84, 368, a1), 226, a2);
+        const kalk = Math.sin(Math.PI * a1) * 30 + Math.sin(Math.PI * a2) * 30;
+        css($('bizim'), { left: bx.toFixed(1) + 'px', top: (by - kalk).toFixed(1) + 'px', transform: `rotate(${(a1 > 0 && a1 < 1) || (a2 > 0 && a2 < 1) ? 3 : 0}deg)` });
+        $('cip').style.opacity = eo(p(u, 1.6, 1.85));
+        const alt = $('bizim').querySelector('.alt');
+        if (u > 3.0) { alt.textContent = 'Hazır · mesaj gitti'; alt.className = 'alt durum'; alt.style.opacity = p(u, 3.0, 3.25); }
+        else { alt.textContent = 'Mavi ışık 1.60'; alt.className = 'alt'; alt.style.opacity = 1; }
+        $('say1').textContent = a1 > 0.5 ? '1' : '2'; $('say2').textContent = a1 > 0.5 && a2 < 0.5 ? '3' : '2'; $('say3').textContent = a2 > 0.5 ? '2' : '1';
+      } },
+    { ad: 'mesaj', sure: 3.4, katman: 'ev', eb: '2 GÜN SONRA', h: 'Gözlük hazır. Haber, <span class="k">müşterinin telefonunda.</span>',
+      ses: 'Gözlük hazır olunca müşteriye mesaj gider.',
+      ciz(u) {
+        kisi('ayse', { t: u, x: 770, tel: 1, titre: u > 0.35 && u < 0.95, kafa: 4, gul: lerp(6, 18, eo(p(u, 1.2, 1.8))), kirp: [0.6] });
+        bildirim(eo(p(u, 0.65, 1.1)), { baslik: 'Örnek Optik', metin: 'Merhaba Ayşe Hanım, 00128 numaralı gözlüğünüz hazır. Dilediğiniz zaman Örnek Optik\'ten teslim alabilirsiniz.', link: 'Sipariş durumu › optiflow.com.tr/t/…' });
+      } },
+    { ad: 'teslim', sure: 2.6, katman: 'dukkan', eb: 'TESLİM', h: 'Telefon çalmadan, <span class="k">defter açılmadan.</span>',
+      ses: 'Telefon çalmadan, defter açılmadan teslim.',
+      ciz(u) {
+        dukkan({ t: u + 9, sag: lerp(-8, -62, eo(p(u, 0, 0.5))), gul: 1.3, kirp: [1.6], saat: [11, 5] });
+        kisi('ayse', { t: u, x: 720, gozluk: eo(p(u, 0.1, 0.5)), gul: 18, kirp: [1.1], par: u > 0.3 && u < 1.6 ? Math.sin(p(u, 0.3, 1.6) * Math.PI) : 0 });
+        damga(p(u, 0.7, 0.95), { metin: 'TESLİM EDİLDİ', x: 330, y: 1250 });
+      } },
+    { ad: 'son', sure: 3.6, son: true, ses: 'Optiflo. Otuz gün ücretsiz deneyin.' },
+  ],
 });
-
-function altyazi(t) {
-  CAP.forEach(([id, a, b], idx) => {
-    const el = $(id);
-    const son = idx === CAP.length - 1 ? b : b;
-    const cik = p(t, son - 0.3, son);
-    const gir = idx === 0 ? 1 : p(t, a - 0.05, a + 0.2);
-    const v = t >= a - 0.1 && t <= b ? Math.min(gir, 1 - cik) : 0;
-    el.style.opacity = v;
-    el.style.transform = `translateY(${-24 * eo(cik)}px)`;
-    el.querySelectorAll('.w').forEach((w, i) => {
-      const q = eo(p(t, a + 0.08 + i * 0.07, a + 0.5 + i * 0.07));
-      w.style.opacity = q;
-      w.style.transform = `translateY(${(1 - q) * 46}px)`;
-    });
-  });
-  // eskiden: üç sözcük çizilir
-  $('c2').querySelectorAll('.s i').forEach((i, k) => {
-    i.style.transform = `scaleX(${eio(p(t, 4.3 + k * 0.45, 4.7 + k * 0.45))})`;
-  });
-}
-
-/* müşteri pozu */
-function musteri(t) {
-  const g = $('musteri');
-  let x = 1180, y = 900, yuruyor = 0, sahne = 'dukkan', telefon = 0, gozluk = 0, gul = 0, op = 1;
-  if (t < 6.2) {
-    const w = eio(p(t, 0.25, 2.7));
-    x = lerp(1180, 720, w);
-    yuruyor = t > 0.25 && t < 2.7 ? 1 : 0;
-    gul = lerp(4, 10, p(t, 3.3, 3.8));
-  } else if (t < 18.4) {
-    op = 0;
-  } else if (t < 21.8) {
-    sahne = 'ev'; x = 770; y = 900; telefon = 1;
-    gul = lerp(6, 18, eo(p(t, 19.6, 20.2)));
-  } else {
-    x = 720; gozluk = eo(p(t, 21.9, 22.3)); gul = 18;
-  }
-  const faz = t * 2 * Math.PI * 1.7;
-  const salla = yuruyor ? Math.sin(faz) : 0;
-  const zip = yuruyor ? Math.abs(Math.sin(faz)) * 10 : 0;
-  at(g, 'transform', `translate(${x.toFixed(1)} ${(y - zip).toFixed(1)})`);
-  $('musteriSvg').style.opacity = op;
-  at($('mBacakSol'), 'transform', `translate(-26 -212) rotate(${(salla * 16).toFixed(2)})`);
-  at($('mBacakSag'), 'transform', `translate(26 -212) rotate(${(-salla * 16).toFixed(2)})`);
-  let ks = -salla * 12, kd = salla * 12;
-  if (telefon) { ks = -21; kd = 21; }
-  at($('mKolSol'), 'transform', `translate(-82 -428) rotate(${ks.toFixed(2)})`);
-  at($('mKolSag'), 'transform', `translate(82 -428) rotate(${kd.toFixed(2)})`);
-  // telefon titreşimi
-  const tit = telefon && t > 18.75 && t < 19.35 ? Math.sin(t * 90) * 5 : 0;
-  $('mTelefon').style.opacity = telefon;
-  at($('mTelefon'), 'transform', `translate(${tit.toFixed(1)} -262)`);
-  $('mGozluk').style.opacity = gozluk;
-  $('parilti').style.opacity = t > 22.1 && t < 23.4 ? Math.sin(p(t, 22.1, 23.4) * Math.PI) : 0;
-  at($('mAgiz'), 'd', `M-18 28 Q0 ${(28 + gul).toFixed(1)} 18 28`);
-  // göz kırpma
-  const kirp = [1.4, 4.1, 7.0, 19.0, 22.9].some((k) => t > k && t < k + 0.13) ? 0.12 : 1;
-  at($('mGoz'), 'transform', `translate(0 ${(1 - kirp) * 0}) scale(1 ${kirp})`);
-  // kafa hafif bakış
-  at($('mKafa'), 'transform', `translate(0 -556) rotate(${(telefon ? 4 : -3).toFixed(1)})`);
-  return sahne;
-}
-
-function optisyen(t) {
-  let sol = 8, sag = -8;
-  const sel = p(t, 1.6, 3.2);
-  if (sel > 0 && sel < 1) sag = -150 + Math.sin(sel * Math.PI * 5) * 18;
-  if (t > 21.8) { sag = lerp(-8, -62, eo(p(t, 21.8, 22.3))); }
-  at($('oKolSol'), 'transform', `translate(-98 -168) rotate(${sol})`);
-  at($('oKolSag'), 'transform', `translate(98 -168) rotate(${sag.toFixed(2)})`);
-  const kirp = [2.2, 5.3, 23.4].some((k) => t > k && t < k + 0.13) ? 0.12 : 1;
-  at($('oGoz'), 'transform', `translate(0 ${(2 - 2 * kirp).toFixed(2)}) scale(1 ${kirp})`);
-  at($('oAgiz'), 'd', `M-16 28 Q0 ${t > 1.4 ? 42 : 36} 16 28`);
-}
-
-function dukkan(t) {
-  // kapı ve zil
-  const ac = eo(p(t, 0.05, 0.55)) * (1 - eio(p(t, 2.3, 2.9)));
-  const sx = 1 - 0.86 * ac;
-  at($('kapiKanat'), 'transform', `translate(1034 0) scale(${sx.toFixed(3)} 1) translate(-1034 0)`);
-  const zilA = t < 2.2 ? Math.sin(t * 22) * 22 * (1 - p(t, 0, 2.2)) : 0;
-  at($('zil'), 'transform', `translate(1012 214) rotate(${zilA.toFixed(2)})`);
-  $('dinn').style.opacity = t > 0.15 && t < 1.3 ? (Math.sin(t * 18) > 0 ? 1 : 0.35) : 0;
-  optisyen(t);
-  // monitöre yakınlaşma
-  const z = t < 7 ? eio(p(t, 6.0, 6.75)) : 0;
-  const d = $('dukkan');
-  d.style.transform = `scale(${(1 + z * 5).toFixed(3)})`;
-  // görünürlük
-  let op = 0;
-  if (t < 6.75) op = 1 - p(t, 6.45, 6.75);
-  if (t >= 21.6) op = p(t, 21.6, 21.95);
-  d.style.opacity = op;
-  // balon
-  const b = $('balon');
-  const bg = gor(t, 3.45, 6.0, 0.25);
-  css(b, { opacity: bg, left: '250px', top: '120px', transform: `scale(${(0.85 + 0.15 * geri(p(t, 3.45, 3.8))).toFixed(3)})`, transformOrigin: '90% 110%' });
-}
-
-function ev(t) {
-  $('ev').style.opacity = t > 18.3 && t < 21.95 ? Math.min(p(t, 18.3, 18.6), 1 - p(t, 21.6, 21.95)) : 0;
-  const n = $('bildirim');
-  const q = eo(p(t, 19.05, 19.5));
-  css(n, { opacity: Math.min(q, 1 - p(t, 21.4, 21.7)), transform: `translateY(${((1 - q) * -120).toFixed(1)}px) scale(${(0.96 + 0.04 * q).toFixed(3)})` });
-}
-
-/* uygulama */
-const IMLEC = [[720, 760], [835, 46]];
-function ui(t) {
-  const u = $('ui');
-  const gir = eo(p(t, 6.35, 6.95));
-  const cik = eio(p(t, 18.1, 18.5));
-  const v = t < 6.3 || t > 18.5 ? 0 : Math.min(gir, 1 - cik);
-  css(u, { opacity: v, transform: `scale(${(0.55 + 0.45 * gir - 0.08 * cik).toFixed(3)})` });
-
-  // görünümler
-  $('vSiparis').style.opacity = 1 - p(t, 10.7, 10.95);
-  $('vTeklif').style.opacity = Math.min(p(t, 10.8, 11.05), 1 - p(t, 14.5, 14.75));
-  $('vPano').style.opacity = p(t, 14.6, 14.85);
-
-  // imleç → Reçeteyi aktar
-  const im = $('imlec');
-  const m = eio(p(t, 6.9, 7.55));
-  const ix = lerp(IMLEC[0][0], IMLEC[1][0], m), iy = lerp(IMLEC[0][1], IMLEC[1][1], m);
-  const basildi = t > 7.6 && t < 7.8;
-  css(im, { opacity: gor(t, 6.85, 8.6, 0.2), transform: `translate(${ix}px, ${iy}px) scale(${basildi ? 0.85 : 1})` });
-  $('aktar').style.transform = `scale(${basildi ? 0.95 : 1})`;
-  const dg = p(t, 7.62, 8.2);
-  css($('dalga'), { opacity: dg > 0 && dg < 1 ? 1 - dg : 0, transform: `scale(${(dg * 12).toFixed(2)})` });
-
-  // değerler akar
-  const no = '4KD7Q2M';
-  const nq = p(t, 7.85, 8.35);
-  $('erecNo').textContent = no.slice(0, Math.round(nq * no.length));
-  $('dok').textContent = t > 9.0 ? 'Dr. E. Kaya · bugün' : '';
-  $('dok').style.opacity = p(t, 9.0, 9.3);
-  $('rx').querySelectorAll('.c').forEach((c, i) => {
-    const a = 8.05 + i * 0.12;
-    const q = eo(p(t, a, a + 0.25));
-    c.querySelector('.ph').style.opacity = 1 - q;
-    const val = c.querySelector('.val');
-    val.style.opacity = q;
-    val.style.transform = `translateY(${((1 - q) * 18).toFixed(1)}px)`;
-    c.querySelector('.fl').style.opacity = (q > 0 ? 0.55 * (1 - p(t, a + 0.1, a + 0.7)) : 0).toFixed(3);
-    c.style.borderColor = q > 0 && t < a + 0.8 ? '#e0435f' : '#2f2528';
-  });
-  const tq = gor(t, 8.1, 10.6, 0.25);
-  css($('toast'), { opacity: tq, transform: `translateY(${((1 - eo(p(t, 8.1, 8.4))) * -20).toFixed(1)}px)` });
-
-  // teklif
-  ['tk1', 'tk2', 'tk3'].forEach((id, i) => {
-    const el = $(id);
-    const q = eo(p(t, 11.0 + i * 0.14, 11.5 + i * 0.14));
-    el.style.opacity = q;
-    el.style.transform = `translateY(${((1 - q) * 70).toFixed(1)}px) scale(${id === 'tk2' ? (1 + 0.035 * eo(p(t, 12.7, 13.0))).toFixed(3) : 1})`;
-    const s = p(t, 11.85 + i * 0.1, 12.25 + i * 0.1);
-    el.querySelector('.eski i').style.transform = `scaleX(${eio(s)})`;
-    el.querySelector('.sgk').style.opacity = eo(p(t, 11.75 + i * 0.1, 12.05 + i * 0.1));
-    const y = el.querySelector('.yeni');
-    const yq = eo(p(t, 12.15 + i * 0.1, 12.5 + i * 0.1));
-    y.style.opacity = yq;
-    y.style.transform = `translateY(${((1 - yq) * 16).toFixed(1)}px)`;
-    el.style.borderColor = id === 'tk2' && t > 12.7 ? '#e0435f' : '#2f2528';
-    if (id !== 'tk2') el.style.opacity = q * (1 - 0.45 * p(t, 12.7, 13.0));
-  });
-  $('onr').style.opacity = p(t, 12.75, 12.95);
-  const st = p(t, 13.3, 13.55);
-  css($('tamam'), { left: '330px', top: '330px', opacity: st > 0 ? Math.min(1, st * 1.5) : 0, transform: `rotate(-12deg) scale(${(1.7 - 0.7 * eo(st)).toFixed(3)})` });
-
-  // pano: kart sütunlar arasında yürür
-  const SUT = [16, 327, 638];
-  const a1 = eio(p(t, 15.35, 15.95)), a2 = eio(p(t, 16.95, 17.55));
-  let bx = lerp(lerp(SUT[0], SUT[1], a1), SUT[2], a2);
-  let by = lerp(lerp(84, 368, a1), 226, a2);
-  const kalk = Math.sin(Math.PI * a1) * 30 + Math.sin(Math.PI * a2) * 30;
-  css($('bizim'), { left: `${bx.toFixed(1)}px`, top: `${(by - kalk).toFixed(1)}px`, transform: `rotate(${((a1 > 0 && a1 < 1) || (a2 > 0 && a2 < 1) ? 3 : 0)}deg)` });
-  $('cip').style.opacity = eo(p(t, 16.2, 16.45));
-  const alt = $('bizim').querySelector('.alt');
-  if (t > 17.6) { alt.textContent = 'Hazır · mesaj gitti'; alt.className = 'alt durum'; alt.style.opacity = p(t, 17.6, 17.85); }
-  else { alt.textContent = 'Mavi ışık 1.60'; alt.className = 'alt'; alt.style.opacity = 1; }
-  $('say1').textContent = a1 > 0.5 ? '1' : '2';
-  $('say2').textContent = a1 > 0.5 && a2 < 0.5 ? '3' : '2';
-  $('say3').textContent = a2 > 0.5 ? '2' : '1';
-}
-
-function teslim(t) {
-  const q = p(t, 22.5, 22.75);
-  css($('teslim'), { opacity: q > 0 ? Math.min(1, q * 1.6) * (1 - p(t, 23.9, 24.2)) : 0, transform: `rotate(-10deg) scale(${(1.8 - 0.8 * eo(q)).toFixed(3)})` });
-}
-
-function kapanis(t) {
-  const s = $('son');
-  const g = eo(p(t, 24.05, 24.5));
-  s.style.opacity = g;
-  $('nisan').style.transform = `rotate(${(t * 6).toFixed(2)}deg) scale(${(0.9 + 0.1 * g).toFixed(3)})`;
-  const l = geri(p(t, 24.3, 24.85));
-  $('sonLogo').style.transform = `scale(${l.toFixed(3)}) rotate(${((1 - l) * -40).toFixed(1)}deg)`;
-  $('sonLogo').style.opacity = p(t, 24.3, 24.5);
-  const k = eo(p(t, 24.6, 25.0));
-  css($('sonKel'), { opacity: k, transform: `translateY(${((1 - k) * 30).toFixed(1)}px)` });
-  const ko = eo(p(t, 25.0, 25.4));
-  css($('koken'), { opacity: ko, transform: `translateY(${((1 - ko) * 24).toFixed(1)}px)` });
-  $('kokenCiz').style.transform = `scaleX(${eio(p(t, 25.55, 25.95))})`;
-  const c = geri(p(t, 26.0, 26.4));
-  css($('cta'), { opacity: p(t, 26.0, 26.15), transform: `scale(${c.toFixed(3)})` });
-  css($('url'), { opacity: p(t, 26.3, 26.6) });
-  $('kunye').style.opacity = 1 - p(t, 24.0, 24.3);
-}
-
-function ciz(t) {
-  altyazi(t);
-  musteri(t);
-  dukkan(t);
-  ev(t);
-  ui(t);
-  teslim(t);
-  kapanis(t);
-}
-window.ciz = ciz;
-window.SURE = SURE;
-
-if (!/cek=1/.test(location.search)) {
-  const bas = performance.now();
-  const dongu = () => { ciz(((performance.now() - bas) / 1000) % SURE); requestAnimationFrame(dongu); };
-  requestAnimationFrame(dongu);
-} else {
-  ciz(0);
-}
 </script>
 </body>
 </html>

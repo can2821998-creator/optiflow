@@ -2,6 +2,8 @@
 
 *Son güncelleme: 23 Ekim 2026 (4.48.0 canlıda / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
+**Instagram filmi (23.10):** `docs/tanitim-video/` — ilk Reels "Bir müşteri geldi" (27,5 sn, karakterli mağaza + gerçek arayüz, uydurma veri); `cek.mjs` ile kare kare MP4. Kullanıcı geri bildirimi bekleniyor; sıradaki film fikirleri README'de.
+
 **Sunucu taşındı (23.10, ~16:50 canlı):** TürkTicaret paylaşımlı Plesk → kiralık sunucu (Plesk Obsidian, Administrator).
 Rehber `docs/SUNUCU-TASIMA.md`. DNS (TürkTicaret paneli) A `optiflow.com.tr` → yeni IP; www/ftp CNAME; MX/mail TürkTicaret'te
 kaldı. DB'ler localhost2 (merkez) + poyrazoptik, kullanıcı `optiflowdb`; magazalar satırı phpMyAdmin'den, config kurulum.php

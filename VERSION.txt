@@ -1,6 +1,16 @@
 OPTIFLOW
-Release: 4.43.0 (2026-10-23)
+Release: 4.44.0 (2026-10-23)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.44.0 (Zarfsız atölye: adım parafı, kutu / raf; şema 36)
+  - İş emrindeki "Adım · Tamam · Paraf · Saat" tablosu ekranda: siparişte "İş kartı" (01 Cam geldi · 02 Kesim · 03 Montaj ·
+    04 Kontrol PD/aks · 05 Müşteriye haber). Sıradaki adımın düğmesi kendi satırında; paraf = giriş yapan + saat.
+  - Adımlar aşamayı yürütür: Montaj → kalite kontrol (atanmamışsa montajcıya yazılır), Kontrol → Hazır (kutu / raf zorunlu,
+    boş en küçük numara önerilir), Haber → hazırdaki işe not. Son adım geri alınabilir (atan kişi ya da yönetici).
+  - Kutu / raf (orders.raf_yeri): zarfın yerine işi taşıyan numaralı kutu; panoda kartın köşesinde, iş emri fişinde.
+  - Atölye panosu: kartlarda paraflar ve sıradaki adım düğmesi; sürükle-bırak da paraf izi bırakır, Hazır'a bırakmak raf ister.
+  - Göç v36: atolye_adimlari tablosu + orders.raf_yeri. Elle aşama geri alınınca eski paraflar silinir.
+  - Test: tests/atolye/test.php (45).
 
 DEĞİŞİKLİK NOTLARI — 4.43.0 (Yalın arayüz 1: görev odaklı iskelet)
   - Menü 34 bağlantıdan 6 bölüme indi: Tezgâh, Siparişler, Atölye, Müşteriler, Kasa, Yönetim (yetkisizde "Diğer").

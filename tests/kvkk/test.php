@@ -57,6 +57,6 @@ foreach (['app/pages/masaustu.php', 'app/pages/sgk-aktar.php'] as $f) {
 }
 ok(!str_contains((string) file_get_contents("$kok/app/pages/sgk-aktar.php"), "\$cozum['tc']"), 'aktarım ekranı T.C. göstermez');
 $goc = (string) file_get_contents("$kok/app/migrations.php");
-ok(str_contains($goc, 'const SCHEMA_VERSION = 35;') && str_contains($goc, 'migrate_v35_tc_maskele()'), 'göç v35 bağlı');
+ok(preg_match('/const SCHEMA_VERSION = (3[5-9]|[4-9][0-9]);/', $goc) === 1 && str_contains($goc, 'migrate_v35_tc_maskele()'), 'göç v35 bağlı');
 
 bitir();

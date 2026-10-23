@@ -8,7 +8,7 @@ $staffNames = array_column($staff, 'full_name', 'id');
 
 /* ---------- 1) Cam bekliyor ---------- */
 $waiting = rows(
-    "SELECT o.id, o.order_stage, o.created_at, o.promised_date, c.first_name, c.last_name,
+    "SELECT o.id, o.order_stage, o.created_at, o.promised_date, o.raf_yeri, c.first_name, c.last_name,
             (SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id
               WHERE r.order_id = o.id AND i.stock_status <> 'stokta_var') AS missing
      FROM orders o JOIN customers c ON c.id = o.customer_id
@@ -18,7 +18,7 @@ $waiting = rows(
 
 /* ---------- 2) Montajda ---------- */
 $montajda = rows(
-    "SELECT o.id, o.created_at, o.promised_date, o.assigned_to, o.own_frame_pending, c.first_name, c.last_name
+    "SELECT o.id, o.order_stage, o.workshop_stage, o.raf_yeri, o.created_at, o.promised_date, o.assigned_to, o.own_frame_pending, c.first_name, c.last_name
      FROM orders o JOIN customers c ON c.id = o.customer_id
      WHERE o.order_stage = 'atolyede' AND (o.workshop_stage IS NULL OR o.workshop_stage = 'montajda') AND o.transaction_type <> 'tamir'
      ORDER BY o.own_frame_pending DESC, o.promised_date IS NULL, o.promised_date ASC, o.created_at ASC LIMIT 60"
@@ -26,7 +26,7 @@ $montajda = rows(
 
 /* ---------- 3) Kontrolde ---------- */
 $kontrol = rows(
-    "SELECT o.id, o.created_at, o.promised_date, o.assigned_to, c.first_name, c.last_name
+    "SELECT o.id, o.order_stage, o.workshop_stage, o.raf_yeri, o.created_at, o.promised_date, o.assigned_to, c.first_name, c.last_name
      FROM orders o JOIN customers c ON c.id = o.customer_id
      WHERE o.order_stage = 'atolyede' AND o.workshop_stage = 'kontrol' AND o.transaction_type <> 'tamir'
      ORDER BY o.promised_date IS NULL, o.promised_date ASC, o.created_at ASC LIMIT 60"
@@ -35,7 +35,7 @@ $kontrol = rows(
 /* ---------- 4) Hazır (teslim bekleyen) ---------- */
 $hazirTotal = (int) scalar("SELECT COUNT(*) FROM orders WHERE order_stage = 'hazirlandi' AND transaction_type <> 'tamir'");
 $hazir = rows(
-    "SELECT o.id, o.created_at, c.first_name, c.last_name, c.phone
+    "SELECT o.id, o.order_stage, o.raf_yeri, o.created_at, o.updated_at, c.first_name, c.last_name, c.phone
      FROM orders o JOIN customers c ON c.id = o.customer_id
      WHERE o.order_stage = 'hazirlandi' AND o.transaction_type <> 'tamir'
      ORDER BY o.updated_at ASC LIMIT 20"
@@ -82,6 +82,51 @@ $pendingQuotes = (int) scalar('SELECT COUNT(*) FROM quotes WHERE converted_order
 $pendingInvoices = (int) scalar('SELECT COUNT(*) FROM supplier_deliveries WHERE invoice_id IS NULL');
 
 $today = date('Y-m-d');
+
+/* 4.44.0 zarfsız atölye: kartlarda kutu numarası, atılmış adımların parafı, sıradaki adımın düğmesi */
+$paraflar = atolye_adimlari_toplu(array_column(array_merge($montajda, $kontrol, $hazir), 'id'));
+
+
+function wf_kutu(?string $raf): string
+{
+    return $raf !== null && $raf !== '' ? '<span class="kutu-rozet" title="Kutu / raf">' . e($raf) . '</span>' : '';
+}
+
+/** Kartın paraf satırı: "Kesim DY 14:20 · Montaj …" (yalnız atılmış adımlar). */
+function wf_paraflar(array $adimlar): string
+{
+    $parca = [];
+    foreach ($adimlar as $k => $a) {
+        $parca[] = '<span><b>' . e(ATOLYE_ADIMLARI[$k] ?? $k) . '</b> ' . e(atolye_damga($a)) . '</span>';
+    }
+    return $parca ? '<p class="kart-paraf">' . implode('', $parca) . '</p>' : '';
+}
+
+/** Sıradaki adımın düğmesi (pano dönüşlü). */
+function wf_adim_formu(array $o, array $adimlar): string
+{
+    $k = atolye_siradaki($o, $adimlar);
+    if ($k === '') {
+        return '';
+    }
+    $h = '<form method="post" action="order.php" class="pano-actions">' . csrf_field()
+        . '<input type="hidden" name="order_id" value="' . (int) $o['id'] . '"><input type="hidden" name="return" value="pano">'
+        . '<input type="hidden" name="action" value="atolye_adim"><input type="hidden" name="adim" value="' . e($k) . '">';
+    if ($k === 'kontrol') {
+        static $onerilen = [];   // panodaki her işe ayrı boş kutu önerilir
+        if (!$o['raf_yeri']) {
+            $onerilen[] = atolye_bos_kutu($onerilen);
+        }
+        $h .= '<label class="kart-raf"><span>Raf</span><input class="kutu-gir" name="raf_yeri" value="' . e((string) ($o['raf_yeri'] ?: end($onerilen))) . '" maxlength="20" required aria-label="Hazır gözlüğün kutusu / rafı" autocomplete="off"></label>';
+    }
+    $etiket = match ($k) {
+        'kesim'   => 'Kesim tamam',
+        'montaj'  => 'Montaj tamam',
+        'kontrol' => 'Kontrol tamam',
+        default   => 'Haber verildi',
+    };
+    return $h . '<button class="btn btn-sm ' . ($k === 'haber' ? '' : 'btn-primary ') . 'btn-block">' . icon('check') . ' ' . $etiket . '</button></form>';
+}
 
 function wf_promised(?string $promisedDate): string
 {
@@ -139,6 +184,7 @@ page_start('Atölye panosu', 'workshop');
       <?php endif; ?>
       <?php foreach ($waiting as $o): $days = days_since($o['created_at']); ?>
         <a class="pano-card" href="order.php?id=<?= (int) $o['id'] ?>">
+          <?= wf_kutu($o['raf_yeri']) ?>
           <b><?= e($o['first_name'] . ' ' . $o['last_name']) ?></b>
           <small><?= order_no((int) $o['id']) ?> · <?= stage_label($o['order_stage']) ?></small>
           <div class="pano-card-foot">
@@ -163,8 +209,10 @@ page_start('Atölye panosu', 'workshop');
       <?php foreach ($montajda as $o): $framePending = (int) $o['own_frame_pending'] === 1; $overdue = days_overdue($o['promised_date']); ?>
         <div class="pano-card <?= $framePending ? 'pano-card-alert' : '' ?> <?= $overdue ? 'pano-card-late' : '' ?>" data-order-id="<?= (int) $o['id'] ?>" data-from="montajda">
           <?php if (!$framePending): ?><span class="drag-handle" draggable="true" title="Sürükleyerek taşı"><?= icon('menu') ?></span><?php endif; ?>
+          <?= wf_kutu($o['raf_yeri']) ?>
           <a href="order.php?id=<?= (int) $o['id'] ?>"><b><?= e($o['first_name'] . ' ' . $o['last_name']) ?></b>
           <small><?= order_no((int) $o['id']) ?><?= wf_promised($o['promised_date']) ?></small></a>
+          <?= wf_paraflar($paraflar[(int) $o['id']] ?? []) ?>
           <div class="pano-card-foot">
             <?php if ($framePending): ?>
               <span class="badge sm tone-amber">⚠ Çerçeve bekleniyor</span>
@@ -178,11 +226,7 @@ page_start('Atölye panosu', 'workshop');
               <button class="btn btn-primary btn-sm btn-block">Çerçeve geldi</button>
             </form>
           <?php else: ?>
-            <form method="post" action="order.php" class="pano-actions" data-form="move">
-              <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= (int) $o['id'] ?>">
-              <input type="hidden" name="action" value="workshop_move"><input type="hidden" name="return" value="pano">
-              <button class="btn btn-sm btn-block" name="to" value="kontrol">Kontrole gönder</button>
-            </form>
+            <?= wf_adim_formu($o, $paraflar[(int) $o['id']] ?? []) ?>
           <?php endif; ?>
         </div>
       <?php endforeach; ?>
@@ -201,17 +245,11 @@ page_start('Atölye panosu', 'workshop');
       <?php foreach ($kontrol as $o): $overdue = days_overdue($o['promised_date']); ?>
         <div class="pano-card <?= $overdue ? 'pano-card-late' : '' ?>" data-order-id="<?= (int) $o['id'] ?>" data-from="kontrol">
           <span class="drag-handle" draggable="true" title="Sürükleyerek taşı"><?= icon('menu') ?></span>
+          <?= wf_kutu($o['raf_yeri']) ?>
           <a href="order.php?id=<?= (int) $o['id'] ?>"><b><?= e($o['first_name'] . ' ' . $o['last_name']) ?></b>
           <small><?= order_no((int) $o['id']) ?><?= wf_promised($o['promised_date']) ?></small></a>
-          <div class="pano-card-foot">
-            <span class="badge sm tone-gray"><?= $o['assigned_to'] ? e($staffNames[$o['assigned_to']] ?? '—') : 'Atanmadı' ?></span>
-          </div>
-          <form method="post" action="order.php" class="pano-actions" data-form="move">
-            <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= (int) $o['id'] ?>">
-            <input type="hidden" name="action" value="workshop_move"><input type="hidden" name="return" value="pano">
-            <button class="btn btn-sm" name="to" value="montajda">← Geri</button>
-            <button class="btn btn-primary btn-sm" name="to" value="hazir"><?= icon('check') ?> Hazır</button>
-          </form>
+          <?= wf_paraflar($paraflar[(int) $o['id']] ?? []) ?>
+          <?= wf_adim_formu($o, $paraflar[(int) $o['id']] ?? []) ?>
         </div>
       <?php endforeach; ?>
     </div>
@@ -226,14 +264,17 @@ page_start('Atölye panosu', 'workshop');
       <?php if (!$hazir): ?>
         <p class="pano-empty">Teslim bekleyen sipariş yok.</p>
       <?php endif; ?>
-      <?php foreach ($hazir as $o): $days = days_since($o['created_at']); ?>
-        <a class="pano-card" href="order.php?id=<?= (int) $o['id'] ?>">
-          <b><?= e($o['first_name'] . ' ' . $o['last_name']) ?></b>
-          <small><?= order_no((int) $o['id']) ?><?= $o['phone'] ? ' · ' . e(phone_display($o['phone'])) : '' ?></small>
+      <?php foreach ($hazir as $o): $days = days_since($o['created_at']); $haber = $paraflar[(int) $o['id']]['haber'] ?? null; ?>
+        <div class="pano-card">
+          <?= wf_kutu($o['raf_yeri']) ?>
+          <a href="order.php?id=<?= (int) $o['id'] ?>"><b><?= e($o['first_name'] . ' ' . $o['last_name']) ?></b>
+          <small><?= order_no((int) $o['id']) ?><?= $o['phone'] ? ' · ' . e(phone_display($o['phone'])) : '' ?></small></a>
           <div class="pano-card-foot">
             <span class="badge sm <?= $days >= 15 ? 'tone-red' : 'tone-gray' ?>"><?= $days ?> gündür hazır</span>
+            <?php if ($haber): ?><span class="badge sm tone-green" title="<?= e($haber['ad']) ?>">Haber · <?= e(atolye_damga($haber)) ?></span><?php endif; ?>
           </div>
-        </a>
+          <?= $haber ? '' : wf_adim_formu($o, $paraflar[(int) $o['id']] ?? []) ?>
+        </div>
       <?php endforeach; ?>
     </div>
     <a class="pano-more" href="index.php?durum=hazir">Tümünü gör →</a>

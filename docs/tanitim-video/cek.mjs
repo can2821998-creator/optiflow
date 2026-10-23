@@ -2,6 +2,7 @@
 //   node docs/tanitim-video/cek.mjs <film.html> <cikti.mp4> [--fps 30] [--kare 3.5,8.2] [--ses <klasör>] [--sesjson <ses.json>]
 //   --kare     : yalnızca o saniyelerin PNG'leri (hızlı kontrol)
 //   --ses      : <sahne-adı>.wav dosyalarının klasörü; sahneler ses süresine göre uzar, ses sahne başına yerleşir
+//   --muzik    : fon müziği dosyası; konuşmada kısılır (--muzik-seviye 0.42, --muzik-bas 1.2 sn baş kırpma)
 //   --tempo    : seslendirme hız çarpanı (varsayılan 1.06; perdeyi bozmaz)
 //   --sesjson  : filmin seslendirme metinlerini ses.json olarak yazar (Seslendir iş akışı bunu okur) ve çıkar
 // Gerekenler: Node 18+, playwright (Chromium), ffmpeg/ffprobe.
@@ -20,6 +21,8 @@ const fps = Number(deger('--fps', 30));
 const kareler = deger('--kare', '');
 const sesKlasor = deger('--ses', '');
 const sesJson = deger('--sesjson', '');
+const muzik = deger('--muzik', '');          // fon müziği (isteğe bağlı): konuşmada kısılır, sonu filmin sonuna denk gelir
+const muzikSeviye = Number(deger('--muzik-seviye', 0.42));
 
 // Ses ön işleme: baştaki/sondaki sessizlik kırpılır, cümle arası duraklar 0,22 sn'ye iner, hafif hızlandırılır (--tempo).
 const tempo = Number(deger('--tempo', 1.06));
@@ -78,17 +81,37 @@ const ff = (a) => new Promise((ok, hata) => {
   const f = spawn('ffmpeg', ['-y', '-loglevel', 'error', ...a], { stdio: 'inherit' });
   f.on('exit', (k) => (k === 0 ? ok() : hata(new Error('ffmpeg ' + k))));
 });
-const video = sesKlasor ? path.join(klasor, 'v.mp4') : cikti;
+const video = sesKlasor || muzik ? path.join(klasor, 'v.mp4') : cikti;
 await ff(['-framerate', String(fps), '-i', path.join(klasor, 'k%05d.png'), '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
   '-crf', '17', '-preset', 'slow', '-movflags', '+faststart', video]);
 
-if (sesKlasor) {
-  const parca = SES.filter((s) => existsSync(path.join(sesIsli, s.id + '.wav')));
+if (sesKlasor || muzik) {
+  const parca = sesKlasor ? SES.filter((s) => existsSync(path.join(sesIsli, s.id + '.wav'))) : [];
   const girdi = parca.flatMap((s) => ['-i', path.join(sesIsli, s.id + '.wav')]);
-  const filtre = parca.map((s, i) => `[${i + 1}:a]aresample=48000,adelay=${Math.round(s.t * 1000)}:all=1[a${i}]`).join(';')
-    + ';' + parca.map((_, i) => `[a${i}]`).join('') + `amix=inputs=${parca.length}:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11,apad[ses]`;
-  await ff(['-i', video, ...girdi, '-filter_complex', filtre, '-map', '0:v', '-map', '[ses]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-    '-shortest', '-movflags', '+faststart', cikti]);
+  let filtre = parca.map((s, i) => `[${i + 1}:a]aresample=48000,adelay=${Math.round(s.t * 1000)}:all=1[a${i}]`).join(';');
+  const L = sure;
+  if (parca.length) filtre += ';' + parca.map((_, i) => `[a${i}]`).join('') + `amix=inputs=${parca.length}:normalize=0,apad=whole_dur=${L.toFixed(3)},asplit=2[vo][sc]`;
+  if (muzik) {
+    // Müzik: baştaki sessizlik kırpılır. Film müzikten uzunsa başı tekrarlanıp 2 sn çapraz geçişle eklenir; böylece
+    // müziğin kapanışı filmin sonuna oturur. Kısaysa baştan alınıp sonda yumuşakça kısılır.
+    const mi = parca.length + 1;
+    const ham = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', muzik]).toString());
+    const bas = Number(deger('--muzik-bas', 1.2));
+    const M = ham - bas;
+    const ort = `aresample=48000,aformat=channel_layouts=stereo`;
+    if (L > M) {
+      const on = L - M + 2;
+      filtre += `${filtre ? ';' : ''}[${mi}:a]${ort},atrim=${bas}:${(bas + on).toFixed(3)},asetpts=N/SR/TB[m1];[${mi + 1}:a]${ort},atrim=${bas},asetpts=N/SR/TB[m2];[m1][m2]acrossfade=d=2:c1=tri:c2=tri,afade=in:d=0.4[mz]`;
+    } else {
+      filtre += `${filtre ? ';' : ''}[${mi}:a]${ort},atrim=${bas}:${(bas + L).toFixed(3)},asetpts=N/SR/TB,afade=in:d=0.4,afade=out:st=${(L - 1.8).toFixed(3)}:d=1.8[mz]`;
+    }
+    filtre += `;[mz]volume=${muzikSeviye}[mzv]`;
+    if (parca.length) filtre += `;[mzv][sc]sidechaincompress=threshold=0.02:ratio=6:attack=30:release=450:makeup=1[duk];[vo][duk]amix=inputs=2:normalize=0,loudnorm=I=-15:TP=-1.5:LRA=11[ses]`;
+    else filtre += `;[mzv]loudnorm=I=-15:TP=-1.5:LRA=11[ses]`;
+  } else filtre += `;[vo]loudnorm=I=-16:TP=-1.5:LRA=11[ses];[sc]anullsink`;
+  const mGirdi = muzik ? ['-i', muzik, '-i', muzik] : [];
+  await ff(['-i', video, ...girdi, ...mGirdi, '-filter_complex', filtre, '-map', '0:v', '-map', '[ses]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+    '-t', L.toFixed(3), '-movflags', '+faststart', cikti]);
 }
 rmSync(klasor, { recursive: true, force: true });
 console.log('hazır:', cikti);

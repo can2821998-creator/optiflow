@@ -33,7 +33,8 @@ MP4 dosyaları git'e girmez; kaynak burada durur ve film yeniden çekilir.
   - Ünlem ve emoji kullanılmaz.
 - **Veri:** Mağaza ("Örnek Optik"), müşteri ve tüm rakamlar uydurmadır. Gerçek müşteri verisi kullanılmaz (KVKK).
   Telefon numaraları maskeli yazılır, T.C. kimlik no hiç görünmez.
-- **Müzik:** Dosyaya gömülmez. Paylaşırken Instagram'ın kendi müzik kütüphanesinden eklenir; böylece telif sorunu çıkmaz.
+- **Müzik:** `--muzik <dosya>` ile eklenir. Konuşma sırasında kendiliğinden kısılır; müziğin kapanışı filmin sonuna oturur.
+  Film müzikten uzunsa müziğin başı tekrarlanır. Seviye `--muzik-seviye 0.32` ile ayarlanır. Müzik dosyası git'e girmez.
 - **Güvenli alan:** Reels'te altta yaklaşık 380 px, üstte yaklaşık 220 px uygulama düğmeleriyle kapanır.
   Altyazılar 250–520 px arasında, sahne 560–1520 px arasında durur.
 
@@ -47,3 +48,9 @@ MP4 dosyaları git'e girmez; kaynak burada durur ve film yeniden çekilir.
   Kayıt `<sahne-adı>.wav` adlarıyla bir klasöre konursa `--ses` ile aynen yerleşir.
 - Piper `tr_TR-dfki` sesi **CC BY-NC-SA** (ticari değil): reklamda kullanılmaz.
 - Kullanıcı kararı (23.10): "Ay sonu SGK faturası kıyası" filmi çıkarıldı.
+- Yayın sesi (23.10): TTSMaker'da (ticari kullanım serbest) her film tek seferde okutuldu (v1/v2/v3.mp3).
+  `bol.py` sesi duraklardan sahnelere böler: duraklar satır uzunluklarına göre eşleştirilir.
+  ```bash
+  python3 docs/tanitim-video/bol.py v1.mp3 docs/tanitim-video/musteri-geldi/ses.json ses/musteri-geldi
+  node docs/tanitim-video/cek.mjs docs/tanitim-video/musteri-geldi/film.html cikti/musteri-geldi.mp4 --ses ses/musteri-geldi --tempo 1 --muzik muzik.wav --muzik-seviye 0.32
+  ```

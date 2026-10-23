@@ -18,7 +18,7 @@ function kasa_expected_cash(array $range, string $date): float
     $cashOutExpense = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE method = 'nakit' AND expense_date = ?", [$date]);
     $cashSale = function_exists('satis_kasa_yontemleri')   // 4.17.0 hızlı satış nakdi
         ? (float) (array_column(satis_kasa_yontemleri($range), 'total', 'method')['nakit'] ?? 0) : 0.0;
-    return $cashIn + $cashSale + $cashRevenue - $cashOutSupplier - $cashOutExpense;
+    return kasa_devir($date) + $cashIn + $cashSale + $cashRevenue - $cashOutSupplier - $cashOutExpense;
 }
 
 if (is_post()) {
@@ -76,6 +76,15 @@ if (is_post()) {
 
     if ($action === 'count') {
         $counted = parse_money(post('counted_amount'));
+        [$kupurToplam, $kupurOzet] = kasa_kupur_say((array) ($_POST['kupur'] ?? []));
+        if ($counted === null && $kupurToplam > 0) {
+            $counted = $kupurToplam;   // tutar yazılmadıysa küpür toplamı
+        }
+        $birakilan = trim(post('birakilan')) === '' ? null : parse_money(post('birakilan'));
+        if ($birakilan !== null && ($birakilan < 0 || ($counted !== null && $birakilan > $counted + 0.001))) {
+            flash('Kasada bırakılan tutar, sayılan nakitten büyük olamaz.', 'error');
+            redirect('kasa.php?date=' . $date);
+        }
         if ($counted === null || $counted < 0) {
             flash('Sayılan tutar geçersiz.', 'error');
             redirect('kasa.php?date=' . $date);
@@ -87,6 +96,8 @@ if (is_post()) {
             'counted_amount'  => $counted,
             'expected_amount' => $expectedCash,
             'difference'      => $diff,
+            'birakilan'       => $birakilan,
+            'kupurler'        => $kupurOzet !== '' ? $kupurOzet : null,
             'note'            => mb_substr(post('note'), 0, 255) ?: null,
             'created_by'      => $user['id'],
         ]);
@@ -129,7 +140,8 @@ $cashOutSupplier = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM supplier
 $cashOutExpense = (float) array_sum(array_map(static fn($e) => $e['method'] === 'nakit' ? (float) $e['amount'] : 0, $expenses));
 $cashRevenue = (float) array_sum(array_map(static fn($r) => $r['method'] === 'nakit' ? (float) $r['amount'] : 0, $revenues));
 $cashIn = (float) (array_column($byMethod, 'total', 'method')['nakit'] ?? 0);
-$expectedCash = $cashIn + $cashRevenue - $cashOutSupplier - $cashOutExpense;
+$devir = kasa_devir($date);   // 4.45.0
+$expectedCash = $devir + $cashIn + $cashRevenue - $cashOutSupplier - $cashOutExpense;
 
 $payments = rows(
     "SELECT p.*, o.id AS order_id, c.first_name, c.last_name, u.full_name AS by_name
@@ -158,11 +170,11 @@ page_header(
 ?>
 <div class="stats">
   <?php foreach (['nakit' => 'tone-green', 'kart' => 'tone-teal', 'havale' => 'tone-violet', 'diger' => 'tone-gray'] as $m => $tone): $row = null; foreach ($byMethod as $b) { if ($b['method'] === $m) { $row = $b; break; } } ?>
-    <div class="stat <?= $tone ?>"><small><?= e(payment_methods()[$m] ?? $m) ?></small><b><?= $row ? money($row['total']) : money(0) ?></b><span><?= $row ? (int) $row['cnt'] . ' tahsilat' : 'Yok' ?></span></div>
+    <div class="stat <?= $row ? $tone : '' ?>"><small><?= e(payment_methods()[$m] ?? $m) ?></small><b><?= $row ? money($row['total']) : money(0) ?></b><span><?= $row ? (int) $row['cnt'] . ' tahsilat' : 'Yok' ?></span></div>
   <?php endforeach; ?>
   <div class="stat"><small>Toplam</small><b><?= money($totalIn) ?></b><span>Tüm yöntemler</span></div>
-  <div class="stat tone-red"><small>Günlük gider</small><b><?= money($totalExpenses) ?></b><span><?= count($expenses) ?> kalem</span></div>
-  <div class="stat tone-green"><small>Diğer gelir</small><b><?= money($totalRevenues) ?></b><span><?= count($revenues) ?> kalem</span></div>
+  <div class="stat <?= $totalExpenses > 0 ? 'tone-red' : '' ?>"><small>Günlük gider</small><b><?= money($totalExpenses) ?></b><span><?= count($expenses) ?> kalem</span></div>
+  <div class="stat <?= $totalRevenues > 0 ? 'tone-green' : '' ?>"><small>Diğer gelir</small><b><?= money($totalRevenues) ?></b><span><?= count($revenues) ?> kalem</span></div>
 </div>
 
 <div class="split">
@@ -285,7 +297,8 @@ page_header(
   <div class="split-side">
     <section class="card sticky">
       <div class="card-head"><h2><?= icon('wallet') ?> Nakit kasa sayımı</h2></div>
-      <div class="money-summary">
+      <div class="money-summary kasa-ozet">
+        <div><small>Dünden devir</small><b><?= $devir > 0.009 ? money($devir) : '—' ?></b></div>
         <div><small>Nakit giren</small><b><?= money($cashIn) ?></b></div>
         <div><small>Diğer nakit gelir</small><b><?= $cashRevenue > 0 ? '+ ' . money($cashRevenue) : '—' ?></b></div>
         <div><small>Tedarikçiye / gider</small><b><?= ($cashOutSupplier + $cashOutExpense) > 0 ? '− ' . money($cashOutSupplier + $cashOutExpense) : '—' ?></b></div>
@@ -311,6 +324,8 @@ page_header(
             <p class="muted small" style="margin-top:8px">🔥 <b><?= $streak ?> gündür</b> kusursuz kasa kapanışı!</p>
           <?php endif;
         endif; ?>
+        <?php if ($lastCount['birakilan'] !== null): ?><p class="muted small">Yarına devir (kasada bırakılan): <b><?= money($lastCount['birakilan']) ?></b> · kasadan alınan <?= money(max(0, (float) $lastCount['counted_amount'] - (float) $lastCount['birakilan'])) ?></p><?php endif; ?>
+        <?php if ($lastCount['kupurler']): ?><p class="muted small mono">Küpür: <?= e(str_replace([':', ','], [' × ', ' · '], (string) $lastCount['kupurler'])) ?></p><?php endif; ?>
         <?php if ($lastCount['note']): ?><p class="muted small">Not: <?= e($lastCount['note']) ?></p><?php endif; ?>
         <a class="btn btn-primary btn-block" href="print.php?type=kasa&date=<?= e($date) ?>" target="_blank" style="margin-top:12px"><?= icon('print') ?> Dökümü yazdır</a>
         <?php if ($isToday): ?>
@@ -327,9 +342,18 @@ page_header(
           </details>
         <?php endif; ?>
       <?php else: ?>
-        <form method="post" class="stack" style="margin-top:16px">
+        <form method="post" class="stack" style="margin-top:16px" data-kupur-form>
           <?= csrf_field() ?><input type="hidden" name="action" value="count">
-          <label class="field"><span>Saydığınız nakit tutarı *</span><input name="counted_amount" inputmode="decimal" required placeholder="0,00"></label>
+          <details class="kupur" open>
+            <summary>Küpür küpür say</summary>
+            <div class="kupur-izgara">
+              <?php foreach (KASA_KUPURLER as $k): ?>
+                <label><span><?= $k >= 1 ? (int) $k . ' ₺' : (int) round((float) $k * 100) . ' kr' ?></span><input type="number" name="kupur[<?= e($k) ?>]" min="0" step="1" inputmode="numeric" placeholder="0" data-kupur="<?= e($k) ?>"></label>
+              <?php endforeach; ?>
+            </div>
+          </details>
+          <label class="field"><span>Saydığınız nakit tutarı *</span><input name="counted_amount" inputmode="decimal" required placeholder="0,00" data-kupur-toplam></label>
+          <label class="field"><span>Kasada bırakılan · yarına devir</span><input name="birakilan" inputmode="decimal" placeholder="0,00"></label>
           <label class="field"><span>Not</span><input name="note" placeholder="varsa fark nedeni"></label>
           <button class="btn btn-primary btn-block"><?= icon('check') ?> Sayımı kaydet ve günü kapat</button>
         </form>
@@ -337,4 +361,4 @@ page_header(
     </section>
   </div>
 </div>
-<?php page_end();
+<?php page_end(['kasa.js']);

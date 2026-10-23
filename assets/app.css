@@ -2691,3 +2691,57 @@ a.pano-card > .kutu-rozet, .pano-card:not(:has(.drag-handle)) > .kutu-rozet { ri
   .is-adimlar .raf-gir input { flex: 1; width: auto; }
   .is-adimlar .adim-at { flex-wrap: wrap; }
 }
+
+/* ==========================================================================
+   4.45.0 — Veresiye defteri (ekstre, taksit planı) ve gün sonu küpür sayımı
+   ========================================================================== */
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.defter-siparis .card-head h2 { display: flex; align-items: baseline; gap: 10px; }
+.defter-siparis .card-head h2 small { font: 500 13px var(--sans); }
+.defter-kalan { font: 600 20px/1 var(--mono); font-variant-numeric: tabular-nums; }
+.defter-plan { margin: 0 0 6px; }
+.defter-plan td, .defter-plan th { padding-top: 9px; padding-bottom: 9px; }
+.defter-plan tr.soluk td { color: var(--muted); }
+.defter-plan tr.soluk td.mono { text-decoration: line-through; text-decoration-color: var(--line-strong); }
+.defter-eylem { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.defter-tahsil { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin: 0; }
+.defter-tahsil .field { margin: 0; min-width: 0; }
+.defter-tahsil .field input:not([type="date"]) { width: 140px; font-family: var(--mono); }
+.defter-taksit > summary { list-style: none; }
+.defter-taksit > summary::-webkit-details-marker { display: none; }
+.defter-taksit[open] > summary { margin-bottom: 10px; }
+.defter-taksit form + form { margin-top: 8px; }
+.defter-hareket tfoot td { padding-top: 12px; border-top: 2px solid var(--ink); font-weight: 700; }
+.defter-alt { margin-top: 10px; text-align: right; }
+.defter-liste td.num b { font-family: var(--mono); font-weight: 600; }
+
+.kupur { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; background: var(--surface-2); }
+.kupur > summary { cursor: pointer; font-weight: 700; font-size: 14px; color: var(--ink-2); }
+.kupur[open] > summary { margin-bottom: 10px; }
+.kupur-izgara { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 10px; }
+.kupur-izgara label { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 8px; margin: 0; }
+.kupur-izgara span { font: 600 13px/1 var(--mono); color: var(--ink-2); text-align: right; white-space: nowrap; }
+.kupur-izgara input { min-height: 36px !important; padding: 4px 8px; font: 600 15px/1 var(--mono); text-align: right; }
+
+@media print {
+  .defter-siparis, .defter-hareket { break-inside: avoid; }
+  .content { padding: 0; max-width: none; }
+  .bolum-sekme, .tabbar, .alert { display: none !important; }
+  .card { border: 0; padding: 0; margin-bottom: 18px; }
+}
+.kasa-ozet { display: grid !important; grid-template-columns: 1fr !important; gap: 0 !important; }
+.kasa-ozet > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 7px 0; border-bottom: 1px dashed var(--line); }
+.kasa-ozet > div small { font: 600 11px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.kasa-ozet > div b { font: 600 15px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
+.kasa-ozet > div:last-child { border-bottom: 0; border-top: 2px solid var(--ink); margin-top: 4px; padding-top: 10px; }
+.kasa-ozet > div:last-child small { color: var(--ink); }
+.kasa-ozet > div:last-child b { font-size: 19px; }
+.page-head .btn.btn-wa:not(.btn-primary), .page-head .btn.btn-wa:not(.btn-primary):hover { background: #1f8f5a; border-color: #1f8f5a; color: #fff; }
+.page-head .btn.btn-wa:not(.btn-primary):hover { background: #187a4c; }
+@media (max-width: 640px) {
+  .defter-plan { font-size: 13.5px; }
+  .defter-plan th, .defter-plan td { padding-left: 6px; padding-right: 6px; }
+  .defter-tahsil { width: 100%; }
+  .defter-tahsil .field { flex: 1 1 120px; }
+  .defter-tahsil .field input:not([type="date"]) { width: 100%; }
+}

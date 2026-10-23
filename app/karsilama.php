@@ -143,7 +143,7 @@ function render_karsilama(): void
             ['Hızlı satış', 'Güneş gözlüğü, solüsyon, lens, aksesuar: barkodu okutun, nakit + kart ödemeyi alın; sipariş açmadan, stok kendiliğinden düşer.'],
             ['Kâr raporu', 'Sipariş ve cam tipine göre gerçek kâr; hatalı camın maliyeti düşülmüş.'],
             ['Gün sonu kasa', 'Nakit sayımı, küçük satışlar ve harcamalar; kasa farkının nedeni ortada.'],
-            ['Bakiye takibi', 'Söz verilen ödeme tarihi geçen müşteriler ayrı listede.'],
+            ['Veresiye defteri', 'Taksit planı ve müşteri ekstresi; sözü geçen ödemeler ayrı listede.'],
             ['Tedarikçi ve alış faturası', "e-Fatura XML'i yükleyin; stok, maliyet ve cari kendiliğinden işlensin. Senet vadeleri takvimde."],
             ['Ödeme linki', 'Kalan bakiye için müşteriye kartla ödeme linki gönderin.'],
         ]],

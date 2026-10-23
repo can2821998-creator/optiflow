@@ -150,9 +150,9 @@ function page_start(string $title, string $active = '', array $opts = []): void
         ],
     ];
     if (can_see_amounts()) {
-        // Bakiye takibi, "Gün sonu kasa"nın hemen üstünde dursun
+        // Veresiye defteri (4.45.0; eski adı Bakiye takibi), "Gün sonu kasa"nın hemen üstünde dursun
         array_splice($nav['Atölye'], count($nav['Atölye']) - 1, 0, [
-            ['tahsilat', 'tahsilat.php', 'Bakiye takibi', 'wallet', $gecikenBakiye],
+            ['tahsilat', 'tahsilat.php', 'Veresiye defteri', 'wallet', $gecikenBakiye],
         ]);
     }
     array_unshift($nav['Atölye'], ['tezgah', 'tezgah.php', 'Yeni müşteri · reçete', 'plus', 0]);

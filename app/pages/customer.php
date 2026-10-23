@@ -164,6 +164,7 @@ page_start($name, 'customers');
   </div>
   <div class="hero-actions">
     <?php if ($c['phone']): ?><a class="btn btn-wa" href="https://wa.me/<?= e($c['phone']) ?>" target="_blank" rel="noopener"><?= icon('chat') ?> WhatsApp</a><?php endif; ?>
+    <?php if (can_see_amounts()): ?><a class="btn" href="defter.php?musteri=<?= (int) $id ?>"><?= icon('receipt') ?> Ekstre</a><?php endif; ?>
     <?php $bekleyenRecete = recete_son_bekleyen((int) $id);   // 4.34.0: akışta yarım kalan reçete ?>
     <?php if ($bekleyenRecete): ?>
       <a class="btn btn-primary" href="teklif-yeni.php?<?= e(http_build_query(['customer_id' => $id, 'recete' => $bekleyenRecete['id']])) ?>"><?= icon('spark') ?> Reçeteyle teklif hazırla</a>

@@ -14,14 +14,15 @@ if (!can_see_amounts()) {
 }
 
 $filtreler = [
+    'musteri'  => 'Müşteri defteri',   // 4.45.0 veresiye defteri: müşteri başına tek satır
     'acik'     => 'Tüm açık bakiyeler',
     'geciken'  => 'Vadesi geçenler',
     'teslim'   => 'Teslim edildi, borçlu',
     'sozsuz'   => 'Söz tarihi girilmemiş',
 ];
-$f = query('f', 'acik');
+$f = query('f', 'musteri');
 if (!isset($filtreler[$f])) {
-    $f = 'acik';
+    $f = 'musteri';
 }
 
 if (is_post()) {
@@ -30,6 +31,9 @@ if (is_post()) {
     $orderId = post_int('order_id');
     $order = $orderId > 0 ? find_order($orderId) : null;
     $don = 'tahsilat.php?f=' . urlencode(post('f') ?: $f);
+    if (preg_match('/^defter\.php\?musteri=\d+$/', post('don'))) {
+        $don = post('don');   // 4.45.0 ekstreden gelen işlem ekstreye döner
+    }
 
     if (!$order) {
         flash('Sipariş bulunamadı.', 'error');
@@ -55,12 +59,30 @@ if (is_post()) {
                 'order_id'   => $orderId,
                 'amount'     => $tutar,
                 'method'     => $yontem,
-                'note'       => 'Bakiye takibinden',
+                'note'       => 'Veresiye defteri',
                 'created_at' => date('Y-m-d H:i:s'),
                 'created_by' => (int) $me['id'],
             ]);
             audit('payment_create', 'order', $orderId, ['tutar' => $tutar, 'yöntem' => payment_methods()[$yontem], 'ödeme' => $pid, 'kaynak' => 'bakiye takibi']);
+            defter_plan_esitle($orderId);   // 4.45.0
             flash(money($tutar) . ' tahsilat kaydedildi — ' . order_no($orderId) . '.');
+        }
+        redirect($don);
+    }
+
+    if ($eylem === 'taksit' || $eylem === 'taksit_kaldir') {   // 4.45.0 taksit planı (app/defter.php)
+        try {
+            if ($eylem === 'taksit') {
+                $plan = defter_plan_kur($orderId, post_int('adet'), post('ilk_vade'), (int) $me['id']);
+                audit('odeme_plani', 'order', $orderId, ['taksit' => count($plan), 'ilk vade' => $plan[0]['vade'], 'tutar' => money(defter_bakiye($orderId))]);
+                flash(count($plan) . ' taksit kuruldu: ' . defter_plan_ozet($plan) . '.');
+            } else {
+                defter_plan_kaldir($orderId);
+                audit('odeme_plani', 'order', $orderId, ['taksit' => 'kaldırıldı']);
+                flash('Taksit planı kaldırıldı; ödeme sözü tarihi olduğu gibi kaldı.', 'info');
+            }
+        } catch (DomainException $e) {
+            flash($e->getMessage(), 'error');
         }
         redirect($don);
     }
@@ -156,6 +178,10 @@ $liste = rows(
       LIMIT 300"
 );
 
+/* 4.45.0 — müşteri defteri görünümü ve listedeki siparişlerin taksit planları */
+$musteriler = $f === 'musteri' ? defter_musteriler() : [];
+$planlar = $f === 'musteri' ? [] : defter_planlar_toplu(array_column($liste, 'balance', 'id'));
+
 /* 4.12.0 — listedeki siparişlerin son ödeme linkleri */
 $odemeAcik = ozellik_acik('odeme_linki');
 $linkler = [];
@@ -184,8 +210,8 @@ $ozet = row(
        ) b"
 ) ?: ['adet' => 0, 'toplam' => 0, 'd30' => 0, 'd60' => 0, 'd90' => 0, 'd90p' => 0, 'geciken' => 0];
 
-page_start('Bakiye takibi', 'tahsilat');
-page_header('Bakiye ve tahsilat takibi', 'Açık bakiyeler, ödeme sözleri ve hızlı tahsilat', '', '', 'Kasa');
+page_start('Veresiye defteri', 'tahsilat');
+page_header('Veresiye defteri', 'Kimde ne kadar alacak var: taksitler, ödeme sözleri, ekstre.', '', '', 'Kasa');
 ?>
 
 <section class="stats">
@@ -201,6 +227,40 @@ page_header('Bakiye ve tahsilat takibi', 'Açık bakiyeler, ödeme sözleri ve h
   <?php endforeach; ?>
 </nav>
 
+<?php if ($f === 'musteri'): ?>
+<section class="card">
+  <div class="card-head">
+    <h2><?= icon('users') ?> Müşteri defteri</h2>
+    <small class="muted"><?= count($musteriler) ?> müşteri</small>
+  </div>
+  <?php if (!$musteriler): ?>
+    <?= empty_state('Veresiye yok', 'Borcu kalan müşteri bulunmuyor.') ?>
+  <?php else: ?>
+    <div class="table-wrap">
+      <table class="table rows-link defter-liste">
+        <thead><tr><th>Müşteri</th><th class="num">Borç</th><th class="hide-sm">Sıradaki söz</th><th class="hide-md num">En eski</th><th></th></tr></thead>
+        <tbody>
+        <?php foreach ($musteriler as $m): $gec = $m['geciken'] > 0.009; ?>
+          <tr>
+            <td>
+              <a class="cell-link" href="defter.php?musteri=<?= (int) $m['customer_id'] ?>">
+                <span class="avatar"><?= e(initials((string) $m['first_name'], (string) $m['last_name'])) ?></span>
+                <span class="cell-main"><b><?= e($m['ad']) ?></b><small><?= $m['siparis'] ?> sipariş<?= $m['phone'] ? ' · ' . e(phone_display($m['phone'])) : '' ?></small></span>
+              </a>
+            </td>
+            <td class="num mono"><b class="<?= $gec ? 'text-danger' : '' ?>"><?= e(money($m['borc'])) ?></b><?php if ($gec): ?><small class="block text-danger"><?= e(money($m['geciken'])) ?> gecikti</small><?php endif; ?></td>
+            <td class="hide-sm <?= $gec ? 'text-danger' : 'muted' ?>"><?= $m['sonraki_soz'] ? e(date_tr($m['sonraki_soz'])) : 'söz yok' ?></td>
+            <td class="hide-md num mono muted"><?= (int) $m['en_eski'] ?> gün</td>
+            <td class="row-actions"><a class="btn btn-sm" href="defter.php?musteri=<?= (int) $m['customer_id'] ?>"><?= icon('receipt') ?> Ekstre</a></td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+    <div class="list-foot"><span class="muted">Sözü geçmiş borçlar üstte; ekstreden tahsilat alın, taksitlendirin, hesap özetini WhatsApp'la gönderin.</span></div>
+  <?php endif; ?>
+</section>
+<?php else: ?>
 <section class="card">
   <div class="card-head">
     <h2><?= icon('wallet') ?> <?= e($filtreler[$f]) ?></h2>
@@ -251,7 +311,7 @@ page_header('Bakiye ve tahsilat takibi', 'Açık bakiyeler, ödeme sözleri ve h
             <td class="hide-md">
               <b><?= (int) $o['yas'] ?> gün</b>
               <small class="block <?= $gecikti ? 'text-danger' : 'muted' ?>">
-                <?= $o['balance_promise_date'] ? 'söz: ' . e(date_tr($o['balance_promise_date'])) : 'söz yok' ?>
+                <?= isset($planlar[(int) $o['id']]) ? e(defter_plan_ozet($planlar[(int) $o['id']])) : ($o['balance_promise_date'] ? 'söz: ' . e(date_tr($o['balance_promise_date'])) : 'söz yok') ?>
               </small>
             </td>
             <td class="row-actions rem-actions">
@@ -331,6 +391,7 @@ page_header('Bakiye ve tahsilat takibi', 'Açık bakiyeler, ödeme sözleri ve h
                       <input type="date" name="promise" value="<?= e((string) $o['balance_promise_date']) ?>"></label>
                     <button class="btn btn-sm">Kaydet</button>
                   </form>
+                  <a class="linkish" href="defter.php?musteri=<?= (int) $o['customer_id'] ?>">Ekstre · taksitlendir</a>
                   <a class="linkish" href="order.php?id=<?= (int) $o['id'] ?>">Siparişi aç</a>
                   <a class="linkish" href="print.php?type=order&id=<?= (int) $o['id'] ?>" target="_blank">Fişi yazdır</a>
                 </div>
@@ -344,5 +405,6 @@ page_header('Bakiye ve tahsilat takibi', 'Açık bakiyeler, ödeme sözleri ve h
     <div class="list-foot"><span class="muted">En eski ve sözü geçmiş bakiyeler üstte listelenir.</span></div>
   <?php endif; ?>
 </section>
+<?php endif; ?>
 
 <?php page_end();

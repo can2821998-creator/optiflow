@@ -1,6 +1,18 @@
 OPTIFLOW
-Release: 4.44.0 (2026-10-23)
+Release: 4.45.0 (2026-10-23)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.45.0 (Veresiye defteri: taksit planı, müşteri ekstresi, küpür sayımı, yarına devir; şema 37)
+  - "Bakiye takibi" → "Veresiye defteri": varsayılan sekme "Müşteri defteri" (müşteri başına tek satır: borç, sözü geçen,
+    sıradaki söz, en eski borç günü; sözü geçenler üstte). Sipariş bazlı sekmeler aynen duruyor.
+  - Ekstre (defter.php?musteri=): siparişler borç, SGK payı ve ödemeler alacak, yürüyen bakiye; açık siparişte hızlı
+    tahsilat; yazdır; "Hesap özeti gönder" (WhatsApp). Müşteri kartında "Ekstre" düğmesi.
+  - Taksit planı (odeme_plani): kalan bakiye 2–12 eşit taksite, aylık vade (ay sonu kayması düzeltilir, kuruş farkı son
+    taksitte). Ödeme hangi kanaldan gelirse gelsin en eski taksitten kapatır; ödeme sözü tarihi her ödemede sıradaki
+    taksite eşitlenir (menü rozeti ve "sözü geçmiş" plana göre). İptalde plan düşer.
+  - Gün sonu kasa: küpür küpür sayım (200 ₺ … 5 kr; toplam kendiliğinden yazılır, assets/kasa.js), "kasada bırakılan ·
+    yarına devir"; ertesi gün "Dünden devir" beklenen nakde eklenir. Özet fiş gibi alt alta; sıfır tutarlar renksiz.
+  - Göç v37: odeme_plani + cash_counts.birakilan / kupurler. Test: tests/defter/test.php (61).
 
 DEĞİŞİKLİK NOTLARI — 4.44.0 (Zarfsız atölye: adım parafı, kutu / raf; şema 36)
   - İş emrindeki "Adım · Tamam · Paraf · Saat" tablosu ekranda: siparişte "İş kartı" (01 Cam geldi · 02 Kesim · 03 Montaj ·

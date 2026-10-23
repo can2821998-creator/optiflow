@@ -40,6 +40,9 @@ if (is_post()) {
                 q('DELETE FROM atolye_adimlari WHERE order_id = ?', [$id]);
             }
             // Sipariş iptal edilirse stoktan düşülen çerçeve vitrine geri döner
+            if ($stage === 'iptal') {
+                defter_plan_kaldir($id);   // 4.45.0 iptal edilen siparişin taksitleri düşer
+            }
             if ($stage === 'iptal' && $order['frame_item_id']) {
                 frame_move((int) $order['frame_item_id'], +1, 'iade', $id, 'Sipariş iptal edildi');
                 q('UPDATE orders SET frame_item_id = NULL WHERE id = ?', [$id]);
@@ -335,6 +338,7 @@ if (is_post()) {
                 'created_by' => $user['id'],
             ]);
             audit('payment_create', 'order', $id, ['tutar' => $amount, 'yöntem' => payment_methods()[$method], 'ödeme' => $pid]);
+            defter_plan_esitle($id);   // 4.45.0 ödeme sözü sıradaki taksite
             flash(money($amount) . ' tahsilat kaydedildi.');
         }
         redirect($self . '#odeme');
@@ -486,6 +490,7 @@ if (is_post()) {
         if ($p) {
             q('DELETE FROM payments WHERE id = ?', [$p['id']]);
             audit('payment_delete', 'order', $id, ['tutar' => $p['amount'], 'tarih' => $p['created_at'], 'not' => $p['note']]);
+            defter_plan_esitle($id);
             flash(money($p['amount']) . ' tutarındaki tahsilat silindi.', 'info');
         }
         redirect($self . '#odeme');

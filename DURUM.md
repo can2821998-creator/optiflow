@@ -2,10 +2,16 @@
 
 *Son güncelleme: 23 Ekim 2026 (4.45.0 canlıda / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
-**Sunucu taşıma (23.10):** kullanıcı sunucu kiraladı — Plesk Obsidian, Administrator erişimli, boş (ilk "cPanel" dendi,
-sonra Plesk olduğu görüldü). Rehber `docs/SUNUCU-TASIMA.md` (aynı ad/kullanıcı/şifreyle DB açılırsa config değişmez).
-Yapılan (23.10): yeni Plesk'te optiflow.com.tr açıldı (PHP 8.3), DB localhost2 + poyrazoptik (kullanıcı optiflowdb) deneme dökümüyle dolu, httpdocs yüklendi, config.php güncellendi. hosts testi yapılamadı → doğrudan geçiş (rehberde "doğrudan geçiş" bölümü). Bekleyen: son döküm + magazalar satırı + DNS + eski config adı + SSL + cron + GitHub FTP sırları; yeni sunucuda info@ açıldı (MX kararı bekliyor). İleride: `plesk bin database` ile
-yeni mağazaya otomatik veritabanı.
+**Sunucu taşındı (23.10, ~16:50 canlı):** TürkTicaret paylaşımlı Plesk → kiralık sunucu (Plesk Obsidian, Administrator).
+Rehber `docs/SUNUCU-TASIMA.md`. DNS (TürkTicaret paneli) A `optiflow.com.tr` → yeni IP; www/ftp CNAME; MX/mail TürkTicaret'te
+kaldı. DB'ler localhost2 (merkez) + poyrazoptik, kullanıcı `optiflowdb`; magazalar satırı phpMyAdmin'den, config kurulum.php
+(+storage/kurulum-izni) ile güncellendi. Eski httpdocs silindi (yedek: kullanıcıdaki site.zip); eski DB'ler 1–2 hafta durur.
+SSL: eski TürkTicaret AutoSSL (Sectigo) .pem taşındı — yeni sunucuda YENİLENMEZ → bitişten önce Let's Encrypt'e geç.
+Web + masaüstü çalışıyor. Bekleyen: GitHub FTP sırları (FTP_SUNUCU yeni IP/alan adı, FTP_KULLANICI `optiflow`, FTP_SIFRE,
+FTP_KLASOR httpdocs) — güncellenmezse "Canlıya al" eski hostinge yükler; yeni Plesk'te zamanlanmış görev (cron.php 10 dk);
+telefon asistanı denemesi; yeni Plesk'te info@ / Mail hizmeti kapatılmalı (e-posta TürkTicaret'te); Tools › Prohibited
+Domain Names "resolve to other servers" yeniden açılabilir; Plesk güncellemesi yarım ("Repair"); kullanıcının hosts
+dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. TürkTicaret hostingi iptal edilirse e-posta da gider.
 
 ## Sürüm
 - **Sunucu 4.45.0** (23.10 main'e birleştirildi: 4.43.0–4.45.0), şema **37** (v36: atölye parafları + orders.raf_yeri; v37: odeme_plani + kasa devir/küpür). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.

@@ -19,6 +19,21 @@ if ($type === 'order' && (ozellik_acik('kagitsiz') || query('tezgah') === '1' ||
     require dirname(__DIR__) . '/partials/siparis-fisi.php';
     exit;
 }
+if ($type === 'order' && !query_int('tam') && (string) scalar('SELECT transaction_type FROM orders WHERE id = ?', [query_int('id')]) === 'tamir') {
+    $type = 'hizmet';   // 4.48.0 tamir siparişinin fişi = hizmet fişi
+}
+if ($type === 'hizmet') {   // 4.48.0 tamir / hizmet fişi: yarım A4 (üst müşteri, alt mağaza)
+    require dirname(__DIR__) . '/partials/hizmet-fisi.php';
+    exit;
+}
+if ($type === 'payment' && !query_int('tam') && can_see_amounts()) {   // 4.48.0 tahsilat makbuzu yarım A4; ayrıntılı A4: &tam=1
+    require dirname(__DIR__) . '/partials/makbuz-fisi.php';
+    exit;
+}
+if ($type === 'satis' && !query_int('tam') && ozellik_acik('hizli_satis') && can_see_amounts()) {   // 4.48.0 satış fişi yarım A4
+    require dirname(__DIR__) . '/partials/satis-fisi.php';
+    exit;
+}
 $shop = setting('shop_name', 'OptiFlow');
 $title = '';
 $ekCss = [];

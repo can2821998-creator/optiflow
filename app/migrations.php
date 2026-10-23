@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 38;
+const SCHEMA_VERSION = 39;
 
 function run_migrations(): void
 {
@@ -76,6 +76,7 @@ function run_migrations(): void
         if ($current < 36) { migrate_v36_atolye_adimlari(); set_schema_version(36); }
         if ($current < 37) { migrate_v37_defter(); set_schema_version(37); }
         if ($current < 38) { migrate_v38_arama_kayitlari(); set_schema_version(38); }
+        if ($current < 39) { migrate_v39_hizmet(); set_schema_version(39); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1754,4 +1755,10 @@ function migrate_v38_arama_kayitlari(): void
         INDEX idx_arama_musteri (customer_id, tur, created_at),
         INDEX idx_arama_tarih (created_at)
     ) " . t_opts());
+}
+
+/** 4.48.0 — Tamir / hizmet fişi: birden çok işlem + teslim alırken görülen durumlar (app/hizmet.php). */
+function migrate_v39_hizmet(): void
+{
+    add_column('orders', 'hizmet_detay', 'TEXT NULL');
 }

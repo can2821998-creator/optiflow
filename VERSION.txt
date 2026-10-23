@@ -1,6 +1,17 @@
 OPTIFLOW
-Release: 4.47.0 (2026-10-23)
+Release: 4.48.0 (2026-10-23)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.48.0 (Tamir / hizmet fişi + bütün fişler yarım A4: üst müşteriye, alt mağazaya; şema 39)
+  - Kullanıcı: "tüm fişleri bir A4 yarısı müşteriye yarısı bize kesilecek olarak düşün". Ortak çerçeve app/fis.php +
+    assets/fis.css: üst yarı MÜŞTERİ NÜSHASI, kesme çizgisi, alt yarı MAĞAZA NÜSHASI (her yarı 210 × 148,5 mm; &kagit=yarim
+    kesilmiş yarım sayfa). Gece bandı, büyük mono numara, numaralı kutular; siyah-beyaz okunur.
+  - Tezgâh › Tamir · hizmet (tamir.php): müşteri, gözlük, birden çok işlem, teslim alırken görülenler (çizik, gevşek sap…),
+    ücret / ücretsiz, "bırakıldı" (fiş basılır, ön ödeme) ya da "hemen yapıldı" (teslim edildi). Müşteri kartı ve atölye
+    panosunda "Tamir al". Hizmet fişi: üstte yapılacaklar + görülenler + hazır tarihi + ücret + takip karekodu; altta
+    gözlüğe giden numara şeridi, atölye parafı, raf, teslim imzaları. Tamir siparişinin "Fiş" düğmesi hizmet fişini açar.
+  - Tahsilat makbuzu ve hızlı satış fişi de yarım A4 (ayrıntılı A4 belge: &tam=1). Sipariş fişi zaten aynı kalıpta.
+  - Göç v39: orders.hizmet_detay (işlemler, durumlar). Test: tests/hizmet/test.php (36); hızlı satış sayfa testi 47.
 
 DEĞİŞİKLİK NOTLARI — 4.47.0 (Bugün aranacaklar: kâğıt arama listesi ekranda; şema 38)
   - Hatırlatma merkezinde varsayılan sekme "Bugün aranacaklar": gözlüğü hazır (haber verilmemiş), haber verildi ama

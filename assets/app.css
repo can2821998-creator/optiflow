@@ -3177,3 +3177,23 @@ details.card:not([open]) > summary.card-head { border-radius: 12px; }
 /* bugün sekmesinde sayılar bantta: yan özet gizli, liste tam genişlik */
 .split:has(.arama-listesi) { grid-template-columns: minmax(0, 1fr) !important; }
 .split:has(.arama-listesi) > .split-side { display: none; }
+
+/* 4.48.0 Tamir · hizmet: dört numaralı kutu, iki sütun; seçimler betiksiz (:has) */
+.hizmet-izgara { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-bottom: 18px; align-items: start; }
+.hizmet-izgara .card { margin: 0; }
+.hizmet-izgara .step { display: inline-grid; place-items: center; min-width: 30px; height: 26px; padding: 0 6px; border-radius: 7px; background: var(--gece, #140e10); color: #fff; font: 600 12px/1 var(--mono); }
+.hizmet-cip { gap: 8px; }
+.hizmet-cip .chip { cursor: pointer; user-select: none; }
+.hizmet-cip .chip input { position: absolute; opacity: 0; pointer-events: none; }
+.hizmet-cip .chip:has(input:focus-visible) { box-shadow: var(--focus); }
+.hizmet-musteri { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin: 0; font-size: 16px; }
+.hizmet-zaman { width: 100%; }
+.hizmet-zaman label { flex: 1; }
+.hizmet-zaman span { width: 100%; }
+.hizmet-form:has(input[name="hemen"][value="1"]:checked) .hizmet-birak { display: none; }
+.hizmet-form:has(input[name="ucretsiz"]:checked) .hizmet-ucret { display: none; }
+.hizmet-kaydet { margin-top: 14px; min-height: 48px; }
+.hizmet-hemen-yazi { display: none; }
+.hizmet-form:has(input[name="hemen"][value="1"]:checked) .hizmet-hemen-yazi { display: inline; }
+.hizmet-form:has(input[name="hemen"][value="1"]:checked) .hizmet-birak-yazi { display: none; }
+@media (max-width: 900px) { .hizmet-izgara { grid-template-columns: minmax(0, 1fr); } }

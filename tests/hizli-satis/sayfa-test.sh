@@ -54,6 +54,9 @@ calis "günün listesi" "#1" hizli_satis
 calis "fiş" "SATIŞ FİŞİ" satis_fis '{"get":{"id":"1"}}'
 calis "fiş: ödemeler" "Kredi kartı" satis_fis '{"get":{"id":"1"}}'
 calis "fiş: serbest kalem" "Burun pedi" satis_fis '{"get":{"id":"1"}}'
+calis "yarım A4 fiş: iki nüsha" "MAĞAZA NÜSHASI" satis_yarim '{"get":{"id":"1"}}'
+calis "yarım A4 fiş: müşteri nüshası" "MÜŞTERİ NÜSHASI" satis_yarim '{"get":{"id":"1"}}'
+calis "yarım A4 fiş: kalem" "Burun pedi" satis_yarim '{"get":{"id":"1"}}'
 # Personel: kendi satışları, indirim sınırı, iptal yok
 calis "personel ekranı" "Bugünkü satışlarınız" personel
 yok "personel başkasının satışını görmez" "#1</a>" personel
@@ -67,6 +70,7 @@ calis "iptal: stok geri (çerçeve 3)" '"qty":3' sql '{"sql":"SELECT qty FROM fr
 calis "iptal: stok geri (ürün 8)" '"stok":8' sql '{"sql":"SELECT stok FROM urunler WHERE id = 1"}'
 calis "iptal görünür" "İptal edildi" hizli_satis '{"get":{"satis":"1"}}'
 calis "fiş: iptal damgası" "İPTAL EDİLMİŞTİR" satis_fis '{"get":{"id":"1"}}'
+calis "yarım A4 fiş: iptal" "İptal edildi" satis_yarim '{"get":{"id":"1"}}'
 echo "Hızlı satış sayfa testleri: $gecen geçti, $kalan kaldı"
 rm -rf "$UTS_TEST_ROOT"
 [ $kalan -eq 0 ]

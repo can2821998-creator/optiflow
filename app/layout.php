@@ -155,7 +155,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
             ['tahsilat', 'tahsilat.php', 'Veresiye defteri', 'wallet', $gecikenBakiye],
         ]);
     }
-    array_unshift($nav['Atölye'], ['tezgah', 'tezgah.php', 'Yeni müşteri · reçete', 'plus', 0]);
+    array_unshift($nav['Atölye'], ['tezgah', 'tezgah.php', 'Yeni müşteri · reçete', 'plus', 0], ['tamir', 'tamir.php', 'Tamir · hizmet', 'settings', 0]);
     ozellik_menusu_ekle($nav);   // 4.12.0 merkezden açılan modüller
     $nav = menu_gruplari($nav);   // 4.38.0 tek uzun liste yerine iş gruplarına
     if (is_super()) {
@@ -445,7 +445,7 @@ function ozellik_menusu_ekle(array &$nav): void
  */
 const BOLUM_ROZETI = ['atolye' => 'workshop', 'musteriler' => 'hatirlatma', 'kasa' => 'tahsilat', 'yonetim' => 'yedek'];
 const BOLUMLER = [
-    'tezgah'     => ['Tezgâh',     'plus',     ['tezgah', 'hizli-satis', 'barkod', 'sgk-hak', 'sgk']],
+    'tezgah'     => ['Tezgâh',     'plus',     ['tezgah', 'tamir', 'hizli-satis', 'barkod', 'sgk-hak', 'sgk']],
     'siparisler' => ['Siparişler', 'orders',   ['orders', 'quotes', 'garantiler']],
     'atolye'     => ['Atölye',     'glasses',  ['workshop', 'stock', 'cam-hatalari', 'cerceve', 'urunler', 'stok-oneri', 'uts-bildirim', 'uts']],
     'musteriler' => ['Müşteriler', 'users',    ['customers', 'hatirlatma', 'mesajlar', 'telefon-asistani', 'bagis']],

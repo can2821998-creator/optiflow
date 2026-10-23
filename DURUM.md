@@ -1,6 +1,6 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 23 Ekim 2026 (4.47.0 dalda `oturum/tasarim`, canlı 4.45.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 23 Ekim 2026 (4.48.0 dalda `oturum/tasarim`, canlı 4.45.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 **Sunucu taşındı (23.10, ~16:50 canlı):** TürkTicaret paylaşımlı Plesk → kiralık sunucu (Plesk Obsidian, Administrator).
 Rehber `docs/SUNUCU-TASIMA.md`. DNS (TürkTicaret paneli) A `optiflow.com.tr` → yeni IP; www/ftp CNAME; MX/mail TürkTicaret'te
@@ -14,8 +14,8 @@ Domain Names "resolve to other servers" yeniden açılabilir; Plesk güncellemes
 dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. TürkTicaret hostingi iptal edilirse e-posta da gider.
 
 ## Sürüm
-- **Sunucu 4.47.0** (dal `oturum/tasarim`, 4.46.0 + 4.47.0; main'e birleştirilmedi — önce GitHub FTP sırları yeni sunucuya çevrilmeli,
-  yoksa "Canlıya al" eski hostinge yükler), şema **37** (v36: atölye parafları + orders.raf_yeri; v37: odeme_plani + kasa devir/küpür). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Sunucu 4.48.0** (dal `oturum/tasarim`, 4.46.0–4.48.0; main'e birleştirilmedi — önce GitHub FTP sırları yeni sunucuya çevrilmeli,
+  yoksa "Canlıya al" eski hostinge yükler), şema **39** (v36 atölye parafları + raf; v37 taksit + kasa devir/küpür; v38 arama_kayitlari; v39 hizmet_detay). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
 - **Canlı site: 4.45.0** (23.10 "Sürüm yayınla" + "Canlıya al" başarılı, eski hostinge; sonra kullanıcı sunucuyu taşıdı).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
@@ -30,7 +30,16 @@ dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. T
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.47.0 — Bugün aranacaklar + Gece onaylandı; TEKNOPLUS, dal oturum/tasarim)
+## Son oturum (4.48.0 — Tamir / hizmet fişi, bütün fişler yarım A4; TEKNOPLUS, dal oturum/tasarim)
+- Kullanıcı (23.10): "5. adıma geç: tamir / hizmet fişi" + "tüm fişleri bir A4 yarısı müşteriye yarısı bize kesilecek
+  olarak düşün kurgula". Ortak çerçeve app/fis.php + assets/fis.css (üst müşteri, kesim, alt mağaza; 2 × 148,5 mm).
+- Tezgâh › Tamir · hizmet (tamir.php, app/hizmet.php): çoklu işlem, teslim alırken görülenler, bırakıldı/hemen, ücretsiz.
+  Hizmet fişi (partials/hizmet-fisi.php); tahsilat makbuzu ve satış fişi de yarım A4 (&tam=1 ayrıntılı A4). Göç v39.
+- Denendi: yerelde bırakılan tamir → fiş (iki yarı taşmasız, kâğıt 297 mm), hemen + ücretsiz, makbuz, satış fişi; telefon.
+  Testler: hizmet 36, hızlı satış sayfa 47; tümü geçti. (Yerelde ilk denemede hata sonrası #00059 Selin Arslan fazladan açıldı.)
+- Pilotta sor: fişler gerçek yazıcıda (s/b lazer) ortadan kesilince düzgün mü; gözlüğe iliştirme için alt yarı uygun mu.
+
+## Önceki oturum (4.47.0 — Bugün aranacaklar + Gece onaylandı; TEKNOPLUS, dal oturum/tasarim)
 - Kullanıcı (23.10): Gece tasarımını belirginleştir → "hepsi" (derin bordo, ince bant, keskin kutu) → "bu hali iyi; kalan
   ekranlara uygula, sonra 4. adım (aranacaklar)". Kalan ekranlar tarandı (31 sayfa, masaüstü + 375 px): tutarlar kutuya
   ölçeklenir (container query), telefonda taşma kalmadı.
@@ -418,7 +427,7 @@ dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. T
 *Kullanıcı (23.10): öncelik kâğıt-kalemi bitirmek + Yalın arayüz. Kullanıcı (17.10): "şubeyi sona bırakarak devam et".*
 - **Kâğıtsız + Yalın yol haritası (sırayla):** (1) ✔ iskelet 4.43.0; (2) ✔ atölye iş takibi 4.44.0 (kutu/raf, paraf, zarfsız); (3) ✔ veresiye/kasa defteri 4.45.0 (taksit, ekstre, küpür, devir);
   (4) ✔ aranacaklar listesi 4.47.0 (tek liste, arama sonucu, deneme sayısı);
-  (5) tamir/hizmet fişi — vida/nazal/ayar/tamire bırakılan gözlük (yeni, siparişten hafif). Her adımda kalan ekranları
+  (5) ✔ tamir/hizmet fişi 4.48.0 (+ bütün fişler yarım A4: üst müşteri, alt mağaza). Her adımda kalan ekranları
   Yalın dile geçir (masaüstü + telefon + koyu ekran görüntüsüyle kontrol).
 0. **Tek akış pilotu (4.34.0, canlıda):** pilot mağazada "Yeni müşteri · reçete" ile bir gün çalış:
    Pro'dan gerçek Medula aktarımı, fiş + nüsha düzeni, atölye/depo ayrımı için geri bildirim.

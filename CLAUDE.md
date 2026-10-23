@@ -67,6 +67,7 @@ php tests/kvkk/test.php
 php tests/atolye/test.php
 php tests/defter/test.php
 php tests/aranacak/test.php
+php tests/hizmet/test.php
 ```
 Masaüstü (desktop/ içinde, Node 22): `npm ci && npm run typecheck && npm test`
 (sunucu entegrasyon: `tests/server/*.mjs`, uçtan uca: `tests/e2e/` — yerel test sunucusu ister, bkz. desktop/BUILD.md).

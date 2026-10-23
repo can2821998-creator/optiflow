@@ -286,6 +286,7 @@ page_start('Atölye panosu', 'workshop');
     <h1>Tamir <em>ve bakım</em></h1>
     <p class="muted">Reçetesiz, camdan bağımsız işler — kendi basit akışıyla.</p>
   </div>
+  <div class="quick-actions"><a class="btn btn-primary" href="tamir.php"><?= icon('plus') ?> Tamir al</a></div>
 </section>
 
 <div class="pano pano-3">

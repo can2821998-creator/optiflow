@@ -3108,8 +3108,8 @@ details.card:not([open]) > summary.card-head { border-radius: 12px; }
 
 /* 4) Ekran ince ayarları */
 /* kasa: yöntem kutuları tek sıra, rakam bir tık küçük (7 kutu kalabalık görünmesin) */
-.stats:has(> .stat:nth-child(7)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.stats:has(> .stat:nth-child(7)) .stat b { font-size: clamp(20px, 1.6vw, 25px); }
+@media (min-width: 900px) { .stats:has(> .stat:nth-child(7)) { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 900px) { .stats:has(> .stat:nth-child(7)) .stat b { font-size: clamp(20px, 1.6vw, 25px); } }
 /* sipariş: başlıkta avatar ve düğmeler sıkı, ince bantla uyumlu */
 .hero .avatar.lg, html.tema-koyu .hero .avatar.lg { width: 56px; height: 56px; font-size: 19px; }
 .hero-main { gap: 16px; }
@@ -3130,3 +3130,9 @@ details.card:not([open]) > summary.card-head { border-radius: 12px; }
   .hero-actions { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
   .hero-actions > *, .hero-actions > .btn, .hero-actions > form .btn { width: 100%; min-width: 0; }
 }
+
+/* 4.46.0 kalan ekranlar: büyük tutarlar kutuya sığsın (kutu genişliğine göre ölçeklenen mono rakam) */
+.stat, .bant-veri > a, .bant-veri > div { container-type: inline-size; }
+.stat b { font-size: clamp(13px, 12.5cqi, 34px); white-space: nowrap; }
+.bant-veri dd { font-size: clamp(20px, 15cqi, 36px); white-space: nowrap; }
+.kasa-ozet > div b { white-space: nowrap; }

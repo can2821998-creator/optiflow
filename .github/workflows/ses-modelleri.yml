@@ -33,6 +33,10 @@ jobs:
               done
             done
           done
+          # Coqui TTS Türkçe GlowTTS + HiFiGAN (MIT lisanslı, Common Voice verisi) — ticari kullanıma uygun
+          for z in tts_models--tr--common-voice--glow-tts.zip vocoder_models--tr--common-voice--hifigan.zip; do
+            curl -fsSL "https://github.com/coqui-ai/TTS/releases/download/v0.6.1_models/$z" -o "coqui-$z"
+          done
           ls -la
       - name: Ön sürüme koy
         run: |

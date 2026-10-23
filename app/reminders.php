@@ -47,6 +47,8 @@ function reminder_cooldown(string $kind): string
 {
     return match ($kind) {
         'teslim' => '+10 days',
+        'haber'  => '+1 day',     // 4.47.0 aranacaklar: haber adımı atılınca zaten listeden düşer
+        'bakiye' => '+3 days',    // 4.47.0 sözü geçen ödeme: ulaşıldıysa 3 gün sonra yeniden
         'sgk'    => '+6 months',
         'lens'   => '+1 month',
         default  => '+6 months',
@@ -255,6 +257,9 @@ function reminder_badge(): int
     static $n = null;
     if ($n !== null) {
         return $n;
+    }
+    if (function_exists('aranacak_sayisi')) {
+        return $n = aranacak_sayisi();   // 4.47.0 rozet = bugün aranacak kişi sayısı
     }
     try {
         $gun = reminder_settings()['pickup'];

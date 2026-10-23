@@ -10,15 +10,34 @@ require dirname(__DIR__, 2) . '/app/bootstrap.php';
 
 $me = require_login();
 
-$turler = reminder_kinds();
-$tur = query('tur', 'yenileme');
+$turler = ['bugun' => 'Bugün aranacaklar'] + reminder_kinds();   // 4.47.0 tek liste varsayılan
+$tur = query('tur', 'bugun');
 if (!isset($turler[$tur])) {
-    $tur = 'yenileme';
+    $tur = 'bugun';
 }
 
 if (is_post()) {
     csrf_check();
     $eylem = post('eylem');
+
+    /* --- 4.47.0 Bugün aranacaklar: arama sonucu (ulaşıldı / açmadı / WhatsApp / ertele) --- */
+    if ($eylem === 'arama') {
+        try {
+            $ileti = aranacak_sonuc(post('arama_tur'), post_int('customer_id'), post_int('order_id') ?: null, post_int('reminder_id') ?: null,
+                post('sonuc'), (int) $me['id'], post('not'), post('tarih'));
+            audit('arama', 'customer', post_int('customer_id'), ['tür' => ARANACAK_TURLERI[post('arama_tur')] ?? '', 'sonuç' => ARANACAK_SONUCLARI[post('sonuc')] ?? '']);
+            $wa = post('wa');
+            if (post('sonuc') === 'whatsapp' && $wa !== '' && str_starts_with($wa, 'https://wa.me/')) {
+                header('Location: ' . $wa, true, 303);
+                exit;
+            }
+            flash($ileti);
+        } catch (DomainException $e) {
+            flash($e->getMessage(), 'error');
+        }
+        redirect('hatirlatma.php?tur=bugun');
+    }
+
     $kind = post('kind');
     if (!isset($turler[$kind])) {
         $kind = 'manuel';
@@ -127,6 +146,7 @@ if (is_post()) {
 
 /* ---------- Listeler ---------- */
 $liste = match ($tur) {
+    'bugun'  => aranacak_listesi(),
     'sgk'    => reminder_sgk(),
     'teslim' => reminder_pickups(),
     'manuel' => reminder_manual(false),
@@ -135,6 +155,7 @@ $liste = match ($tur) {
 };
 
 $sayilar = [
+    'bugun'    => count($tur === 'bugun' ? $liste : aranacak_listesi()),
     'yenileme' => count($tur === 'yenileme' ? $liste : reminder_renewals(300)),
     'sgk'      => count($tur === 'sgk' ? $liste : reminder_sgk(300)),
     'teslim'   => count($tur === 'teslim' ? $liste : reminder_pickups(300)),
@@ -145,6 +166,7 @@ if (isset($turler['lens'])) {
 }
 $a = reminder_settings();
 $aciklama = [
+    'bugun'    => 'Gözlüğü hazır olanlar, alınmayanlar, planlı aramalar ve ödeme sözü geçenler — tek listede, öncelik sırasıyla.',
     'yenileme' => 'Son gözlüğünün üzerinden ' . $a['renew'] . ' aydan fazla geçmiş müşteriler.',
     'sgk'      => 'Son reçetesinin üzerinden ' . $a['sgk'] . ' ay (18 yaş altı ' . $a['sgk_child'] . ' ay) geçmiş müşteriler — SGK hakkı yenilenmiş olabilir.',
     'teslim'   => 'Hazır olduğu halde ' . $a['pickup'] . ' gündür teslim alınmamış gözlükler.',
@@ -168,7 +190,13 @@ if ($ara !== '' && $tur === 'manuel') {
 }
 
 page_start('Hatırlatma merkezi', 'hatirlatma');
-page_header('Hatırlatma merkezi', 'Aranacak müşteriler tek listede — gözlüğü eskiyenler, SGK hakkı doğanlar, gözlüğünü almayanlar ve planlı aramalar', '', '', 'Müşteri ilişkileri');
+$turSay = array_count_values(array_column($tur === 'bugun' ? $liste : aranacak_listesi(), 'tur'));
+page_header('Hatırlatma merkezi', 'Arama listesi defter yerine: kimi arayacağınız, kaçıncı deneme olduğu, sonucu.', '', '', 'Müşteri ilişkileri', bant_veri([   // 4.47.0
+    ['Bugün aranacak', (int) $sayilar['bugun'], '', 'hatirlatma.php?tur=bugun'],
+    ['Gözlüğü hazır', (int) ($turSay['haber'] ?? 0), ($turSay['haber'] ?? 0) ? 'green' : '', ''],
+    ['Haber verildi, gelmedi', (int) ($turSay['teslim'] ?? 0), ($turSay['teslim'] ?? 0) ? 'amber' : '', ''],
+    ['Söz geçti', (int) ($turSay['bakiye'] ?? 0), ($turSay['bakiye'] ?? 0) ? 'red' : '', ''],
+]));
 ?>
 
 <nav class="tabs" aria-label="Hatırlatma türü">
@@ -187,6 +215,7 @@ page_header('Hatırlatma merkezi', 'Aranacak müşteriler tek listede — gözl�
         <small class="muted"><?= e($aciklama[$tur]) ?></small>
       </div>
 
+      <?php if ($tur === 'bugun'): include dirname(__DIR__) . '/partials/aranacaklar.php'; else: ?>
       <?php if ($waAcik && $liste && in_array($tur, ['yenileme', 'sgk', 'teslim', 'lens'], true)): ?>
         <form method="post" class="wa-toplu" style="margin:0 0 12px" data-confirm="Listedeki mesaj izni olan müşteriler WhatsApp kuyruğuna eklensin mi?">
           <?= csrf_field() ?><input type="hidden" name="eylem" value="kuyruga"><input type="hidden" name="kind" value="<?= e($tur) ?>"><input type="hidden" name="tur" value="<?= e($tur) ?>">
@@ -318,6 +347,7 @@ page_header('Hatırlatma merkezi', 'Aranacak müşteriler tek listede — gözl�
         </div>
         <div class="list-foot"><span class="muted"><?= count($liste) ?> kayıt</span></div>
       <?php endif; ?>
+      <?php endif; /* bugun */ ?>
     </section>
 
     <?php if ($tur === 'manuel'): ?>
@@ -350,6 +380,7 @@ page_header('Hatırlatma merkezi', 'Aranacak müşteriler tek listede — gözl�
     <section class="card">
       <div class="card-head"><h2>Bugünün özeti</h2></div>
       <ul class="kv">
+        <li><span>Bugün aranacak</span><b><?= (int) $sayilar['bugun'] ?> kişi</b></li>
         <li><span>Gözlük yenileme</span><b><?= (int) $sayilar['yenileme'] ?> kişi</b></li>
         <li><span>SGK hakkı</span><b><?= (int) $sayilar['sgk'] ?> kişi</b></li>
         <li><span>Teslim alınmadı</span><b><?= (int) $sayilar['teslim'] ?> gözlük</b></li>

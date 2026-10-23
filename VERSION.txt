@@ -1,6 +1,16 @@
 OPTIFLOW
-Release: 4.46.0 (2026-10-23)
+Release: 4.47.0 (2026-10-23)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.47.0 (Bugün aranacaklar: kâğıt arama listesi ekranda; şema 38)
+  - Hatırlatma merkezinde varsayılan sekme "Bugün aranacaklar": gözlüğü hazır (haber verilmemiş), haber verildi ama
+    gelmedi (süre haberden sayılır), vadesi gelen planlı arama, ödeme sözü geçen veresiye — tek liste, öncelik sırasıyla.
+  - Satır: numara, kim, telefon (tıkla-ara), neden (sipariş no, raf, kaç gün), kaçıncı deneme ve son sonuç (kim, ne zaman);
+    WhatsApp / Ulaşıldı / Açmadı (yarın yeniden listede) / Ertele + not. Ulaşıldı ya da WhatsApp hazır gözlükte
+    atölyedeki "Müşteriye haber" adımını da atar. Bant: bugün aranacak, gözlüğü hazır, haber verildi gelmedi, söz geçti.
+  - Menü rozeti = bugün aranacak kişi sayısı. Kalan ekranlar Gece diline uyduruldu (tutarlar kutuya ölçeklenir, telefonda
+    taşma yok).
+  - Göç v38: arama_kayitlari (her denemenin sonucu). Test: tests/aranacak/test.php (37).
 
 DEĞİŞİKLİK NOTLARI — 4.46.0 (Gece: Yalın düzeni + iş emrinin dili)
   - Kullanıcı: Yalın fazla çıplak; daha şık ve görsel olarak dolu, ama sade. Yapı (6 bölüm, sekmeler) aynen kaldı.

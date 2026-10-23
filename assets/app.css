@@ -3136,3 +3136,44 @@ details.card:not([open]) > summary.card-head { border-radius: 12px; }
 .stat b { font-size: clamp(13px, 12.5cqi, 34px); white-space: nowrap; }
 .bant-veri dd { font-size: clamp(20px, 15cqi, 36px); white-space: nowrap; }
 .kasa-ozet > div b { white-space: nowrap; }
+
+/* ==========================================================================
+   4.47.0 — Bugün aranacaklar: kâğıt arama listesinin satırı (numara · kim · neden · sonuç)
+   ========================================================================== */
+.arama-listesi { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.arama-satir {
+  position: relative; display: grid; grid-template-columns: 34px minmax(180px, 1.1fr) minmax(180px, 1.4fr) auto; align-items: center; gap: 8px 18px;
+  padding: 14px 16px 14px 18px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface);
+  box-shadow: 0 1px 2px rgba(40, 14, 22, .05);
+}
+.arama-satir::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 4px; border-radius: 0 4px 4px 0; background: var(--line-strong); }
+.arama-satir.tur-haber::before { background: var(--green); }
+.arama-satir.tur-teslim::before { background: var(--amber); }
+.arama-satir.tur-manuel::before { background: var(--blue); }
+.arama-satir.tur-bakiye::before { background: var(--red); }
+.arama-no { font: 600 13px/1 var(--mono); color: var(--muted); }
+.arama-kim { display: grid; gap: 4px; justify-items: start; min-width: 0; }
+.arama-ad { font: 750 16px/1.2 var(--sans); color: var(--ink); text-decoration: none; }
+.arama-ad:hover { color: var(--brand-ink); }
+.arama-tel { font: 600 14px/1.2 var(--mono); color: var(--ink-2); text-decoration: none; letter-spacing: .01em; }
+.arama-tel:hover { color: var(--brand-ink); }
+.arama-neden { display: grid; gap: 3px; min-width: 0; }
+.arama-neden .mono { font-size: 13.5px; }
+.arama-neden small { color: var(--muted); font-size: 13px; }
+.arama-deneme { display: inline-block; justify-self: start; margin-top: 2px; padding: 3px 8px; border-radius: 6px; background: var(--amber-bg); color: var(--amber) !important; font: 600 12px/1.3 var(--mono) !important; }
+.arama-deneme.cok { background: var(--red-bg); color: var(--red) !important; }
+.arama-eylem { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px; }
+.arama-eylem form { margin: 0; }
+@media (max-width: 900px) {
+  .arama-satir { grid-template-columns: 26px minmax(0, 1fr); }
+  .arama-neden, .arama-eylem { grid-column: 2; }
+  .arama-eylem { justify-content: flex-start; }
+}
+@media (max-width: 640px) {
+  .arama-eylem { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .arama-eylem .btn { width: 100%; }
+  .arama-eylem .rem-more { grid-column: span 2; justify-self: end; }
+}
+/* bugün sekmesinde sayılar bantta: yan özet gizli, liste tam genişlik */
+.split:has(.arama-listesi) { grid-template-columns: minmax(0, 1fr) !important; }
+.split:has(.arama-listesi) > .split-side { display: none; }

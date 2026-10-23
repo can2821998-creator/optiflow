@@ -1,6 +1,6 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 23 Ekim 2026 (4.46.0 dalda `oturum/tasarim`, canlı 4.45.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 23 Ekim 2026 (4.47.0 dalda `oturum/tasarim`, canlı 4.45.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 **Sunucu taşındı (23.10, ~16:50 canlı):** TürkTicaret paylaşımlı Plesk → kiralık sunucu (Plesk Obsidian, Administrator).
 Rehber `docs/SUNUCU-TASIMA.md`. DNS (TürkTicaret paneli) A `optiflow.com.tr` → yeni IP; www/ftp CNAME; MX/mail TürkTicaret'te
@@ -14,7 +14,7 @@ Domain Names "resolve to other servers" yeniden açılabilir; Plesk güncellemes
 dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. TürkTicaret hostingi iptal edilirse e-posta da gider.
 
 ## Sürüm
-- **Sunucu 4.46.0** (dal `oturum/tasarim`; main'e birleştirilmedi — önce GitHub FTP sırları yeni sunucuya çevrilmeli,
+- **Sunucu 4.47.0** (dal `oturum/tasarim`, 4.46.0 + 4.47.0; main'e birleştirilmedi — önce GitHub FTP sırları yeni sunucuya çevrilmeli,
   yoksa "Canlıya al" eski hostinge yükler), şema **37** (v36: atölye parafları + orders.raf_yeri; v37: odeme_plani + kasa devir/küpür). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
 - **Canlı site: 4.45.0** (23.10 "Sürüm yayınla" + "Canlıya al" başarılı, eski hostinge; sonra kullanıcı sunucuyu taşıdı).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
@@ -30,12 +30,21 @@ dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. T
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.46.0 — Gece: Yalın düzeni + iş emrinin dili; TEKNOPLUS, dal oturum/tasarim)
+## Son oturum (4.47.0 — Bugün aranacaklar + Gece onaylandı; TEKNOPLUS, dal oturum/tasarim)
+- Kullanıcı (23.10): Gece tasarımını belirginleştir → "hepsi" (derin bordo, ince bant, keskin kutu) → "bu hali iyi; kalan
+  ekranlara uygula, sonra 4. adım (aranacaklar)". Kalan ekranlar tarandı (31 sayfa, masaüstü + 375 px): tutarlar kutuya
+  ölçeklenir (container query), telefonda taşma kalmadı.
+- Aranacaklar: app/aranacak.php + partials/aranacaklar.php; hatirlatma.php varsayılan sekme "Bugün aranacaklar" (hazır,
+  haber verildi gelmedi, planlı, söz geçti), Ulaşıldı/Açmadı/WhatsApp/Ertele, deneme sayısı; Ulaşıldı → atölye haber adımı.
+  Göç v38 arama_kayitlari. Denendi: yerelde açmadı (yarına), ulaşıldı (haber adımı atıldı). Testler: aranacak 37; tümü geçti.
+- Bilinen: eski "Teslim alınmadı" sekmesi (reminder_pickups) hâlâ hazır olalı N gün mantığıyla sayar; Bugün listesi haberden sayar.
+
+## Önceki oturum (4.46.0 — Gece: Yalın düzeni + iş emrinin dili; TEKNOPLUS, dal oturum/tasarim)
 - Kullanıcı (23.10): "genel tasarım yeniliğini beğenmedim, daha şık ve görsel olarak dolu bir dil, ama sadelik sürsün".
 - Yapılan: assets/app.css "4.46.0 — GECE" katmanı (gece menü, 01–06 numaralı bölümler, gece bandı başlık + nişangâh
   halkaları, tonlu sayı kartları, bordo ışıklı birincil düğme); `bant_veri()` ile ana ekran / atölye / veresiye
   sayıları bandın içinde. Yerelde masaüstü, telefon, koyu görünüm kontrol edildi (koyuda bant düğmesi yazısı düzeltildi).
-- Testler: arayuz 63; tümü geçti. Kullanıcıdan görsel onay bekleniyor; onaylarsa FTP sırları sonrası main'e.
+- Testler: arayuz 63; tümü geçti. Kullanıcı onayladı (belirgin + ince ayar turlarından sonra); FTP sırları sonrası main'e.
 
 ## Önceki oturum (4.45.0 — Veresiye defteri: taksit, ekstre, küpür, devir; TEKNOPLUS, dal oturum/sube)
 - Kullanıcı (23.10): "canlıya almadan 3. adıma geç: veresiye / kasa defteri".
@@ -408,7 +417,7 @@ dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. T
 ## Sıradaki iş
 *Kullanıcı (23.10): öncelik kâğıt-kalemi bitirmek + Yalın arayüz. Kullanıcı (17.10): "şubeyi sona bırakarak devam et".*
 - **Kâğıtsız + Yalın yol haritası (sırayla):** (1) ✔ iskelet 4.43.0; (2) ✔ atölye iş takibi 4.44.0 (kutu/raf, paraf, zarfsız); (3) ✔ veresiye/kasa defteri 4.45.0 (taksit, ekstre, küpür, devir);
-  (4) aranacaklar listesi — hazır, kontrol zamanı, tamir: tek liste + tek tuş WhatsApp/arama sonucu;
+  (4) ✔ aranacaklar listesi 4.47.0 (tek liste, arama sonucu, deneme sayısı);
   (5) tamir/hizmet fişi — vida/nazal/ayar/tamire bırakılan gözlük (yeni, siparişten hafif). Her adımda kalan ekranları
   Yalın dile geçir (masaüstü + telefon + koyu ekran görüntüsüyle kontrol).
 0. **Tek akış pilotu (4.34.0, canlıda):** pilot mağazada "Yeni müşteri · reçete" ile bir gün çalış:

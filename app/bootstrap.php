@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.46.0';
+const APP_VERSION = '4.47.0';
 const APP_ROOT = __DIR__ . '/..';
 
 // 4.16.8: canlıya yükleme sürerken yarım dosyalara denk gelmemek için kısa bakım ekranı (app/guncelleme.php).
@@ -122,6 +122,7 @@ require __DIR__ . '/kagitsiz.php';   // 4.32.0 kâğıtsız tezgâh: yarım sayf
 require __DIR__ . '/tezgah.php';     // 4.33.0 tezgâh: reçete → Medula → tek ekran kayıt → fiş
 require __DIR__ . '/atolye.php';     // 4.44.0 zarfsız atölye: adım parafı, kutu / raf
 require __DIR__ . '/defter.php';     // 4.45.0 veresiye defteri: taksit planı, ekstre
+require __DIR__ . '/aranacak.php';   // 4.47.0 bugün aranacaklar: tek liste, arama sonucu
 require __DIR__ . '/sgk-mutabakat.php';
 require __DIR__ . '/barkod.php';
 require __DIR__ . '/uts.php';      // 4.13.0 ÜTS bildirimleri

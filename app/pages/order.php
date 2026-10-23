@@ -35,7 +35,14 @@ if (is_post()) {
                 'updated_at'     => date('Y-m-d H:i:s'),
             ], 'id = ?', [$id]);
             audit('order_stage', 'order', $id, ['önce' => stage_label($order['order_stage']), 'sonra' => stage_label($stage), 'işlemi yapan' => $actorName]);
+            if (in_array($stage, ['siparis_verildi', 'bekliyor', 'rx_siparis_verildi', 'atolyede'], true)) {
+                // 4.44.0: elle atölyeye (ya da öncesine) dönen iş montajdan baştan başlar → eski paraflar silinir
+                q('DELETE FROM atolye_adimlari WHERE order_id = ?', [$id]);
+            }
             // Sipariş iptal edilirse stoktan düşülen çerçeve vitrine geri döner
+            if ($stage === 'iptal') {
+                defter_plan_kaldir($id);   // 4.45.0 iptal edilen siparişin taksitleri düşer
+            }
             if ($stage === 'iptal' && $order['frame_item_id']) {
                 frame_move((int) $order['frame_item_id'], +1, 'iade', $id, 'Sipariş iptal edildi');
                 q('UPDATE orders SET frame_item_id = NULL WHERE id = ?', [$id]);
@@ -88,6 +95,39 @@ if (is_post()) {
         redirect((post('return') === 'pano' ? 'workshop.php' : $self) . $celebrateFlag);
     }
 
+    // 4.44.0 zarfsız atölye: adım parafı, geri alma, kutu / raf (app/atolye.php)
+    if (in_array($action, ['atolye_adim', 'atolye_geri', 'raf_kaydet'], true)) {
+        $don = post('return') === 'pano' ? 'workshop.php' : $self;
+        $adim = post('adim');
+        try {
+            if ($action === 'raf_kaydet') {
+                $raf = atolye_raf_kaydet($id, post('raf_yeri'));
+                audit('raf_yeri', 'order', $id, ['kutu / raf' => $raf ?: '—']);
+                flash($raf !== '' ? 'Kutu / raf: ' . $raf . '.' : 'Kutu / raf silindi.');
+            } elseif ($action === 'atolye_geri') {
+                atolye_adim_geri_al($order, $adim, (int) $user['id'], is_super());
+                audit('atolye_adim_geri', 'order', $id, ['adım' => ATOLYE_ADIMLARI[$adim] ?? $adim]);
+                flash('“' . (ATOLYE_ADIMLARI[$adim] ?? $adim) . '” geri alındı.');
+            } else {
+                $etki = atolye_adim_at($order, $adim, (int) $user['id'], post('raf_yeri'));
+                audit('atolye_adim', 'order', $id, ['adım' => ATOLYE_ADIMLARI[$adim], 'paraf' => $user['full_name']]);
+                if ($etki === 'hazir') {
+                    push_order_event($id, 'hazir');
+                    $missing = (int) scalar("SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id WHERE r.order_id = ? AND i.stock_status <> 'stokta_var'", [$id]);
+                    flash('Kontrol tamam — gözlük hazır, yeri: ' . atolye_raf(post('raf_yeri') ?: (string) $order['raf_yeri']) . '.');
+                    if ($missing) {
+                        flash("Dikkat: bu siparişte henüz gelmemiş $missing cam görünüyor.", 'warn');
+                    }
+                } else {
+                    flash(ATOLYE_ADIMLARI[$adim] . ($etki === 'kontrole' ? ' tamam — kontrole geçti.' : ' işaretlendi.'));
+                }
+            }
+        } catch (DomainException $e) {
+            flash($e->getMessage(), 'error');
+        }
+        redirect($don);
+    }
+
     if ($action === 'workshop_move') {
         $to = post('to');
         $valid = ['montajda', 'kontrol', 'hazir'];
@@ -117,6 +157,7 @@ if (is_post()) {
                 'updated_at'     => date('Y-m-d H:i:s'),
             ], 'id = ?', [$id]);
             audit('order_stage', 'order', $id, ['önce' => 'Atölyede · kalite kontrolde', 'sonra' => 'Hazır']);
+            atolye_adim_kaydet($id, 'kontrol', (int) $user['id']);   // 4.44.0 sürükle-bırakta da paraf izi kalsın
             push_order_event($id, 'hazir');
             $missing = (int) scalar("SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id WHERE r.order_id = ? AND i.stock_status <> 'stokta_var'", [$id]);
             flash('Kalite kontrol tamamlandı, sipariş “Hazır” olarak işaretlendi.');
@@ -125,6 +166,11 @@ if (is_post()) {
             }
         } else {
             update('orders', ['workshop_stage' => $to, 'updated_at' => date('Y-m-d H:i:s')], 'id = ?', [$id]);
+            if ($to === 'kontrol') {
+                atolye_adim_kaydet($id, 'montaj', (int) $user['id']);
+            } else {
+                q("DELETE FROM atolye_adimlari WHERE order_id = ? AND adim = 'montaj'", [$id]);   // montaja geri
+            }
             audit('workshop_stage', 'order', $id, ['aşama' => workshop_stage_label($to)]);
             flash('Atölye aşaması “' . workshop_stage_label($to) . '” olarak güncellendi.');
         }
@@ -292,6 +338,7 @@ if (is_post()) {
                 'created_by' => $user['id'],
             ]);
             audit('payment_create', 'order', $id, ['tutar' => $amount, 'yöntem' => payment_methods()[$method], 'ödeme' => $pid]);
+            defter_plan_esitle($id);   // 4.45.0 ödeme sözü sıradaki taksite
             flash(money($amount) . ' tahsilat kaydedildi.');
         }
         redirect($self . '#odeme');
@@ -443,6 +490,7 @@ if (is_post()) {
         if ($p) {
             q('DELETE FROM payments WHERE id = ?', [$p['id']]);
             audit('payment_delete', 'order', $id, ['tutar' => $p['amount'], 'tarih' => $p['created_at'], 'not' => $p['note']]);
+            defter_plan_esitle($id);
             flash(money($p['amount']) . ' tutarındaki tahsilat silindi.', 'info');
         }
         redirect($self . '#odeme');
@@ -690,15 +738,18 @@ page_start($name . ' ' . order_no($id), 'orders');
   </div>
 <?php endif; ?>
 
-<?php if ($order['order_stage'] === 'atolyede'):
+<?php if (in_array($order['order_stage'], ['atolyede', 'hazirlandi'], true) && $order['transaction_type'] !== 'tamir'):
+    // 4.44.0 zarfsız atölye: iş emrinin adım tablosu ekranda, kutu / raf zarfın yerine
     $wstage = $order['workshop_stage'] ?: 'montajda';
-    $framePending = (int) $order['own_frame_pending'] === 1;
+    $atolyede = $order['order_stage'] === 'atolyede';
+    $framePending = $atolyede && (int) $order['own_frame_pending'] === 1;
     $waitDays = days_since($order['created_at']);
-    $overdue = days_overdue($order['promised_date']); ?>
-<section class="card workshop-card">
+    $overdue = days_overdue($order['promised_date']);
+    $atolyeDon = ''; ?>
+<section class="card workshop-card is-karti">
   <div class="card-head">
-    <h2><?= icon('glasses') ?> Atölye durumu</h2>
-    <?= workshop_stage_badge($wstage) ?>
+    <h2><?= icon('glasses') ?> İş kartı</h2>
+    <?= $atolyede ? workshop_stage_badge($wstage) : '<span class="badge tone-green">Hazır</span>' ?>
   </div>
 
   <?php if ($framePending): ?>
@@ -717,34 +768,36 @@ page_start($name . ' ' . order_no($id), 'orders');
     </div>
   <?php endif; ?>
 
-  <div class="workshop-row">
-    <form method="post" class="inline">
-      <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="workshop_assign">
-      <label class="field"><span>Kim üzerinde çalışıyor</span>
-        <select name="assigned_to" data-auto-submit>
-          <option value="">— Atanmadı —</option>
-          <?= select_options(array_combine(array_column($staff, 'id'), array_column($staff, 'full_name')), $order['assigned_to'] !== null ? (string) $order['assigned_to'] : null) ?>
-        </select>
-      </label>
-      <noscript><button class="btn btn-sm">Kaydet</button></noscript>
-    </form>
-    <?php if (!$framePending): ?>
-    <form method="post" class="inline">
-      <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="workshop_move">
-      <?php if ($wstage === 'montajda'): ?>
-        <button class="btn btn-primary btn-sm" name="to" value="kontrol">Montaj tamam · Kontrole gönder</button>
-      <?php elseif ($wstage === 'kontrol'): ?>
-        <button class="btn btn-sm" name="to" value="montajda">← Montaja geri gönder</button>
-        <button class="btn btn-primary btn-sm" name="to" value="hazir"><?= icon('check') ?> Kontrol tamam · Hazır</button>
-      <?php endif; ?>
-    </form>
-    <?php endif; ?>
-    <?php if ($wstage === 'montajda' && !$framePending): ?>
-      <form method="post" class="inline">
-        <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="toggle_own_frame"><input type="hidden" name="pending" value="1">
-        <button class="btn btn-ghost btn-sm">Müşteri kendi çerçevesini getirecek</button>
+  <div class="is-karti-govde">
+    <?php include dirname(__DIR__) . '/partials/atolye-adimlar.php'; ?>
+    <aside class="is-karti-yan">
+      <form method="post" class="kutu-form">
+        <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="raf_kaydet">
+        <label class="field"><span><?= $atolyede ? 'İş kutusu' : 'Raf / kutu' ?></span>
+          <input class="kutu-gir" name="raf_yeri" value="<?= e((string) $order['raf_yeri']) ?>" maxlength="20" placeholder="<?= atolye_bos_kutu() ?>" autocomplete="off">
+        </label>
+        <button class="btn btn-sm">Kaydet</button>
       </form>
-    <?php endif; ?>
+      <p class="hint"><?= $atolyede ? 'Cam ve çerçeve bu numaralı kutuda durur; zarf gerekmez. Boş en küçük numara önerilir.' : 'Gözlük bu yerde, müşteri gelince buradan alınır.' ?></p>
+      <?php if ($atolyede): ?>
+      <form method="post">
+        <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="workshop_assign">
+        <label class="field"><span>Kim üzerinde çalışıyor</span>
+          <select name="assigned_to" data-auto-submit>
+            <option value="">— Atanmadı —</option>
+            <?= select_options(array_combine(array_column($staff, 'id'), array_column($staff, 'full_name')), $order['assigned_to'] !== null ? (string) $order['assigned_to'] : null) ?>
+          </select>
+        </label>
+        <noscript><button class="btn btn-sm">Kaydet</button></noscript>
+      </form>
+      <?php endif; ?>
+      <?php if ($atolyede && $wstage === 'montajda' && !$framePending): ?>
+        <form method="post">
+          <?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="toggle_own_frame"><input type="hidden" name="pending" value="1">
+          <button class="linkish">Müşteri kendi çerçevesini getirecek</button>
+        </form>
+      <?php endif; ?>
+    </aside>
   </div>
 </section>
 <?php endif; ?>

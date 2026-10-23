@@ -1,6 +1,6 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 17 Ekim 2026 (4.42.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 23 Ekim 2026 (4.45.0 dalda, canlı 4.42.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 **Sunucu taşıma (23.10):** kullanıcı sunucu kiraladı — Plesk Obsidian, Administrator erişimli, boş (ilk "cPanel" dendi,
 sonra Plesk olduğu görüldü). Rehber `docs/SUNUCU-TASIMA.md` (aynı ad/kullanıcı/şifreyle DB açılırsa config değişmez).
@@ -8,7 +8,7 @@ Henüz taşınmadı. Bekleyen: alan adı DNS'i nerede, eski hostingte e-posta va
 yeni mağazaya otomatik veritabanı.
 
 ## Sürüm
-- **Sunucu 4.42.0**, şema **35** (göç v35: eski Medula kayıtlarında T.C. no gizlenir). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Sunucu 4.45.0** (dal oturum/sube; 4.43.0–4.45.0 main'e birleştirilmedi, canlı değil), şema **37** (v36: atölye parafları + orders.raf_yeri; v37: odeme_plani + kasa devir/küpür). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
 - **Canlı site: 4.42.0** (17.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.42.0-pro5.6.0; göç v35 ilk istekte çalışır).
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
@@ -23,7 +23,33 @@ yeni mağazaya otomatik veritabanı.
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.42.0 — KVKK: T.C. kimlik no saklanmaz; Poyraz AB bilgisayarı, main)
+## Son oturum (4.45.0 — Veresiye defteri: taksit, ekstre, küpür, devir; TEKNOPLUS, dal oturum/sube)
+- Kullanıcı (23.10): "canlıya almadan 3. adıma geç: veresiye / kasa defteri".
+- Yapılan: app/defter.php (taksit planı kur/dağıt/eşitle, ekstre, borçlu müşteriler, küpür, devir); tahsilat.php →
+  "Veresiye defteri" (varsayılan Müşteri defteri sekmesi), defter.php ekstre (tahsilat, taksitlendir, yazdır, WhatsApp
+  hesap özeti), kasa.php küpür sayımı + yarına devir (assets/kasa.js). Ödeme yazılan 3 yerde söz tarihi plana eşitlenir.
+- Denendi: yerelde 3 taksit kur → ilk taksit tahsil → plan/ekstre/söz; küpür toplamı; 22.10'u 500 ₺ devirle kapatıp
+  23.10'da "Dünden devir" (yerel veride 22.10 sayımı deneme kaydı olarak duruyor). Testler: defter 61; tümü geçti.
+- Pilotta sor: mağaza gün sonu kasada para bırakıyor mu (devir), taksitli satışta senet/bono basılıyor mu?
+
+## Önceki oturum (4.44.0 — Zarfsız atölye: adım parafı, kutu / raf; TEKNOPLUS, dal oturum/sube)
+- Kullanıcı (23.10): "canlıya almadan önce 2. adıma geç: atölye iş takibi (raf yeri, paraf, zarfsız)".
+- Yapılan: app/atolye.php (adım at / geri al / kutu-raf / boş kutu önerisi), siparişte "İş kartı" (iş emrinin numaralı adım
+  tablosu ekranda, sıradaki adım satırında), panoda kart köşesinde kutu no + paraflar + sıradaki adım; sürükle-bırak
+  (workshop.js) formu kendisi kurar, Hazır'a bırakmak raf ister; iş emri fişinde "Kutu". Göç v36.
+- Denendi: yerel MariaDB'de kesim → montaj → kontrol (raf) → hazır → geri al; pano ve telefon ekranı. Testler: atolye 45; tümü geçti.
+- Açık soru (pilotta sor): kutu numaraları mağazada fiziksel tepsiye yazılı mı? Haber adımı, WhatsApp "hazır" mesajı
+  gidince otomatik atılabilir (yol haritası 4. adım).
+
+## Önceki oturum (4.43.0 — Yalın arayüz 1: görev odaklı iskelet; TEKNOPLUS, dal oturum/sube)
+- Kullanıcı (23.10): "mağazaların kâğıt kalem alışkanlığını bitirmeye eğil, önce köklü arayüz güncellemesi ve
+  sadeleştirme"; "tasarım dilinde mükemmeliyetçiliği koru, kullananlar tekrar kullanmak istesin". Seçimler: görev odaklı
+  6 bölüm; kâğıt işleri: atölye iş takibi, veresiye/kasa defteri, aranacaklar listesi, tamir/hizmet fişi; herkese birden.
+- Yapılan: menü 6 bölüm + bölüm sekme şeridi (app/layout.php `bolumler`), "Yalın" CSS katmanı (bant/süs/hareket yok,
+  tipografik başlık, mono sayılar, düz düğmeler), açık görünüm varsayılan. Yerelde masaüstü/telefon/koyu ekranlarla denendi.
+- Testler: arayuz 57 (+13); tümü geçti. main'e birleştirme (= canlıya çıkış) kullanıcı onayı bekliyor.
+
+## Önceki oturum (4.42.0 — KVKK: T.C. kimlik no saklanmaz; Poyraz AB bilgisayarı, main)
 - Kullanıcı (17.10): "şubeyi sona bırakarak devam et" → bekleyen KVKK işi (T.C. maskeleme) yapıldı.
 - `tc_maskele` (app/sgk.php): Medula metni KAYDETMEDEN önce 0 ile başlamayan 11 haneli sayılar gizlenir — Pro aktarımı,
   eklenti köprüsü, sgk_parse ('tc' hep boş), hak sorgusu satırları. Aktarım ekranında T.C. satırı kalktı.
@@ -366,7 +392,11 @@ yeni mağazaya otomatik veritabanı.
 - Devir paketi incelendi; depo bu oturumda kuruldu (geçmiş 4.12.0 hosting paketinden başlar).
 
 ## Sıradaki iş
-*Kullanıcı (17.10): "şubeyi sona bırakarak devam et".*
+*Kullanıcı (23.10): öncelik kâğıt-kalemi bitirmek + Yalın arayüz. Kullanıcı (17.10): "şubeyi sona bırakarak devam et".*
+- **Kâğıtsız + Yalın yol haritası (sırayla):** (1) ✔ iskelet 4.43.0; (2) ✔ atölye iş takibi 4.44.0 (kutu/raf, paraf, zarfsız); (3) ✔ veresiye/kasa defteri 4.45.0 (taksit, ekstre, küpür, devir);
+  (4) aranacaklar listesi — hazır, kontrol zamanı, tamir: tek liste + tek tuş WhatsApp/arama sonucu;
+  (5) tamir/hizmet fişi — vida/nazal/ayar/tamire bırakılan gözlük (yeni, siparişten hafif). Her adımda kalan ekranları
+  Yalın dile geçir (masaüstü + telefon + koyu ekran görüntüsüyle kontrol).
 0. **Tek akış pilotu (4.34.0, canlıda):** pilot mağazada "Yeni müşteri · reçete" ile bir gün çalış:
    Pro'dan gerçek Medula aktarımı, fiş + nüsha düzeni, atölye/depo ayrımı için geri bildirim.
 1. **SEO bağlantısı:** kullanıcı hizmet hesabını kurunca panelde ilk veriyi birlikte kontrol et; sorgulara göre yeni rehber yazıları planla.

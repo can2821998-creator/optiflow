@@ -150,11 +150,12 @@ function page_start(string $title, string $active = '', array $opts = []): void
         ],
     ];
     if (can_see_amounts()) {
-        // Bakiye takibi, "Gün sonu kasa"nın hemen üstünde dursun
+        // Veresiye defteri (4.45.0; eski adı Bakiye takibi), "Gün sonu kasa"nın hemen üstünde dursun
         array_splice($nav['Atölye'], count($nav['Atölye']) - 1, 0, [
-            ['tahsilat', 'tahsilat.php', 'Bakiye takibi', 'wallet', $gecikenBakiye],
+            ['tahsilat', 'tahsilat.php', 'Veresiye defteri', 'wallet', $gecikenBakiye],
         ]);
     }
+    array_unshift($nav['Atölye'], ['tezgah', 'tezgah.php', 'Yeni müşteri · reçete', 'plus', 0]);
     ozellik_menusu_ekle($nav);   // 4.12.0 merkezden açılan modüller
     $nav = menu_gruplari($nav);   // 4.38.0 tek uzun liste yerine iş gruplarına
     if (is_super()) {
@@ -174,6 +175,8 @@ function page_start(string $title, string $active = '', array $opts = []): void
             ]);
         }
     }
+    $bolumler = bolumler($nav, $active);   // 4.43.0 menü 6 bölüm, sayfalar bölüm sekmesi
+    $acikBolum = bolum_bul($bolumler, $active);
     $shop = setting('shop_name', 'OptiFlow');
     if (function_exists('gorev_belki_calistir')) {
         gorev_belki_calistir();   // 4.12.0 WhatsApp kuyruğu / ödeme linkleri (yanıttan sonra)
@@ -197,7 +200,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#141012">
+<meta name="theme-color" content="#ffffff">
 <title><?= e($title) ?> · <?= e($shop) ?></title>
 <link rel="icon" href="<?= e(asset('favicon.svg')) ?>" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -228,21 +231,14 @@ function page_start(string $title, string $active = '', array $opts = []): void
       <input type="search" placeholder="Müşteri, sipariş no, tedarikçi ara…" autocomplete="off" data-global-search-input aria-label="Genel arama">
       <ul class="suggest" data-global-search-list hidden></ul>
     </div>
-    <?php foreach ($nav as $group => $items): ?>
-      <div class="nav-label"><?= e($group) ?></div>
-      <nav class="nav" aria-label="<?= e($group) ?>">
-        <?php foreach ($items as $item):
-          [$key, $href, $label, $ic, $count] = $item;
-          $proOz = $item[5] ?? null;                                   // 4.11.0 Pro özellik anahtarı
-          $kilitli = $proOz !== null && !pro_ozellik_acik($proOz);
-          if ($kilitli) { $href = 'pro.php?ozellik=' . $proOz; $ic = 'lock'; } ?>
-          <a href="<?= e($href) ?>" class="<?= $active === $key ? 'active' : '' ?><?= $kilitli ? ' nav-kilitli' : '' ?>" <?= $active === $key ? 'aria-current="page"' : '' ?><?= $kilitli ? ' title="OptiFlow Pro özelliği"' : '' ?>>
-            <?= icon($ic) ?><span><?= e($label) ?></span><?php if ($proOz !== null && !$kilitli): ?><em class="pro-rozet">PRO</em><?php endif; ?>
-            <?php if ($count > 0): ?><em class="count" title="<?= $key === 'workshop' ? 'Atölyede bekleyen sipariş' : ($key === 'deliveries' ? 'Fatura bekleyen teslimat' : 'Eksik cam') ?>"><?= $count ?></em><?php endif; ?>
-          </a>
-        <?php endforeach; ?>
-      </nav>
-    <?php endforeach; ?>
+    <nav class="nav bolum-nav" aria-label="Bölümler">
+      <?php foreach ($bolumler as $bk => $b): ?>
+        <a href="<?= e($b['href']) ?>" class="<?= $acikBolum === $bk ? 'active' : '' ?>" <?= $acikBolum === $bk ? 'aria-current="true"' : '' ?>>
+          <?= icon($b['ikon']) ?><span><?= e($b['ad']) ?></span>
+          <?php if ($b['sayi'] > 0): ?><em class="count" title="Bekleyen iş"><?= $b['sayi'] ?></em><?php endif; ?>
+        </a>
+      <?php endforeach; ?>
+    </nav>
     <div class="sidebar-user">
       <span class="avatar sm"><?= e(initials(...array_pad(explode(' ', (string) $u['full_name'], 2), 2, ''))) ?></span>
       <span class="who"><b><?= e($u['full_name']) ?></b><small><?php $title = staff_title(staff_xp((int) $u['id'])); ?><?= e($title['icon'] . ' ' . $title['name']) ?> · <?= e(roles()[$u['role']] ?? $u['role']) ?></small></span>
@@ -258,6 +254,19 @@ function page_start(string $title, string $active = '', array $opts = []): void
       <a class="icon-btn" href="profile.php" aria-label="Profilim"><?= icon('user') ?></a>
     </header>
     <main id="main" class="content">
+      <?php if ($acikBolum !== '' && count($bolumler[$acikBolum]['ogeler']) > 1): ?>
+      <nav class="bolum-sekme" aria-label="<?= e($bolumler[$acikBolum]['ad']) ?>">
+        <?php foreach ($bolumler[$acikBolum]['ogeler'] as $item):
+          [$key, $href, $label, $ic, $count] = $item;
+          $proOz = $item[5] ?? null;                                   // 4.11.0 Pro özellik anahtarı
+          $kilitli = $proOz !== null && !pro_ozellik_acik($proOz);
+          if ($kilitli) { $href = 'pro.php?ozellik=' . $proOz; } ?>
+          <a href="<?= e($href) ?>" class="<?= $active === $key ? 'active' : '' ?><?= $kilitli ? ' nav-kilitli' : '' ?>" <?= $active === $key ? 'aria-current="page"' : '' ?><?= $kilitli ? ' title="OptiFlow Pro özelliği"' : '' ?>>
+            <?= e($label) ?><?php if ($kilitli): ?><?= icon('lock') ?><?php endif; ?><?php if ($count > 0): ?><em class="count"><?= $count ?></em><?php endif; ?>
+          </a>
+        <?php endforeach; ?>
+      </nav>
+      <?php endif; ?>
       <?php foreach (flashes() as [$type, $msg]): ?>
         <div class="alert alert-<?= e($type) ?>" role="status"><?= e($msg) ?><button type="button" class="alert-close" aria-label="Kapat" data-dismiss>×</button></div>
       <?php endforeach; ?>
@@ -412,6 +421,76 @@ function ozellik_menusu_ekle(array &$nav): void
         $ekle($a, 'kasa', ['faturalar', 'faturalar.php', 'Faturalar', 'receipt',
             $sayi("SELECT COUNT(*) FROM faturalar WHERE durum = 'taslak'")]);
     }
+}
+
+/**
+ * 4.43.0 — Menü altı bölüme iner (Tezgâh, Siparişler, Atölye, Müşteriler, Kasa, Yönetim). Kenar çubuğunda yalnız
+ * bölümler durur; bölümün sayfaları içerik üstünde sekme olur. Eşlemede olmayan öğe Yönetim'e düşer. Bölüm rozeti
+ * yalnız "şimdi iş var" diyen tek sayıdır (BOLUM_ROZETI); öbür sayılar sekmelerde. Bölüm bağlantısı ilk öğeye gider.
+ */
+const BOLUM_ROZETI = ['atolye' => 'workshop', 'musteriler' => 'hatirlatma', 'kasa' => 'tahsilat', 'yonetim' => 'yedek'];
+const BOLUMLER = [
+    'tezgah'     => ['Tezgâh',     'plus',     ['tezgah', 'hizli-satis', 'barkod', 'sgk-hak', 'sgk']],
+    'siparisler' => ['Siparişler', 'orders',   ['orders', 'quotes', 'garantiler']],
+    'atolye'     => ['Atölye',     'glasses',  ['workshop', 'stock', 'cam-hatalari', 'cerceve', 'urunler', 'stok-oneri', 'uts-bildirim', 'uts']],
+    'musteriler' => ['Müşteriler', 'users',    ['customers', 'hatirlatma', 'mesajlar', 'telefon-asistani', 'bagis']],
+    'kasa'       => ['Kasa',       'wallet',   ['tahsilat', 'kasa', 'faturalar', 'deliveries', 'sgk-mutabakat']],
+    'yonetim'    => ['Yönetim',    'settings', ['suppliers', 'alis-faturasi', 'senetler', 'reports', 'kar', 'push', 'yedek', 'logs', 'settings', 'basarilar']],
+];
+
+function bolumler(array $nav, string $active = ''): array
+{
+    $yer = [];
+    foreach (BOLUMLER as $bk => [, , $anahtarlar]) {
+        foreach ($anahtarlar as $i => $k) {
+            $yer[$k] = [$bk, $i];
+        }
+    }
+    $kova = array_fill_keys(array_keys(BOLUMLER), []);
+    foreach ($nav as $ogeler) {
+        foreach ($ogeler as $oge) {
+            [$bk, $i] = $yer[$oge[0]] ?? ['yonetim', 99];
+            $kova[$bk][] = [$i, $oge];
+        }
+    }
+    $sonuc = [];
+    foreach ($kova as $bk => $liste) {
+        if (!$liste) {
+            continue;
+        }
+        usort($liste, static fn($a, $b) => $a[0] <=> $b[0]);
+        $ogeler = array_column($liste, 1);
+        $ad = BOLUMLER[$bk][0];
+        if ($bk === 'yonetim' && !is_super()) {
+            $ad = 'Diğer';
+        }
+        $sonuc[$bk] = [
+            'ad'     => $ad,
+            'ikon'   => BOLUMLER[$bk][1],
+            'href'   => $ogeler[0][1],
+            'sayi'   => (int) (array_values(array_filter($ogeler, static fn($o) => $o[0] === (BOLUM_ROZETI[$bk] ?? '')))[0][4] ?? 0),
+            'ogeler' => $ogeler,
+        ];
+    }
+    return $sonuc;
+}
+
+/** Etkin sayfa anahtarının bölümü ('' = hiçbiri, ör. Profilim). */
+function bolum_bul(array $bolumler, string $active): string
+{
+    foreach ($bolumler as $bk => $b) {
+        foreach ($b['ogeler'] as $o) {
+            if ($o[0] === $active) {
+                return $bk;
+            }
+        }
+    }
+    foreach (BOLUMLER as $bk => [, , $anahtarlar]) {
+        if (in_array($active, $anahtarlar, true) && isset($bolumler[$bk])) {
+            return $bk;
+        }
+    }
+    return '';
 }
 
 /**

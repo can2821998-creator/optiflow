@@ -64,6 +64,7 @@ small { color: var(--muted); }
 .ie-no { display: flex; align-items: baseline; gap: 3mm; }
 .ie-no small, .ie-soz small { font: 500 6pt/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: #b9aaae; }
 .ie-no b { font: 500 26pt/1 var(--mono); letter-spacing: -.01em; }
+.ie-no .ie-kutu { padding: .4mm 2mm; border: .4mm solid currentColor; border-radius: 1.2mm; font-size: 18pt; }
 .ie-soz { display: grid; justify-items: center; gap: .9mm; padding: 2.2mm 3.4mm; border-radius: 1.8mm; border: .4mm solid var(--coral); background: rgba(255,107,129,.08); text-align: center; }
 .ie-soz b { font: 800 15pt/1 "Manrope", sans-serif; letter-spacing: -.02em; white-space: nowrap; }
 .ie-soz i { font-style: normal; font-size: 7.4pt; font-weight: 700; color: #d9cdd0; }

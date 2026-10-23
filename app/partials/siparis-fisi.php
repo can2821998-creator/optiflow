@@ -176,7 +176,7 @@ $isaret = static function (string $id, string $tek = ''): string {
     <header class="ie-bant">
       <div class="ie-sol">
         <div class="marka acik"><?= $isaret('isIsaret') ?><span><b><?= e($dukkan) ?></b><small>Atölye iş emri</small></span></div>
-        <div class="ie-no"><small>Sipariş</small><b><?= e($no) ?></b></div>
+        <div class="ie-no"><small>Sipariş</small><b><?= e($no) ?></b><?php if (trim((string) ($o['raf_yeri'] ?? '')) !== ''): ?><small>Kutu</small><b class="ie-kutu"><?= e((string) $o['raf_yeri']) ?></b><?php endif; ?></div>
       </div>
       <div class="ie-soz"><small>Teslim sözü</small><b><?= e($sozGun ?: '—') ?></b><i><?= e($sozHafta) ?></i></div>
       <?php if ($qrSip !== ''): ?><div class="ie-qr"><?= $qrSip ?></div><?php endif; ?>

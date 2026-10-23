@@ -277,6 +277,9 @@ function odeme_bildirim_isle(array $p): string
             'hata'         => null,
         ], 'id = ?', [(int) $guncel['id']]);
         audit('odeme_linki_odendi', 'order', (int) $guncel['order_id'], ['tutar' => (float) $guncel['tutar'], 'ödeme' => $pid]);
+        if (function_exists('defter_plan_esitle')) {
+            defter_plan_esitle((int) $guncel['order_id']);   // 4.45.0 taksit planı
+        }
         return 'OK';
     });
 }

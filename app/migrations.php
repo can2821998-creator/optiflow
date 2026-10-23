@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 35;
+const SCHEMA_VERSION = 37;
 
 function run_migrations(): void
 {
@@ -73,6 +73,8 @@ function run_migrations(): void
         if ($current < 33) { migrate_v33_telefon_asistani(); set_schema_version(33); }
         if ($current < 34) { migrate_v34_bekleyen_recete(); set_schema_version(34); }
         if ($current < 35) { migrate_v35_tc_maskele(); set_schema_version(35); }
+        if ($current < 36) { migrate_v36_atolye_adimlari(); set_schema_version(36); }
+        if ($current < 37) { migrate_v37_defter(); set_schema_version(37); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1701,4 +1703,37 @@ function migrate_v35_tc_maskele(): void
     if ($n > 0) {
         app_log('KVKK: ' . $n . ' eski Medula kaydında T.C. no gizlendi.');
     }
+}
+
+/** 4.44.0 — Zarfsız atölye: adım paraf kayıtları + iş kutusu / raf yeri (app/atolye.php). */
+function migrate_v36_atolye_adimlari(): void
+{
+    db()->exec("CREATE TABLE IF NOT EXISTS atolye_adimlari (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        order_id INT UNSIGNED NOT NULL,
+        adim VARCHAR(16) NOT NULL,
+        user_id INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL,
+        UNIQUE KEY uq_atolye_adim (order_id, adim),
+        INDEX idx_atolye_adim_tarih (created_at)
+    ) " . t_opts());
+    add_column('orders', 'raf_yeri', 'VARCHAR(20) NULL');
+}
+
+/** 4.45.0 — Veresiye defteri: taksit planı (app/defter.php) + gün sonu küpür sayımı ve yarına devir (kasa.php). */
+function migrate_v37_defter(): void
+{
+    db()->exec("CREATE TABLE IF NOT EXISTS odeme_plani (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        order_id INT UNSIGNED NOT NULL,
+        sira TINYINT UNSIGNED NOT NULL,
+        vade DATE NOT NULL,
+        tutar DECIMAL(12,2) NOT NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL,
+        UNIQUE KEY uq_odeme_plani (order_id, sira),
+        INDEX idx_odeme_plani_vade (vade)
+    ) " . t_opts());
+    add_column('cash_counts', 'birakilan', 'DECIMAL(12,2) NULL');
+    add_column('cash_counts', 'kupurler', 'VARCHAR(255) NULL');
 }

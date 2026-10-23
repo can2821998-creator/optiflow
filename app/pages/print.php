@@ -461,6 +461,9 @@ if ($type === 'order') {
         $ok = abs((float) $count['difference']) < 0.01;
         $rozet = [$ok ? 'ok' : 'uyari', $ok ? 'onay' : 'cuzdan', $ok ? 'Kasa kapatıldı · mutabık' : 'Kasa kapatıldı · fark var'];
         $aciklama = 'Sayılan ' . e(money($count['counted_amount'])) . ' · beklenen ' . e(money($count['expected_amount'])) . ($ok ? '' : ' · fark <b>' . (((float) $count['difference'] > 0) ? '+' : '') . e(money($count['difference'])) . '</b>');
+        if (isset($count['birakilan']) && $count['birakilan'] !== null) {
+            $aciklama .= ' · yarına devir ' . e(money($count['birakilan']));   // 4.45.0
+        }
     } else {
         $rozet = ['gri', 'kasa', 'Kasa henüz kapatılmadı'];
         $aciklama = 'Bu gün için kasa sayımı yapılmamıştır.';

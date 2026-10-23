@@ -56,17 +56,30 @@
       var toValue = map[target];
       if (!toValue) { return; }
 
-      var form = dragged.querySelector('form[data-form="move"]');
-      if (!form) { return; }
-      var btn = form.querySelector('button[name="to"][value="' + toValue + '"]');
-      if (!btn) { return; }
-
+      // 4.44.0: kartta gizli form yok; aşama formu burada kurulur. Hazır'a bırakmak kontrol parafıdır ve
+      // kutu / raf ister: kartın kutu kutusu boşsa ona odaklanılır, doluysa kartın "Kontrol tamam" formu gönderilir.
       if (toValue === 'hazir') {
+        var adimFormu = dragged.querySelector('form input[name="adim"][value="kontrol"]');
+        adimFormu = adimFormu ? adimFormu.form : null;
+        if (!adimFormu) { return; }
+        var raf = adimFormu.querySelector('input[name="raf_yeri"]');
+        if (raf && !raf.value.trim()) { raf.focus(); raf.reportValidity && raf.reportValidity(); return; }
         dragged.classList.add('pano-card-celebrate');
-        setTimeout(function () { btn.click(); }, 420);
-      } else {
-        btn.click();
+        setTimeout(function () { adimFormu.submit(); }, 420);
+        return;
       }
+      var csrf = dragged.querySelector('input[name="csrf"]');
+      if (!csrf) { return; }
+      var form = document.createElement('form');
+      form.method = 'post';
+      form.action = 'order.php';
+      [[csrf.name, csrf.value], ['order_id', dragged.dataset.orderId], ['action', 'workshop_move'], ['return', 'pano'], ['to', toValue]].forEach(function (p) {
+        var i = document.createElement('input');
+        i.type = 'hidden'; i.name = p[0]; i.value = p[1];
+        form.appendChild(i);
+      });
+      document.body.appendChild(form);
+      form.submit();
     });
   });
 })();

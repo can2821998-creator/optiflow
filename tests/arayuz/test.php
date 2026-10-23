@@ -44,7 +44,7 @@ $bs = (string) file_get_contents($kok . '/app/bootstrap.php');
 dogru('manifest oturumsuz da açılır (veritabanı seçilmez)', str_contains($bs, "=== 'manifest.php' && !tenant_oturum()") && str_contains($bs, '!$anaSayfaMisafir && !$manifestMisafir'));
 $mf = (string) file_get_contents($kok . '/manifest.php');
 dogru('manifest: mağaza adı yalnızca mağaza oturumunda okunur', str_contains($mf, 'if (tenant_oturum()) {'));
-dogru('manifest: açılış rengi tema rengiyle aynı', str_contains($mf, "'background_color'  => '#141012'") && str_contains($mf, "'theme_color'       => '#141012'"));
+dogru('manifest: açılış rengi tema rengiyle aynı (4.43.0 açık)', str_contains($mf, "'background_color'  => '#ffffff'") && str_contains($mf, "'theme_color'       => '#ffffff'"));
 dogru('manifest: ortak önbelleğe alınmaz', str_contains($mf, 'Cache-Control: private'));
 foreach (['telefon.webp', 'liste.webp', 'atolye.webp'] as $g) {
     dogru("manifest ekran görüntüsü var: $g", str_contains($mf, 'assets/onizleme/' . $g) && is_file($kok . '/assets/onizleme/' . $g));
@@ -99,6 +99,36 @@ dogru('merkez: eski mavi tema renkleri kalmadı', !preg_match('/4a5aff|1c2ecc|51
 dogru('merkez: açık/koyu görünüm (tema.js + html.tema-koyu)', str_contains($mp, "asset('tema.js')") && str_contains($mp, 'html.tema-koyu{') && str_contains($mp, 'data-tema-dugme'));
 dogru('merkez: toplu işlem çubuğu yalnızca seçimde', str_contains($mp, 'body:has(.selbox:checked) #bulkform{display:flex') && !str_contains($mp, 'class="bulkbar" style="display:flex"'));
 dogru('merkez: başlık bandı ve iki gruplu özet kartları', str_contains($mp, '<section class="band">') && str_contains($mp, '<div class="kpis ikincil">'));
+
+/* 4.43.0 Yalın arayüz: menü 6 bölüm, bölüm sekmeleri, açık görünüm varsayılan */
+$superMi = true;
+if (!function_exists('is_super')) {
+    function is_super(): bool { return $GLOBALS['superMi']; }
+}
+require_once $kok . '/app/layout.php';
+$nav = [
+    'Satış'          => [['orders', 'index.php', 'Siparişler', 'orders', 0], ['tezgah', 'tezgah.php', 'Yeni', 'plus', 0], ['hatirlatma', 'hatirlatma.php', 'H', 'bell', 4], ['quotes', 'quotes.php', 'T', 'spark', 0]],
+    'Atölye ve stok' => [['stock', 'stock.php', 'Depo', 'box', 3], ['workshop', 'workshop.php', 'Pano', 'glasses', 8], ['cerceve', 'cerceve.php', 'Ç', 'glasses', 5]],
+    'Diğer'          => [['yeni-modul', 'yeni.php', 'Yeni modül', 'spark', 0]],
+    'Yönetim'        => [['settings', 'settings.php', 'Ayarlar', 'settings', 0]],
+];
+$b = bolumler($nav, 'stock');
+dogru('bölümler sabit sırada', array_keys($b) === ['tezgah', 'siparisler', 'atolye', 'musteriler', 'yonetim']);
+dogru('bölüm içi sıra eşlemeye göre (pano, depo, çerçeve)', array_column($b['atolye']['ogeler'], 0) === ['workshop', 'stock', 'cerceve']);
+dogru('bölüm bağlantısı ilk sayfaya', $b['atolye']['href'] === 'workshop.php' && $b['siparisler']['href'] === 'index.php');
+dogru('bölüm rozeti tek sayı (toplam değil)', $b['atolye']['sayi'] === 8 && $b['musteriler']['sayi'] === 4 && $b['siparisler']['sayi'] === 0);
+dogru('eşlemede olmayan öğe Yönetim\'e düşer', in_array('yeni-modul', array_column($b['yonetim']['ogeler'], 0), true));
+dogru('etkin sayfanın bölümü bulunur', bolum_bul($b, 'stock') === 'atolye' && bolum_bul($b, 'tezgah') === 'tezgah');
+dogru('menüde olmayan ama eşlenmiş sayfa (sgk aktar) bölümünü bulur', bolum_bul($b, 'sgk') === 'tezgah');
+dogru('bölümsüz sayfa (Profilim) sekme çizmez', bolum_bul($b, '') === '' && bolum_bul($b, 'profil') === '');
+$superMi = false;
+dogru('süper yetkili olmayana "Diğer" adı', bolumler($nav)['yonetim']['ad'] === 'Diğer');
+$lay = (string) file_get_contents($kok . '/app/layout.php');
+dogru('kenar çubuğu yalnız bölümleri çizer, sayfalar sekmede', str_contains($lay, 'class="nav bolum-nav"') && str_contains($lay, 'class="bolum-sekme"') && !str_contains($lay, '<div class="nav-label">'));
+dogru('Yalın katman CSS\'in sonunda (önceki katmanları ezer)', strpos($css, '4.43.0 — YALIN') > strpos($css, '4.41.0 Ayarlar'));
+dogru('başlık bandı süsü kalktı', str_contains($css, '.page-head::before, .page-head::after, .hero::before, .hero::after { content: none; }'));
+$tj = (string) file_get_contents($kok . '/assets/tema.js');
+dogru('görünüm: kayıt yoksa açık', str_contains($tj, "return v === 'koyu' || v === 'oto' ? v : 'acik';"));
 
 echo "Arayüz/merkez düzeltme testleri: $gecen geçti, $kalan kaldı\n";
 exit($kalan ? 1 : 0);

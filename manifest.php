@@ -34,8 +34,8 @@ echo json_encode([
     'display_override'  => ['standalone', 'minimal-ui'],
     'orientation'       => 'portrait-primary',
     // 4.20.3: açılış ekranı tema rengiyle aynı (siyah); açık zeminden siyaha geçişteki parlama yok
-    'background_color'  => '#141012',
-    'theme_color'       => '#141012',
+    'background_color'  => '#ffffff',
+    'theme_color'       => '#ffffff',
     'categories'        => ['business', 'productivity', 'medical'],
     'icons' => [
         ['src' => 'assets/icons/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],

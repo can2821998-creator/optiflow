@@ -1,7 +1,7 @@
 /* 4.20.0 — Açık / koyu görünüm.
    <head> içinde ERTELENMEDEN yüklenir: sayfa çizilmeden önce <html data-tema="…"> yazılır, beyaz parlama olmaz.
-   Seçim bu cihazda saklanır (localStorage "of-tema": "acik" | "koyu"; yoksa işletim sistemi teması izlenir).
-   Düğme ([data-tema-dugme]) sırayla: otomatik → koyu → açık → otomatik. */
+   Seçim bu cihazda saklanır (localStorage "of-tema": "koyu" | "oto"; yoksa AÇIK — 4.43.0'dan beri varsayılan açık).
+   Eski "acik" kaydı da açık sayılır. Düğme ([data-tema-dugme]) sırayla: açık → koyu → otomatik → açık. */
 (function () {
   var ANAHTAR = 'of-tema';
   var kok = document.documentElement;
@@ -9,21 +9,21 @@
   function oku() {
     try {
       var v = localStorage.getItem(ANAHTAR);
-      return v === 'acik' || v === 'koyu' ? v : '';
+      return v === 'koyu' || v === 'oto' ? v : 'acik';
     } catch (e) {
-      return '';
+      return 'acik';
     }
   }
   function sistemKoyu() {
     return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
   }
   function uygula(secim) {
-    if (secim) kok.setAttribute('data-tema', secim);
+    if (secim !== 'oto') kok.setAttribute('data-tema', secim);
     else kok.removeAttribute('data-tema');
-    var koyu = secim ? secim === 'koyu' : sistemKoyu();
+    var koyu = secim === 'oto' ? sistemKoyu() : secim === 'koyu';
     kok.classList.toggle('tema-koyu', koyu);
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', '#141012');
+    if (meta) meta.setAttribute('content', koyu ? '#151316' : '#ffffff');
     var ad = secim === 'koyu' ? 'Koyu' : secim === 'acik' ? 'Açık' : 'Otomatik (' + (koyu ? 'koyu' : 'açık') + ')';
     var dugmeler = document.querySelectorAll('[data-tema-dugme]');
     for (var i = 0; i < dugmeler.length; i++) {
@@ -36,7 +36,7 @@
 
   if (window.matchMedia) {
     var mq = window.matchMedia('(prefers-color-scheme: dark)');
-    var dinle = function () { if (!oku()) uygula(''); };
+    var dinle = function () { if (oku() === 'oto') uygula('oto'); };
     if (mq.addEventListener) mq.addEventListener('change', dinle);
     else if (mq.addListener) mq.addListener(dinle);
   }
@@ -46,9 +46,9 @@
     var d = t && t.closest ? t.closest('[data-tema-dugme]') : null;
     if (!d) return;
     var simdi = oku();
-    var sonraki = simdi === '' ? 'koyu' : simdi === 'koyu' ? 'acik' : '';
+    var sonraki = simdi === 'acik' ? 'koyu' : simdi === 'koyu' ? 'oto' : 'acik';
     try {
-      if (sonraki) localStorage.setItem(ANAHTAR, sonraki);
+      if (sonraki !== 'acik') localStorage.setItem(ANAHTAR, sonraki);
       else localStorage.removeItem(ANAHTAR);
     } catch (err) { /* saklanamazsa yalnızca bu sayfada geçerli */ }
     uygula(sonraki);

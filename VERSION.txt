@@ -1,6 +1,37 @@
 OPTIFLOW
-Release: 4.42.0 (2026-10-17)
+Release: 4.45.0 (2026-10-23)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.45.0 (Veresiye defteri: taksit planı, müşteri ekstresi, küpür sayımı, yarına devir; şema 37)
+  - "Bakiye takibi" → "Veresiye defteri": varsayılan sekme "Müşteri defteri" (müşteri başına tek satır: borç, sözü geçen,
+    sıradaki söz, en eski borç günü; sözü geçenler üstte). Sipariş bazlı sekmeler aynen duruyor.
+  - Ekstre (defter.php?musteri=): siparişler borç, SGK payı ve ödemeler alacak, yürüyen bakiye; açık siparişte hızlı
+    tahsilat; yazdır; "Hesap özeti gönder" (WhatsApp). Müşteri kartında "Ekstre" düğmesi.
+  - Taksit planı (odeme_plani): kalan bakiye 2–12 eşit taksite, aylık vade (ay sonu kayması düzeltilir, kuruş farkı son
+    taksitte). Ödeme hangi kanaldan gelirse gelsin en eski taksitten kapatır; ödeme sözü tarihi her ödemede sıradaki
+    taksite eşitlenir (menü rozeti ve "sözü geçmiş" plana göre). İptalde plan düşer.
+  - Gün sonu kasa: küpür küpür sayım (200 ₺ … 5 kr; toplam kendiliğinden yazılır, assets/kasa.js), "kasada bırakılan ·
+    yarına devir"; ertesi gün "Dünden devir" beklenen nakde eklenir. Özet fiş gibi alt alta; sıfır tutarlar renksiz.
+  - Göç v37: odeme_plani + cash_counts.birakilan / kupurler. Test: tests/defter/test.php (61).
+
+DEĞİŞİKLİK NOTLARI — 4.44.0 (Zarfsız atölye: adım parafı, kutu / raf; şema 36)
+  - İş emrindeki "Adım · Tamam · Paraf · Saat" tablosu ekranda: siparişte "İş kartı" (01 Cam geldi · 02 Kesim · 03 Montaj ·
+    04 Kontrol PD/aks · 05 Müşteriye haber). Sıradaki adımın düğmesi kendi satırında; paraf = giriş yapan + saat.
+  - Adımlar aşamayı yürütür: Montaj → kalite kontrol (atanmamışsa montajcıya yazılır), Kontrol → Hazır (kutu / raf zorunlu,
+    boş en küçük numara önerilir), Haber → hazırdaki işe not. Son adım geri alınabilir (atan kişi ya da yönetici).
+  - Kutu / raf (orders.raf_yeri): zarfın yerine işi taşıyan numaralı kutu; panoda kartın köşesinde, iş emri fişinde.
+  - Atölye panosu: kartlarda paraflar ve sıradaki adım düğmesi; sürükle-bırak da paraf izi bırakır, Hazır'a bırakmak raf ister.
+  - Göç v36: atolye_adimlari tablosu + orders.raf_yeri. Elle aşama geri alınınca eski paraflar silinir.
+  - Test: tests/atolye/test.php (45).
+
+DEĞİŞİKLİK NOTLARI — 4.43.0 (Yalın arayüz 1: görev odaklı iskelet)
+  - Menü 34 bağlantıdan 6 bölüme indi: Tezgâh, Siparişler, Atölye, Müşteriler, Kasa, Yönetim (yetkisizde "Diğer").
+    Bölümün sayfaları içerik üstünde yapışkan sekme şeridi (app/layout.php bolumler / bolum_bul, BOLUMLER eşlemesi;
+    eşlenmeyen yeni öğe Yönetim'e düşer). Bölüm rozeti tek anlamlı sayı (atölyede, hatırlatma, geciken bakiye, yedek).
+  - "Yalın" tasarım katmanı (assets/app.css sonu): başlık bandı, gözlük çizimi, parıltı ve bulanık giriş hareketleri
+    kalktı; başlık tipografik, sayılar mono, kartlar gölgesiz ince çizgi, düğmeler düz (bordo yalnız birincil eylem).
+  - Açık görünüm varsayılan (tema.js: kayıt yoksa açık; düğme açık → koyu → otomatik). PWA rengi beyaz.
+  - Test: arayuz 57 (bölüm eşlemesi, rozet, varsayılan görünüm).
 
 DEĞİŞİKLİK NOTLARI — 4.42.0 (KVKK: T.C. kimlik no saklanmaz; şema 35)
   - Medula'dan gelen her metin KAYDETMEDEN önce T.C. numarasından arındırılır (app/sgk.php tc_maskele: 0 ile başlamayan

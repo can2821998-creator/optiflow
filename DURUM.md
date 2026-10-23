@@ -1,6 +1,6 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 23 Ekim 2026 (4.45.0 main'de, yayın sürüyor; canlı 4.42.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 23 Ekim 2026 (4.45.0 canlıda / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 **Sunucu taşıma (23.10):** kullanıcı sunucu kiraladı — Plesk Obsidian, Administrator erişimli, boş (ilk "cPanel" dendi,
 sonra Plesk olduğu görüldü). Rehber `docs/SUNUCU-TASIMA.md` (aynı ad/kullanıcı/şifreyle DB açılırsa config değişmez).
@@ -9,7 +9,9 @@ yeni mağazaya otomatik veritabanı.
 
 ## Sürüm
 - **Sunucu 4.45.0** (23.10 main'e birleştirildi: 4.43.0–4.45.0), şema **37** (v36: atölye parafları + orders.raf_yeri; v37: odeme_plani + kasa devir/küpür). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.42.0** (17.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.42.0-pro5.6.0; göç v35 ilk istekte çalışır).
+- **Canlı site: 4.45.0** (23.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.45.0-pro5.6.0; göç v36–v37 ilk istekte çalışır).
+  Not: TEKNOPLUS bilgisayarının hosts dosyasında taşıma denemesinden kalan `optiflow.com.tr → 31.186.24.236` (yeni sunucu,
+  henüz SSL yok) satırları var; bu PC'de site sertifika uyarısıyla yeni sunucudan açılır. Genel DNS eski hostingi gösterir.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);

@@ -20,12 +20,18 @@ jobs:
         run: |
           set -e
           mkdir ses && cd ses
+          API=https://huggingface.co/api/models/rhasspy/piper-voices/tree/main/tr/tr_TR
           B=https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR
-          for v in dfki fahrettin fettah; do
-            for f in "tr_TR-$v-medium.onnx" "tr_TR-$v-medium.onnx.json"; do
-              curl -fsSL "$B/$v/medium/$f?download=true" -o "$f" || echo "yok: $f"
+          curl -fsSL "$API" | jq -r '.[].path' | tee ../sesler.txt
+          for d in $(jq -r '.[].path' <(curl -fsSL "$API")); do
+            v=$(basename "$d")
+            for q in $(curl -fsSL "$API/$v" | jq -r '.[].path' | xargs -n1 basename); do
+              echo "== $v $q"
+              curl -fsSL "$B/$v/$q/MODEL_CARD?download=true" -o "MODEL_CARD-$v-$q.txt" || true
+              for f in $(curl -fsSL "$API/$v/$q" | jq -r '.[].path' | xargs -n1 basename | grep -E '\.onnx(\.json)?$'); do
+                curl -fsSL "$B/$v/$q/$f?download=true" -o "$f"
+              done
             done
-            curl -fsSL "$B/$v/medium/MODEL_CARD?download=true" -o "MODEL_CARD-$v.txt" || echo "yok: MODEL_CARD $v"
           done
           ls -la
       - name: Ön sürüme koy

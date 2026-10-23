@@ -1,0 +1,37 @@
+# Tanıtım filmleri için Türkçe seslendirme modelleri (Piper, çevrimdışı TTS).
+# Bulut oturumu HuggingFace'e erişemediği için modeller burada indirilir ve
+# "ses-modelleri" ön sürümüne (prerelease) konur; oturum oradan REST ile indirir.
+# Ön sürüm olduğu için "Canlıya al"ın baktığı "en son Release"i etkilemez.
+name: Ses modelleri
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  indir:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Piper Türkçe sesleri indir
+        run: |
+          set -e
+          mkdir ses && cd ses
+          B=https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR
+          for v in dfki fahrettin fettah; do
+            for f in "tr_TR-$v-medium.onnx" "tr_TR-$v-medium.onnx.json"; do
+              curl -fsSL "$B/$v/medium/$f?download=true" -o "$f" || echo "yok: $f"
+            done
+            curl -fsSL "$B/$v/medium/MODEL_CARD?download=true" -o "MODEL_CARD-$v.txt" || echo "yok: MODEL_CARD $v"
+          done
+          ls -la
+      - name: Ön sürüme koy
+        run: |
+          cd ses
+          gh release view ses-modelleri --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create ses-modelleri --repo "$GITHUB_REPOSITORY" --prerelease --target "$GITHUB_SHA" \
+              --title "Ses modelleri (tanıtım filmi, iç kullanım)" --notes "Piper Türkçe ses modelleri; tanıtım filmlerinin seslendirmesi için. Kurulum dosyası değildir."
+          gh release upload ses-modelleri --repo "$GITHUB_REPOSITORY" --clobber ./*

@@ -1,0 +1,11 @@
+[
+ {"id":"kapi","metin":"Saat on kırk iki. Kapı açıldı, Ayşe Hanım reçetesiyle geldi."},
+ {"id":"eskiden","metin":"Eskiden Medula, defter ve hesap makinesi arasında koşardınız."},
+ {"id":"medula","metin":"Şimdi önce Medula'dan reçeteyi sorgularsınız."},
+ {"id":"aktar","metin":"Reçeteyi aktar'a basarsınız. Değerler siparişe kendiliğinden gelir."},
+ {"id":"teklif","metin":"Se ge ka payı düşülmüş teklif, müşterinin önünde."},
+ {"id":"pano","metin":"Sipariş atölyeye düşer. Cam gelince pano haber verir."},
+ {"id":"mesaj","metin":"Gözlük hazır olunca müşteriye mesaj gider."},
+ {"id":"teslim","metin":"Telefon çalmadan, defter açılmadan teslim."},
+ {"id":"son","metin":"Optiflo. Otuz gün ücretsiz deneyin."}
+]

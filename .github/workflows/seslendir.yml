@@ -1,0 +1,60 @@
+# Tanıtım filmlerinin seslendirmesi: docs/tanitim-video/<film>/ses.json içindeki satırları
+# Coqui TTS Türkçe modeliyle (GlowTTS + HiFiGAN, MIT lisanslı, Common Voice verisi) okur ve
+# "seslendirme" ön sürümüne ses-<film>.zip olarak koyar (bulut oturumu oradan REST ile indirir).
+# Ön sürüm olduğu için "Canlıya al"ın baktığı en son Release'i etkilemez.
+name: Seslendir
+
+on:
+  workflow_dispatch:
+    inputs:
+      hiz:
+        description: 'Konuşma hızı çarpanı (1 = normal, 0.9 = biraz hızlı)'
+        default: '0.92'
+
+permissions:
+  contents: write
+
+jobs:
+  seslendir:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Coqui TTS kur
+        run: |
+          pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install -q coqui-tts
+      - name: Seslendir
+        env:
+          HIZ: ${{ inputs.hiz }}
+        run: |
+          python - <<'EOF'
+          import json, os, glob, zipfile
+          from TTS.api import TTS
+          tts = TTS("tts_models/tr/common-voice/glow-tts", progress_bar=False)
+          try:
+              tts.synthesizer.tts_model.length_scale = float(os.environ.get("HIZ", "0.92"))
+          except Exception as e:
+              print("hız ayarlanamadı:", e)
+          os.makedirs("cikti", exist_ok=True)
+          for js in sorted(glob.glob("docs/tanitim-video/*/ses.json")):
+              film = os.path.basename(os.path.dirname(js))
+              satirlar = json.load(open(js, encoding="utf-8"))
+              zp = f"cikti/ses-{film}.zip"
+              with zipfile.ZipFile(zp, "w") as z:
+                  for s in satirlar:
+                      wav = f"cikti/{film}-{s['id']}.wav"
+                      tts.tts_to_file(text=s["metin"], file_path=wav)
+                      z.write(wav, f"{s['id']}.wav")
+              print("hazır:", zp)
+          EOF
+      - name: Ön sürüme koy
+        run: |
+          gh release view seslendirme --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create seslendirme --repo "$GITHUB_REPOSITORY" --prerelease --target "$GITHUB_SHA" \
+              --title "Seslendirme (tanıtım filmi, iç kullanım)" --notes "Tanıtım filmlerinin taslak seslendirmesi (Coqui TTS Türkçe, MIT). Kurulum dosyası değildir."
+          gh release upload seslendirme --repo "$GITHUB_REPOSITORY" --clobber cikti/ses-*.zip

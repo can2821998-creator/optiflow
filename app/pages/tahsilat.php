@@ -211,15 +211,14 @@ $ozet = row(
 ) ?: ['adet' => 0, 'toplam' => 0, 'd30' => 0, 'd60' => 0, 'd90' => 0, 'd90p' => 0, 'geciken' => 0];
 
 page_start('Veresiye defteri', 'tahsilat');
-page_header('Veresiye defteri', 'Kimde ne kadar alacak var: taksitler, ödeme sözleri, ekstre.', '', '', 'Kasa');
+page_header('Veresiye defteri', 'Kimde ne kadar alacak var: taksitler, ödeme sözleri, ekstre.', '', '', 'Kasa', bant_veri([   // 4.46.0
+    ['Açık bakiye · ' . (int) $ozet['adet'] . ' sipariş', money($ozet['toplam']), '', ''],
+    ['Sözü geçmiş', money($ozet['geciken']), (float) $ozet['geciken'] > 0.009 ? 'red' : '', 'tahsilat.php?f=geciken'],
+    ['0–30 gün', money($ozet['d30']), '', ''],
+    ['90 gün ve üzeri', money($ozet['d90p']), (float) $ozet['d90p'] > 0.009 ? 'amber' : '', ''],
+]));
 ?>
 
-<section class="stats">
-  <div class="stat"><small>Açık bakiye</small><b><?= e(money($ozet['toplam'])) ?></b><span><?= (int) $ozet['adet'] ?> sipariş</span></div>
-  <div class="stat <?= (float) $ozet['geciken'] > 0.009 ? 'tone-red' : '' ?>"><small>Sözü geçmiş</small><b><?= e(money($ozet['geciken'])) ?></b><span>Tarihi geçen ödeme sözleri</span></div>
-  <div class="stat tone-green"><small>0–30 gün</small><b><?= e(money($ozet['d30'])) ?></b><span>Yeni bakiye</span></div>
-  <div class="stat <?= (float) $ozet['d90p'] > 0.009 ? 'tone-amber' : '' ?>"><small>90 gün ve üzeri</small><b><?= e(money($ozet['d90p'])) ?></b><span>Eski alacak</span></div>
-</section>
 
 <nav class="tabs" aria-label="Bakiye filtresi">
   <?php foreach ($filtreler as $k => $ad): ?>

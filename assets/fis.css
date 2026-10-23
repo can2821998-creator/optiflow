@@ -1,0 +1,115 @@
+/* 4.48.0 — Ortak yarım A4 fiş (app/fis.php): üst yarı müşteri nüshası, kesme çizgisi, alt yarı mağaza nüshası.
+   Her yarı 210 × 148,5 mm. İş emrinin dili: gece bandı, büyük mono numara, numaralı kutular. Siyah-beyaz yazıcıda
+   okunur (anlam renkte değil biçimde). Yazı tipleri yerel (assets/fonts). */
+@font-face { font-family: "Manrope"; font-weight: 200 800; font-display: swap; src: url("fonts/manrope-latin-wght-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+20BA, U+2122, U+2212; }
+@font-face { font-family: "Manrope"; font-weight: 200 800; font-display: swap; src: url("fonts/manrope-latin-ext-wght-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F; }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-display: swap; src: url("fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-display: swap; src: url("fonts/ibm-plex-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F; }
+:root {
+  --ink: #1b1416; --ink-2: #463b3e; --muted: #776b6e; --line: #e2dadb; --line-2: #c9bec0;
+  --brand: #a51d36; --brand-deep: #6f1123; --marka: var(--brand); --night: #141012; --coral: #ff6b81;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #e6e1e2; }
+body { font: 500 9pt/1.32 "Manrope", system-ui, Arial, sans-serif; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+/* ekran araç çubuğu */
+.fis-arac { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 16px; background: var(--night); color: #d9cdd0; font: 600 13px system-ui, sans-serif; }
+.fis-arac span { flex: 1 1 280px; }
+.fis-arac a { color: #fff; font-weight: 700; text-decoration: none; padding: 8px 14px; border: 1px solid #5a4a4f; border-radius: 9px; }
+.fis-arac button { font: 700 14px system-ui, sans-serif; padding: 8px 16px; border-radius: 9px; border: 0; background: linear-gradient(135deg, #b8243f, #6f1123); color: #fff; cursor: pointer; }
+.fis-arac button.ghost { background: transparent; border: 1px solid #5a4a4f; }
+
+/* kâğıt */
+.fis-kagit { width: 210mm; margin: 14px auto 40px; background: #fff; box-shadow: 0 10px 40px -18px rgba(20, 16, 18, .45); }
+.fis-yari { position: relative; display: flex; flex-direction: column; height: 148.5mm; padding: 8mm 10mm 6mm; overflow: hidden; }
+.fis-kesim { position: relative; height: 0; }
+.fis-kesim::before { content: ""; position: absolute; left: 0; right: 0; top: -.15mm; border-top: .3mm dashed #9a8c90; }   /* yer kaplamaz: iki yarı tam 297 mm */
+.fis-kesim span { position: absolute; left: 50%; top: 0; transform: translate(-50%, -50%); padding: 0 3mm; background: #fff; font: 500 6.5pt/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #8a7c80; white-space: nowrap; }
+
+/* gece bandı */
+.fis-bant { display: flex; align-items: stretch; justify-content: space-between; gap: 6mm; padding: 4mm 5mm; border-radius: 2.4mm; background: radial-gradient(70% 160% at 100% 0%, rgba(184, 36, 63, .55), transparent 60%), linear-gradient(115deg, #110b0d, #3b0f1b); color: #f4eef0; }
+.fis-marka { display: flex; align-items: center; gap: 3mm; }
+.fis-marka .brand-mark { display: block; width: 9mm; height: 9mm; color: var(--coral); }
+.fis-marka .brand-mark svg { width: 100%; height: 100%; display: block; }
+.fis-marka b { display: block; font: 800 12pt/1.1 "Manrope", sans-serif; letter-spacing: -.01em; }
+.fis-marka small { display: block; margin-top: 1mm; font: 500 6.5pt/1 var(--mono); letter-spacing: .2em; color: var(--coral); }
+.fis-tur { display: grid; justify-items: end; align-content: center; gap: .8mm; text-align: right; }
+.fis-tur small { font: 500 6.5pt/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: #c9b9bd; }
+.fis-tur b { font: 500 20pt/1 var(--mono); letter-spacing: -.01em; }
+.fis-tur i { font: 500 7pt/1 var(--mono); font-style: normal; color: #c9b9bd; }
+
+/* gövde: iki sütun ızgara */
+.fis-govde { flex: 1; display: grid; grid-template-columns: 1.35fr 1fr; gap: 4mm 6mm; align-content: start; padding-top: 5mm; min-height: 0; }
+.fis-govde > .tam { grid-column: 1 / -1; }
+.fis-kutu { min-width: 0; }
+.fis-kutu h2 { display: flex; align-items: baseline; gap: 2mm; margin: 0 0 2mm; padding-bottom: 1.2mm; border-bottom: .3mm solid var(--ink); font: 800 8.5pt/1.1 "Manrope", sans-serif; letter-spacing: .02em; text-transform: uppercase; }
+.fis-kutu h2 i { font: 500 7.5pt/1 var(--mono); font-style: normal; color: var(--brand); }
+.fis-kutu p { margin: 0 0 1.5mm; }
+.fis-kutu .not { padding: 2mm 2.5mm; border-left: .8mm solid var(--brand); background: #faf6f6; font-size: 8.5pt; }
+
+.fis-dl { display: grid; grid-template-columns: auto 1fr; gap: 1.2mm 4mm; margin: 0; }
+.fis-dl dt { font: 500 6.8pt/1.5 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.fis-dl dd { margin: 0; font-weight: 700; }
+.fis-dl dd.mono, .fis-dl .mono { font-family: var(--mono); font-weight: 500; }
+
+.fis-vurgu { display: grid; gap: 1mm; padding: 3mm 3.5mm; border: .4mm solid var(--ink); border-radius: 2mm; }
+.fis-vurgu small { font: 500 6.8pt/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.fis-vurgu b { font: 500 17pt/1.05 var(--mono); letter-spacing: -.01em; }
+.fis-vurgu i { font-style: normal; font-size: 8pt; color: var(--ink-2); }
+.fis-vurgu.koyu { background: var(--night); border-color: var(--night); color: #fff; }
+.fis-vurgu.koyu small, .fis-vurgu.koyu i { color: #d9cdd0; }
+.fis-vurgu + .fis-vurgu { margin-top: 2.5mm; }
+
+.fis-isaret { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1.2mm 3mm; }
+.fis-isaret li { display: flex; align-items: center; gap: 1.8mm; font-size: 8pt; }
+.fis-isaret li.yok { color: #9a8c90; }
+.fis-isaret li.var { font-weight: 800; }
+.fis-isaret .kare { flex: none; display: inline-grid; place-items: center; width: 3.4mm; height: 3.4mm; border: .3mm solid currentColor; font: 800 6.5pt/1 "Manrope", sans-serif; }
+
+.fis-imzalar { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 6mm; margin-top: auto; padding-top: 4mm; }
+.fis-imzalar > div { display: grid; gap: .6mm; }
+.fis-imzalar span { height: 9mm; border-bottom: .3mm solid var(--ink); }
+.fis-imzalar b { font: 800 7.5pt/1.2 "Manrope", sans-serif; text-transform: uppercase; letter-spacing: .04em; }
+.fis-imzalar small { font-size: 6.8pt; color: var(--muted); }
+
+.fis-qr { display: flex; align-items: center; gap: 3mm; margin-top: 3mm; }
+.fis-qr svg { width: 22mm; height: 22mm; flex: none; }
+.fis-qr small { font-size: 7.5pt; color: var(--ink-2); }
+
+.fis-tablo { width: 100%; border-collapse: collapse; font-size: 8.2pt; }
+.fis-tablo th { text-align: left; font: 500 6.6pt/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 0 0 1mm; border-bottom: .3mm solid var(--line-2); }
+.fis-tablo td { padding: 1.2mm 0; border-bottom: .2mm solid var(--line); vertical-align: top; }
+.fis-tablo .num { text-align: right; font-family: var(--mono); white-space: nowrap; }
+.fis-tablo tfoot td { border-bottom: 0; border-top: .4mm solid var(--ink); font-weight: 800; }
+
+.fis-alt { display: flex; justify-content: space-between; gap: 4mm; margin-top: 3mm; padding-top: 2mm; border-top: .2mm solid var(--line); font: 500 6.5pt/1 var(--mono); color: var(--muted); }
+
+/* mağaza nüshası: gözlüğe iliştirilen numara şeridi */
+.fis-serit { display: flex; align-items: center; gap: 4mm; padding: 2.5mm 3.5mm; border: .5mm solid var(--ink); border-radius: 2mm; }
+.fis-serit b { font: 500 22pt/1 var(--mono); }
+.fis-serit span { display: grid; gap: .6mm; font-size: 8pt; }
+.fis-serit span strong { font-size: 10pt; }
+
+/* yazdırma */
+@media print {
+  html, body { background: #fff; }
+  .no-print { display: none !important; }
+  .fis-kagit { margin: 0; box-shadow: none; }
+  .kagit-yarim .fis-kesim { display: none; }
+  .kagit-yarim .fis-yari { break-after: page; page-break-after: always; }
+  .kagit-yarim .fis-yari:last-of-type { break-after: auto; page-break-after: auto; }
+}
+
+/* hizmet fişi parçaları */
+.fis-islem { margin: 0 0 1.5mm; padding-left: 4mm; font-weight: 800; font-size: 9.5pt; }
+.fis-islem li { margin: .5mm 0; }
+.bosluk-ust { margin-top: 3.5mm; }
+.bos-not { font-size: 8pt; color: var(--muted); font-style: italic; }
+.fis-kural { margin: 3mm 0 0; font-size: 7.5pt; color: var(--ink-2); }
+.fis-tablo.paraf td { height: 6.5mm; }
+.fis-tablo .kare, .fis-isaret .kare { display: inline-block; width: 3.4mm; height: 3.4mm; border: .3mm solid var(--ink); }
+.raf { margin: 2.5mm 0 0; font-size: 8pt; }
+.raf span { display: inline-block; min-width: 26mm; border-bottom: .3mm solid var(--ink); font-family: var(--mono); font-weight: 500; }
+.fis-tablo tr.bu td { font-weight: 800; }

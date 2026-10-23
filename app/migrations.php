@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 37;
+const SCHEMA_VERSION = 39;
 
 function run_migrations(): void
 {
@@ -75,6 +75,8 @@ function run_migrations(): void
         if ($current < 35) { migrate_v35_tc_maskele(); set_schema_version(35); }
         if ($current < 36) { migrate_v36_atolye_adimlari(); set_schema_version(36); }
         if ($current < 37) { migrate_v37_defter(); set_schema_version(37); }
+        if ($current < 38) { migrate_v38_arama_kayitlari(); set_schema_version(38); }
+        if ($current < 39) { migrate_v39_hizmet(); set_schema_version(39); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1736,4 +1738,27 @@ function migrate_v37_defter(): void
     ) " . t_opts());
     add_column('cash_counts', 'birakilan', 'DECIMAL(12,2) NULL');
     add_column('cash_counts', 'kupurler', 'VARCHAR(255) NULL');
+}
+
+/** 4.47.0 — Bugün aranacaklar: her arama denemesinin sonucu (app/aranacak.php). */
+function migrate_v38_arama_kayitlari(): void
+{
+    db()->exec("CREATE TABLE IF NOT EXISTS arama_kayitlari (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        customer_id INT UNSIGNED NOT NULL,
+        order_id INT UNSIGNED NULL,
+        tur VARCHAR(16) NOT NULL,
+        sonuc VARCHAR(12) NOT NULL,
+        not_metni VARCHAR(255) NULL,
+        user_id INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL,
+        INDEX idx_arama_musteri (customer_id, tur, created_at),
+        INDEX idx_arama_tarih (created_at)
+    ) " . t_opts());
+}
+
+/** 4.48.0 — Tamir / hizmet fişi: birden çok işlem + teslim alırken görülen durumlar (app/hizmet.php). */
+function migrate_v39_hizmet(): void
+{
+    add_column('orders', 'hizmet_detay', 'TEXT NULL');
 }

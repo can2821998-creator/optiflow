@@ -1,6 +1,41 @@
 OPTIFLOW
-Release: 4.45.0 (2026-10-23)
+Release: 4.48.0 (2026-10-23)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.48.0 (Tamir / hizmet fişi + bütün fişler yarım A4: üst müşteriye, alt mağazaya; şema 39)
+  - Kullanıcı: "tüm fişleri bir A4 yarısı müşteriye yarısı bize kesilecek olarak düşün". Ortak çerçeve app/fis.php +
+    assets/fis.css: üst yarı MÜŞTERİ NÜSHASI, kesme çizgisi, alt yarı MAĞAZA NÜSHASI (her yarı 210 × 148,5 mm; &kagit=yarim
+    kesilmiş yarım sayfa). Gece bandı, büyük mono numara, numaralı kutular; siyah-beyaz okunur.
+  - Tezgâh › Tamir · hizmet (tamir.php): müşteri, gözlük, birden çok işlem, teslim alırken görülenler (çizik, gevşek sap…),
+    ücret / ücretsiz, "bırakıldı" (fiş basılır, ön ödeme) ya da "hemen yapıldı" (teslim edildi). Müşteri kartı ve atölye
+    panosunda "Tamir al". Hizmet fişi: üstte yapılacaklar + görülenler + hazır tarihi + ücret + takip karekodu; altta
+    gözlüğe giden numara şeridi, atölye parafı, raf, teslim imzaları. Tamir siparişinin "Fiş" düğmesi hizmet fişini açar.
+  - Tahsilat makbuzu ve hızlı satış fişi de yarım A4 (ayrıntılı A4 belge: &tam=1). Sipariş fişi zaten aynı kalıpta.
+  - Göç v39: orders.hizmet_detay (işlemler, durumlar). Test: tests/hizmet/test.php (36); hızlı satış sayfa testi 47.
+
+DEĞİŞİKLİK NOTLARI — 4.47.0 (Bugün aranacaklar: kâğıt arama listesi ekranda; şema 38)
+  - Hatırlatma merkezinde varsayılan sekme "Bugün aranacaklar": gözlüğü hazır (haber verilmemiş), haber verildi ama
+    gelmedi (süre haberden sayılır), vadesi gelen planlı arama, ödeme sözü geçen veresiye — tek liste, öncelik sırasıyla.
+  - Satır: numara, kim, telefon (tıkla-ara), neden (sipariş no, raf, kaç gün), kaçıncı deneme ve son sonuç (kim, ne zaman);
+    WhatsApp / Ulaşıldı / Açmadı (yarın yeniden listede) / Ertele + not. Ulaşıldı ya da WhatsApp hazır gözlükte
+    atölyedeki "Müşteriye haber" adımını da atar. Bant: bugün aranacak, gözlüğü hazır, haber verildi gelmedi, söz geçti.
+  - Menü rozeti = bugün aranacak kişi sayısı. Kalan ekranlar Gece diline uyduruldu (tutarlar kutuya ölçeklenir, telefonda
+    taşma yok).
+  - Göç v38: arama_kayitlari (her denemenin sonucu). Test: tests/aranacak/test.php (37).
+
+DEĞİŞİKLİK NOTLARI — 4.46.0 (Gece: Yalın düzeni + iş emrinin dili)
+  - Kullanıcı: Yalın fazla çıplak; daha şık ve görsel olarak dolu, ama sade. Yapı (6 bölüm, sekmeler) aynen kaldı.
+  - Menü gece rengi, bölümler 01–06 numaralı; sayfa başlığı gece bandı (bordo ışık + nişangâh halkaları, çizim yok).
+  - Bant veri şeridi (layout.php bant_veri): ana ekran (aktif / atölyede / hazır / geciken), atölye panosu, veresiye
+    defteri sayıları bandın içinde büyük mono rakamla; eski ayrı sayı kutuları kalktı.
+  - Sayı kartları tonlu (üst renk çizgisi, renkli mono rakam), kartlar hafif derinlikli, birincil düğme bordo ışıklı.
+  - Belirginlik turu (kullanıcı: "üstteki barları ve kutucukları belirginleştir"): bant daha büyük ve canlı, bant sayıları
+    ayrı cam kutucuklarda; seçili bölüm sekmesi dolu bordo; kartlar net kenar + gölge + tonlu başlık şeridi; sayı
+    kartlarında kalın renk çizgisi; Bugün sütunları ve atölye sütunları renkli başlıklı ayrı kutular.
+  - İnce ayar (kullanıcı: önerilerin "hepsi"): bordo daha derin; tonsuz sayı kutusunda pembe zemin yok; yalnız sayılı
+    bantlar büyük, diğer sayfalarda bant ince; kutularda gölge az, köşeler keskin; kasa yöntem kutuları 4 + 3;
+    telefonda sipariş başlığı sıkı (küçük avatar, iki sütun düğme).
+  - Üst çubuk / PWA rengi gece (#140e10). Test: arayuz 63.
 
 DEĞİŞİKLİK NOTLARI — 4.45.0 (Veresiye defteri: taksit planı, müşteri ekstresi, küpür sayımı, yarına devir; şema 37)
   - "Bakiye takibi" → "Veresiye defteri": varsayılan sekme "Müşteri defteri" (müşteri başına tek satır: borç, sözü geçen,

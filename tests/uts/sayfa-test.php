@@ -155,7 +155,16 @@ switch ($senaryo) {
         if (!function_exists('brand_mark')) { function brand_mark(): string { return '<svg></svg>'; } }
         if (!function_exists('brand_style_tag')) { function brand_style_tag(): string { return ''; } }
         $_GET['type'] = 'satis';
+        $_GET['tam'] = '1';   // 4.48.0: ayrıntılı A4 satış belgesi (yarım A4 fiş: satis_yarim)
         require $kaynak(dirname(__DIR__, 2) . '/app/pages/print.php');
+        break;
+    case 'satis_yarim':   // 4.48.0 yarım A4 satış fişi (app/fis.php + partials/satis-fisi.php)
+        if (!function_exists('brand_mark')) { function brand_mark(): string { return '<svg></svg>'; } }
+        if (!function_exists('brand_style_tag')) { function brand_style_tag(): string { return ''; } }
+        if (!function_exists('asset')) { function asset(string $p): string { return 'assets/' . $p; } }
+        require_once dirname(__DIR__, 2) . '/app/dokum.php';
+        require_once dirname(__DIR__, 2) . '/app/fis.php';
+        require dirname(__DIR__, 2) . '/app/partials/satis-fisi.php';
         break;
     case 'personel':
         $GLOBALS['__kullanici'] = ['id' => 2, 'full_name' => 'Personel', 'role' => 'personel'];

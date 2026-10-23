@@ -155,7 +155,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
             ['tahsilat', 'tahsilat.php', 'Veresiye defteri', 'wallet', $gecikenBakiye],
         ]);
     }
-    array_unshift($nav['Atölye'], ['tezgah', 'tezgah.php', 'Yeni müşteri · reçete', 'plus', 0]);
+    array_unshift($nav['Atölye'], ['tezgah', 'tezgah.php', 'Yeni müşteri · reçete', 'plus', 0], ['tamir', 'tamir.php', 'Tamir · hizmet', 'settings', 0]);
     ozellik_menusu_ekle($nav);   // 4.12.0 merkezden açılan modüller
     $nav = menu_gruplari($nav);   // 4.38.0 tek uzun liste yerine iş gruplarına
     if (is_super()) {
@@ -200,7 +200,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#140e10">
 <title><?= e($title) ?> · <?= e($shop) ?></title>
 <link rel="icon" href="<?= e(asset('favicon.svg')) ?>" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -323,7 +323,21 @@ function page_end(array $scripts = []): void
 }
 
 /** Sayfa başlığı bloğu. $actions: HTML. */
-function page_header(string $title, string $subtitle = '', string $actions = '', string $back = '', string $kicker = ''): void
+/**
+ * 4.46.0 — Gece bandının veri şeridi: [etiket, değer, ton ('', 'red', 'green', 'amber'), bağlantı ('' = yok)].
+ * İş emrindeki büyük mono rakamların ekrandaki karşılığı; bandı süsle değil, günün sayılarıyla doldurur.
+ */
+function bant_veri(array $ogeler): string
+{
+    $h = '<dl class="bant-veri">';
+    foreach ($ogeler as [$etiket, $deger, $ton, $href]) {
+        $ic = '<dt>' . e($etiket) . '</dt><dd' . ($ton !== '' ? ' class="ton-' . e($ton) . '"' : '') . '>' . e((string) $deger) . '</dd>';
+        $h .= $href !== '' ? '<a href="' . e($href) . '">' . $ic . '</a>' : '<div>' . $ic . '</div>';
+    }
+    return $h . '</dl>';
+}
+
+function page_header(string $title, string $subtitle = '', string $actions = '', string $back = '', string $kicker = '', string $veri = ''): void
 {
     echo '<div class="page-head">';
     echo '<div>';
@@ -341,6 +355,7 @@ function page_header(string $title, string $subtitle = '', string $actions = '',
     if ($actions !== '') {
         echo '<div class="page-actions">' . $actions . '</div>';
     }
+    echo $veri;
     echo '</div>';
 }
 
@@ -430,7 +445,7 @@ function ozellik_menusu_ekle(array &$nav): void
  */
 const BOLUM_ROZETI = ['atolye' => 'workshop', 'musteriler' => 'hatirlatma', 'kasa' => 'tahsilat', 'yonetim' => 'yedek'];
 const BOLUMLER = [
-    'tezgah'     => ['Tezgâh',     'plus',     ['tezgah', 'hizli-satis', 'barkod', 'sgk-hak', 'sgk']],
+    'tezgah'     => ['Tezgâh',     'plus',     ['tezgah', 'tamir', 'hizli-satis', 'barkod', 'sgk-hak', 'sgk']],
     'siparisler' => ['Siparişler', 'orders',   ['orders', 'quotes', 'garantiler']],
     'atolye'     => ['Atölye',     'glasses',  ['workshop', 'stock', 'cam-hatalari', 'cerceve', 'urunler', 'stok-oneri', 'uts-bildirim', 'uts']],
     'musteriler' => ['Müşteriler', 'users',    ['customers', 'hatirlatma', 'mesajlar', 'telefon-asistani', 'bagis']],

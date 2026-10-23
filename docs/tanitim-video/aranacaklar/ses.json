@@ -1,11 +1,11 @@
 [
  {
   "id": "sabah",
-  "metin": "Sabah dokuz. Güne hep aynı soruyla başlarsınız: bugün kimi arayacağım?"
+  "metin": "Sabah dokuz. Güne hep aynı soruyla başlarsınız: Bugün kimi arayacağım?"
  },
  {
   "id": "eskiden",
-  "metin": "Defter, yapışkan notlar, hafızanız... Biri mutlaka unutulur."
+  "metin": "Defter, yapışkan notlar, hafızanız… Biri mutlaka unutulur."
  },
  {
   "id": "liste",
@@ -13,7 +13,7 @@
  },
  {
   "id": "isaretle",
-  "metin": "Ulaşıldı, açmadı ya da WhatsApp: tek dokunuş. Açmayan yarın yine listede."
+  "metin": "Ulaşıldı, açmadı ya da WhatsApp: tek dokunuş. Açmayan, yarın yine listede."
  },
  {
   "id": "bitti",
@@ -25,6 +25,6 @@
  },
  {
   "id": "son",
-  "metin": "Optiflo. Otuz gün ücretsiz deneyin."
+  "metin": "OptiFlow. Otuz gün ücretsiz deneyin."
  }
 ]

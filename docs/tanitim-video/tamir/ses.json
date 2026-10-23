@@ -9,7 +9,7 @@
  },
  {
   "id": "secenek",
-  "metin": "Bırakılacaksa hazır olacağı gün yazılır. Ücretsizse tek dokunuş."
+  "metin": "Bırakılacaksa hazır olacağı gün yazılır. Ücretsizse, tek dokunuş."
  },
  {
   "id": "fis",
@@ -21,10 +21,10 @@
  },
  {
   "id": "teslim",
-  "metin": "Fişin alt yarısı gözlüğün üstünde, teslim karışmaz."
+  "metin": "Fişin alt yarısı gözlüğün üstünde; teslim karışmaz."
  },
  {
   "id": "son",
-  "metin": "Optiflo. Otuz gün ücretsiz deneyin."
+  "metin": "OptiFlow. Otuz gün ücretsiz deneyin."
  }
 ]

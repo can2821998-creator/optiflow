@@ -1,11 +1,11 @@
 [
  {
   "id": "kapi",
-  "metin": "Saat on kırk iki. Kapı açıldı, Ayşe Hanım reçetesiyle geldi."
+  "metin": "Saat on kırk iki. Kapı açıldı; Ayşe Hanım elinde reçetesiyle geldi."
  },
  {
   "id": "eskiden",
-  "metin": "Eskiden Medula, defter ve hesap makinesi arasında koşardınız."
+  "metin": "Eskiden Medula, defter, hesap makinesi arasında koşardınız."
  },
  {
   "id": "medula",
@@ -13,11 +13,11 @@
  },
  {
   "id": "aktar",
-  "metin": "Reçeteyi aktar'a basarsınız. Değerler siparişe kendiliğinden gelir."
+  "metin": "\"Reçeteyi aktar\"a basarsınız; değerler siparişe kendiliğinden gelir."
  },
  {
   "id": "teklif",
-  "metin": "Se ge ka payı düşülmüş teklif, müşterinin önünde."
+  "metin": "SGK payı düşülmüş teklif, müşterinin önünde."
  },
  {
   "id": "pano",
@@ -29,10 +29,10 @@
  },
  {
   "id": "teslim",
-  "metin": "Telefon çalmadan, defter açılmadan teslim."
+  "metin": "Telefon çalmadan, defter açılmadan: teslim."
  },
  {
   "id": "son",
-  "metin": "Optiflo. Otuz gün ücretsiz deneyin."
+  "metin": "OptiFlow. Otuz gün ücretsiz deneyin."
  }
 ]

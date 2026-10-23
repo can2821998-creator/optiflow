@@ -74,7 +74,7 @@
 <script>
 const RX = [['SAĞ', '−2,00', '−0,75', '90', '—'], ['SOL', '−1,75', '−0,50', '85', '—']];
 const rxHucre = () => RX.map((r) => `<div class="g">${r[0]}</div>` + r.slice(1).map((v) => `<div class="c"><span class="ph">—</span><span class="fl"></span><span class="val">${v}</span></div>`).join('')).join('');
-const TK = [['Standart 1.50', 'Sert kaplama<br>Yansıma önleyici', '1.900', '1.440'], ['Mavi ışık 1.60', 'Mavi ışık filtresi<br>Süper hidrofobik', '3.650', '3.190'], ['İnce 1.67', '%30 daha ince<br>Çizilmeye dayanıklı', '5.200', '4.740']];
+const TK = [['Standart 1.50', 'Sert kaplama<br>Yansıma önleyici', '1.900', '1.750'], ['Mavi ışık 1.60', 'Mavi ışık filtresi<br>Süper hidrofobik', '3.650', '3.500'], ['İnce 1.67', '%30 daha ince<br>Çizilmeye dayanıklı', '5.200', '5.050']];
 
 FILM({
   kisiler: { ayse: {} },
@@ -99,7 +99,7 @@ FILM({
       <div class="toast" id="toast">${IK.ok}Medula'dan aktarıldı</div>`,
     vTeklif: `<div class="ust"><h2>Teklif · Ayşe Yılmaz</h2><span class="m">3 SEÇENEK</span></div>
       <div class="teklifler">${TK.map((k, i) => `<div class="tk" id="tk${i}">${i === 1 ? '<span class="onr">ÖNERİLEN</span>' : ''}<div class="o">TEK ODAK</div><h3>${k[0]}</h3><p>${k[1]}</p>
-        <div class="fiyat"><div class="eski">${k[2]} ₺<i></i></div><div class="sgk">SGK payı −460 ₺</div><div class="yeni"><small>ÖDENECEK</small>${k[3]} ₺</div></div></div>`).join('')}</div>
+        <div class="fiyat"><div class="eski">${k[2]} ₺<i></i></div><div class="sgk">SGK payı −150 ₺</div><div class="yeni"><small>ÖDENECEK</small>${k[3]} ₺</div></div></div>`).join('')}</div>
       <div class="damga" id="tamam" style="left:330px;top:330px">TAMAM</div>`,
     vPano: `<div class="ust"><h2>Atölye panosu</h2><span class="m">BUGÜN</span></div>
       <div class="pano"><div class="sut"><div class="b"><i style="background:#7aa7ff"></i>Sipariş alındı<em id="say1">2</em></div></div>
@@ -113,13 +113,13 @@ FILM({
   },
   sahneler: [
     { ad: 'kapi', sure: 3.4, katman: 'dukkan', eb: '10:42 · ÖRNEK OPTİK', h: 'Kapı açıldı. Elinde <span class="k">reçete</span> var.',
-      ses: 'Saat on kırk iki. Kapı açıldı, Ayşe Hanım reçetesiyle geldi.',
+      ses: 'Saat on kırk iki. Kapı açıldı; Ayşe Hanım elinde reçetesiyle geldi.',
       ciz(u) {
         dukkan({ t: u, kapi: eo(p(u, 0.05, 0.55)) * (1 - eio(p(u, 2.3, 2.9))), zil: 1 - p(u, 0, 2.2), el: u > 1.6 && u < 3.2 ? 1 : 0, gul: u > 1.4 ? 1.2 : 0.7, kirp: [2.2], saat: [10, 42] });
         kisi('ayse', { t: u, x: lerp(1180, 720, eio(p(u, 0.25, 2.7))), yuru: u > 0.25 && u < 2.7, gul: 4, kirp: [1.4] });
       } },
     { ad: 'eskiden', sure: 3.2, katman: 'dukkan', eb: 'ESKİDEN', h: '<span class="s">Medula,</span> <span class="s">defter,</span> <span class="s">hesap makinesi…</span>',
-      cizgi: [1.0, 1.45, 1.9], ses: 'Eskiden Medula, defter ve hesap makinesi arasında koşardınız.',
+      cizgi: [1.0, 1.45, 1.9], ses: 'Eskiden Medula, defter, hesap makinesi arasında koşardınız.',
       ciz(u, s) {
         dukkan({ t: u + 5, gul: 0.6, kirp: [1.9], saat: [10, 43] });
         kisi('ayse', { t: u, x: 720, gul: lerp(4, 10, p(u, 0.1, 0.6)), kirp: [0.9] });
@@ -142,7 +142,7 @@ FILM({
         sorgu.style.opacity = p(u, 2.1, 2.3);
       } },
     { ad: 'aktar', sure: 4.6, katman: 'ui', eb: '2 · AKTAR', h: 'Tek tıkla <span class="k">siparişe aktarırsınız.</span>',
-      ses: 'Reçeteyi aktar\'a basarsınız. Değerler siparişe kendiliğinden gelir.',
+      ses: '"Reçeteyi aktar"a basarsınız; değerler siparişe kendiliğinden gelir.',
       ciz(u) {
         const gec = u > 1.05;
         sekme(gec ? 'optiflow' : 'medula');
@@ -166,7 +166,7 @@ FILM({
         css($('toast'), { opacity: p(u, 1.4, 1.65), transform: `translateY(${((1 - eo(p(u, 1.4, 1.7))) * -20).toFixed(1)}px)` });
       } },
     { ad: 'teklif', sure: 3.8, katman: 'ui', eb: 'TEKLİF', h: 'SGK payı düşülmüş fiyat, <span class="k">müşterinin önünde.</span>',
-      ses: 'Se ge ka payı düşülmüş teklif, müşterinin önünde.',
+      ses: 'SGK payı düşülmüş teklif, müşterinin önünde.',
       ciz(u) {
         gorunum('vTeklif', p(u, 0, 0.25));
         ['tk0', 'tk1', 'tk2'].forEach((id, i) => {
@@ -205,13 +205,13 @@ FILM({
         bildirim(eo(p(u, 0.65, 1.1)), { baslik: 'Örnek Optik', metin: 'Merhaba Ayşe Hanım, 00128 numaralı gözlüğünüz hazır. Dilediğiniz zaman Örnek Optik\'ten teslim alabilirsiniz.', link: 'Sipariş durumu › optiflow.com.tr/t/…' });
       } },
     { ad: 'teslim', sure: 2.6, katman: 'dukkan', eb: 'TESLİM', h: 'Telefon çalmadan, <span class="k">defter açılmadan.</span>',
-      ses: 'Telefon çalmadan, defter açılmadan teslim.',
+      ses: 'Telefon çalmadan, defter açılmadan: teslim.',
       ciz(u) {
         dukkan({ t: u + 9, sag: lerp(-8, -62, eo(p(u, 0, 0.5))), gul: 1.3, kirp: [1.6], saat: [11, 5] });
         kisi('ayse', { t: u, x: 720, gozluk: eo(p(u, 0.1, 0.5)), gul: 18, kirp: [1.1], par: u > 0.3 && u < 1.6 ? Math.sin(p(u, 0.3, 1.6) * Math.PI) : 0 });
         damga(p(u, 0.7, 0.95), { metin: 'TESLİM EDİLDİ', x: 330, y: 1250 });
       } },
-    { ad: 'son', sure: 3.6, son: true, ses: 'Optiflo. Otuz gün ücretsiz deneyin.' },
+    { ad: 'son', sure: 3.6, son: true, ses: 'OptiFlow. Otuz gün ücretsiz deneyin.' },
   ],
 });
 </script>

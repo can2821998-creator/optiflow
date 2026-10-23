@@ -2,7 +2,7 @@
 
 *Son güncelleme: 23 Ekim 2026 (4.48.0 canlıda / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
-**Instagram filmi (23.10):** `docs/tanitim-video/` — ilk Reels "Bir müşteri geldi" (27,5 sn, karakterli mağaza + gerçek arayüz, uydurma veri); `cek.mjs` ile kare kare MP4. Kullanıcı geri bildirimi bekleniyor; sıradaki film fikirleri README'de.
+**Instagram filmleri (23.10):** `docs/tanitim-video/` — ortak motor (`ortak/`) + 3 film: Bir müşteri geldi (Medula sorgu → aktar; SGK payı örneği 150 ₺), Bugün aranacaklar, Tamir fişi. Ay sonu filmi kullanıcı kararıyla çıkarıldı. Ücretsiz MIT ses (Coqui, Actions › Seslendir) kötü bulundu → kullanıcı başka yapay zekâ ile okutacak: metin + dosya adları `docs/tanitim-video/SESLENDIRME.md`. Sesler gelince `cek.mjs --ses <klasör> --tempo 1` ile filmlere yerleştir.
 
 **Sunucu taşındı (23.10, ~16:50 canlı):** TürkTicaret paylaşımlı Plesk → kiralık sunucu (Plesk Obsidian, Administrator).
 Rehber `docs/SUNUCU-TASIMA.md`. DNS (TürkTicaret paneli) A `optiflow.com.tr` → yeni IP; www/ftp CNAME; MX/mail TürkTicaret'te

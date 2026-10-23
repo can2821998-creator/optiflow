@@ -2,9 +2,10 @@
 
 *Son güncelleme: 17 Ekim 2026 (4.42.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
-**Sunucu taşıma (23.10):** kullanıcı cPanel'li sunucu kiraladı; TürkTicaret (Plesk) → cPanel taşıma rehberi
-`docs/SUNUCU-TASIMA-CPANEL.md`. Henüz taşınmadı. Bekleyen cevaplar: alan adının DNS'i nerede, WHM/root var mı, eski
-hostingte e-posta var mı. İleride: cPanel UAPI ile yeni mağazaya otomatik veritabanı.
+**Sunucu taşıma (23.10):** kullanıcı sunucu kiraladı — Plesk Obsidian, Administrator erişimli, boş (ilk "cPanel" dendi,
+sonra Plesk olduğu görüldü). Rehber `docs/SUNUCU-TASIMA.md` (aynı ad/kullanıcı/şifreyle DB açılırsa config değişmez).
+Henüz taşınmadı. Bekleyen: alan adı DNS'i nerede, eski hostingte e-posta var mı. İleride: `plesk bin database` ile
+yeni mağazaya otomatik veritabanı.
 
 ## Sürüm
 - **Sunucu 4.42.0**, şema **35** (göç v35: eski Medula kayıtlarında T.C. no gizlenir). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.

@@ -1,0 +1,73 @@
+# Seslendirme denemesi: aynı metinleri farklı ayarlarla okutur, Whisper ile geri yazdırıp benzerlik puanı verir.
+# Sonuç "seslendirme" ön sürümüne ses-deneme-gunluk.txt ve ses-deneme.zip olarak konur.
+name: Ses denemesi
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  dene:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Kur
+        run: |
+          pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install -q "coqui-tts[codec]" faster-whisper piper-tts
+          sudo apt-get install -y -qq ffmpeg espeak-ng >/dev/null
+          B=https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR/dfki/medium
+          curl -fsSL "$B/tr_TR-dfki-medium.onnx?download=true" -o dfki.onnx
+          curl -fsSL "$B/tr_TR-dfki-medium.onnx.json?download=true" -o dfki.onnx.json
+      - name: Dene
+        run: |
+          set -o pipefail
+          python - <<'EOF' 2>&1 | tee ses-deneme-gunluk.txt
+          import json, os, difflib, subprocess, zipfile, re
+          from TTS.api import TTS
+          from faster_whisper import WhisperModel
+          W = WhisperModel("small", device="cpu", compute_type="int8")
+          satir = json.load(open("docs/tanitim-video/musteri-geldi/ses.json", encoding="utf-8"))
+          os.makedirs("d", exist_ok=True)
+          def puan(a, b):
+              n = lambda x: re.sub(r"[^a-zçğıöşü0-9 ]", "", x.lower().replace("İ", "i").replace("I", "ı"))
+              return difflib.SequenceMatcher(None, n(a), n(b)).ratio()
+          def duy(f):
+              seg, _ = W.transcribe(f, language="tr")
+              return " ".join(x.text.strip() for x in seg)
+          tts = TTS("tts_models/tr/common-voice/glow-tts", progress_bar=False)
+          tts_mdl = tts.synthesizer.tts_model
+          sonuc = {}
+          varyant = [("coqui-092", 0.92, ""), ("coqui-100", 1.0, ""), ("coqui-110", 1.1, ""), ("coqui-onek", 1.0, "Evet. ")]
+          for ad, ls, onek in varyant:
+              tts_mdl.length_scale = ls
+              top = 0
+              for s in satir:
+                  f = f"d/{ad}-{s['id']}.wav"
+                  tts.tts_to_file(text=onek + s["metin"], file_path=f)
+                  d = duy(f); p = puan(onek + s["metin"], d); top += p
+                  print(f"{ad:10s} {s['id']:8s} {p:.2f} | {d}")
+              sonuc[ad] = top / len(satir)
+          for s in satir:
+              f = f"d/piper-{s['id']}.wav"
+              subprocess.run(["piper", "-m", "dfki.onnx", "-f", f], input=s["metin"].encode(), check=True, capture_output=True)
+          top = 0
+          for s in satir:
+              f = f"d/piper-{s['id']}.wav"; d = duy(f); p = puan(s["metin"], d); top += p
+              print(f"{'piper':10s} {s['id']:8s} {p:.2f} | {d}")
+          sonuc["piper-dfki (ticari değil)"] = top / len(satir)
+          print("ORTALAMA", json.dumps(sonuc, ensure_ascii=False, indent=1))
+          with zipfile.ZipFile("ses-deneme.zip", "w") as z:
+              for f in os.listdir("d"): z.write("d/" + f, f)
+          EOF
+      - name: Ön sürüme koy
+        if: always()
+        run: |
+          gh release upload seslendirme --repo "$GITHUB_REPOSITORY" --clobber ses-deneme-gunluk.txt $(ls ses-deneme.zip 2>/dev/null)

@@ -2,6 +2,7 @@
 //   node docs/tanitim-video/cek.mjs <film.html> <cikti.mp4> [--fps 30] [--kare 3.5,8.2] [--ses <klasör>] [--sesjson <ses.json>]
 //   --kare     : yalnızca o saniyelerin PNG'leri (hızlı kontrol)
 //   --ses      : <sahne-adı>.wav dosyalarının klasörü; sahneler ses süresine göre uzar, ses sahne başına yerleşir
+//   --tempo    : seslendirme hız çarpanı (varsayılan 1.06; perdeyi bozmaz)
 //   --sesjson  : filmin seslendirme metinlerini ses.json olarak yazar (Seslendir iş akışı bunu okur) ve çıkar
 // Gerekenler: Node 18+, playwright (Chromium), ffmpeg/ffprobe.
 import { chromium } from 'playwright';
@@ -20,10 +21,17 @@ const kareler = deger('--kare', '');
 const sesKlasor = deger('--ses', '');
 const sesJson = deger('--sesjson', '');
 
+// Ses ön işleme: baştaki/sondaki sessizlik kırpılır, cümle arası duraklar 0,22 sn'ye iner, hafif hızlandırılır (--tempo).
+const tempo = Number(deger('--tempo', 1.06));
 const sureler = {};
+let sesIsli = '';
 if (sesKlasor) {
+  sesIsli = mkdtempSync(path.join(tmpdir(), 'optiflow-ses-'));
   for (const f of readdirSync(sesKlasor).filter((x) => x.endsWith('.wav'))) {
-    const s = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path.join(sesKlasor, f)]).toString().trim();
+    const hedef = path.join(sesIsli, f);
+    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', path.join(sesKlasor, f), '-af',
+      `silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=stop_periods=-1:stop_duration=0.3:stop_threshold=-45dB:stop_silence=0.22,atempo=${tempo}`, hedef]);
+    const s = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', hedef]).toString().trim();
     sureler[f.replace(/\.wav$/, '')] = Number(s);
   }
 }
@@ -75,8 +83,8 @@ await ff(['-framerate', String(fps), '-i', path.join(klasor, 'k%05d.png'), '-c:v
   '-crf', '17', '-preset', 'slow', '-movflags', '+faststart', video]);
 
 if (sesKlasor) {
-  const parca = SES.filter((s) => existsSync(path.join(sesKlasor, s.id + '.wav')));
-  const girdi = parca.flatMap((s) => ['-i', path.join(sesKlasor, s.id + '.wav')]);
+  const parca = SES.filter((s) => existsSync(path.join(sesIsli, s.id + '.wav')));
+  const girdi = parca.flatMap((s) => ['-i', path.join(sesIsli, s.id + '.wav')]);
   const filtre = parca.map((s, i) => `[${i + 1}:a]aresample=48000,adelay=${Math.round(s.t * 1000)}:all=1[a${i}]`).join(';')
     + ';' + parca.map((_, i) => `[a${i}]`).join('') + `amix=inputs=${parca.length}:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11,apad[ses]`;
   await ff(['-i', video, ...girdi, '-filter_complex', filtre, '-map', '0:v', '-map', '[ses]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',

@@ -1,6 +1,6 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 24 Ekim 2026 (4.50.0 main'de, yayın sürüyor; canlı 4.49.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 24 Ekim 2026 (4.50.0 canlıda / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 **Rehber SEO (24.10, 4.49.0):** 10 yeni rehber yazısı (reçete okuma, SGK gözlük hakkı, Medula Optik, e-reçete, cam indeksi,
 progresif, mavi ışık, optik açmak, ÜTS, kontakt lens) + SSS/FAQ verisi + kaynaklar. SGK tutarları kaynaklarda çelişkili olduğu
@@ -23,7 +23,7 @@ dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. T
 ## Sürüm
 - **Sunucu 4.50.0** (24.10 main'e birleştirildi: şubeler + kayıtta telefon; kullanıcı GitHub FTP sırlarını yeni sunucuya çevirdi,
   "Canlıya al" yeni sunucuya yükler), şema **41** (v40 şubeler, v41 çerçeve barkodu şube içinde; v36 atölye parafları + raf; v37 taksit + kasa devir/küpür; v38 arama_kayitlari; v39 hizmet_detay). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.49.0** (24.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.49.0-pro5.6.0 — Rehber; şema 39).
+- **Canlı site: 4.50.0** (24.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.50.0-pro5.6.0; şema 41 ilk açılışta). Önceki: 4.49.0 Rehber.
   Not: başka oturum Rehber'i 4.49.0 olarak çıkardığı için şubeler 4.50.0 oldu; göç v40–v41 her mağazada ilk açılışta çalışır.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).

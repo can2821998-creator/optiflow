@@ -1,7 +1,7 @@
 /* 4.21.1 — Katalog teklifi (app/partials/teklif-dokum.php) ve serbest teklif (print.php?type=quote): teklife özel parçalar.
    4.22.0: sayfa, başlık, kartlar, kutular ve baskı kuralları assets/dokum.css'te (iki tasarım). Önce dokum.css yüklenir. */
 .secenekler{display:grid;gap:4mm;margin:6mm 12mm 0;align-items:stretch}
-.tema-bilet .secenekler{margin-left:10mm;margin-right:10mm}
+.tema-antet .secenekler{margin-left:14mm}
 .secenekler.n1{grid-template-columns:minmax(0,110mm)}
 .secenekler.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .secenekler.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -32,9 +32,8 @@
 .kart footer b{font-family:var(--display);font-stretch:var(--display-w);font-weight:800;font-size:20px;line-height:1.15;letter-spacing:var(--display-ls);font-variant-numeric:tabular-nums}
 .kart footer em{font-style:normal;font-size:9.5px;color:var(--gul);font-weight:700}
 .secenekler.n1 .kart footer b{font-size:25px}
-.tema-bilet .kart footer{border-top:2px dashed rgba(255,255,255,.4)}
 .alt-iki{display:grid;grid-template-columns:.85fr 1.6fr;gap:5mm;margin:6mm 12mm 0}
-.tema-bilet .alt-iki{margin-left:10mm;margin-right:10mm}
+.tema-antet .alt-iki{margin-left:14mm}
 .alt-iki:has(> .kutu:only-child){grid-template-columns:1fr}
 .nasil ol{margin:0;padding-left:16px;font-size:10px;color:var(--ink-2)}
 .nasil li{margin:1px 0}
@@ -48,12 +47,12 @@
 .satirlar li::before{content:"";position:absolute;left:2px;top:5px;width:6px;height:6px;border-radius:2px;background:var(--grad)}
 /* 4.26.0 — çok gözlüklü teklif: gözlük başlığı ve toplam şeridi */
 .gozluk-bas{display:flex;align-items:center;gap:10px;margin:7mm 12mm -2mm;break-after:avoid}
-.tema-bilet .gozluk-bas{margin-left:10mm;margin-right:10mm}
+.tema-antet .gozluk-bas{margin-left:14mm}
 .gozluk-no{display:grid;place-items:center;flex:none;width:26px;height:26px;border-radius:8px;background:var(--grad);color:#fff;font:800 12px Manrope,sans-serif}
 .gozluk-bas h2{margin:0;font-family:var(--display);font-stretch:var(--display-w);font-weight:800;font-size:17px;line-height:1.15;letter-spacing:var(--display-ls)}
 .gozluk-bas p{margin:1px 0 0;font-size:9.5px;color:var(--ink-2)}
 .toplam-serit{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6mm 12mm 0;padding:11px 16px;border-radius:16px;background:var(--gece);color:#fff;break-inside:avoid}
-.tema-bilet .toplam-serit{margin-left:10mm;margin-right:10mm}
+.tema-antet .toplam-serit{margin-left:14mm}
 .toplam-serit b{display:block;font-size:12px}
 .toplam-serit small{display:block;font-size:9px;color:rgba(255,255,255,.7)}
 .toplam-serit strong{font-family:var(--display);font-stretch:var(--display-w);font-weight:800;font-size:22px;letter-spacing:var(--display-ls);font-variant-numeric:tabular-nums}

@@ -3274,3 +3274,28 @@ details.card:not([open]) > summary.card-head { border-radius: 12px; }
 .ck-cerceve iframe { position: absolute; top: 0; left: 0; width: 820px; height: 1160px; border: 0; transform-origin: 0 0; background: #fff; }
 @media (max-width: 1100px) { .ck-duzen { grid-template-columns: 1fr; } .ck-onizleme { position: static; } }
 @media (max-width: 620px) { .ck-iki { grid-template-columns: 1fr; } .ck-form { padding: 16px; } }
+/* 4.54.0 — Çıktı görünümü: yapı seçeneklerinin küçük çizimleri */
+.ck-yapi, .ck-a4 { position: relative; display: block; height: 58px; border-radius: 6px; background: #fff; box-shadow: inset 0 0 0 1px var(--line-strong); overflow: hidden; }
+.ck-a4 { height: 74px; width: 56px; margin: 0 auto; }
+.ck-yapi b, .ck-yapi i, .ck-yapi u, .ck-a4 b, .ck-a4 i, .ck-a4 u { position: absolute; display: block; text-decoration: none; }
+.ck-yapi i, .ck-a4 i { left: 10px; right: 10px; top: 24px; height: 22px; background: repeating-linear-gradient(#d6cccd 0 2px, transparent 2px 7px); }
+.ck-yapi-bant b { left: 6px; right: 6px; top: 6px; height: 12px; border-radius: 3px; background: linear-gradient(115deg, #141012, #7e1528); }
+.ck-yapi-serit b { left: 0; top: 0; bottom: 0; width: 18px; background: linear-gradient(180deg, #141012, #7e1528); }
+.ck-yapi-serit i { left: 26px; top: 10px; height: 36px; }
+.ck-yapi-mektup b { left: 50%; top: 5px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: #b4233c; }
+.ck-yapi-mektup u { left: 8px; right: 8px; top: 18px; height: 3px; border-top: 1px solid #b4233c; border-bottom: 1px solid #b4233c; }
+.ck-yapi-kocan b { left: 6px; right: 34px; top: 6px; height: 9px; border-radius: 2px; background: #3a3236; }
+.ck-yapi-kocan i { right: 34px; }
+.ck-yapi-kocan u { right: 0; top: 0; bottom: 0; width: 26px; background: #fbe4e8; border-left: 2px dashed #c9bec0; }
+.ck-yapi-damga b { left: 6px; right: 6px; top: 6px; height: 12px; border-radius: 3px; background: linear-gradient(115deg, #141012, #7e1528); }
+.ck-yapi-damga u { right: 6px; top: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px #b4233c, inset 0 0 0 3px #fff, inset 0 0 0 4px #b4233c; transform: rotate(-9deg); }
+.ck-yapi-etiket b { left: 6px; right: 10px; top: 5px; height: 14px; border-radius: 3px 8px 8px 3px; box-shadow: inset 0 0 0 2px #1b1416; }
+.ck-yapi-etiket u { left: 10px; top: 9px; width: 6px; height: 6px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px #1b1416; }
+.ck-yapi-sade b { left: 6px; right: 6px; top: 15px; height: 2px; background: #1b1416; }
+.ck-a4 i { left: 7px; right: 7px; top: 30px; height: 38px; }
+.ck-a4-mercek b { right: 14px; top: -6px; width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, #d0334f, #4a0d1d); box-shadow: 0 0 0 1.5px #fff, 0 0 0 2.5px #7e1528; }
+.ck-a4-mercek u { right: -3px; top: 9px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1.5px #fff, 0 0 0 2.5px #7e1528; }
+.ck-a4-mercek i { right: 30px; top: 10px; height: 58px; }
+.ck-a4-antet b { left: 0; right: 0; top: 0; height: 7px; background: linear-gradient(115deg, #141012, #7e1528); }
+.ck-a4-antet u { left: 0; top: 0; bottom: 0; width: 3px; background: #b4233c; }
+.ck-a4-antet i { top: 14px; height: 54px; background: linear-gradient(#b4233c, #b4233c) 0 8px/100% 2px no-repeat, repeating-linear-gradient(#d6cccd 0 2px, transparent 2px 7px) 0 14px/100% 100% no-repeat; }

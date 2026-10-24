@@ -18,12 +18,15 @@ function fis_sayfa(array $f): never
     $tel = trim(setting('shop_phone'));
     $slogan = cikti_slogan();
     $altYazi = cikti_alt_yazi();
-    $yarimHtml = static function (string $nusha, string $govde) use ($f, $dukkan, $tel, $slogan, $altYazi): string {
+    $ck = cikti_ayar();   // 4.54.0 yapı: müşteri yarısı ve mağaza/atölye yarısı ayrı düzen (d-…)
+    $yarimHtml = static function (string $nusha, string $govde) use ($f, $dukkan, $tel, $slogan, $altYazi, $ck): string {
         $musteri = $nusha === 'MÜŞTERİ NÜSHASI';
-        return '<section class="fis-yari ' . ($musteri ? 'musteri' : 'magaza') . '">'
+        $duzen = $musteri ? $ck['musteri'] : $ck['atolye'];
+        return '<section class="fis-yari ' . ($musteri ? 'musteri' : 'magaza') . ' d-' . e($duzen) . '">'
             . '<header class="fis-bant"><div class="fis-marka">' . cikti_isaret() . '<span><b>' . e($dukkan) . '</b><small>'
             . e($nusha) . '</small>' . ($slogan !== '' ? '<em>' . e($slogan) . '</em>' : '') . '</span></div>'
-            . '<div class="fis-tur"><small>' . e($f['etiket']) . '</small><b>' . e($f['no']) . '</b><i>' . e($f['tarih']) . '</i></div></header>'
+            . '<div class="fis-tur"><small>' . e($f['etiket']) . '</small><b>' . e($f['no']) . '</b><i>' . e($f['tarih']) . '</i>'
+            . '<em>' . ($musteri ? 'Teslim alırken bu fişi gösterin' : 'Ürünle birlikte saklayın') . '</em></div></header>'
             . '<div class="fis-govde">' . $govde . '</div>'
             . '<footer class="fis-alt"><span>' . e($dukkan) . ($tel !== '' ? ' · ' . e(phone_display($tel)) : '') . '</span>'
             . ($musteri && $altYazi !== '' ? '<span class="tesekkur">' . e($altYazi) . '</span>' : '') . '<span>' . e($f['no']) . ' · basım ' . e(date('d.m.Y H:i')) . '</span></footer>'

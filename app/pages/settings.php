@@ -34,12 +34,12 @@ if (is_post()) {
     if ($action === 'cikti_kaydet') {
         $ck = post('varsayilan') === '1' ? cikti_varsayilan() : cikti_temizle([
             'renk' => post('renk'), 'baslik' => post('baslik'), 'yazi' => post('yazi'), 'kose' => post('kose'), 'desen' => post('desen'),
-            'isaret' => post('isaret'), 'slogan' => (string) ($_POST['slogan'] ?? ''), 'alt_yazi' => (string) ($_POST['alt_yazi'] ?? ''),
+            'isaret' => post('isaret'), 'musteri' => post('musteri'), 'atolye' => post('atolye'), 'slogan' => (string) ($_POST['slogan'] ?? ''), 'alt_yazi' => (string) ($_POST['alt_yazi'] ?? ''),
         ]);
         foreach ($ck as $k => $v) {
             setting_set('cikti_' . $k, $v);
         }
-        setting_set('dokum_tema', post('varsayilan') === '1' ? 'gozluk' : (isset(DOKUM_TEMALARI[post('dokum_tema')]) ? post('dokum_tema') : 'gozluk'));
+        setting_set('dokum_tema', post('varsayilan') === '1' ? 'mercek' : (isset(DOKUM_TEMALARI[post('dokum_tema')]) ? post('dokum_tema') : 'mercek'));
         audit('settings_update', 'settings', null, ['cikti' => $ck]);
         flash(post('varsayilan') === '1' ? 'Çıktı görünümü varsayılana döndü.' : 'Çıktı görünümü kaydedildi. Bundan sonra basılan bütün fiş ve belgeler bu görünümde.');
         redirect($self);
@@ -472,7 +472,7 @@ foreach ($tabs as $k => $label) {
     <form method="post" class="card ck-form" id="cikti-form" data-onizle="cikti-onizle.php">
       <?= csrf_field() ?><input type="hidden" name="tab" value="cikti"><input type="hidden" name="action" value="cikti_kaydet">
       <div class="card-head"><h2>Çıktı görünümü</h2><small class="muted">Fiş, makbuz, sipariş fişi, döküm ve teklif çıktıları bu seçimle basılır</small></div>
-      <p class="ck-giris">Yan yana iki mağazanın fişi birbirine benzemesin: renginizi, başlık bandını, yazı karakterini ve işaretinizi seçin. Değiştirdikçe sağdaki örnek güncellenir.
+      <p class="ck-giris">Yan yana iki mağazanın fişi birbirine benzemesin: fişin yapısını (müşteri ve atölye yarısı ayrı ayrı), rengini, başlık bandını, yazı karakterini ve işaretinizi seçin. Değiştirdikçe sağdaki örnek güncellenir.
         <button type="button" class="btn btn-sm" data-ck-karistir>Karıştır, bana bir görünüm öner</button></p>
 
       <fieldset class="ck-grup"><legend>Renk</legend>
@@ -480,6 +480,33 @@ foreach ($tabs as $k => $label) {
           <?php foreach (cikti_paletler() as $k => [$ad]): $pp = cikti_palet($k); ?>
             <label class="ck-renk" title="<?= e($ad) ?>"><input type="radio" name="renk" value="<?= e($k) ?>" <?= $ck['renk'] === $k ? 'checked' : '' ?>>
               <i style="background:linear-gradient(135deg,<?= e($pp['parlak']) ?>,<?= e($pp['koyu']) ?> 70%,<?= e($pp['derin']) ?>)"></i><small><?= e($ad) ?></small></label>
+          <?php endforeach; ?>
+        </div>
+      </fieldset>
+
+      <fieldset class="ck-grup"><legend>Müşteri yarısı <small>(fişin üst yarısı · müşteriye verilen)</small></legend>
+        <div class="ck-kartlar">
+          <?php foreach ($ckSec['musteri'] as $k => $ad): ?>
+            <label class="ck-kart"><input type="radio" name="musteri" value="<?= e($k) ?>" <?= $ck['musteri'] === $k ? 'checked' : '' ?>>
+              <span class="ck-yapi ck-yapi-<?= e($k) ?>"><b></b><i></i><u></u></span><small><?= e($ad) ?></small></label>
+          <?php endforeach; ?>
+        </div>
+      </fieldset>
+
+      <fieldset class="ck-grup"><legend>Atölye yarısı <small>(alt yarı · mağazada / gözlükle atölyede kalan)</small></legend>
+        <div class="ck-kartlar">
+          <?php foreach ($ckSec['atolye'] as $k => $ad): ?>
+            <label class="ck-kart"><input type="radio" name="atolye" value="<?= e($k) ?>" <?= $ck['atolye'] === $k ? 'checked' : '' ?>>
+              <span class="ck-yapi ck-yapi-<?= e($k) ?>"><b></b><i></i><u></u></span><small><?= e($ad) ?></small></label>
+          <?php endforeach; ?>
+        </div>
+      </fieldset>
+
+      <fieldset class="ck-grup"><legend>A4 tek sayfa belgeler <small>(ayrıntılı fiş, makbuz, döküm, teklif)</small></legend>
+        <div class="ck-kartlar">
+          <?php foreach (DOKUM_TEMALARI as $k => $ad): ?>
+            <label class="ck-kart"><input type="radio" name="dokum_tema" value="<?= e($k) ?>" <?= dokum_tema() === $k ? 'checked' : '' ?>>
+              <span class="ck-a4 ck-a4-<?= e($k) ?>"><b></b><i></i><u></u></span><small><?= e($ad) ?><?= $k === 'mercek' ? ' · sağ üstte gözlük' : ' · antetli kâğıt' ?></small></label>
           <?php endforeach; ?>
         </div>
       </fieldset>
@@ -512,9 +539,7 @@ foreach ($tabs as $k => $label) {
         <fieldset class="ck-grup"><legend>Köşeler</legend>
           <div class="ck-cipler"><?php foreach ($ckSec['kose'] as $k => $ad): ?><label class="ck-cip"><input type="radio" name="kose" value="<?= e($k) ?>" <?= $ck['kose'] === $k ? 'checked' : '' ?>><span><?= e($ad) ?></span></label><?php endforeach; ?></div>
         </fieldset>
-        <fieldset class="ck-grup"><legend>A4 belge düzeni</legend>
-          <div class="ck-cipler"><?php foreach (DOKUM_TEMALARI as $k => $ad): ?><label class="ck-cip"><input type="radio" name="dokum_tema" value="<?= e($k) ?>" <?= setting('dokum_tema', 'gozluk') === $k ? 'checked' : '' ?>><span><?= e($ad) ?></span></label><?php endforeach; ?></div>
-        </fieldset>
+
       </div>
 
       <div class="grid cols-2" style="gap:14px">
@@ -528,7 +553,7 @@ foreach ($tabs as $k => $label) {
     <aside class="card ck-onizleme">
       <div class="ck-onizleme-bas"><b>Örnek</b>
         <nav class="ck-tur" aria-label="Örnek belge">
-          <button type="button" class="on" data-ck-tur="fis">Yarım A4 fiş</button><button type="button" data-ck-tur="dokum">A4 belge</button>
+          <button type="button" class="on" data-ck-tur="fis">İkiye bölünen fiş</button><button type="button" data-ck-tur="dokum">A4 tek sayfa</button>
         </nav></div>
       <div class="ck-cerceve"><iframe id="ck-iframe" title="Çıktı önizlemesi" src="cikti-onizle.php?<?= e($ckOnizleQ) ?>"></iframe></div>
       <p class="muted" style="margin:8px 0 0;font-size:12.5px">Örnek verilerle gösterilir. Siyah-beyaz yazıcıda renkler gri tonda basılır; "Sade" bant en az mürekkebi harcar.</p>

@@ -1,6 +1,9 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 24 Ekim 2026 (4.53.0 canlıda / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 24 Ekim 2026 (4.54.0 canlıda / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+
+**Çıktı yapıları (24.10, 4.54.0):** ikiye bölünen fişlerde müşteri yarısı 5 düzen (bant, yan şerit, antetli mektup,
+koparılır koçan, mühür), atölye yarısı 4 düzen (bant, askı etiketi, yan şerit, mürekkepsiz). A4: Gözlük/Bilet yerine Mercek ve Antet.
 
 **Çıktı görünümü (24.10, 4.53.0):** Ayarlar › Çıktı görünümü — renk (14), başlık bandı (6), yazı (5), desen, işaret
 (baş harf monogramı dahil), köşe, slogan, alt yazı; "Karıştır" + canlı örnek. Sipariş fişi, yarım A4 fişler, A4 döküm ve teklif
@@ -40,7 +43,7 @@ dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. T
 ## Sürüm
 - **Sunucu 4.50.0** (24.10 main'e birleştirildi: şubeler + kayıtta telefon; kullanıcı GitHub FTP sırlarını yeni sunucuya çevirdi,
   "Canlıya al" yeni sunucuya yükler), şema **41** (v40 şubeler, v41 çerçeve barkodu şube içinde; v36 atölye parafları + raf; v37 taksit + kasa devir/küpür; v38 arama_kayitlari; v39 hizmet_detay). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.53.0** (24.10 çıktı görünümü; 4.52.0 e-posta tasarımı + yeni otomatikler; 4.51.0 merkez e-postası; merkez DB'ye eposta_kuyruk + magazalar.eposta_ret ilk bağlantıda eklenir; mağaza şeması 41 değişmedi). Önceki: 4.50.0 şubeler.
+- **Canlı site: 4.54.0** (24.10 çıktı yapıları + Mercek/Antet; 4.53.0 çıktı görünümü; 4.52.0 e-posta tasarımı + yeni otomatikler; 4.51.0 merkez e-postası; merkez DB'ye eposta_kuyruk + magazalar.eposta_ret ilk bağlantıda eklenir; mağaza şeması 41 değişmedi). Önceki: 4.50.0 şubeler.
   Not: başka oturum Rehber'i 4.49.0 olarak çıkardığı için şubeler 4.50.0 oldu; göç v40–v41 her mağazada ilk açılışta çalışır.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).

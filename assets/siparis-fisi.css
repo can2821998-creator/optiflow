@@ -245,3 +245,87 @@ small { color: var(--muted); }
   .kagit-yarim .kagit { height: 148mm; }
 }
 
+/* ======================================================================================================
+   4.54.0 — YAPI VARYASYONLARI (Ayarlar › Çıktı görünümü). Müşteri nüshası: .nusha.d-… ; iş emri: .is-emri.d-…
+   ====================================================================================================== */
+.kocan-no { display: none; }
+
+/* --- Müşteri nüshası: yan şerit (marka + numara solda dikey) --- */
+.nusha.d-serit .n-sol { padding-left: 38mm; }
+.nusha.d-serit .n-ust { position: absolute; top: 0; left: 0; bottom: 0; width: 30mm; margin: 0; padding: 7mm 3mm 6mm; border-radius: 0;
+  flex-direction: column; justify-content: space-between; align-items: center; text-align: center; }
+.nusha.d-serit .n-ust .marka { flex-direction: column; gap: 4mm; }
+.nusha.d-serit .n-ust .marka > span { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; max-height: 86mm; }
+.nusha.d-serit .n-ust .marka b { font-size: 15pt; white-space: nowrap; overflow: visible; }
+.nusha.d-serit .n-no { justify-items: center; }
+.nusha.d-serit .filigran { left: 4mm; }
+
+/* --- Müşteri nüshası: antetli mektup --- */
+.nusha.d-mektup .n-ust { position: relative; flex-direction: column; justify-content: center; gap: 0; margin: -2.5mm 0 0; padding: 0 0 2.4mm; border-radius: 0; background: none; box-shadow: none;
+  color: var(--ink); border-bottom: .9mm double var(--brand); }
+.nusha.d-mektup .n-ust .marka { flex-direction: column; text-align: center; gap: 1mm; }
+.nusha.d-mektup .n-ust .marka > span { justify-items: center; }
+.nusha.d-mektup .n-ust .marka b { font-size: 14pt; color: var(--ink); }
+.nusha.d-mektup .n-ust .marka small { color: var(--brand-deep); letter-spacing: .3em; }
+.nusha.d-mektup .n-ust .marka em { color: var(--ink-2); }
+.nusha.d-mektup .n-ust .ck-isaret { color: var(--brand); }
+.nusha.d-mektup .n-no { position: absolute; right: 0; top: 0; }
+.nusha.d-mektup .n-no small { color: var(--muted); }
+
+/* --- Müşteri nüshası: koparılır koçan (sağ sütun kesik çizgili koçan) --- */
+.nusha.d-kocan .n-ust { background: none; box-shadow: none; color: var(--ink); border-bottom: .3mm solid var(--line-2); border-radius: 0; margin: -2.5mm 0 0; padding: 0 0 2mm; }
+.nusha.d-kocan .n-ust .marka b { color: var(--ink); }
+.nusha.d-kocan .n-ust .marka small { color: var(--brand-ink); }
+.nusha.d-kocan .n-ust .marka em { color: var(--ink-2); }
+.nusha.d-kocan .n-ust .ck-isaret { color: var(--brand); }
+.nusha.d-kocan .n-no { display: none; }
+.nusha.d-kocan .n-sag { border-left: .6mm dashed var(--line-2); background: var(--bas-desen, none), linear-gradient(var(--tint, #faf6f6), #fff 70%); padding-top: 4mm; }
+.nusha.d-kocan .n-sag::before, .nusha.d-kocan .n-sag::after { content: ""; position: absolute; left: -3.3mm; width: 6mm; height: 6mm; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 .3mm var(--line-2); }
+.nusha.d-kocan .n-sag::before { top: -3mm; } .nusha.d-kocan .n-sag::after { bottom: -3mm; }
+.nusha.d-kocan .kocan-no { display: grid; justify-items: center; gap: .6mm; width: 100%; padding-bottom: 1.6mm; border-bottom: .25mm solid var(--line-2); text-align: center; }
+.nusha.d-kocan .kocan-no small { font: 500 6pt/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--brand-ink); }
+.nusha.d-kocan .kocan-no b { font: 500 17pt/1 var(--mono); color: var(--brand-deep); }
+.nusha.d-kocan .kocan-no i { font-style: italic; font-size: 6.6pt; color: var(--ink-2); }
+.nusha.d-kocan .nisangah { width: 34mm; height: 34mm; } .nusha.d-kocan .nisangah .halka { width: 34mm; height: 34mm; }
+.nusha.d-kocan .qr-merkez, .nusha.d-kocan .qr-merkez svg { width: 21mm; height: 21mm; }
+
+/* --- Müşteri nüshası: mühür (numara yuvarlak mühürde, bandın üstüne basılmış) --- */
+.nusha.d-damga .n-ust { padding-right: 34mm; }
+.nusha.d-damga .n-no { position: absolute; right: -2mm; top: -4mm; z-index: 2; width: 30mm; height: 30mm; border-radius: 50%; place-content: center; justify-items: center; gap: 1mm;
+  background: #fff; color: var(--brand-deep); transform: rotate(-9deg); box-shadow: 0 0 0 .7mm var(--brand), inset 0 0 0 1.2mm #fff, inset 0 0 0 1.6mm var(--brand), 0 3mm 6mm -3mm rgba(0,0,0,.35); }
+.nusha.d-damga .n-no small { color: var(--brand-deep); letter-spacing: .24em; }
+.nusha.d-damga .n-no b { font-size: 11pt; }
+.nusha.d-damga .n-ust { position: relative; }
+
+/* --- İş emri: askı etiketi (beyaz, kalın çerçeve, delik; kocaman numara) --- */
+.is-emri.d-etiket .ie-bant { margin: 4mm 0 0; padding: 3.6mm 4mm 3.6mm 14mm; background: #fff; color: var(--ink); border-radius: 2mm 8mm 8mm 2mm; box-shadow: inset 0 0 0 .75mm var(--ink); }
+.is-emri.d-etiket .ie-bant::after { display: none; }
+.is-emri.d-etiket .ie-bant::before { content: ""; position: absolute; left: 4.6mm; top: 50%; width: 5mm; height: 5mm; margin-top: -2.5mm; border-radius: 50%;
+  box-shadow: inset 0 0 0 .6mm var(--ink), 0 0 0 1.4mm #fff, 0 0 0 1.75mm var(--line-2); }
+.is-emri.d-etiket .marka.acik b { color: var(--ink); }
+.is-emri.d-etiket .marka.acik small, .is-emri.d-etiket .marka.acik .ck-isaret { color: var(--brand-ink); }
+.is-emri.d-etiket .marka.acik em, .is-emri.d-etiket .ie-no small, .is-emri.d-etiket .ie-soz small, .is-emri.d-etiket .ie-soz i { color: var(--muted); }
+.is-emri.d-etiket .ie-soz { border-color: var(--ink); background: none; }
+.is-emri.d-etiket .ie-qr { box-shadow: inset 0 0 0 .3mm var(--line-2); }
+
+/* --- İş emri: yan şerit (kartın solunda renkli şerit, bant beyaz) --- */
+.is-emri.d-serit { padding-left: 11mm; box-shadow: inset 5mm 0 0 var(--brand); }
+.is-emri.d-serit .ie-bant { margin: 0 -6.5mm 0 -4.5mm; padding-left: 4.5mm; background: none; color: var(--ink); box-shadow: inset 0 -.5mm 0 var(--brand); }
+.is-emri.d-serit .ie-bant::after { display: none; }
+.is-emri.d-serit .marka.acik b { color: var(--ink); }
+.is-emri.d-serit .marka.acik small, .is-emri.d-serit .marka.acik .ck-isaret { color: var(--brand-ink); }
+.is-emri.d-serit .marka.acik em, .is-emri.d-serit .ie-no small, .is-emri.d-serit .ie-soz small, .is-emri.d-serit .ie-soz i { color: var(--muted); }
+.is-emri.d-serit .ie-no b { color: var(--brand-deep); }
+.is-emri.d-serit .ie-soz { border-color: var(--brand); background: var(--brand-soft); }
+.is-emri.d-serit .ie-qr { box-shadow: inset 0 0 0 .3mm var(--line-2); }
+
+/* --- İş emri: mürekkepsiz (renk yok, siyah çizgi) --- */
+.is-emri.d-sade { --brand: #1b1416; --brand-deep: #1b1416; --brand-bright: #1b1416; --brand-ink: #1b1416; --brand-soft: #f1efef; --night: #2a2426; }
+.is-emri.d-sade .ie-bant { background: none; color: var(--ink); box-shadow: inset 0 -.6mm 0 var(--ink); }
+.is-emri.d-sade .ie-bant::after { display: none; }
+.is-emri.d-sade .marka.acik b { color: var(--ink); }
+.is-emri.d-sade .marka.acik small, .is-emri.d-sade .marka.acik .ck-isaret { color: var(--ink); }
+.is-emri.d-sade .marka.acik em, .is-emri.d-sade .ie-no small, .is-emri.d-sade .ie-soz small, .is-emri.d-sade .ie-soz i { color: var(--muted); }
+.is-emri.d-sade .ie-soz { border-color: var(--ink); background: none; }
+.is-emri.d-sade .isaret stop { stop-color: #1b1416; }
+.is-emri.d-sade .ie-qr { box-shadow: inset 0 0 0 .3mm var(--line-2); }

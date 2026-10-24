@@ -120,3 +120,71 @@ body { font: 500 9pt/1.32 "Manrope", system-ui, Arial, sans-serif; color: var(--
 /* 4.53.0 Ayarlar › Çıktı görünümü önizlemesi (çerçeve içinde) */
 .onizleme .fis-kagit { margin: 0 auto; box-shadow: none; }
 [hidden] { display: none !important; }
+
+/* ======================================================================================================
+   4.54.0 — YAPI VARYASYONLARI (Ayarlar › Çıktı görünümü): her yarı kendi düzeniyle (section.d-…)
+   müşteri yarısı: bant · serit · mektup · kocan · damga     mağaza/atölye yarısı: bant · etiket · serit · sade
+   ====================================================================================================== */
+.fis-tur em { display: none; }
+
+/* Yan şerit: marka ve numara solda dikey renkli şerit, içerik sağda */
+.fis-yari.d-serit { display: grid; grid-template-columns: 30mm minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; column-gap: 7mm; padding: 0 10mm 6mm 0; }
+.d-serit .fis-bant { grid-row: 1 / 3; grid-column: 1; flex-direction: column; justify-content: space-between; align-items: center; gap: 4mm; padding: 9mm 3mm 7mm; border-radius: 0; text-align: center; }
+.d-serit .fis-marka { flex-direction: column; gap: 4mm; }
+.d-serit .fis-marka > span { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; max-height: 80mm; }
+.d-serit .fis-marka b { font-size: 16pt; white-space: nowrap; }
+.d-serit .fis-marka small, .d-serit .fis-marka em { margin: 0 1mm 0 0; }
+.d-serit .fis-tur { justify-items: center; text-align: center; }
+.d-serit .fis-tur b { font-size: 14pt; }
+.d-serit .fis-govde { grid-column: 2; grid-row: 1; padding-top: 8mm; }
+.d-serit .fis-alt { grid-column: 2; grid-row: 2; }
+
+/* Antetli mektup: ortalanmış marka, çift çizgi, numara köşede küçük */
+.d-mektup .fis-bant { position: static; flex-direction: column; align-items: center; gap: 0; padding: 0 0 3.2mm; border-radius: 0; background: none; box-shadow: none; color: var(--ink); border-bottom: 1mm double var(--brand); }
+.d-mektup .fis-marka { flex-direction: column; gap: 1.6mm; text-align: center; }
+.d-mektup .fis-marka .brand-mark { width: 10mm; height: 10mm; color: var(--brand); }
+.d-mektup .fis-marka b { font-size: 17pt; letter-spacing: .01em; }
+.d-mektup .fis-marka small { color: var(--brand-deep); letter-spacing: .32em; }
+.d-mektup .fis-marka em { color: var(--ink-2); font-size: 8pt; }
+.d-mektup .fis-tur { position: absolute; top: 8mm; right: 10mm; }
+.d-mektup .fis-tur b { font-size: 12pt; color: var(--brand-deep); }
+.d-mektup .fis-tur small, .d-mektup .fis-tur i { color: var(--muted); }
+.d-mektup .fis-alt { border-top: 1mm double var(--brand); }
+
+/* Koparılır koçan: sağda kesik çizgiyle ayrılan koçan (numara, tarih, not) */
+.fis-yari.d-kocan { padding-right: 54mm; }
+.d-kocan .fis-bant { padding: 3.2mm 4.5mm; }
+.d-kocan .fis-tur { position: absolute; top: 0; right: 0; bottom: 0; width: 46mm; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2.2mm;
+  padding: 6mm 4mm; text-align: center; color: var(--ink); background: var(--bas-desen, none), linear-gradient(var(--tint, #faf6f6), var(--tint, #faf6f6)); border-left: .55mm dashed var(--line-2); }
+.d-kocan .fis-tur::before, .d-kocan .fis-tur::after { content: ""; position: absolute; left: -3.3mm; width: 6mm; height: 6mm; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 .3mm var(--line-2); }
+.d-kocan .fis-tur::before { top: -3mm; } .d-kocan .fis-tur::after { bottom: -3mm; }
+.d-kocan .fis-tur small { color: var(--brand-deep); }
+.d-kocan .fis-tur b { font-size: 21pt; color: var(--brand-deep); }
+.d-kocan .fis-tur i { color: var(--muted); }
+.d-kocan .fis-tur em { display: block; margin-top: 2mm; padding-top: 2mm; border-top: .3mm solid var(--line-2); font: italic 600 7.4pt/1.3 "Manrope", sans-serif; color: var(--ink-2); }
+
+/* Mühür: numara, başlık bandına basılmış yuvarlak mühür içinde */
+.d-damga .fis-bant { padding-right: 46mm; }
+.d-damga .fis-tur { position: absolute; top: 2.5mm; right: 11mm; width: 33mm; height: 33mm; z-index: 2; display: grid; place-content: center; justify-items: center; gap: 1.2mm; text-align: center;
+  border-radius: 50%; background: #fff; color: var(--brand-deep); transform: rotate(-9deg);
+  box-shadow: 0 0 0 .8mm var(--brand), inset 0 0 0 1.4mm #fff, inset 0 0 0 1.85mm var(--brand), 0 3mm 6mm -3mm rgba(0, 0, 0, .35); }
+.d-damga .fis-tur small, .d-damga .fis-tur i { color: var(--brand-deep); }
+.d-damga .fis-tur small { letter-spacing: .26em; }
+.d-damga .fis-tur b { font-size: 16pt; }
+.d-damga .fis-govde { padding-top: 6mm; }
+.d-damga .fis-govde > :nth-child(2) { margin-top: 12mm; }
+
+/* Askı etiketi (atölye): delikli etiket, kocaman numara — gözlüğe iliştirilir */
+.d-etiket .fis-bant { position: relative; padding: 3.5mm 6mm 3.5mm 15mm; background: #fff; color: var(--ink); border-radius: 2mm 7mm 7mm 2mm; box-shadow: inset 0 0 0 .7mm var(--ink); }
+.d-etiket .fis-bant::before { content: ""; position: absolute; left: 5mm; top: 50%; width: 5mm; height: 5mm; margin-top: -2.5mm; border-radius: 50%; box-shadow: inset 0 0 0 .6mm var(--ink), 0 0 0 1.4mm #fff, 0 0 0 1.75mm var(--line-2); }
+.d-etiket .fis-marka .brand-mark, .d-etiket .fis-marka small { color: var(--ink); }
+.d-etiket .fis-marka em, .d-etiket .fis-tur small, .d-etiket .fis-tur i { color: var(--muted); }
+.d-etiket .fis-tur b { font-size: 28pt; }
+
+/* Mürekkepsiz (atölye): renk yok, yalnız siyah çizgi; renkli yazıcı gerekmez */
+.fis-yari.d-sade { --brand: #1b1416; --brand-deep: #1b1416; --night: #2a2426; --tint: #f3f1f1; --coral: #1b1416; }
+.d-sade .fis-bant { padding: 0 0 2.6mm; background: none; color: var(--ink); border-radius: 0; box-shadow: inset 0 -.45mm 0 var(--ink); }
+.d-sade .fis-marka .brand-mark, .d-sade .fis-marka small { color: var(--ink); }
+.d-sade .fis-marka em, .d-sade .fis-tur small, .d-sade .fis-tur i { color: var(--muted); }
+.d-sade .fis-vurgu.koyu { background: #fff; color: var(--ink); border-color: var(--ink); }
+.d-sade .fis-vurgu.koyu small, .d-sade .fis-vurgu.koyu i { color: var(--muted); }

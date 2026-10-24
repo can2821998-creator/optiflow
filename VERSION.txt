@@ -1,6 +1,18 @@
 OPTIFLOW
-Release: 4.53.0 (2026-10-24)
+Release: 4.54.0 (2026-10-24)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.54.0 (Çıktılarda yapı varyasyonları + yeni A4 tasarımları Mercek/Antet; şema değişmedi)
+  - Kullanıcı: "yapısal farklılıklar da olsun; Gözlük/Bilet tasarımından vazgeç, tek sayfa için daha yaratıcı bir şey;
+    odak ikiye bölünen sayfalar; atölyede kalan taraf için de varyasyonlar".
+  - İkiye bölünen fişlerde her yarı ayrı düzen (Ayarlar › Çıktı görünümü): müşteri yarısı Üst bant · Yan şerit (dikey
+    renkli şerit) · Antetli mektup (ortalanmış marka, çift çizgi) · Koparılır koçan (kesik çizgili sağ koçan) · Mühür
+    (numara yuvarlak mühürde); atölye yarısı Üst bant · Askı etiketi (delikli, gözlüğe iliştirilir) · Yan şerit ·
+    Mürekkepsiz (renksiz). Sipariş fişinde iş emri ve müşteri nüshası, hizmet/makbuz/satış fişlerinde iki yarı.
+  - A4 tek sayfa: Gözlük ve Bilet kaldırıldı. Yeni "Mercek" (sağ üstte gözlük: büyük camda belge no, küçük camda karekod
+    ya da tutar, köprü ve sap) ve "Antet" (antetli kâğıt: renk şeridi, belge bilgi tablosu, çift çizgi, sayfa boyu renk
+    çizgisi, Fraunces başlık). Eski gozluk/bilet ayarı Mercek'e düşer. Grafik renkleri (mercek, halka, eğri) palete bağlandı.
+  - Karıştır düzenleri de seçer; önizleme fişin iki yarısını birlikte gösterir. tests/cikti 86, sayfa testleri 50.
 
 DEĞİŞİKLİK NOTLARI — 4.53.0 (Çıktı görünümü: mağazaya özel fiş ve belgeler; şema değişmedi)
   - Kullanıcı: "her kâğıt çıktıya farklı varyasyonlar; renk vs. mağaza için seçilebilsin; yan yana iki mağazanın

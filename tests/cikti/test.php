@@ -91,7 +91,7 @@ $oku = static fn(string $f): string => (string) file_get_contents($kok . '/' . $
 ok(str_contains($oku('app/fis.php'), 'cikti_stil_tag()') && str_contains($oku('app/fis.php'), 'cikti_isaret()') && str_contains($oku('app/fis.php'), 'tesekkur'), 'yarım A4 fiş (hizmet, makbuz, satış)');
 ok(str_contains($oku('app/partials/siparis-fisi.php'), 'cikti_stil_tag($ckAyar)') && str_contains($oku('app/partials/siparis-fisi.php'), "\$ckAyar['alt_yazi']"), 'sipariş fişi');
 ok(str_contains($oku('app/dokum.php'), 'cikti_stil_tag()') && str_contains($oku('app/dokum.php'), 'cikti_isaret()') && str_contains($oku('app/dokum.php'), 'cikti_alt_yazi()'), 'A4 dökümler (teklif dahil)');
-foreach (['assets/fis.css' => ['var(--bas-bg', 'var(--bas-yazi', 'var(--bas-desen'], 'assets/siparis-fisi.css' => ['var(--bas-bg', 'var(--bas-vurgu'], 'assets/dokum.css' => ['var(--bas-bg', 'var(--bas-desen', 'var(--bas-dev', 'var(--gul-2)']] as $f => $ler) {
+foreach (['assets/fis.css' => ['var(--bas-bg', 'var(--bas-yazi', 'var(--bas-desen'], 'assets/siparis-fisi.css' => ['var(--bas-bg', 'var(--bas-vurgu'], 'assets/dokum.css' => ['var(--bas-bg', 'var(--bas-desen', 'var(--bas-soluk', 'var(--gul-2)']] as $f => $ler) {
     $c = $oku($f);
     ok(count(array_filter($ler, static fn($x) => str_contains($c, $x))) === count($ler), "$f değişkenlere bağlı");
 }
@@ -102,6 +102,25 @@ ok(is_file($kok . '/cikti-onizle.php') && str_contains($oku('app/pages/cikti-oni
 ok(str_contains($oku('app/pages/settings.php'), "'cikti'       => 'Çıktı görünümü'") && str_contains($oku('app/pages/settings.php'), "cikti_kaydet"), 'Ayarlar sekmesi');
 $js = $oku('assets/cikti-ayar.js');
 ok($js !== '' && !preg_match('/<script/i', $oku('app/pages/settings.php')) && !preg_match('/\son(click|change|input)=/i', $oku('app/pages/settings.php')), 'satır içi script yok (CSP)');
+
+
+/* 6. Yapı varyasyonları (4.54.0) */
+$ss = cikti_secenekler();
+ok(array_keys($ss['musteri']) === ['bant', 'serit', 'mektup', 'kocan', 'damga'] && array_keys($ss['atolye']) === ['bant', 'etiket', 'serit', 'sade'], 'müşteri 5, atölye 4 düzen');
+ok(cikti_temizle(['musteri' => 'etiket'])['musteri'] === 'bant' && cikti_temizle(['atolye' => 'kocan'])['atolye'] === 'bant', 'yarıya ait olmayan düzen reddedilir');
+$fcss = $oku('assets/fis.css');
+foreach (['serit', 'mektup', 'kocan', 'damga', 'etiket', 'sade'] as $d) {
+    ok(str_contains($fcss, '.d-' . $d . ' ') || str_contains($fcss, '.fis-yari.d-' . $d), "fis.css: d-$d");
+}
+$scss = $oku('assets/siparis-fisi.css');
+foreach (['serit', 'mektup', 'kocan', 'damga'] as $d) { ok(str_contains($scss, '.nusha.d-' . $d), "sipariş fişi müşteri nüshası: d-$d"); }
+foreach (['etiket', 'serit', 'sade'] as $d) { ok(str_contains($scss, '.is-emri.d-' . $d), "iş emri: d-$d"); }
+ok(str_contains($oku('app/fis.php'), "' d-' . e(\$duzen)") && str_contains($oku('app/partials/siparis-fisi.php'), "is-emri d-<?= e(\$ckAyar['atolye'])") && str_contains($oku('app/partials/siparis-fisi.php'), "nusha d-<?= e(\$ckAyar['musteri'])"), 'düzen sınıfları çıktılara basılıyor');
+$dk = $oku('app/dokum.php');
+ok(str_contains($dk, "const DOKUM_TEMALARI = ['mercek' => 'Mercek', 'antet' => 'Antet']") && !str_contains($dk, "dokum_tema() === 'bilet'") && str_contains($dk, 'm-gozluk') && str_contains($dk, 'a-bilgi'), 'A4: Mercek ve Antet, Bilet/Gözlük kaldırıldı');
+$dc2 = $oku('assets/dokum.css');
+ok(!str_contains($dc2, 'tema-bilet') && !str_contains($dc2, '.ust{') && str_contains($dc2, '.m-cam') && str_contains($dc2, '.tema-antet .sayfa{'), 'dokum.css: eski başlıklar silindi, yenileri var');
+ok(!preg_match('/(stroke|fill|stop-color)="#(?!fff")/i', $dk), 'döküm grafiklerinde sabit renk yok (palete bağlı)');
 
 echo "Çıktı görünümü: $gecen geçti, $kalan kaldı\n";
 exit($kalan ? 1 : 0);

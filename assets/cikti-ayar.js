@@ -12,12 +12,12 @@
     var kap = iframe.parentNode;
     var o = kap.clientWidth / 820;
     iframe.style.transform = 'scale(' + o + ')';
-    kap.style.height = Math.round((tur === 'fis' ? 600 : 1160) * o) + 'px';
+    kap.style.height = Math.round((tur === 'fis' ? 1150 : 1160) * o) + 'px';
   }
 
   function adres() {
     var p = new URLSearchParams();
-    ['renk', 'baslik', 'yazi', 'kose', 'desen', 'isaret'].forEach(function (ad) {
+    ['renk', 'baslik', 'yazi', 'kose', 'desen', 'isaret', 'musteri', 'atolye'].forEach(function (ad) {
       var s = form.querySelector('input[name="' + ad + '"]:checked');
       if (s) { p.set(ad, s.value); }
     });
@@ -50,7 +50,7 @@
   var karistir = form.querySelector('[data-ck-karistir]');
   if (karistir) {
     karistir.addEventListener('click', function () {
-      ['renk', 'baslik', 'yazi', 'kose', 'desen', 'isaret'].forEach(function (ad) {
+      ['renk', 'baslik', 'yazi', 'kose', 'desen', 'isaret', 'musteri', 'atolye', 'dokum_tema'].forEach(function (ad) {
         var hepsi = Array.prototype.slice.call(form.querySelectorAll('input[name="' + ad + '"]'));
         // "Mağaza rengim" ve "Tasarımın kendi yazısı" öneriye girmez: amaç başkalarından ayrışmak
         if (ad === 'renk' || ad === 'yazi') { hepsi = hepsi.slice(1); }

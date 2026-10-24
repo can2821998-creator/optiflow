@@ -2,18 +2,19 @@
 declare(strict_types=1);
 
 /* ==========================================================================
-   4.22.0 — Ortak döküm (yazdırılan belge) yapı taşları, İKİ TASARIM:
+   4.22.0 — Ortak döküm (yazdırılan belge) yapı taşları. 4.54.0: başlık tasarımları MERCEK (sağ üstte gözlük; büyük camda
+   belge no, küçük camda karekod) ve ANTET (antetli kâğıt). Eski iki tasarım (aşağıda tarihçe olarak anlatılıyor) kaldırıldı:
      · "gozluk" — koyu-bordo büyük başlık, arkada dev belge numarası, aşama çizgisi, reçete iki mercek
                   (aks açısı iletkiyle çizili, köprüde PD), kartlar, degrade tutar blokları.
      · "bilet"  — koçanlı bilet: tarih → tarih rotası, koparılan koçanda belge no + karekod / tutar.
-   Seçim: Ayarlar › Genel › "Belge tasarımı" (setting dokum_tema); belge ekranındaki düğmeyle ?tema= ile anlık.
-   Stil: assets/dokum.css (body.tema-gozluk / body.tema-bilet). A4; renkler print-color-adjust: exact ile
+   Seçim: Ayarlar › Çıktı görünümü › "A4 belge düzeni" (setting dokum_tema); belge ekranındaki düğmeyle ?tema= ile anlık.
+   Stil: assets/dokum.css (body.tema-mercek / body.tema-antet). A4; renkler print-color-adjust: exact ile
    tarayıcının "arka planları yazdır" ayarından bağımsız basılır.
 
    Kural: yardımcılar düz metni KENDİSİ kaçırır (e()); adı *_html olan parametreler hazır HTML'dir.
    ========================================================================== */
 
-const DOKUM_TEMALARI = ['gozluk' => 'Gözlük', 'bilet' => 'Bilet'];
+const DOKUM_TEMALARI = ['mercek' => 'Mercek', 'antet' => 'Antet'];   // 4.54.0: Gözlük/Bilet yerine
 
 function dokum_tema(): string
 {
@@ -25,8 +26,8 @@ function dokum_tema(): string
     if (isset(DOKUM_TEMALARI[$q])) {
         return $t = $q;
     }
-    $s = setting('dokum_tema', 'gozluk');
-    return $t = isset(DOKUM_TEMALARI[$s]) ? $s : 'gozluk';
+    $s = setting('dokum_tema', 'mercek');
+    return $t = isset(DOKUM_TEMALARI[$s]) ? $s : 'mercek';   // eski gozluk/bilet → mercek
 }
 
 function dokum_ikon(string $ad): string
@@ -102,11 +103,11 @@ function dokum_marka_html(?string $marka = null, ?array $satirlar = null): strin
  *  etiket   belge türü ("Gözlük sipariş fişi")      no     belge numarası (dev rakam / koçan)
  *  tarih    belge tarihi                              kucuk  "Sayın" gibi üst yazı;  baslik: kişi / kurum / dönem
  *  rozet    [ton, ikon, metin]                        metin  kısa açıklama (HTML)
- *  rota     [[üst, BÜYÜK, alt], [üst, BÜYÜK, alt]]    bilet: tarih → tarih; gözlük: başlık altında küçük
- *  alanlar  [[ikon, etiket, değer], …] (en çok 4)     gözlük: kartlar; bilet: bilet içinde satır
+ *  rota     [[üst, BÜYÜK, alt], [üst, BÜYÜK, alt]]    başlık altında "Sipariş → Teslim" satırı
+ *  alanlar  [[ikon, etiket, değer], …] (en çok 4)     başlığın altında kartlar
  *  yol      [[başlık, alt, 'bitti'|'simdi'|'bekliyor'], …]   aşama çizgisi
  *  vurgu    [etiket, değer, alt, ton]                 öne çıkan tutar
- *  qr       [adres, açıklama]                         bilet: koçanda; gözlük: başlıkta küçük
+ *  qr       [adres, açıklama]                         mercek: küçük camda; antet: sağda
  *  marka / marka_satir: SGK dökümünde firma unvanı.
  */
 function dokum_bas(array $b): string
@@ -126,52 +127,40 @@ function dokum_bas(array $b): string
     $yol = !empty($b['yol']) ? dokum_yol($b['yol']) : '';
     $rota = $b['rota'] ?? [];
 
-    if (dokum_tema() === 'bilet') {
-        $h = '<section class="bilet"><div class="gov"><div class="b-ust">' . $marka . '<span class="etiket">' . e($etiket) . '</span></div>';
-        if (count($rota) === 2) {
-            $h .= '<div class="rota">';
-            foreach ($rota as $i => $r) {
-                $h .= ($i === 1 ? '<div class="cizgi"><span>' . dokum_ikon('cerceve') . '</span></div>' : '')
-                    . '<div class="d' . $i . '"><small>' . e((string) $r[0]) . '</small><strong>' . e((string) $r[1]) . '</strong><em>' . e((string) ($r[2] ?? '')) . '</em></div>';
-            }
-            $h .= '</div><div class="kim kucuk-kim">' . ($kucuk !== '' ? '<small>' . e($kucuk) . '</small>' : '') . '<b>' . e($baslik) . '</b>' . $rozet . '</div>';
-        } else {
-            $h .= '<div class="kim">' . ($kucuk !== '' ? '<small>' . e($kucuk) . '</small>' : '') . '<h1>' . e($baslik) . '</h1>' . $rozet . ($metin !== '' ? '<p>' . $metin . '</p>' : '') . '</div>';
-        }
-        if ($alanlar) {
-            $h .= '<div class="yolcu n' . count($alanlar) . '">';
-            foreach ($alanlar as $a) {
-                $h .= '<div><small>' . e((string) $a[1]) . '</small><b>' . e((string) $a[2]) . '</b></div>';
-            }
-            $h .= '</div>';
-        }
-        $h .= '</div><aside class="kocan"><span class="delik"></span><small>' . e($etiket !== '' ? 'Belge no' : '') . '</small><div class="no">' . e(ltrim($no, '#')) . '</div>'
-            . ($tarih !== '' ? '<span class="tarih">' . e($tarih) . '</span>' : '');
-        if ($qr) {
-            $h .= '<div class="qr">' . qr_svg((string) $qr[0], 120, 'M') . '</div><p>' . e((string) ($qr[1] ?? '')) . '</p>';
-        } elseif ($vurgu !== '') {
-            $h .= $vurgu;
-            $vurgu = '';
-        }
-        $h .= '</aside></section>';
-        if (count($rota) === 2 && $metin !== '') {
-            $h .= '<p class="aciklama">' . $metin . '</p>';
-        }
-        if ($vurgu !== '') {
-            $h .= '<div class="b-vurgu">' . $vurgu . '</div>';
-        }
-        return $h . $yol;
+    $rotaHtml = '';
+    if (count($rota) === 2) {
+        $rotaHtml = '<div class="m-rota"><span><small>' . e((string) $rota[0][0]) . '</small><b>' . e((string) $rota[0][1]) . '</b></span><i></i>'
+            . '<span><small>' . e((string) $rota[1][0]) . '</small><b>' . e((string) $rota[1][1]) . '</b></span></div>';
     }
+    $kim = ($kucuk !== '' ? '<small>' . e($kucuk) . '</small>' : '') . '<h1>' . e($baslik) . '</h1>' . $rozet . ($metin !== '' ? '<p>' . $metin . '</p>' : '') . $rotaHtml;
+    $noKisa = ltrim($no, '#');
 
-    // Gözlük
-    $h = '<header class="ust">' . ($no !== '' ? '<div class="dev" aria-hidden="true">' . e(ltrim($no, '#')) . '</div>' : '')
-        . '<div class="u-ust">' . $marka . '<div class="belge"><span class="etiket">' . e($etiket) . '</span><p>'
-        . e(trim(($no !== '' ? 'No ' . ltrim($no, '#') : '') . ($no !== '' && $tarih !== '' ? ' · ' : '') . $tarih)) . '</p></div></div>'
-        . '<div class="u-alt"><div class="kim">' . ($kucuk !== '' ? '<small>' . e($kucuk) . '</small>' : '') . '<h1>' . e($baslik) . '</h1>' . $rozet
-        . ($metin !== '' ? '<p>' . $metin . '</p>' : '') . '</div>' . $vurgu
-        . ($qr ? '<div class="u-qr"><span>' . qr_svg((string) $qr[0], 120, 'M') . '</span><small>' . e((string) ($qr[1] ?? '')) . '</small></div>' : '')
-        . '</div></header>';
-    $h .= $yol !== '' ? $yol : '<div class="bosluk"></div>';
+    if (dokum_tema() === 'antet') {
+        // Antetli kâğıt: renk şeridi, marka + belge bilgi tablosu, çift çizgi; kişi solda, tutar/karekod sağda
+        $bilgi = '<dl class="a-bilgi">' . ($etiket !== '' ? '<div><dt>Belge</dt><dd>' . e($etiket) . '</dd></div>' : '')
+            . ($noKisa !== '' ? '<div><dt>No</dt><dd class="no">' . e($noKisa) . '</dd></div>' : '')
+            . ($tarih !== '' ? '<div><dt>Tarih</dt><dd>' . e($tarih) . '</dd></div>' : '') . '</dl>';
+        $sag = $vurgu . ($qr ? '<div class="a-qr"><span>' . qr_svg((string) $qr[0], 120, 'M') . '</span><small>' . e((string) ($qr[1] ?? '')) . '</small></div>' : '');
+        $h = '<header class="a-bas"><div class="a-serit"></div><div class="a-ust">' . $marka . $bilgi . '</div>'
+            . '<div class="a-alt"><div class="a-kim">' . $kim . '</div>' . ($sag !== '' ? '<div class="a-sag">' . $sag . '</div>' : '') . '</div></header>';
+    } else {
+        // Mercek: sağ üstte bir gözlük — büyük camda belge no, küçük camda karekod (yoksa tutar ya da tarih)
+        if ($qr) {
+            $kucukCam = '<div class="m-cam m-kucuk qr-var"><span class="m-qr">' . qr_svg((string) $qr[0], 120, 'M') . '</span></div>'
+                . '<p class="m-qr-not">' . e((string) ($qr[1] ?? '')) . '</p>';
+        } elseif (isset($b['vurgu'])) {
+            $kucukCam = '<div class="m-cam m-kucuk"><div><small>' . e((string) $b['vurgu'][0]) . '</small><b>' . e((string) $b['vurgu'][1]) . '</b>'
+                . (($b['vurgu'][2] ?? '') !== '' ? '<i>' . e((string) $b['vurgu'][2]) . '</i>' : '') . '</div></div>';
+            $vurgu = '';
+        } else {
+            $kucukCam = '<div class="m-cam m-kucuk"><div><small>Tarih</small><b>' . e($tarih) . '</b></div></div>';
+        }
+        $h = '<header class="m-bas"><div class="m-sol">' . $marka . '<div class="m-kim">' . $kim . '</div>' . $vurgu . '</div>'
+            . '<div class="m-gozluk"><div class="m-cam m-buyuk"><div><small>' . e($etiket) . '</small><b>' . e($noKisa !== '' ? $noKisa : '—') . '</b><i>' . e($tarih) . '</i></div></div>'
+            . '<svg class="m-kopru" viewBox="0 0 48 32" aria-hidden="true"><path d="M2 22 Q24 2 46 22" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg>'
+            . $kucukCam . '<span class="m-sap"></span></div></header>';
+    }
+    $h .= $yol;
     if ($alanlar) {
         $h .= dokum_kartlar($alanlar);
     }
@@ -264,19 +253,19 @@ function dokum_mercek(string $kimlik, ?string $sph, ?string $cyl, ?string $aks, 
     $c = 120;
     $r = 96;
     $s = '<svg viewBox="0 0 240 240" class="mercek' . ($kapali ? ' kapali' : '') . '" aria-hidden="true"><defs>'
-        . '<radialGradient id="mc' . $kimlik . '" cx="38%" cy="30%" r="78%"><stop offset="0" stop-color="#fff"/><stop offset=".72" stop-color="#fdf3f5"/><stop offset="1" stop-color="#f1d4db"/></radialGradient>'
-        . '<linearGradient id="mr' . $kimlik . '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e2405f"/><stop offset=".5" stop-color="#8f1a2e"/><stop offset="1" stop-color="#2a0a12"/></linearGradient></defs>'
+        . '<radialGradient id="mc' . $kimlik . '" cx="38%" cy="30%" r="78%"><stop offset="0" stop-color="#fff"/><stop offset=".72" style="stop-color:var(--tint)"/><stop offset="1" style="stop-color:var(--gul-2)"/></radialGradient>'
+        . '<linearGradient id="mr' . $kimlik . '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--parlak)"/><stop offset=".5" style="stop-color:var(--brand-deep)"/><stop offset="1" style="stop-color:var(--gece)"/></linearGradient></defs>'
         . '<circle cx="120" cy="120" r="' . ($r + 10) . '" fill="none" stroke="url(#mr' . $kimlik . ')" stroke-width="13"/>'
         . '<circle cx="120" cy="120" r="' . ($r + 2) . '" fill="url(#mc' . $kimlik . ')"/>'
         . '<path d="M40 70 A92 92 0 0 1 120 28" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".7"/>';
     for ($a = 0; $a <= 180; $a += 5) {
         $t = deg2rad($a);
         $uz = $a % 30 === 0 ? 14 : ($a % 10 === 0 ? 8 : 4);
-        $s .= sprintf('<path d="M%.1f %.1fL%.1f %.1f" stroke="#8f1a2e" stroke-width="%s" opacity="%s"/>',
+        $s .= sprintf('<path d="M%.1f %.1fL%.1f %.1f" style="stroke:var(--brand-deep)" stroke-width="%s" opacity="%s"/>',
             $c + ($r - 1) * cos($t), $c - ($r - 1) * sin($t), $c + ($r - 1 - $uz) * cos($t), $c - ($r - 1 - $uz) * sin($t),
             $a % 30 === 0 ? '1.4' : '.7', $a % 30 === 0 ? '1' : '.5');
         if ($a % 30 === 0) {
-            $s .= sprintf('<text x="%.1f" y="%.1f" text-anchor="middle" font-size="8.5" font-weight="700" fill="#9b6b75" font-family="Manrope,sans-serif">%d</text>',
+            $s .= sprintf('<text x="%.1f" y="%.1f" text-anchor="middle" font-size="8.5" font-weight="700" style="fill:var(--soft)" font-family="Manrope,sans-serif">%d</text>',
                 $c + ($r - 26) * cos($t), $c - ($r - 26) * sin($t) + 3, $a);
         }
     }
@@ -285,7 +274,7 @@ function dokum_mercek(string $kimlik, ?string $sph, ?string $cyl, ?string $aks, 
         $t = deg2rad($aksSayi);
         $x1 = $c + ($r + 2) * cos($t);
         $y1 = $c - ($r + 2) * sin($t);
-        $s .= sprintf('<path d="M%.1f %.1fL%.1f %.1f" stroke="#c8264a" stroke-width="2.2" stroke-dasharray="5 4"/><circle cx="%.1f" cy="%.1f" r="4.5" fill="#c8264a"/>',
+        $s .= sprintf('<path d="M%.1f %.1fL%.1f %.1f" style="stroke:var(--parlak)" stroke-width="2.2" stroke-dasharray="5 4"/><circle cx="%.1f" cy="%.1f" r="4.5" style="fill:var(--parlak)"/>',
             $x1, $y1, $c - ($r + 2) * cos($t), $c + ($r + 2) * sin($t), $x1, $y1);
     }
     $sphM = trim((string) $sph) !== '' ? trim((string) $sph) : 'PL';
@@ -314,27 +303,9 @@ function dokum_recete(array $rx): string
     $yakin = $v('near_right_sph') !== '' || $v('near_left_sph') !== '' ? 'Yakın: R ' . ($v('near_right_sph') ?: '—') . ' · L ' . ($v('near_left_sph') ?: '—') . ($v('near_lens_type') !== '' ? ' · ' . $v('near_lens_type') : '') : '';
     $notlar = array_values(array_filter([$yuk, $yakin]));
 
-    if (dokum_tema() === 'bilet') {
-        $kolon = [['sph', 'SPH'], ['cyl', 'CYL'], ['axis', 'AKS'], ['add', 'ADD']];
-        $kolon = array_values(array_filter($kolon, static fn($k) => $k[0] !== 'add' || $v('right_add') !== '' || $v('left_add') !== ''));
-        $h = '<div class="rx-bilet n' . count($kolon) . '">';
-        foreach (['right' => ['R', 'Sağ'], 'left' => ['L', 'Sol']] as $taraf => [$harf, $ad]) {
-            $h .= '<div class="satir' . ($kapali($taraf) ? ' kapali' : '') . '"><b><i>' . $harf . '</i>' . $ad . '</b>';
-            foreach ($kolon as [$k, $et]) {
-                $deger = $v($taraf . '_' . $k);
-                $h .= '<div class="m"><b>' . e($deger !== '' ? $deger . ($k === 'axis' ? '°' : '') : '—') . '</b><span>' . $et . '</span></div>';
-            }
-            $h .= '</div>';
-        }
-        $h .= '<div class="pd"><div><small>Göz bebekleri arası</small><b>' . e($pd !== '' ? $pd . ' mm' : '—') . '</b></div>'
-            . '<div><small>Reçete</small><b>' . e(date_tr($rx['prescription_date'] ?? null)) . '</b></div>'
-            . '<div><small>Kullanım</small><b>' . e(lens_designs()[(string) ($rx['lens_design'] ?? '')] ?? ($v('lens_type') ?: '—')) . '</b></div></div>';
-        return $h . ($notlar ? '<p class="rx-not">' . e(implode(' · ', $notlar)) . '</p>' : '') . '</div>';
-    }
-
     $id = substr(md5((string) ($rx['id'] ?? mt_rand())), 0, 6);
     $h = '<div class="gozluk"><div class="g-goz">' . dokum_mercek($id . 'r', $v('right_sph'), $v('right_cyl'), $v('right_axis'), $v('right_add'), $kapali('right')) . '<span>Sağ göz</span></div>'
-        . '<div class="kopru"><svg viewBox="0 0 120 40" aria-hidden="true"><path d="M2 24 Q60 -8 118 24" fill="none" stroke="#8f1a2e" stroke-width="6" stroke-linecap="round"/></svg>'
+        . '<div class="kopru"><svg viewBox="0 0 120 40" aria-hidden="true"><path d="M2 24 Q60 -8 118 24" fill="none" style="stroke:var(--brand-deep)" stroke-width="6" stroke-linecap="round"/></svg>'
         . '<b>' . e($pd !== '' ? $pd . ' mm' : '— mm') . '</b><small>' . e($pdAlt) . '</small></div>'
         . '<div class="g-goz">' . dokum_mercek($id . 'l', $v('left_sph'), $v('left_cyl'), $v('left_axis'), $v('left_add'), $kapali('left')) . '<span>Sol göz</span></div></div>';
     return $h . ($notlar ? '<p class="rx-not">' . e(implode(' · ', $notlar)) . '</p>' : '');
@@ -343,11 +314,11 @@ function dokum_recete(array $rx): string
 /** Halka grafik: $dilimler [[etiket, değer, alt-metin?], …]; ortada $ortaUst / $ortaAlt. */
 function dokum_halka(array $dilimler, string $ortaUst, string $ortaAlt = ''): string
 {
-    $renk = ['#c8264a', '#2a0a12', '#e88a9c', '#8f1a2e', '#f3c6cf', '#5c4a50'];
+    $renk = ['var(--parlak)', 'var(--gece)', 'var(--gul-2)', 'var(--brand-deep)', 'var(--gul)', '#5c4a50'];   // 4.54.0 palete bağlı
     $top = array_sum(array_map(static fn($d) => max(0, (float) $d[1]), $dilimler));
     $r = 70;
     $cevre = 2 * M_PI * $r;
-    $s = '<svg viewBox="0 0 200 200" class="halka-svg" aria-hidden="true"><circle cx="100" cy="100" r="' . $r . '" fill="none" stroke="#f6e6ea" stroke-width="26"/>';
+    $s = '<svg viewBox="0 0 200 200" class="halka-svg" aria-hidden="true"><circle cx="100" cy="100" r="' . $r . '" fill="none" style="stroke:var(--gul)" stroke-width="26"/>';
     $bas = 0.0;
     foreach (array_values($dilimler) as $i => $d) {
         if ($top <= 0) {
@@ -357,7 +328,7 @@ function dokum_halka(array $dilimler, string $ortaUst, string $ortaAlt = ''): st
         if ($pay <= 0) {
             continue;
         }
-        $s .= sprintf('<circle cx="100" cy="100" r="%d" fill="none" stroke="%s" stroke-width="26" stroke-dasharray="%.2f %.2f" stroke-dashoffset="%.2f" transform="rotate(-90 100 100)"/>',
+        $s .= sprintf('<circle cx="100" cy="100" r="%d" fill="none" style="stroke:%s" stroke-width="26" stroke-dasharray="%.2f %.2f" stroke-dashoffset="%.2f" transform="rotate(-90 100 100)"/>',
             $r, $renk[$i % count($renk)], max(0.01, $pay * $cevre - ($pay < 1 ? 1.5 : 0)), $cevre, -$bas * $cevre);
         $bas += $pay;
     }
@@ -392,10 +363,10 @@ function dokum_egri(array $noktalar, string $altMetin = ''): string
     }
     $yol = 'M' . implode(' L', array_map(static fn($p) => $p[0] . ' ' . $p[1], $pts));
     $son = end($pts);
-    $s = '<svg viewBox="0 -6 ' . $w . ' ' . ($hgt + 10) . '" preserveAspectRatio="none" class="egri" aria-hidden="true"><defs><linearGradient id="egriD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8264a" stop-opacity=".35"/><stop offset="1" stop-color="#c8264a" stop-opacity="0"/></linearGradient></defs>'
+    $s = '<svg viewBox="0 -6 ' . $w . ' ' . ($hgt + 10) . '" preserveAspectRatio="none" class="egri" aria-hidden="true"><defs><linearGradient id="egriD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--parlak)" stop-opacity=".35"/><stop offset="1" style="stop-color:var(--parlak)" stop-opacity="0"/></linearGradient></defs>'
         . '<path d="' . $yol . ' L' . $w . ' ' . $hgt . ' L0 ' . $hgt . 'Z" fill="url(#egriD)"/>'
-        . '<path d="' . $yol . '" fill="none" stroke="#8f1a2e" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>'
-        . '<circle cx="' . $son[0] . '" cy="' . $son[1] . '" r="5" fill="#c8264a"/></svg>';
+        . '<path d="' . $yol . '" fill="none" style="stroke:var(--brand-deep)" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>'
+        . '<circle cx="' . $son[0] . '" cy="' . $son[1] . '" r="5" style="fill:var(--parlak)"/></svg>';
     return '<div class="egri-kap">' . $s . '<div class="egri-alt"><span>' . e((string) $noktalar[0][0]) . '</span><span>' . e($altMetin) . '</span><span>' . e((string) end($noktalar)[0]) . '</span></div></div>';
 }
 

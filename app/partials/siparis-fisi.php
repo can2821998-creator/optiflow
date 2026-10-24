@@ -179,7 +179,7 @@ $isaret = static function (string $id, string $tek = '') use ($ckAyar, $ckPalet)
 <?php /* İŞ EMRİ — 148,5 × 210 mm dikey kart; A4'ün üst yarısına (ya da kesilmiş yarım sayfaya) 90° döndürülerek basılır.
          Kesince kâğıdı saat yönünde çevirin: kart dik okunur. */ ?>
 <main class="fis is-emri-yuva">
-  <div class="is-emri<?= count($kalemler) > 2 || count($bloklar) > 1 ? ' sik' : '' ?>">
+  <div class="is-emri d-<?= e($ckAyar['atolye']) ?><?= count($kalemler) > 2 || count($bloklar) > 1 ? ' sik' : '' ?>">
     <header class="ie-bant">
       <div class="ie-sol">
         <div class="marka acik"><?= $isaret('isIsaret') ?><span><b><?= e($dukkan) ?></b><small>Atölye iş emri</small></span></div>
@@ -262,7 +262,7 @@ $isaret = static function (string $id, string $tek = '') use ($ckAyar, $ckPalet)
   $kontrol = strtotime('+1 year', strtotime((string) $o['created_at']) ?: time());
   $kontrolAy = $aylar[(int) date('n', $kontrol)] . ' ' . date('Y', $kontrol);
   if ($yarim): ?></div><div class="kagit"><?php endif; ?>
-<section class="fis nusha">
+<section class="fis nusha d-<?= e($ckAyar['musteri']) ?>">
   <svg class="filigran" viewBox="0 0 200 200" aria-hidden="true">
     <circle cx="100" cy="100" r="98" /><circle cx="100" cy="100" r="74" /><circle cx="100" cy="100" r="50" /><circle cx="100" cy="100" r="26" />
     <line x1="100" y1="0" x2="100" y2="200" /><line x1="0" y1="100" x2="200" y2="100" />
@@ -303,6 +303,7 @@ $isaret = static function (string $id, string $tek = '') use ($ckAyar, $ckPalet)
     </footer>
   </div>
   <aside class="n-sag">
+    <div class="kocan-no"><small>Sipariş</small><b><?= e($no) ?></b><i>Teslim alırken bu koçanı gösterin</i></div>
     <div class="teslim"><small>Teslim sözümüz</small><b><?= e($sozGun ?: '—') ?></b><i><?= e($sozHafta) ?></i></div>
     <div class="nisangah">
       <svg class="halka" viewBox="0 0 200 200" aria-hidden="true">

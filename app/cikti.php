@@ -48,12 +48,16 @@ function cikti_secenekler(): array
         'kose'   => ['yuvarlak' => 'Yuvarlak köşe', 'keskin' => 'Keskin köşe'],
         'desen'  => ['mercek' => 'Mercek halkaları', 'cizgi' => 'Eğik çizgi', 'nokta' => 'Nokta', 'kareli' => 'Kareli', 'dalga' => 'Dalga', 'yok' => 'Desensiz'],
         'isaret' => ['mercek' => 'Mercek işareti', 'monogram' => 'Baş harfler', 'gozluk' => 'Gözlük', 'yok' => 'İşaretsiz'],
+        // 4.54.0 yarım sayfa fişlerin YAPISI: müşteri yarısı ve atölye/mağaza yarısı ayrı ayrı
+        'musteri' => ['bant' => 'Üst bant', 'serit' => 'Yan şerit', 'mektup' => 'Antetli mektup', 'kocan' => 'Koparılır koçan', 'damga' => 'Mühür'],
+        'atolye'  => ['bant' => 'Üst bant', 'etiket' => 'Askı etiketi', 'serit' => 'Yan şerit', 'sade' => 'Mürekkepsiz'],
     ];
 }
 
 function cikti_varsayilan(): array
 {
-    return ['renk' => 'marka', 'baslik' => 'gece', 'yazi' => 'otomatik', 'kose' => 'yuvarlak', 'desen' => 'mercek', 'isaret' => 'mercek', 'slogan' => '', 'alt_yazi' => ''];
+    return ['renk' => 'marka', 'baslik' => 'gece', 'yazi' => 'otomatik', 'kose' => 'yuvarlak', 'desen' => 'mercek', 'isaret' => 'mercek',
+            'musteri' => 'bant', 'atolye' => 'bant', 'slogan' => '', 'alt_yazi' => ''];
 }
 
 /** Gelen değerleri geçerli seçeneklere indirger (bilinmeyen → varsayılan). */
@@ -63,7 +67,7 @@ function cikti_temizle(array $v): array
     $s = cikti_secenekler();
     $out = [];
     $out['renk'] = isset(cikti_paletler()[(string) ($v['renk'] ?? '')]) ? (string) $v['renk'] : $d['renk'];
-    foreach (['baslik', 'yazi', 'kose', 'desen', 'isaret'] as $k) {
+    foreach (['baslik', 'yazi', 'kose', 'desen', 'isaret', 'musteri', 'atolye'] as $k) {
         $out[$k] = isset($s[$k][(string) ($v[$k] ?? '')]) ? (string) $v[$k] : $d[$k];
     }
     $tek = static fn($x, int $n): string => mb_substr(trim(preg_replace('/\s+/u', ' ', (string) $x) ?? ''), 0, $n);
@@ -98,6 +102,7 @@ function cikti_karistir(array $mevcut = []): array
     return cikti_temizle([
         'renk' => $rastgele(array_slice($renkler, 1)), 'baslik' => $rastgele(array_keys($s['baslik'])), 'yazi' => $rastgele(array_slice(array_keys($s['yazi']), 1)),
         'kose' => $rastgele(array_keys($s['kose'])), 'desen' => $rastgele(array_keys($s['desen'])), 'isaret' => $rastgele(array_keys($s['isaret'])),
+        'musteri' => $rastgele(array_keys($s['musteri'])), 'atolye' => $rastgele(array_keys($s['atolye'])),
         'slogan' => $mevcut['slogan'] ?? '', 'alt_yazi' => $mevcut['alt_yazi'] ?? '',
     ]);
 }
@@ -227,7 +232,7 @@ function cikti_stil_tag(?array $ayar = null): string
         $f = '"CiktiBaslik"';
         $css .= '@font-face{font-family:' . $f . ';font-display:swap;font-weight:' . $agirlik . ';src:url("assets/fonts/' . $d1 . '.woff2") format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+2000-206F,U+20AC,U+20BA,U+2122}'
             . '@font-face{font-family:' . $f . ';font-display:swap;font-weight:' . $agirlik . ';src:url("assets/fonts/' . $d2 . '.woff2") format("woff2");unicode-range:U+0100-02BA,U+1E00-1E9F,U+20A0-20C0,U+2C60-2C7F,U+A720-A7FF}'
-            . ':root,body.tema-gozluk,body.tema-bilet{--disp:' . $f . ',Manrope,sans-serif;--display:' . $f . ',Manrope,sans-serif;--display-w:' . $gen . ';--display-ls:' . $ls . '}';
+            . ':root,body.tema-mercek,body.tema-antet{--disp:' . $f . ',Manrope,sans-serif;--display:' . $f . ',Manrope,sans-serif;--display-w:' . $gen . ';--display-ls:' . $ls . '}';
         if ($a['yazi'] === 'klasik') {
             $css .= ':root{--disp-agirlik:500}';
         }
@@ -235,8 +240,8 @@ function cikti_stil_tag(?array $ayar = null): string
     // Köşeler
     if ($a['kose'] === 'keskin') {
         $css .= '.fis-bant,.fis-vurgu,.fis-serit,.fis-kutu .not,.ie-bant,.ie-soz,.ie-qr,.kart,.kalan-not,.hesap .kalan,.ust,.yol,.kk,.kutu,.vurgu,.buyuk,.bilet,'
-            . '.tema-bilet .yol>div,.kare,.kare .kod,.durum,.garanti-kalem,.u-qr span,.etiket,.rozet,.cubuk,.cubuk2,.yazi,.secenekler .kart,.tema-bilet .bolum>.gozluk,'
-            . '.tema-bilet .bolum>.hesap,.n-sag,.ck-serit{border-radius:0 !important}';
+            . '.kare,.kare .kod,.a-bilgi,.d-etiket .fis-bant,.is-emri.d-etiket .ie-bant,.durum,.garanti-kalem,.u-qr span,.etiket,.rozet,.cubuk,.cubuk2,.yazi,.secenekler .kart,'
+            . '.n-sag,.n-ust{border-radius:0 !important}';
     }
     return '<style id="cikti-gorunum">' . $css . '</style>';
 }

@@ -1,6 +1,14 @@
 OPTIFLOW
-Release: 4.54.0 (2026-10-24)
+Release: 4.55.0 (2026-10-24)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.55.0 (Yeni mağazaya rastgele çıktı görünümü + Ayarlar menüsü yeniden; şema değişmedi)
+  - Kullanıcı: "evet rastgele görünüm ata; ayarlar sayfasının üst barı iğrenç ve kafa karıştırıcı".
+  - Yeni mağaza veritabanı kurulurken (tenant_etkinlestir) çıktı görünümü rastgele atanır: renk, bant, yazı, desen,
+    işaret, köşe, müşteri ve atölye yarısı düzeni, A4 tasarımı (cikti_yeni_magaza_ata). Ayarı olan mağazaya dokunmaz.
+  - Ayarlar: üstteki karışık sekme satırı yerine solda gruplu, açıklamalı menü (Mağaza · Fiş ve belgeler · Ürünler ·
+    Müşteriyle iletişim · Modüller · Bakım); dar ekranda yatay kaydırılan sekmelere döner. Çıktı görünümü önizlemesi
+    içerik genişliğine göre (container query) yanda ya da altta.
 
 DEĞİŞİKLİK NOTLARI — 4.54.0 (Çıktılarda yapı varyasyonları + yeni A4 tasarımları Mercek/Antet; şema değişmedi)
   - Kullanıcı: "yapısal farklılıklar da olsun; Gözlük/Bilet tasarımından vazgeç, tek sayfa için daha yaratıcı bir şey;

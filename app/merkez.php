@@ -333,6 +333,9 @@ function tenant_etkinlestir(int $magazaId, string $dbHost, string $dbName, strin
             ]);
         }
         setting_set('shop_name', $m['isim']);
+        if (function_exists('cikti_yeni_magaza_ata')) {
+            cikti_yeni_magaza_ata();   // 4.55.0 her yeni mağazanın fişi başka görünsün (Ayarlar › Çıktı görünümü'nden değişir)
+        }
     } catch (Throwable $e) {
         throw new DomainException('Veritabanına bağlanılamadı ya da kurulamadı: ' . $e->getMessage());
     }

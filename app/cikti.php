@@ -292,3 +292,22 @@ function cikti_alt_yazi(): string
 {
     return cikti_ayar()['alt_yazi'];
 }
+
+/**
+ * 4.55.0 — Yeni mağazaya rastgele çıktı görünümü (kullanıcı: "evet rastgele görünüm ata"). Mağaza veritabanı ilk kez
+ * kurulurken tenant_etkinlestir() çağırır; çıktı ayarı önceden kaydedilmişse hiçbir şeye dokunmaz (yeniden etkinleştirme,
+ * mevcut mağaza). Mağaza sonradan Ayarlar › Çıktı görünümü'nden değiştirir. Döner: atandıysa ayar, yoksa null.
+ */
+function cikti_yeni_magaza_ata(): ?array
+{
+    if ((int) scalar("SELECT COUNT(*) FROM app_settings WHERE setting_key LIKE 'cikti!_%' ESCAPE '!' OR setting_key = 'dokum_tema'") > 0) {
+        return null;
+    }
+    $ck = cikti_karistir();
+    foreach ($ck as $k => $v) {
+        setting_set('cikti_' . $k, $v);
+    }
+    $temalar = defined('DOKUM_TEMALARI') ? array_keys(DOKUM_TEMALARI) : ['mercek'];
+    setting_set('dokum_tema', $temalar[array_rand($temalar)]);
+    return $ck;
+}

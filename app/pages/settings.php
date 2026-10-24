@@ -360,32 +360,39 @@ function active_super_count(): int
 /*  Görünüm                                                            */
 /* ================================================================== */
 page_start('Ayarlar', 'settings');
-page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.', '', '', 'Yönetim');
+page_header('Ayarlar', 'Mağazanız, fiş ve belge görünümü, ürünler ve müşteriyle iletişim.', '', '', 'Yönetim');
 ?>
 <?php
-/* 4.41.0: sekmeler tek satırda taşıyordu → iş gruplarına ayrıldı (eşlemede olmayan yeni sekme "Modüller"e düşer). */
-$sekmeGrup = ['Mağaza' => ['genel', 'cikti', 'kullanicilar'], 'Katalog' => ['cam-tipleri', 'katalog'], 'Mesajlar' => ['sablonlar', 'hatirlatma', 'whatsapp'],
-    'Modüller' => ['odeme', 'efatura', 'lens', 'uts'], 'Bakım' => ['mukerrer']];
-$gruplu = [];
+/* 4.55.0: Ayarlar menüsü — üstteki karışık sekme satırı yerine solda gruplu, açıklamalı menü (dar ekranda yatay kaydırılır).
+   Eşlemede olmayan yeni sekme "Modüller"e düşer. */
+$ayarMenu = [
+    'Mağaza'               => ['genel' => ['home', 'Mağaza bilgileri, personel yetkileri'], 'kullanicilar' => ['users', 'Personel hesapları ve roller']],
+    'Fiş ve belgeler'      => ['cikti' => ['print', 'Renk, fiş düzeni, yazı ve işaret']],
+    'Ürünler'              => ['cam-tipleri' => ['glasses', 'Siparişte seçilen cam tipleri'], 'katalog' => ['box', 'Teklif ve öneri için cam listesi']],
+    'Müşteriyle iletişim'  => ['sablonlar' => ['chat', 'Hazır WhatsApp mesajları'], 'hatirlatma' => ['bell', 'Hatırlatma süreleri'], 'whatsapp' => ['chat', 'Otomatik mesaj gönderimi']],
+    'Modüller'             => ['odeme' => ['wallet', 'Müşteriye ödeme bağlantısı'], 'efatura' => ['receipt', 'e-Fatura / e-Arşiv'], 'lens' => ['eye', 'Lens yenileme takibi'], 'uts' => ['barcode', 'ÜTS bildirim ayarları']],
+    'Bakım'                => ['mukerrer' => ['grid', 'Aynı kişinin çift kayıtlarını birleştir']],
+];
+$bilinen = array_merge(...array_map('array_keys', array_values($ayarMenu)));
 foreach ($tabs as $k => $label) {
-    $g = 'Modüller';
-    foreach ($sekmeGrup as $ad => $anahtarlar) {
-        if (in_array($k, $anahtarlar, true)) {
-            $g = $ad;
-        }
+    if (!in_array($k, $bilinen, true)) {
+        $ayarMenu['Modüller'][$k] = ['settings', ''];
     }
-    $gruplu[$g][$k] = $label;
 }
 ?>
-<nav class="ayar-sekmeleri" aria-label="Ayar bölümleri">
-  <?php foreach (array_keys($sekmeGrup) as $g): if (empty($gruplu[$g])) { continue; } ?>
-    <div class="ayar-sekme-grup"><small><?= e($g) ?></small>
-      <?php foreach ($gruplu[$g] as $k => $label): ?>
-        <a class="tab <?= $tab === $k ? 'active' : '' ?>" href="settings.php?tab=<?= e($k) ?>"<?= $tab === $k ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>
+<div class="ayar-duzen">
+<nav class="ayar-menu" aria-label="Ayar bölümleri">
+  <?php foreach ($ayarMenu as $grup => $ogeler): $ogeler = array_intersect_key($ogeler, $tabs); if (!$ogeler) { continue; } ?>
+    <div class="ayar-menu-grup">
+      <small><?= e($grup) ?></small>
+      <?php foreach ($ogeler as $k => [$ikon, $aciklama]): ?>
+        <a class="ayar-menu-oge<?= $tab === $k ? ' on' : '' ?>" href="settings.php?tab=<?= e($k) ?>"<?= $tab === $k ? ' aria-current="page"' : '' ?>>
+          <?= icon($ikon) ?><span><b><?= e($tabs[$k]) ?></b><?php if ($aciklama !== ''): ?><small><?= e($aciklama) ?></small><?php endif; ?></span></a>
       <?php endforeach; ?>
     </div>
   <?php endforeach; ?>
 </nav>
+<div class="ayar-icerik">
 
 <?php if ($tab === 'genel'): ?>
   <section class="card narrow">
@@ -868,4 +875,5 @@ foreach ($tabs as $k => $label) {
 <?php elseif (isset(moduller_ayar_sekmeleri()[$tab])): ?>
   <?php moduller_ayar_goster($tab); ?>
 <?php endif; ?>
+</div></div>
 <?php page_end($tab === 'cikti' ? ['cikti-ayar.js'] : []);

@@ -122,5 +122,27 @@ $dc2 = $oku('assets/dokum.css');
 ok(!str_contains($dc2, 'tema-bilet') && !str_contains($dc2, '.ust{') && str_contains($dc2, '.m-cam') && str_contains($dc2, '.tema-antet .sayfa{'), 'dokum.css: eski başlıklar silindi, yenileri var');
 ok(!preg_match('/(stroke|fill|stop-color)="#(?!fff")/i', $dk), 'döküm grafiklerinde sabit renk yok (palete bağlı)');
 
+
+/* 7. Yeni mağazaya rastgele görünüm (4.55.0) */
+$GLOBALS['__db'] = new PDO('sqlite::memory:');
+$GLOBALS['__db']->exec('CREATE TABLE app_settings (setting_key TEXT PRIMARY KEY, setting_value TEXT)');
+function scalar(string $sql, array $p = []): mixed { $st = $GLOBALS['__db']->prepare($sql); $st->execute($p); $v = $st->fetchColumn(); return $v === false ? null : $v; }
+function setting_set(string $k, string $v): void { $GLOBALS['__db']->prepare('INSERT OR REPLACE INTO app_settings VALUES (?, ?)')->execute([$k, $v]); }
+if (!defined('DOKUM_TEMALARI')) { define('DOKUM_TEMALARI', ['mercek' => 'Mercek', 'antet' => 'Antet']); }
+$a1 = cikti_yeni_magaza_ata();
+$kayit = $GLOBALS['__db']->query('SELECT setting_key, setting_value FROM app_settings')->fetchAll(PDO::FETCH_KEY_PAIR);
+ok(is_array($a1) && $a1 === cikti_temizle($a1) && $a1['renk'] !== 'marka', 'yeni mağazaya geçerli rastgele görünüm');
+ok(count(array_filter(array_keys($kayit), static fn($k) => str_starts_with($k, 'cikti_'))) === count(cikti_varsayilan()) && isset(DOKUM_TEMALARI[$kayit['dokum_tema'] ?? '']), 'bütün çıktı ayarları + A4 tasarımı yazıldı');
+ok(cikti_yeni_magaza_ata() === null && $GLOBALS['__db']->query('SELECT COUNT(*) FROM app_settings')->fetchColumn() == count($kayit), 'ayarı olan mağazaya dokunmaz');
+$GLOBALS['__db']->exec('DELETE FROM app_settings');
+setting_set('dokum_tema', 'antet');
+ok(cikti_yeni_magaza_ata() === null, 'yalnız A4 tasarımı seçilmiş mağazaya da dokunmaz');
+$farkli = [];
+for ($i = 0; $i < 20; $i++) { $GLOBALS['__db']->exec('DELETE FROM app_settings'); $farkli[json_encode(cikti_yeni_magaza_ata())] = 1; }
+ok(count($farkli) >= 19, 'yirmi yeni mağaza birbirinden farklı', (string) count($farkli));
+ok(str_contains($oku('app/merkez.php'), 'cikti_yeni_magaza_ata()'), 'mağaza kurulurken atanır');
+$ay = $oku('app/pages/settings.php');
+ok(str_contains($ay, 'class="ayar-menu"') && str_contains($ay, "'Fiş ve belgeler'") && !str_contains($ay, 'ayar-sekmeleri'), 'Ayarlar: gruplu yan menü');
+
 echo "Çıktı görünümü: $gecen geçti, $kalan kaldı\n";
 exit($kalan ? 1 : 0);

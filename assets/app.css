@@ -2368,12 +2368,30 @@ details.advisor:not([open]) > summary { margin-bottom: 0; }
 .hesap-dokum summary { cursor: pointer; font-size: 13px; color: var(--muted); font-weight: 700; }
 .hesap-dokum[open] summary { margin-bottom: 8px; }
 /* 4.41.0 Ayarlar: gruplu sekmeler ve bölüm başlıkları */
-.ayar-sekmeleri { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 0 0 20px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
-.ayar-sekme-grup { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.ayar-sekme-grup small { width: 100%; font: 700 10.5px/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px 4px; }
-.ayar-sekme-grup .tab { padding: 7px 12px; border-radius: 10px; color: var(--ink-2); text-decoration: none; font-weight: 700; font-size: 14px; }
-.ayar-sekme-grup .tab:hover { background: var(--surface-2); }
-.ayar-sekme-grup .tab.active { background: var(--gold); color: #fff; }
+.ayar-duzen { display: grid; grid-template-columns: 252px minmax(0, 1fr); gap: 22px; align-items: start; }
+.ayar-icerik { min-width: 0; container: ayar / inline-size; }
+.ayar-icerik > .card.narrow { max-width: 860px; }
+.ayar-menu { position: sticky; top: 16px; display: grid; gap: 14px; padding: 14px 10px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.ayar-menu-grup { display: grid; gap: 2px; }
+.ayar-menu-grup > small { margin: 0 0 4px 10px; font: 800 10.5px/1 var(--sans); letter-spacing: .13em; text-transform: uppercase; color: var(--muted); }
+.ayar-menu-oge { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: 11px; text-decoration: none; color: var(--ink-2); }
+.ayar-menu-oge .ic { flex: none; width: 18px; height: 18px; margin-top: 2px; color: var(--muted); }
+.ayar-menu-oge span { display: grid; gap: 1px; min-width: 0; }
+.ayar-menu-oge b { font-size: 14px; font-weight: 700; color: var(--ink); }
+.ayar-menu-oge span small { font-size: 12px; line-height: 1.3; color: var(--muted); }
+.ayar-menu-oge:hover { background: var(--surface-2); }
+.ayar-menu-oge.on { background: var(--brand-soft); box-shadow: inset 3px 0 0 var(--brand); }
+.ayar-menu-oge.on b { color: var(--brand-ink); }
+.ayar-menu-oge.on .ic { color: var(--brand); }
+@media (max-width: 980px) {
+  .ayar-duzen { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .ayar-menu { position: static; display: flex; gap: 6px; padding: 8px; overflow-x: auto; scrollbar-width: thin; }
+  .ayar-menu-grup { display: flex; gap: 4px; flex: none; padding-right: 6px; border-right: 1px solid var(--line); }
+  .ayar-menu-grup:last-child { border-right: 0; }
+  .ayar-menu-grup > small, .ayar-menu-oge span small { display: none; }
+  .ayar-menu-oge { flex: none; align-items: center; padding: 7px 11px; white-space: nowrap; }
+  .ayar-menu-oge.on { box-shadow: inset 0 -2px 0 var(--brand); }
+}
 .ayar-grup { margin: 10px 0 0; padding-top: 14px; border-top: 1px solid var(--line); font-size: 16px; }
 .ayar-grup:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
 
@@ -3234,7 +3252,7 @@ details.card:not([open]) > summary.card-head { border-radius: 12px; }
 .sube-atama td.num, .sube-atama th.num { text-align: center; }
 
 /* 4.53.0 — Ayarlar › Çıktı görünümü (seçenekler solda, canlı örnek sağda) */
-.ck-duzen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 460px); gap: 18px; align-items: start; }
+.ck-duzen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 400px); gap: 18px; align-items: start; }
 .ck-form { padding: 20px 22px; }
 .ck-giris { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0 0 6px; color: var(--ink-2); font-size: 14px; }
 .ck-grup { border: 0; margin: 0 0 18px; padding: 0; min-width: 0; }
@@ -3272,7 +3290,7 @@ details.card:not([open]) > summary.card-head { border-radius: 12px; }
 .ck-tur button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 .ck-cerceve { position: relative; height: 560px; overflow: hidden; border-radius: 12px; background: #e9e5e6; border: 1px solid var(--line); }
 .ck-cerceve iframe { position: absolute; top: 0; left: 0; width: 820px; height: 1160px; border: 0; transform-origin: 0 0; background: #fff; }
-@media (max-width: 1100px) { .ck-duzen { grid-template-columns: 1fr; } .ck-onizleme { position: static; } }
+@container ayar (max-width: 900px) { .ck-duzen { grid-template-columns: 1fr; } .ck-onizleme { position: static; max-width: 560px; } }
 @media (max-width: 620px) { .ck-iki { grid-template-columns: 1fr; } .ck-form { padding: 16px; } }
 /* 4.54.0 — Çıktı görünümü: yapı seçeneklerinin küçük çizimleri */
 .ck-yapi, .ck-a4 { position: relative; display: block; height: 58px; border-radius: 6px; background: #fff; box-shadow: inset 0 0 0 1px var(--line-strong); overflow: hidden; }

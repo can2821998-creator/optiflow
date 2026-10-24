@@ -161,7 +161,7 @@ ok(!str_contains($rxs, '<th>PD</th>') && str_contains($rxs, 'Göz başına PD ve
 $qs = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/quote.php');
 ok(str_contains($qs, 'class="gozluk-ozet"') && str_contains($qs, 'Hesap ayrıntısı'), '4.41.0 teklif görüntüleme: gözlük özeti tek satır, döküm katlanır');
 $st = (string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/settings.php');
-ok(str_contains($st, 'class="ayar-sekmeleri"') && str_contains($st, '<h3 class="ayar-grup span-all">Hesaplama</h3>'), '4.41.0 ayarlar: gruplu sekmeler, bölüm başlıkları');
+ok(str_contains($st, 'class="ayar-menu"') && str_contains($st, '<h3 class="ayar-grup span-all">Hesaplama</h3>'), '4.41.0→4.55.0 ayarlar: gruplu yan menü, bölüm başlıkları');
 ok(str_contains($lay, 'href="tezgah.php"><?= icon(\'plus\') ?> Yeni müşteri · reçete') && !str_contains($lay, "'SGK reçete aktar'"), 'menü: tek giriş, SGK reçete aktar kalktı');
 ok(str_contains((string) file_get_contents(dirname(__DIR__, 2) . '/app/pages/sgk-aktar.php'), "redirect('tezgah.php?gelen='"), 'Pro aktarımı akışta açılır');
 ok(str_contains($sayfa, 'csrf_check()'), 'CSRF denetimi');

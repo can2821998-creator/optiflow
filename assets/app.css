@@ -3232,3 +3232,45 @@ details.card:not([open]) > summary.card-head { border-radius: 12px; }
 .transfer-listesi form { margin: 0; }
 .sube-tablo tfoot td { font-weight: 800; border-top: 2px solid var(--ink); }
 .sube-atama td.num, .sube-atama th.num { text-align: center; }
+
+/* 4.53.0 — Ayarlar › Çıktı görünümü (seçenekler solda, canlı örnek sağda) */
+.ck-duzen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 460px); gap: 18px; align-items: start; }
+.ck-form { padding: 20px 22px; }
+.ck-giris { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0 0 6px; color: var(--ink-2); font-size: 14px; }
+.ck-grup { border: 0; margin: 0 0 18px; padding: 0; min-width: 0; }
+.ck-grup legend { padding: 0; margin: 0 0 8px; font-size: 12px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.ck-grup legend small { text-transform: none; letter-spacing: 0; font-weight: 600; }
+.ck-grup input[type=radio] { position: absolute; opacity: 0; pointer-events: none; }
+.ck-renkler { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
+.ck-renk { display: grid; justify-items: center; gap: 5px; padding: 8px 4px 6px; border-radius: 12px; border: 1.5px solid transparent; cursor: pointer; }
+.ck-renk i { display: block; width: 100%; max-width: 54px; height: 34px; border-radius: 10px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.ck-renk small { font-size: 12px; font-weight: 700; color: var(--ink-2); text-align: center; line-height: 1.2; }
+.ck-kartlar { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
+.ck-kart { display: grid; gap: 7px; padding: 9px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--surface); cursor: pointer; }
+.ck-kart small { font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
+.ck-bant { position: relative; display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 10px; border-radius: 8px; overflow: hidden; }
+.ck-bant b { width: 18px; height: 18px; border-radius: 50%; flex: none; }
+.ck-bant i { height: 6px; flex: 1; max-width: 60px; border-radius: 3px; }
+.ck-bant-gece { background: linear-gradient(115deg, #141012, #4a1220); } .ck-bant-gece b { background: #ff8fa0; } .ck-bant-gece i { background: rgba(255,255,255,.75); }
+.ck-bant-renkli { background: linear-gradient(125deg, #d0334f, #7e1528); } .ck-bant-renkli b { background: #fff; } .ck-bant-renkli i { background: rgba(255,255,255,.85); }
+.ck-bant-acik { background: linear-gradient(125deg, #fdf1f3, #f6d9df); } .ck-bant-acik b { background: #8f1a2e; } .ck-bant-acik i { background: #8f1a2e; opacity: .6; }
+.ck-bant-cizgi { background: #fff; box-shadow: inset 0 -4px 0 #b4233c, inset 0 0 0 1px var(--line); } .ck-bant-cizgi b { background: #b4233c; } .ck-bant-cizgi i { background: #463b3e; opacity: .5; }
+.ck-bant-cerceve { background: #fff; box-shadow: inset 0 0 0 2px #b4233c; } .ck-bant-cerceve b { background: #b4233c; } .ck-bant-cerceve i { background: #463b3e; opacity: .5; }
+.ck-bant-sade { background: #fff; box-shadow: inset 0 -1px 0 #cbbfc2, inset 0 0 0 1px var(--line); } .ck-bant-sade b { background: transparent; box-shadow: inset 0 0 0 2px #b4233c; } .ck-bant-sade i { background: #463b3e; opacity: .4; }
+.ck-yazi { display: block; height: 38px; line-height: 38px; font-size: 17px; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.01em; }
+.ck-iki { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
+.ck-cipler { display: flex; flex-wrap: wrap; gap: 6px; }
+.ck-cip span { display: inline-block; padding: 7px 12px; border-radius: 99px; border: 1.5px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 700; color: var(--ink-2); cursor: pointer; }
+.ck-renk:has(input:checked) { border-color: var(--ink); background: var(--surface-2); }
+.ck-kart:has(input:checked) { border-color: var(--ink); box-shadow: 0 0 0 3px var(--brand-soft); }
+.ck-cip input:checked + span { background: var(--ink); border-color: var(--ink); color: #fff; }
+.ck-grup label:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
+.ck-onizleme { position: sticky; top: 16px; padding: 14px; }
+.ck-onizleme-bas { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+.ck-tur { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--surface-3); }
+.ck-tur button { border: 0; background: none; padding: 6px 11px; border-radius: 8px; font: 700 12.5px var(--sans, Manrope), sans-serif; color: var(--ink-2); cursor: pointer; }
+.ck-tur button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.ck-cerceve { position: relative; height: 560px; overflow: hidden; border-radius: 12px; background: #e9e5e6; border: 1px solid var(--line); }
+.ck-cerceve iframe { position: absolute; top: 0; left: 0; width: 820px; height: 1160px; border: 0; transform-origin: 0 0; background: #fff; }
+@media (max-width: 1100px) { .ck-duzen { grid-template-columns: 1fr; } .ck-onizleme { position: static; } }
+@media (max-width: 620px) { .ck-iki { grid-template-columns: 1fr; } .ck-form { padding: 16px; } }

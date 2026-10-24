@@ -181,6 +181,7 @@ require dirname(__DIR__, 2) . '/app/pdf-metin.php';
 require dirname(__DIR__, 2) . '/app/satis.php';
 require dirname(__DIR__, 2) . '/app/teklif.php';
 require dirname(__DIR__, 2) . '/app/dokum.php';
+require dirname(__DIR__, 2) . '/app/cikti.php';   // 4.53.0 çıktı görünümü
 require dirname(__DIR__, 2) . '/app/asistan.php';
 
 /* ---------- Küçük test çatısı ---------- */

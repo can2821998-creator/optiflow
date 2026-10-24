@@ -5,6 +5,7 @@ $me = require_super();
 
 $tabs = [
     'genel'       => 'Genel',
+    'cikti'       => 'Çıktı görünümü',
     'kullanicilar' => 'Kullanıcılar',
     'cam-tipleri' => 'Cam tipleri',
     'katalog'     => 'Ürün kataloğu',
@@ -26,6 +27,21 @@ $self = 'settings.php?tab=' . $tab;
 if (is_post()) {
     $action = post('action');
     if (moduller_ayar_post($tab, $action)) {
+        redirect($self);
+    }
+
+    /* ---------- 4.53.0 Çıktı görünümü ---------- */
+    if ($action === 'cikti_kaydet') {
+        $ck = post('varsayilan') === '1' ? cikti_varsayilan() : cikti_temizle([
+            'renk' => post('renk'), 'baslik' => post('baslik'), 'yazi' => post('yazi'), 'kose' => post('kose'), 'desen' => post('desen'),
+            'isaret' => post('isaret'), 'slogan' => (string) ($_POST['slogan'] ?? ''), 'alt_yazi' => (string) ($_POST['alt_yazi'] ?? ''),
+        ]);
+        foreach ($ck as $k => $v) {
+            setting_set('cikti_' . $k, $v);
+        }
+        setting_set('dokum_tema', post('varsayilan') === '1' ? 'gozluk' : (isset(DOKUM_TEMALARI[post('dokum_tema')]) ? post('dokum_tema') : 'gozluk'));
+        audit('settings_update', 'settings', null, ['cikti' => $ck]);
+        flash(post('varsayilan') === '1' ? 'Çıktı görünümü varsayılana döndü.' : 'Çıktı görünümü kaydedildi. Bundan sonra basılan bütün fiş ve belgeler bu görünümde.');
         redirect($self);
     }
 
@@ -57,7 +73,6 @@ if (is_post()) {
             'sgk_lens_amount'      => number_format(max(0, min(2000, (float) str_replace(',', '.', post('sgk_lens_amount')))), 2, '.', ''),
             // 4.21.0 — tekliflerde personelin girebileceği en yüksek iskonto (süper yetkili sınırsız)
             // 4.22.0 — yazdırılan belgelerin (fiş, makbuz, döküm…) tasarımı
-            'dokum_tema'           => isset(DOKUM_TEMALARI[post('dokum_tema')]) ? post('dokum_tema') : 'gozluk',
             'teklif_iskonto_max'   => number_format(max(0, min(100, (float) str_replace(',', '.', post('teklif_iskonto_max', '10')))), 2, '.', ''),
         ];
         $renk = post('brand_color');
@@ -349,7 +364,7 @@ page_header('Ayarlar', 'Mağaza, kullanıcılar, katalog ve mesaj şablonları.'
 ?>
 <?php
 /* 4.41.0: sekmeler tek satırda taşıyordu → iş gruplarına ayrıldı (eşlemede olmayan yeni sekme "Modüller"e düşer). */
-$sekmeGrup = ['Mağaza' => ['genel', 'kullanicilar'], 'Katalog' => ['cam-tipleri', 'katalog'], 'Mesajlar' => ['sablonlar', 'hatirlatma', 'whatsapp'],
+$sekmeGrup = ['Mağaza' => ['genel', 'cikti', 'kullanicilar'], 'Katalog' => ['cam-tipleri', 'katalog'], 'Mesajlar' => ['sablonlar', 'hatirlatma', 'whatsapp'],
     'Modüller' => ['odeme', 'efatura', 'lens', 'uts'], 'Bakım' => ['mukerrer']];
 $gruplu = [];
 foreach ($tabs as $k => $label) {
@@ -392,7 +407,7 @@ foreach ($tabs as $k => $label) {
         <label><input type="checkbox" name="staff_take_payments" <?= setting('staff_take_payments', '0') === '1' ? 'checked' : '' ?>> Personel tahsilat / kapora girebilir</label>
         <small class="muted">Raporlar, toplam açık bakiye, tutar değiştirme, silme ve iptal her zaman yalnızca süper yetkilidedir.</small>
       </fieldset>
-      <label class="field"><span>Belge tasarımı (fiş, makbuz, döküm)</span><select name="dokum_tema"><?php foreach (DOKUM_TEMALARI as $k => $ad): ?><option value="<?= e($k) ?>" <?= setting('dokum_tema', 'gozluk') === $k ? 'selected' : '' ?>><?= e($ad) ?></option><?php endforeach; ?></select><small class="muted">Gözlük: koyu başlık, reçete iki mercekle. Bilet: koçanlı bilet görünümü. Belge açıkken üstteki düğmeyle de değiştirilebilir.</small></label>
+      <p class="muted span-all" style="margin:0">Fiş ve belgelerin rengi, başlığı ve yazısı: <a href="settings.php?tab=cikti">Çıktı görünümü</a>.</p>
       <label class="field"><span>Oturum zaman aşımı (dakika)</span><input type="number" min="15" max="1440" name="session_idle_minutes" value="<?= e(setting('session_idle_minutes', '480')) ?>"></label>
       <fieldset class="field checks">
         <legend>Beni hatırla</legend>
@@ -442,6 +457,83 @@ foreach ($tabs as $k => $label) {
     </form>
   </section>
 
+<?php elseif ($tab === 'cikti'): /* 4.53.0 Çıktı görünümü */
+  $ck = cikti_ayar();
+  $ckSec = cikti_secenekler();
+  $ckOnizleQ = http_build_query($ck + ['tur' => 'fis']);
+  $ckYazi = ['otomatik' => ['Manrope', 'Tasarıma göre'], 'modern' => ['Manrope', 'Modern'], 'klasik' => ['Fraunces', 'Klasik'], 'karakter' => ['Bricolage', 'Karakterli'], 'genis' => ['Unbounded', 'Geniş']];
+?>
+  <style>
+    @font-face{font-family:"Fraunces";font-weight:500;font-display:swap;src:url("assets/fonts/fraunces-latin-500-normal.woff2") format("woff2")}
+    @font-face{font-family:"Bricolage";font-weight:200 800;font-display:swap;src:url("assets/fonts/bricolage-grotesque-latin-standard-normal.woff2") format("woff2")}
+    @font-face{font-family:"Unbounded";font-weight:200 900;font-display:swap;src:url("assets/fonts/unbounded-latin-wght-normal.woff2") format("woff2")}
+  </style>
+  <div class="ck-duzen">
+    <form method="post" class="card ck-form" id="cikti-form" data-onizle="cikti-onizle.php">
+      <?= csrf_field() ?><input type="hidden" name="tab" value="cikti"><input type="hidden" name="action" value="cikti_kaydet">
+      <div class="card-head"><h2>Çıktı görünümü</h2><small class="muted">Fiş, makbuz, sipariş fişi, döküm ve teklif çıktıları bu seçimle basılır</small></div>
+      <p class="ck-giris">Yan yana iki mağazanın fişi birbirine benzemesin: renginizi, başlık bandını, yazı karakterini ve işaretinizi seçin. Değiştirdikçe sağdaki örnek güncellenir.
+        <button type="button" class="btn btn-sm" data-ck-karistir>Karıştır, bana bir görünüm öner</button></p>
+
+      <fieldset class="ck-grup"><legend>Renk</legend>
+        <div class="ck-renkler">
+          <?php foreach (cikti_paletler() as $k => [$ad]): $pp = cikti_palet($k); ?>
+            <label class="ck-renk" title="<?= e($ad) ?>"><input type="radio" name="renk" value="<?= e($k) ?>" <?= $ck['renk'] === $k ? 'checked' : '' ?>>
+              <i style="background:linear-gradient(135deg,<?= e($pp['parlak']) ?>,<?= e($pp['koyu']) ?> 70%,<?= e($pp['derin']) ?>)"></i><small><?= e($ad) ?></small></label>
+          <?php endforeach; ?>
+        </div>
+      </fieldset>
+
+      <fieldset class="ck-grup"><legend>Başlık bandı</legend>
+        <div class="ck-kartlar">
+          <?php foreach ($ckSec['baslik'] as $k => $ad): ?>
+            <label class="ck-kart"><input type="radio" name="baslik" value="<?= e($k) ?>" <?= $ck['baslik'] === $k ? 'checked' : '' ?>>
+              <span class="ck-bant ck-bant-<?= e($k) ?>"><b></b><i></i></span><small><?= e($ad) ?></small></label>
+          <?php endforeach; ?>
+        </div>
+      </fieldset>
+
+      <fieldset class="ck-grup"><legend>Yazı karakteri <small>(mağaza adı ve başlıklar)</small></legend>
+        <div class="ck-kartlar">
+          <?php foreach ($ckSec['yazi'] as $k => $ad): [$aile, $kisa] = $ckYazi[$k]; ?>
+            <label class="ck-kart"><input type="radio" name="yazi" value="<?= e($k) ?>" <?= $ck['yazi'] === $k ? 'checked' : '' ?>>
+              <span class="ck-yazi" style="font-family:'<?= e($aile) ?>',sans-serif<?= $k === 'karakter' ? ';font-stretch:85%' : '' ?>"><?= e(setting('shop_name', 'OptiFlow')) ?></span><small><?= e($kisa) ?></small></label>
+          <?php endforeach; ?>
+        </div>
+      </fieldset>
+
+      <div class="ck-iki">
+        <fieldset class="ck-grup"><legend>Başlık deseni</legend>
+          <div class="ck-cipler"><?php foreach ($ckSec['desen'] as $k => $ad): ?><label class="ck-cip"><input type="radio" name="desen" value="<?= e($k) ?>" <?= $ck['desen'] === $k ? 'checked' : '' ?>><span><?= e($ad) ?></span></label><?php endforeach; ?></div>
+        </fieldset>
+        <fieldset class="ck-grup"><legend>İşaret</legend>
+          <div class="ck-cipler"><?php foreach ($ckSec['isaret'] as $k => $ad): ?><label class="ck-cip"><input type="radio" name="isaret" value="<?= e($k) ?>" <?= $ck['isaret'] === $k ? 'checked' : '' ?>><span><?= e($ad) ?></span></label><?php endforeach; ?></div>
+        </fieldset>
+        <fieldset class="ck-grup"><legend>Köşeler</legend>
+          <div class="ck-cipler"><?php foreach ($ckSec['kose'] as $k => $ad): ?><label class="ck-cip"><input type="radio" name="kose" value="<?= e($k) ?>" <?= $ck['kose'] === $k ? 'checked' : '' ?>><span><?= e($ad) ?></span></label><?php endforeach; ?></div>
+        </fieldset>
+        <fieldset class="ck-grup"><legend>A4 belge düzeni</legend>
+          <div class="ck-cipler"><?php foreach (DOKUM_TEMALARI as $k => $ad): ?><label class="ck-cip"><input type="radio" name="dokum_tema" value="<?= e($k) ?>" <?= setting('dokum_tema', 'gozluk') === $k ? 'checked' : '' ?>><span><?= e($ad) ?></span></label><?php endforeach; ?></div>
+        </fieldset>
+      </div>
+
+      <div class="grid cols-2" style="gap:14px">
+        <label class="field"><span>Slogan (mağaza adının altında)</span><input name="slogan" maxlength="60" value="<?= e($ck['slogan']) ?>" placeholder="Örn. 1985'ten beri gözünüz gibi"></label>
+        <label class="field"><span>Alt yazı (müşteri nüshasının altında)</span><input name="alt_yazi" maxlength="140" value="<?= e($ck['alt_yazi']) ?>" placeholder="Örn. Bizi tercih ettiğiniz için teşekkürler · @magazaniz"></label>
+      </div>
+      <div class="form-actions"><button class="btn btn-primary">Kaydet</button>
+        <button class="btn btn-ghost" name="varsayilan" value="1" data-confirm="Çıktı görünümü varsayılana dönsün mü?">Varsayılana dön</button></div>
+    </form>
+
+    <aside class="card ck-onizleme">
+      <div class="ck-onizleme-bas"><b>Örnek</b>
+        <nav class="ck-tur" aria-label="Örnek belge">
+          <button type="button" class="on" data-ck-tur="fis">Yarım A4 fiş</button><button type="button" data-ck-tur="dokum">A4 belge</button>
+        </nav></div>
+      <div class="ck-cerceve"><iframe id="ck-iframe" title="Çıktı önizlemesi" src="cikti-onizle.php?<?= e($ckOnizleQ) ?>"></iframe></div>
+      <p class="muted" style="margin:8px 0 0;font-size:12.5px">Örnek verilerle gösterilir. Siyah-beyaz yazıcıda renkler gri tonda basılır; "Sade" bant en az mürekkebi harcar.</p>
+    </aside>
+  </div>
 <?php elseif ($tab === 'kullanicilar'):
     $users = rows('SELECT * FROM user_accounts ORDER BY is_active DESC, role DESC, full_name');
     $edit = query_int('edit') ? row('SELECT * FROM user_accounts WHERE id = ?', [query_int('edit')]) : null; ?>
@@ -751,4 +843,4 @@ foreach ($tabs as $k => $label) {
 <?php elseif (isset(moduller_ayar_sekmeleri()[$tab])): ?>
   <?php moduller_ayar_goster($tab); ?>
 <?php endif; ?>
-<?php page_end();
+<?php page_end($tab === 'cikti' ? ['cikti-ayar.js'] : []);

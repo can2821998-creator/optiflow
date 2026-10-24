@@ -90,7 +90,10 @@ function dokum_marka_html(?string $marka = null, ?array $satirlar = null): strin
         $satirlar = [setting('shop_address', ''), setting('shop_phone', '')];
     }
     $satirlar = array_values(array_filter(array_map(static fn($s) => trim((string) $s), $satirlar)));
-    return '<div class="marka"><span class="logo">' . brand_mark() . '</span><div><b>' . e($marka) . '</b>'
+    $isaret = cikti_isaret();   // 4.53.0 çıktı görünümü
+    $slogan = cikti_slogan();
+    return '<div class="marka">' . ($isaret !== '' ? '<span class="logo">' . $isaret . '</span>' : '') . '<div><b>' . e($marka) . '</b>'
+        . ($slogan !== '' ? '<em>' . e($slogan) . '</em>' : '')
         . ($satirlar ? '<small>' . e(implode(' · ', $satirlar)) . '</small>' : '') . '</div></div>';
 }
 
@@ -434,9 +437,11 @@ function dokum_kareler(array $kartlar): string
 function dokum_son(string $notlar_html, string $sag_html = ''): string
 {
     if ($sag_html === '') {
-        $sag_html = '<div class="damga"><div><b>' . e(setting('shop_name', 'OptiFlow')) . '</b><span>Basım ' . e(date('d.m.Y H:i')) . '</span></div><span class="logo-k">' . brand_mark() . '</span></div>';
+        $isaret = cikti_isaret();
+        $sag_html = '<div class="damga"><div><b>' . e(setting('shop_name', 'OptiFlow')) . '</b><span>Basım ' . e(date('d.m.Y H:i')) . '</span></div>' . ($isaret !== '' ? '<span class="logo-k">' . $isaret . '</span>' : '') . '</div>';
     }
-    return '<footer class="son"><div>' . $notlar_html . '</div>' . $sag_html . '</footer>';
+    $alt = cikti_alt_yazi();
+    return '<footer class="son"><div>' . $notlar_html . ($alt !== '' ? '<p class="tesekkur">' . e($alt) . '</p>' : '') . '</div>' . $sag_html . '</footer>';
 }
 
 /** Sayfa başı: <head>, ekran araç çubuğu (yazdır, kapat, tasarım seçimi) ve A4 sayfanın açılışı. */
@@ -449,15 +454,16 @@ function dokum_sayfa_bas(string $baslik, array $ekCss = []): string
     foreach ($ekCss as $css) {
         $h .= '<link rel="stylesheet" href="' . e(asset($css)) . '">';
     }
+    $h .= cikti_stil_tag();   // 4.53.0 mağazanın çıktı görünümü (renk, başlık bandı, yazı, köşe, desen)
     $q = $_GET;
     $secim = '';
     foreach (DOKUM_TEMALARI as $k => $ad) {
         $q['tema'] = $k;
         $secim .= '<a href="?' . e(http_build_query($q)) . '"' . ($k === $tema ? ' class="secili" aria-current="true"' : '') . '>' . e($ad) . '</a>';
     }
-    return $h . '</head><body class="tema-' . e($tema) . '"><div class="arac no-print"><button type="button" data-print>Yazdır / PDF kaydet</button>'
+    return $h . '</head><body class="tema-' . e($tema) . ((string) ($_GET['onizleme'] ?? '') === '1' ? ' onizleme' : '') . '"><div class="arac no-print"' . ((string) ($_GET['onizleme'] ?? '') === '1' ? ' hidden' : '') . '><button type="button" data-print>Yazdır / PDF kaydet</button>'
         . '<button type="button" class="ghost" data-close>Kapat</button><nav class="tema-sec" aria-label="Belge tasarımı">' . $secim . '</nav>'
-        . '<span>PDF için hedefte <b>"PDF olarak kaydet"</b>i seçin; <b>Üst bilgi / alt bilgi</b>yi kapatın. Varsayılan tasarım: Ayarlar › Genel.</span></div>'
+        . '<span>PDF için hedefte <b>"PDF olarak kaydet"</b>i seçin; <b>Üst bilgi / alt bilgi</b>yi kapatın. Renk ve görünüm: Ayarlar › Çıktı görünümü.</span></div>'
         . '<main class="sayfa">';
 }
 

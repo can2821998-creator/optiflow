@@ -48,6 +48,18 @@ calis "token şifreli" '"g' sql '{"sql":"SELECT substr(setting_value,1,3) AS s F
 calis "deneme kayıtları uyarısı" "gerçekte ÜTS" uts '{"get":{"tab":"bildirimler"}}'
 calis "bağlantıyı dene (sahte ÜTS)" "bağlantısı çalışıyor" ayar '{"post":{"action":"uts_test"},"tasiyici":1}'
 calis "gerçek ortam sayfa" "ÜTS test ortamı" uts '{"get":{"tab":"gelen"}}'
+# 4.53.0 Çıktı görünümü (Ayarlar sekmesi, kaydetme, önizleme)
+calis "çıktı görünümü sekmesi" 'name="renk" value="zumrut"' ayar_cikti '{"get":{"tab":"cikti"}}'
+calis "çıktı görünümü kaydet" "" ayar_cikti '{"post":{"tab":"cikti","action":"cikti_kaydet","renk":"zumrut","baslik":"renkli","yazi":"klasik","kose":"keskin","desen":"nokta","isaret":"monogram","slogan":"Aile işletmesi","alt_yazi":"Teşekkürler · @ornek","dokum_tema":"bilet"}}'
+calis "çıktı görünümü kaydedildi" "zumrut" sql "{\"sql\":\"SELECT setting_value FROM app_settings WHERE setting_key = 'cikti_renk'\"}"
+calis "geçersiz seçenek varsayılana iner" "" ayar_cikti '{"post":{"tab":"cikti","action":"cikti_kaydet","renk":"zumrut","baslik":"<script>","dokum_tema":"bilet"}}'
+calis "geçersiz başlık kaydı" "gece" sql "{\"sql\":\"SELECT setting_value FROM app_settings WHERE setting_key = 'cikti_baslik'\"}"
+calis "önizleme: yarım A4 fiş, kayıtlı görünüm" "cikti-gorunum" cikti_onizle '{"get":{"slogan":"Aile işletmesi"}}'
+calis "önizleme: slogan" "Aile işletmesi" cikti_onizle '{"get":{"slogan":"Aile işletmesi"}}'
+calis "önizleme: A4 belge, bilet" "tema-bilet" cikti_onizle '{"get":{"tur":"dokum"}}'
+calis "önizleme: araç çubuğu gizli" 'class="arac no-print" hidden' cikti_onizle '{"get":{"tur":"dokum"}}'
+calis "varsayılana dön" "" ayar_cikti '{"post":{"tab":"cikti","action":"cikti_kaydet","varsayilan":"1"}}'
+calis "varsayılan renk" "marka" sql "{\"sql\":\"SELECT setting_value FROM app_settings WHERE setting_key = 'cikti_renk'\"}"
 echo "Sayfa testleri: $gecen geçti, $kalan kaldı"
 rm -rf "$UTS_TEST_ROOT"
 [ $kalan -eq 0 ]

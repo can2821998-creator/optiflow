@@ -166,6 +166,27 @@ switch ($senaryo) {
         require_once dirname(__DIR__, 2) . '/app/fis.php';
         require dirname(__DIR__, 2) . '/app/partials/satis-fisi.php';
         break;
+    case 'siparis_fisi':   // 4.53.0 sipariş fişi (iş emri + müşteri nüshası) çıktı görünümüyle
+    case 'cikti_onizle':   // 4.53.0 Ayarlar › Çıktı görünümü önizlemesi
+        if (!function_exists('brand_mark')) { function brand_mark(): string { return '<svg class="bm"></svg>'; } }
+        if (!function_exists('brand_style_tag')) { function brand_style_tag(): string { return ''; } }
+        if (!function_exists('asset')) { function asset(string $p): string { return 'assets/' . $p; } }
+        if (!function_exists('date_long')) { function date_long(?string $d = null): string { return (string) $d; } }
+        require_once dirname(__DIR__, 2) . '/app/dokum.php';
+        require_once dirname(__DIR__, 2) . '/app/fis.php';
+        if ($senaryo === 'siparis_fisi') {
+            require dirname(__DIR__, 2) . '/app/partials/siparis-fisi.php';
+        } else {
+            require $kaynak(dirname(__DIR__, 2) . '/app/pages/cikti-onizle.php');
+        }
+        break;
+    case 'ayar_cikti':   // 4.53.0 Ayarlar › Çıktı görünümü sekmesi + kaydetme
+        if (!function_exists('require_super')) { function require_super(): array { return current_user(); } }
+        if (!function_exists('csrf_field')) { function csrf_field(): string { return ''; } }
+        $ayarSayfa = $kaynak(dirname(__DIR__, 2) . '/app/pages/settings.php');
+        file_put_contents($ayarSayfa, str_replace("dirname(__DIR__) . '/partials/", "'" . dirname(__DIR__, 2) . "/app/partials/", (string) file_get_contents($ayarSayfa)));
+        require $ayarSayfa;
+        break;
     case 'personel':
         $GLOBALS['__kullanici'] = ['id' => 2, 'full_name' => 'Personel', 'role' => 'personel'];
         require $kaynak(dirname(__DIR__, 2) . '/app/pages/hizli-satis.php');

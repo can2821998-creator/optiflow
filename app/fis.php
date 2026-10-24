@@ -16,13 +16,17 @@ function fis_sayfa(array $f): never
     $yarim = query('kagit') === 'yarim';
     $dukkan = setting('shop_name', 'OptiFlow');
     $tel = trim(setting('shop_phone'));
-    $yarimHtml = static function (string $nusha, string $govde) use ($f, $dukkan, $tel): string {
-        return '<section class="fis-yari ' . ($nusha === 'MÜŞTERİ NÜSHASI' ? 'musteri' : 'magaza') . '">'
-            . '<header class="fis-bant"><div class="fis-marka">' . brand_mark() . '<span><b>' . e($dukkan) . '</b><small>'
-            . e($nusha) . '</small></span></div>'
+    $slogan = cikti_slogan();
+    $altYazi = cikti_alt_yazi();
+    $yarimHtml = static function (string $nusha, string $govde) use ($f, $dukkan, $tel, $slogan, $altYazi): string {
+        $musteri = $nusha === 'MÜŞTERİ NÜSHASI';
+        return '<section class="fis-yari ' . ($musteri ? 'musteri' : 'magaza') . '">'
+            . '<header class="fis-bant"><div class="fis-marka">' . cikti_isaret() . '<span><b>' . e($dukkan) . '</b><small>'
+            . e($nusha) . '</small>' . ($slogan !== '' ? '<em>' . e($slogan) . '</em>' : '') . '</span></div>'
             . '<div class="fis-tur"><small>' . e($f['etiket']) . '</small><b>' . e($f['no']) . '</b><i>' . e($f['tarih']) . '</i></div></header>'
             . '<div class="fis-govde">' . $govde . '</div>'
-            . '<footer class="fis-alt"><span>' . e($dukkan) . ($tel !== '' ? ' · ' . e(phone_display($tel)) : '') . '</span><span>' . e($f['no']) . ' · basım ' . e(date('d.m.Y H:i')) . '</span></footer>'
+            . '<footer class="fis-alt"><span>' . e($dukkan) . ($tel !== '' ? ' · ' . e(phone_display($tel)) : '') . '</span>'
+            . ($musteri && $altYazi !== '' ? '<span class="tesekkur">' . e($altYazi) . '</span>' : '') . '<span>' . e($f['no']) . ' · basım ' . e(date('d.m.Y H:i')) . '</span></footer>'
             . '</section>';
     };
     ?><!doctype html>
@@ -33,11 +37,11 @@ function fis_sayfa(array $f): never
 <meta name="robots" content="noindex,nofollow">
 <title><?= e($f['baslik']) ?> · <?= e($dukkan) ?></title>
 <link rel="stylesheet" href="<?= e(asset('fis.css')) ?>">
-<?= brand_style_tag() ?>
+<?= cikti_stil_tag() ?>
 <style>@page { size: <?= $yarim ? '210mm 148.5mm' : 'A4 portrait' ?>; margin: 0; }</style>
 </head>
-<body class="<?= $yarim ? 'kagit-yarim' : 'kagit-a4' ?>"<?= query('yazdir') === '1' ? ' data-otomatik-yazdir' : '' ?>>
-<div class="fis-arac no-print">
+<body class="<?= $yarim ? 'kagit-yarim' : 'kagit-a4' ?><?= query('onizleme') === '1' ? ' onizleme' : '' ?>"<?= query('yazdir') === '1' ? ' data-otomatik-yazdir' : '' ?>>
+<div class="fis-arac no-print"<?= query('onizleme') === '1' ? ' hidden' : '' ?>>
   <button type="button" class="ghost" data-close>← Geri</button>
   <span><?= $yarim ? 'Kesilmiş yarım sayfa (2 sayfa)' : 'A4 — ortadan kesin: üst yarı müşteriye, alt yarı mağazaya' ?></span>
   <a href="<?= e(url_with(['kagit' => $yarim ? null : 'yarim'])) ?>"><?= $yarim ? 'A4 tek sayfa' : 'Yarım sayfaya bas' ?></a>

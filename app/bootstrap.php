@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.52.0';
+const APP_VERSION = '4.53.0';
 const APP_ROOT = __DIR__ . '/..';
 
 // 4.16.8: canlıya yükleme sürerken yarım dosyalara denk gelmemek için kısa bakım ekranı (app/guncelleme.php).
@@ -117,6 +117,7 @@ require __DIR__ . '/whatsapp.php';
 require __DIR__ . '/lens.php';
 require __DIR__ . '/gorevler.php';
 require __DIR__ . '/eposta.php';   // 4.51.0 merkez e-postası (SMTP, şablonlar, kuyruk)
+require __DIR__ . '/cikti.php';   // 4.53.0 mağazaya özel çıktı görünümü (renk, başlık, yazı, işaret)
 require __DIR__ . '/odeme.php';
 require __DIR__ . '/tedarik.php';
 require __DIR__ . '/kagitsiz.php';   // 4.32.0 kâğıtsız tezgâh: yarım sayfa sipariş fişi, gün sonu depo siparişi

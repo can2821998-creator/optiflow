@@ -145,10 +145,16 @@ $qr = $takip !== '' ? qr_svg($takip, 120, 'M', '#141012') : '';
 $secim = static fn(string $kagit, string $ad3) => '<a href="' . e(url_with(['kagit' => $kagit === 'a4' ? null : $kagit, 'tam' => null, 'tezgah' => null, 'fis' => '1'])) . '"' . (($kagit === 'yarim') === $yarim ? ' class="secili" aria-current="true"' : '') . '>' . $ad3 . '</a>';
 
 /** OptiFlow işareti (pz_logo ile aynı geometri; renkli degrade ya da tek renk). */
-$isaret = static function (string $id, string $tek = ''): string {
+$ckAyar = cikti_ayar();   // 4.53.0 çıktı görünümü: renk, işaret, slogan, alt yazı
+$ckPalet = cikti_palet($ckAyar['renk']);
+$isaret = static function (string $id, string $tek = '') use ($ckAyar, $ckPalet): string {
+    if ($ckAyar['isaret'] !== 'mercek') {
+        $i = cikti_isaret($ckAyar);
+        return $i === '' ? '' : '<span class="isaret ck-isaret">' . $i . '</span>';
+    }
     $fill = $tek !== '' ? $tek : 'url(#' . $id . ')';
     return '<svg class="isaret" viewBox="0 0 100 100" aria-hidden="true">'
-        . ($tek === '' ? '<defs><linearGradient id="' . $id . '" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6b81"/><stop offset=".55" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/></linearGradient></defs>' : '')
+        . ($tek === '' ? '<defs><linearGradient id="' . $id . '" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="' . $ckPalet['vurgu'] . '"/><stop offset=".55" stop-color="' . $ckPalet['parlak'] . '"/><stop offset="1" stop-color="' . $ckPalet['koyu'] . '"/></linearGradient></defs>' : '')
         . '<g transform="rotate(-10 50 50)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z" fill="' . $fill . '"/><circle cx="50" cy="50" r="7" fill="' . $fill . '"/></g></svg>';
 };
 ?>
@@ -158,6 +164,7 @@ $isaret = static function (string $id, string $tek = ''): string {
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
 <title>Fiş <?= e($no) ?> · <?= e($ad) ?></title>
 <link rel="stylesheet" href="<?= e(asset('siparis-fisi.css')) ?>">
+<?= cikti_stil_tag($ckAyar) ?>
 <style>@page { size: <?= $yarim ? '210mm 148.5mm' : 'A4 portrait' ?>; margin: 0; }</style>
 </head>
 <body class="<?= $yarim ? 'kagit-yarim' : 'kagit-a4' ?>"<?= $tezgah ? ' data-otomatik-yazdir' : '' ?>>
@@ -262,7 +269,7 @@ $isaret = static function (string $id, string $tek = ''): string {
   </svg>
   <div class="n-sol">
     <header class="n-ust">
-      <div class="marka"><?= $isaret('nIsaret') ?><span><b><?= e($dukkan) ?></b><small>Müşteri nüshası</small></span></div>
+      <div class="marka"><?= $isaret('nIsaret') ?><span><b><?= e($dukkan) ?></b><small>Müşteri nüshası</small><?= $ckAyar['slogan'] !== '' ? '<em>' . e($ckAyar['slogan']) . '</em>' : '' ?></span></div>
       <div class="n-no"><small>Sipariş</small><b><?= e($no) ?></b></div>
     </header>
     <div class="n-orta">
@@ -292,6 +299,7 @@ $isaret = static function (string $id, string $tek = ''): string {
     <footer class="n-son">
       <p><b><?= e($dukkan) ?></b><?= $tel !== '' ? ' · ' . e(phone_display($tel) ?: $tel) : '' ?><?= $adres !== '' ? ' · ' . e(preg_replace('/\s*\R\s*/u', ', ', $adres)) : '' ?></p>
       <p class="ipucu">Teslim alırken bu nüshayı getirin. Gözlüğü iki elle takıp çıkarın; camları yalnız mikrofiber bezle silin.</p>
+      <?php if ($ckAyar['alt_yazi'] !== ''): ?><p class="tesekkur"><?= e($ckAyar['alt_yazi']) ?></p><?php endif; ?>
     </footer>
   </div>
   <aside class="n-sag">

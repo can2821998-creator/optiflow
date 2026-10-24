@@ -6,7 +6,7 @@
 .secenekler.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .secenekler.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .kart{position:relative;display:flex;flex-direction:column;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line),0 16px 30px -24px rgba(60,14,28,.7);overflow:hidden;break-inside:avoid}
-.kart.one{box-shadow:inset 0 0 0 2.5px var(--parlak),0 20px 36px -20px rgba(143,26,46,.8)}
+.kart.one{box-shadow:inset 0 0 0 2.5px var(--parlak),0 20px 36px -20px rgba(var(--koyu-rgb),.8)}
 .kart.secilen{box-shadow:inset 0 0 0 2.5px var(--ok),0 20px 36px -20px rgba(28,122,77,.6)}
 .serit{position:absolute;top:12px;right:-30px;transform:rotate(35deg);width:112px;text-align:center;padding:3px 0;background:var(--gece);color:#fff;font:800 9px Manrope,sans-serif}
 .kart.secilen .serit{background:var(--grad-ok)}
@@ -17,9 +17,9 @@
 .cam>b{display:block;font-size:11.5px;line-height:1.3;margin-bottom:6px}
 .ozellik{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px}
 .ozellik li{padding:2px 8px;border-radius:99px;background:var(--tint);color:var(--ink-2);font-size:8.8px;font-weight:700;line-height:1.5}
-.ozellik li:first-child{background:var(--gece);color:#ffb3bf}
+.ozellik li:first-child{background:var(--gece);color:var(--gul)}
 .not{margin:6px 0 0;font-size:9px;color:var(--soft);font-style:italic}
-.k-hesap{margin:auto 14px 0;padding:8px 0 6px;border-top:1px dashed #e6d6d9}
+.k-hesap{margin:auto 14px 0;padding:8px 0 6px;border-top:1px dashed var(--gul-2)}
 .k-hesap div{display:flex;justify-content:space-between;gap:8px;padding:2px 0;font-size:10.3px}
 .k-hesap dt{color:var(--ink-2)}
 .k-hesap dd{margin:0;font-variant-numeric:tabular-nums;font-weight:700}
@@ -30,7 +30,7 @@
 .kart.secilen footer{background:var(--grad-ok)}
 .kart footer small{font-size:9px;color:rgba(255,255,255,.85);font-weight:700}
 .kart footer b{font-family:var(--display);font-stretch:var(--display-w);font-weight:800;font-size:20px;line-height:1.15;letter-spacing:var(--display-ls);font-variant-numeric:tabular-nums}
-.kart footer em{font-style:normal;font-size:9.5px;color:#ffd6dd;font-weight:700}
+.kart footer em{font-style:normal;font-size:9.5px;color:var(--gul);font-weight:700}
 .secenekler.n1 .kart footer b{font-size:25px}
 .tema-bilet .kart footer{border-top:2px dashed rgba(255,255,255,.4)}
 .alt-iki{display:grid;grid-template-columns:.85fr 1.6fr;gap:5mm;margin:6mm 12mm 0}

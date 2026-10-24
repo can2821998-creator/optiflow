@@ -1,6 +1,19 @@
 OPTIFLOW
-Release: 4.52.0 (2026-10-24)
+Release: 4.53.0 (2026-10-24)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.53.0 (Çıktı görünümü: mağazaya özel fiş ve belgeler; şema değişmedi)
+  - Kullanıcı: "her kâğıt çıktıya farklı varyasyonlar; renk vs. mağaza için seçilebilsin; yan yana iki mağazanın
+    müşterisinin çıktısı aynı görünmesin".
+  - Ayarlar › Çıktı görünümü (yeni sekme): 14 renk (13 hazır + Genel'deki mağaza rengi), 6 başlık bandı (gece, renkli,
+    açık ton, beyaz + alt çizgi, çerçeveli, sade), 5 yazı karakteri (tasarımın kendi, modern, klasik, karakterli, geniş),
+    6 desen, 4 işaret (mercek, baş harfler, gözlük, yok), köşe, A4 belge düzeni (Gözlük/Bilet buraya taşındı), slogan
+    ve müşteri nüshası alt yazısı. "Karıştır" rastgele öneri; sağda canlı örnek (cikti-onizle.php, örnek veriyle).
+  - Uygulandığı çıktılar: sipariş fişi (iş emri + müşteri nüshası; müşteri nüshasına seçilen başlık bandı geldi),
+    yarım A4 fişler (hizmet/tamir, tahsilat makbuzu, hızlı satış), A4 dökümler ve fiyat teklifi. Etiketler değişmedi.
+  - app/cikti.php + cikti_stil_tag(): CSS değişkenleri (--brand…, --bas-*); fis.css, siparis-fisi.css, dokum.css,
+    teklif-dokum.css sabit bordo tonlarından değişkenlere çevrildi. A4 dökümler artık mağaza rengini de izler.
+  - Testler: tests/cikti (67) + tests/uts/sayfa-test.sh'ye 11 senaryo (sekme, kaydetme, önizleme).
 
 DEĞİŞİKLİK NOTLARI — 4.52.0 (E-posta tasarımı türüne göre + 5 yeni otomatik e-posta + yeni e-posta paneli; merkez: eposta_kuyruk.gorunum)
   - Kullanıcı: "mail tasarımı çok güzel olsun, türüne göre değişsin; kayıt vb. otomatik olsun; paneldeki e-posta ekranı kaymış".

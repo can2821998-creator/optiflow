@@ -126,7 +126,7 @@ function hizmet_sayilar(?string $bugun = null): array
 {
     $bugun ??= date('Y-m-d');
     $yarin = date('Y-m-d', strtotime($bugun . ' +1 day'));
-    $sk = function_exists('sube_kosul') ? sube_kosul() : '';   // 4.49.0 şube
+    $sk = function_exists('sube_kosul') ? sube_kosul() : '';   // 4.50.0 şube
     $s = static fn(string $kosul, array $p = []): int => (int) scalar("SELECT COUNT(*) FROM orders WHERE transaction_type = 'tamir' AND $kosul$sk", $p);
     return [
         'bugun'    => $s('created_at >= ? AND created_at < ?', [$bugun . ' 00:00:00', $yarin . ' 00:00:00']),

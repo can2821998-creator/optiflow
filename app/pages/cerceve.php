@@ -28,7 +28,7 @@ if (is_post()) {
             redirect($don);
         }
         $barkod = mb_substr(trim(post('barcode')), 0, 64);
-        // 4.49.0 şube: barkod şube içinde tekil (aynı model başka şubede ayrı satır)
+        // 4.50.0 şube: barkod şube içinde tekil (aynı model başka şubede ayrı satır)
         if ($barkod !== '' && (int) scalar('SELECT COUNT(*) FROM frame_items WHERE barcode = ? AND id <> ? AND COALESCE(sube_id, 1) = ?', [$barkod, $id, $id ? (int) (scalar('SELECT sube_id FROM frame_items WHERE id = ?', [$id]) ?? 1) : (int) sube_alan()['sube_id']])) {
             flash('Bu barkod başka bir çerçevede kullanılıyor.', 'error');
             redirect($don);

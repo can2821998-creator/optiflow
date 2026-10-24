@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-/* 4.49.0 — Şubeler (özellik 'sube', merkez panelinden açılır; kapalıyken hiçbir şey değişmez).
+/* 4.50.0 — Şubeler (özellik 'sube', merkez panelinden açılır; kapalıyken hiçbir şey değişmez).
    Model (kullanıcı kararı 24.10): TEK HESAP, ORTAK MÜŞTERİ. Müşteri kartı ve reçeteler ortak; sipariş, hızlı satış,
    kasa (gider, gelir, sayım), çerçeve stoku ve ürün stoku (urun_stok) şubeye bağlı.
    Yetki: personel yalnız atandığı şube(ler)i görür (kullanici_subeleri); yönetici hepsini, "Tüm şubeler" dahil.

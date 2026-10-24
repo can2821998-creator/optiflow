@@ -1,0 +1,38 @@
+{
+ "slug": "mavi-isik-filtreli-cam",
+ "baslik": "Mavi Işık Filtreli Gözlük Camı İşe Yarar mı? Araştırmalar Ne Diyor?",
+ "seo_baslik": "Mavi Işık Filtreli Cam İşe Yarar mı? Araştırmalar Ne Diyor",
+ "meta": "Mavi ışık filtreli gözlük camları göz yorgunluğunu ve uykuyu etkiler mi? Bilimsel incelemelerin sonuçları, ekran yorgunluğu için gerçekten işe yarayanlar.",
+ "hedef_kelime": "mavi ışık filtreli cam",
+ "bolum": "Gözlük",
+ "gorsel": "liste",
+ "govde": "<p>Mavi ışık filtreli camlar son yıllarda optik mağazalarının en çok sorulan ürünlerinden biri oldu. Ekran başında uzun saatler geçiren müşteriler \"gözümü korur mu?\" diye soruyor. Dürüst cevap, bilimsel kanıtların sanıldığı kadar güçlü olmadığıdır. Bu yazıda ne bildiğimizi ve ekran yorgunluğuna gerçekten neyin iyi geldiğini anlatıyoruz.</p>\n<h2>Mavi ışık nedir?</h2>\n<p>Görünür ışığın mavi-mor ucundaki dalga boylarıdır. En büyük kaynağı güneştir; telefon, bilgisayar ve LED aydınlatma da mavi ışık yayar, ancak güneşe göre çok daha az. Mavi ışık filtreli camlar bu dalga boylarının bir kısmını yansıtır ya da emer; bu yüzden cam yüzeyinde hafif mavi-mor bir yansıma görülür.</p>\n<h2>Araştırmalar ne diyor?</h2>\n<ul>\n<li><strong>Göz yorgunluğu:</strong> 2023'te yayımlanan bir Cochrane incelemesi, mavi ışık filtreli camların kısa vadede ekran kaynaklı göz yorgunluğunu azalttığına dair anlamlı bir kanıt bulmadı.</li>\n<li><strong>Göz sağlığı:</strong> Amerikan Oftalmoloji Akademisi (AAO), ekranlardan gelen mavi ışığın göze zarar verdiğine dair kanıt olmadığını ve bu amaçla mavi ışık gözlüğü önermediğini belirtiyor.</li>\n<li><strong>Uyku:</strong> Akşam saatlerinde mavi ışığın uyku düzenini etkileyebildiği biliniyor; ancak camların uyku kalitesine etkisine dair sonuçlar tutarlı değil.</li>\n</ul>\n<h2>Ekran yorgunluğu neden olur?</h2>\n<p>Ekran başındaki yorgunluğun asıl nedenleri mavi ışıktan çok şunlardır: göz kırpmanın azalması ve gözün kuruması, ekranın çok yakın ya da uygun olmayan açıda olması, düzeltilmemiş küçük numaralar ve 40 yaş sonrası yakın odaklanma güçlüğü.</p>\n<h2>Gerçekten işe yarayanlar</h2>\n<ul>\n<li><strong>20-20-20 kuralı:</strong> Her 20 dakikada bir, 20 saniye boyunca yaklaşık 6 metre (20 feet) uzağa bakın.</li>\n<li><strong>Doğru numara:</strong> Küçük bir astigmat ya da yakın ihtiyacı düzeltildiğinde yorgunluk belirgin azalabilir; göz muayenesi ilk adımdır.</li>\n<li><strong>Yansıma önleyici kaplama:</strong> Ekran ve lamba yansımalarını azaltır; görsel konfor için mavi filtreden daha belirgin fark yaratabilir.</li>\n<li><strong>Ofis camı:</strong> 40 yaş üzerinde, ekran mesafesine göre tasarlanmış ara-yakın camlar boyun ve göz zorlanmasını azaltır. <a href=\"rehber.php?y=progresif-cam-nedir\">Progresif ve ofis camları</a>.</li>\n<li><strong>Ekran ayarı:</strong> Ekranı göz hizasının biraz altına ve kol boyu mesafeye yerleştirin, parlaklığı ortama uydurun.</li>\n</ul>\n<h2>Optisyenler için: müşteriye nasıl anlatmalı?</h2>\n<p>Mavi ışık filtresini \"gözünüzü korur\" diye satmak kısa vadede satışı artırsa da müşteri güvenini zedeleyebilir. Dürüst anlatım daha kalıcıdır: \"Bazı kullanıcılar daha rahat bulduğunu söylüyor, ama araştırmalar güçlü bir etki göstermiyor; ekran için asıl fark yaratan yansıma önleyici kaplama ve doğru numara.\" Böyle anlatan bir optisyene müşteri tekrar gelir.</p>\n<blockquote><strong>Gözlükçüyseniz:</strong> OptiFlow Pro, Medula Optik ekranındaki reçeteyi tek tuşla siparişe aktarır; SGK payı teklife, sipariş atölye panosuna, \"gözlüğünüz hazır\" mesajı müşteriye kendiliğinden gider. <a href=\"kayit.php\">30 gün ücretsiz deneyin</a>, kart gerekmez.</blockquote>",
+ "sss": [
+  {
+   "s": "Mavi ışık filtreli gözlük göz yorgunluğunu azaltır mı?",
+   "c": "2023 tarihli bir Cochrane incelemesi, kısa vadede ekran kaynaklı göz yorgunluğunu azalttığına dair anlamlı bir kanıt bulmadı. Yansıma önleyici kaplama, doğru numara ve mola vermek daha etkili yollardır."
+  },
+  {
+   "s": "Ekranın mavi ışığı göze zarar verir mi?",
+   "c": "Amerikan Oftalmoloji Akademisi, ekranlardan gelen mavi ışığın göze zarar verdiğine dair kanıt olmadığını belirtiyor."
+  },
+  {
+   "s": "Mavi ışık filtresi uykuya iyi gelir mi?",
+   "c": "Akşam mavi ışığın uyku düzenini etkileyebildiği biliniyor, ancak camların uyku kalitesine etkisine dair araştırma sonuçları tutarlı değil. Yatmadan önce ekran süresini azaltmak daha etkilidir."
+  }
+ ],
+ "kaynaklar": [
+  {
+   "ad": "Cochrane: Blue-light filtering spectacle lenses (2023)",
+   "url": "https://www.cochrane.org/CD013244"
+  },
+  {
+   "ad": "American Academy of Ophthalmology: Should you be worried about blue light?",
+   "url": "https://www.aao.org/eye-health/tips-prevention/should-you-be-worried-about-blue-light"
+  }
+ ],
+ "yayinda": true,
+ "yayin_tarihi": "2026-10-24",
+ "guncelleme": "2026-10-24",
+ "silindi": false
+}

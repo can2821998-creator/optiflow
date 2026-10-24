@@ -16,7 +16,7 @@ function kasa_expected_cash(array $range, string $date): float
     $cashOutSupplier = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM supplier_payments WHERE method = 'nakit' AND created_at >= ? AND created_at < ?", $range)
         + (table_var_mi('tedarikci_senetleri') ? (float) scalar("SELECT COALESCE(SUM(tutar), 0) FROM tedarikci_senetleri WHERE durum = 'odendi' AND odeme_yontemi = 'nakit' AND odeme_tarihi = ?", [$date]) : 0.0);   // 4.14.0 nakit ödenen senetler
     $cashOutExpense = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE method = 'nakit' AND expense_date = ?" . sube_kosul(), [$date]);
-    $cashOutSupplier *= sube_merkez_mi() ? 1 : 0;   // 4.49.0 tedarikçi ödemesi şubesiz: ana şube kasasından
+    $cashOutSupplier *= sube_merkez_mi() ? 1 : 0;   // 4.50.0 tedarikçi ödemesi şubesiz: ana şube kasasından
     $cashSale = function_exists('satis_kasa_yontemleri')   // 4.17.0 hızlı satış nakdi
         ? (float) (array_column(satis_kasa_yontemleri($range), 'total', 'method')['nakit'] ?? 0) : 0.0;
     return kasa_devir($date) + $cashIn + $cashSale + $cashRevenue - $cashOutSupplier - $cashOutExpense;
@@ -138,7 +138,7 @@ $totalRevenues = (float) array_sum(array_column($revenues, 'amount'));
 
 $cashOutSupplier = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM supplier_payments WHERE method = 'nakit' AND created_at >= ? AND created_at < ?", $range)
         + (table_var_mi('tedarikci_senetleri') ? (float) scalar("SELECT COALESCE(SUM(tutar), 0) FROM tedarikci_senetleri WHERE durum = 'odendi' AND odeme_yontemi = 'nakit' AND odeme_tarihi = ?", [$date]) : 0.0);   // 4.14.0 nakit ödenen senetler
-$cashOutSupplier *= sube_merkez_mi() ? 1 : 0;   // 4.49.0
+$cashOutSupplier *= sube_merkez_mi() ? 1 : 0;   // 4.50.0
 $cashOutExpense = (float) array_sum(array_map(static fn($e) => $e['method'] === 'nakit' ? (float) $e['amount'] : 0, $expenses));
 $cashRevenue = (float) array_sum(array_map(static fn($r) => $r['method'] === 'nakit' ? (float) $r['amount'] : 0, $revenues));
 $cashIn = (float) (array_column($byMethod, 'total', 'method')['nakit'] ?? 0);
@@ -344,7 +344,7 @@ page_header(
             </form>
           </details>
         <?php endif; ?>
-      <?php elseif (sube_acik() && aktif_sube() === 0): // 4.49.0 tüm şubeler: sayım şubede yapılır ?>
+      <?php elseif (sube_acik() && aktif_sube() === 0): // 4.50.0 tüm şubeler: sayım şubede yapılır ?>
         <p class="hint" style="margin-top:16px">Kasa sayımı şube başına yapılır. Menüdeki şube seçicisinden bir şube seçin; burada tüm şubelerin toplamı görünüyor.</p>
       <?php else: ?>
         <form method="post" class="stack" style="margin-top:16px" data-kupur-form>

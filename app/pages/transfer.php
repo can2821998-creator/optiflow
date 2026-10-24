@@ -3,7 +3,7 @@ declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 
 /* ==========================================================================
-   4.49.0 — Şube transferi: çerçeve ve ürün stoku şubeler arasında. Gönderince kaynaktan düşer (yolda),
+   4.50.0 — Şube transferi: çerçeve ve ürün stoku şubeler arasında. Gönderince kaynaktan düşer (yolda),
    hedef "Teslim aldık" deyince hedefe eklenir; gönderen yoldayken geri alabilir.
    ========================================================================== */
 

@@ -1,5 +1,5 @@
 <?php
-/* 4.49.0 Şubeler (app/sube.php): yetki ve aktif şube, SQL süzgeçleri, başka şubede teslim, stok transferi, şube stoku,
+/* 4.50.0 Şubeler (app/sube.php): yetki ve aktif şube, SQL süzgeçleri, başka şubede teslim, stok transferi, şube stoku,
    karşılaştırma; kayıtta telefon (app/merkez.php tenant_basvuru). */
 declare(strict_types=1);
 require dirname(__DIR__) . '/uts/ortam.php';

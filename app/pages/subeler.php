@@ -3,7 +3,7 @@ declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 
 /* ==========================================================================
-   4.49.0 — Şubeler: seçici (herkes, eylem=sec), karşılaştırma + şube tanımı + personel ataması (yönetici).
+   4.50.0 — Şubeler: seçici (herkes, eylem=sec), karşılaştırma + şube tanımı + personel ataması (yönetici).
    Özellik 'sube' merkez panelinden açılır; kapalıyken sayfa açılmaz.
    ========================================================================== */
 

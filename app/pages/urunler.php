@@ -73,7 +73,7 @@ if (!isset($filtreler[$f])) {
 }
 $kat = query('k');
 $q = trim(query('q'));
-$st = urun_stok_ifade('urunler');   // 4.49.0 şube: aktif şubenin stoku
+$st = urun_stok_ifade('urunler');   // 4.50.0 şube: aktif şubenin stoku
 $kosul = match ($f) {
     'kritik' => "AND is_active = 1 AND stok_takip = 1 AND $st <= min_stok",
     'pasif'  => 'AND is_active = 0',

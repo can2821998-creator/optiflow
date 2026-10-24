@@ -10,7 +10,7 @@ if (!$order) {
     render_error_page('Sipariş bulunamadı', 'Silinmiş veya hatalı bir bağlantı olabilir.');
 }
 if (!sube_erisim($order['sube_id'] !== null ? (int) $order['sube_id'] : null) && !($order['teslim_sube_id'] && sube_erisim((int) $order['teslim_sube_id']))) {
-    http_response_code(403);   // 4.49.0 şube
+    http_response_code(403);   // 4.50.0 şube
     render_error_page('Bu sipariş başka şubede', 'Sipariş ' . sube_adi((int) $order['sube_id']) . ' şubesine ait; yalnız o şubenin personeli ya da yönetici açabilir.');
 }
 $self = 'order.php?id=' . $id;
@@ -89,7 +89,7 @@ if (is_post()) {
                 flash('Dikkat: teslim edilen siparişte ' . money($order['balance']) . ' kalan bakiye var.', 'warn');
             }
             if ($stage === 'hazirlandi') {
-                sube_tasima_baslat($id);   // 4.49.0
+                sube_tasima_baslat($id);   // 4.50.0
                 $missing = (int) scalar("SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id WHERE r.order_id = ? AND i.stock_status <> 'stokta_var'", [$id]);
                 if ($missing) {
                     flash("Dikkat: bu siparişte henüz gelmemiş $missing cam görünüyor.", 'warn');
@@ -100,7 +100,7 @@ if (is_post()) {
         redirect((post('return') === 'pano' ? 'workshop.php' : $self) . $celebrateFlag);
     }
 
-    // 4.49.0 şube: teslim şubesi ve şubeler arası gözlük taşıma
+    // 4.50.0 şube: teslim şubesi ve şubeler arası gözlük taşıma
     if ($action === 'teslim_sube' || $action === 'tasima_teslim') {
         try {
             if ($action === 'teslim_sube') {
@@ -185,7 +185,7 @@ if (is_post()) {
             ], 'id = ?', [$id]);
             audit('order_stage', 'order', $id, ['önce' => 'Atölyede · kalite kontrolde', 'sonra' => 'Hazır']);
             atolye_adim_kaydet($id, 'kontrol', (int) $user['id']);   // 4.44.0 sürükle-bırakta da paraf izi kalsın
-            sube_tasima_baslat($id);   // 4.49.0
+            sube_tasima_baslat($id);   // 4.50.0
             push_order_event($id, 'hazir');
             $missing = (int) scalar("SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id WHERE r.order_id = ? AND i.stock_status <> 'stokta_var'", [$id]);
             flash('Kalite kontrol tamamlandı, sipariş “Hazır” olarak işaretlendi.');
@@ -766,7 +766,7 @@ page_start($name . ' ' . order_no($id), 'orders');
   </div>
 <?php endif; ?>
 
-<?php if (sube_acik() && count(sube_listesi()) > 1):   // 4.49.0 şube: açıldığı şube, teslim şubesi, taşıma
+<?php if (sube_acik() && count(sube_listesi()) > 1):   // 4.50.0 şube: açıldığı şube, teslim şubesi, taşıma
     $acilan = (int) $order['sube_id'];
     $teslim = (int) ($order['teslim_sube_id'] ?: $acilan);
     $yolda = $order['tasima_durum'] === 'yolda';

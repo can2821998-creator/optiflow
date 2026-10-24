@@ -1,8 +1,8 @@
 OPTIFLOW
-Release: 4.49.0 (2026-10-24)
+Release: 4.50.0 (2026-10-24)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
 
-DEĞİŞİKLİK NOTLARI — 4.49.0 (Şubeler + kayıtta telefon; şema 41)
+DEĞİŞİKLİK NOTLARI — 4.50.0 (Şubeler + kayıtta telefon; şema 41)
   - Özellik 'sube' (merkez panelinden mağaza başına açılır; kapalıyken hiçbir şey değişmez). Tek hesap, ORTAK müşteri
     kartı; sipariş, hızlı satış, kasa (gider, gelir, sayım, devir), çerçeve stoku ve ürün stoku (urun_stok) şubeye bağlı.
   - Yetki: personel yalnız atandığı şube(ler)i görür; yönetici menüdeki şube seçicisiyle tek şubeye ya da "Tüm şubeler"e
@@ -16,6 +16,13 @@ DEĞİŞİKLİK NOTLARI — 4.49.0 (Şubeler + kayıtta telefon; şema 41)
   - Kayıtta cep telefonu zorunlu (merkez magazalar.telefon); merkez panelinde listede ve ayrıntıda, düzenlenebilir.
   - Göç v40 (subeler, kullanici_subeleri, urun_stok, transfer tabloları, sube_id sütunları; mevcut her kayıt "Merkez" şubesine),
     v41 (çerçeve barkodu şube içinde tekil). Tanıtım sayfasında şube "yakında" kaldırıldı. Test: tests/sube/test.php (77).
+DEĞİŞİKLİK NOTLARI — 4.49.0 (Rehber: 10 yeni yazı, SSS + kaynaklar, FAQ yapılandırılmış verisi; şema değişmedi)
+  - Kullanıcı: "rehberi optik, gözlük ve Medula aramalarında öne çıkacak içerikle doldur". 10 yeni yazı (app/rehber-hazir):
+    gözlük reçetesi nasıl okunur, SGK gözlük hakkı, Medula Optik nedir, e-reçete ile gözlük, cam indeksi, progresif cam,
+    mavi ışık filtresi, optik mağaza açmak, ÜTS bildirimi, kontakt lens takibi. Yazılar birbirine iç bağlantıyla bağlı.
+  - Yazılara isteğe bağlı "sss" (görünür "Sık sorulanlar" bölümü + FAQPage JSON-LD) ve "kaynaklar" (nofollow) alanları;
+    Article verisine anahtar kelime. Merkez panelden düzenlemede bu alanlar korunur (rehber_kaydet).
+  - Rehber ön sayfası başlık/açıklaması "Optik ve Gözlük Rehberi" olarak genişletildi. tests/seo: 170 test.
 
 DEĞİŞİKLİK NOTLARI — 4.48.0 (Tamir / hizmet fişi + bütün fişler yarım A4: üst müşteriye, alt mağazaya; şema 39)
   - Kullanıcı: "tüm fişleri bir A4 yarısı müşteriye yarısı bize kesilecek olarak düşün". Ortak çerçeve app/fis.php +

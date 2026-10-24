@@ -271,7 +271,7 @@ function defter_wa_metni(array $musteri, array $ekstre): string
 /** 4.45.0 — Dünden devir: bu tarihten önceki son kapanışta kasada bırakılan nakit (girilmemişse 0). */
 function kasa_devir(string $date): float
 {
-    // 4.49.0 şube: devir şubenin kendi kasasından; "tüm şubeler"de şubelerin devirleri toplanır
+    // 4.50.0 şube: devir şubenin kendi kasasından; "tüm şubeler"de şubelerin devirleri toplanır
     if (function_exists('sube_degerler') && sube_acik() && sube_degerler() === null) {
         $t = 0.0;
         foreach (array_keys(sube_listesi()) as $sid) {

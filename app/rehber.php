@@ -170,6 +170,8 @@ function rehber_kaydet(array $y, string $eskiSlug = ''): array
         'guncelleme' => $bugun,
         'silindi' => false,
     ];
+    // 4.49.0 — panelde düzenlenmeyen ek alanlar (SSS, kaynaklar, bölüm, görsel, manşet) korunur
+    $kayit += array_intersect_key($mevcut ?? [], array_flip(['sss', 'kaynaklar', 'bolum', 'gorsel', 'manset']));
     $dizin = rehber_dizin_yazilabilir();
     if (@file_put_contents($dizin . '/' . $slug . '.json', json_encode($kayit, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT), LOCK_EX) === false) {
         throw new RuntimeException('storage/rehber klasörüne yazılamadı (klasör izinlerini kontrol edin).');
@@ -201,6 +203,34 @@ function rehber_sil(string $slug): void
     if (is_file(rehber_kok() . '/app/rehber-hazir/' . $slug . '.json')) {
         @file_put_contents($dizin . '/' . $slug . '.json', json_encode(['slug' => $slug, 'silindi' => true]), LOCK_EX);
     }
+}
+
+/** 4.49.0 — Sık sorulanlar: [['s' => soru, 'c' => cevap], ...] (düz metin; en fazla 12). */
+function rehber_sss(array $y): array
+{
+    $out = [];
+    foreach ((array) ($y['sss'] ?? []) as $q) {
+        $s = trim(strip_tags((string) ($q['s'] ?? '')));
+        $c = trim(strip_tags((string) ($q['c'] ?? '')));
+        if ($s !== '' && $c !== '') {
+            $out[] = [mb_substr($s, 0, 200), mb_substr($c, 0, 1200)];
+        }
+    }
+    return array_slice($out, 0, 12);
+}
+
+/** 4.49.0 — Kaynaklar: [['ad' => ..., 'url' => 'https://...'], ...] (yalnızca http/https). */
+function rehber_kaynaklar(array $y): array
+{
+    $out = [];
+    foreach ((array) ($y['kaynaklar'] ?? []) as $k) {
+        $ad = trim(strip_tags((string) ($k['ad'] ?? '')));
+        $url = trim((string) ($k['url'] ?? ''));
+        if ($ad !== '' && preg_match('#^https?://[^\s"<>]+$#i', $url)) {
+            $out[] = [mb_substr($ad, 0, 160), $url];
+        }
+    }
+    return array_slice($out, 0, 10);
 }
 
 function rehber_url(string $slug = ''): string

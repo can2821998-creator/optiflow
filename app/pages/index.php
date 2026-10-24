@@ -56,7 +56,7 @@ if ($search !== '') {
     }
     $where[] = '(' . implode(' OR ', $or) . ')';
 }
-if ($sk = sube_kosul_siparis('o')) {   // 4.49.0 şube: açıldığı ya da teslim edileceği şube
+if ($sk = sube_kosul_siparis('o')) {   // 4.50.0 şube: açıldığı ya da teslim edileceği şube
     $where[] = substr($sk, 5);
 }
 $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';

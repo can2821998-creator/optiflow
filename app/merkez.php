@@ -136,7 +136,7 @@ function merkez_sema_hazirla(PDO $pdo): void
     merkez_kolon_ekle($pdo, 'magazalar', 'ozellikler', 'TEXT NULL');   // 4.12.0 özellik anahtarları (JSON)
     // 4.20.1 — standart dışı MySQL portu: panelde girilen port eskiden kaydedilmiyordu (bkz. magaza_db_ayari)
     merkez_kolon_ekle($pdo, 'magazalar', 'db_port', 'SMALLINT UNSIGNED NULL');
-    merkez_kolon_ekle($pdo, 'magazalar', 'telefon', 'VARCHAR(20) NULL');   // 4.49.0 kayıtta iletişim telefonu
+    merkez_kolon_ekle($pdo, 'magazalar', 'telefon', 'VARCHAR(20) NULL');   // 4.50.0 kayıtta iletişim telefonu
 }
 
 /** Mağaza satırından db_baglanti_degistir() ayarı (port boşsa varsayılan 3306). */
@@ -219,7 +219,7 @@ function tenant_db_adi_uret(string $isim): string
  */
 function tenant_basvuru(string $isim, string $email, string $magazaSifre, string $adminAd, string $adminKullanici, string $adminSifre, ?string $telefon = null): array
 {
-    // 4.49.0: kayıt formundan telefon zorunlu (hesap açıldıktan sonra arayabilmek için); merkez panelinden elle açılışta isteğe bağlı
+    // 4.50.0: kayıt formundan telefon zorunlu (hesap açıldıktan sonra arayabilmek için); merkez panelinden elle açılışta isteğe bağlı
     $tel = $telefon === null ? '' : (string) normalize_phone($telefon);
     if ($telefon !== null && ($tel === '' || strlen($tel) < 10)) {
         throw new DomainException('Telefon numarası geçersiz. Örnek: 0532 111 22 33');
@@ -509,7 +509,7 @@ function merkez_magaza_duzenle(int $id, string $isim, string $email, ?string $te
         throw new DomainException('Bu e-posta başka bir mağazada kullanılıyor.');
     }
     merkez_q('UPDATE magazalar SET isim = ?, email = ?, guncelleme = NOW() WHERE id = ?', [$isim, $email, $id]);
-    if ($telefon !== null) {   // 4.49.0 iletişim telefonu (boş = sil)
+    if ($telefon !== null) {   // 4.50.0 iletişim telefonu (boş = sil)
         $tel = trim($telefon) === '' ? '' : (string) normalize_phone($telefon);
         if (trim($telefon) !== '' && strlen($tel) < 10) {
             throw new DomainException('Telefon numarası geçersiz.');

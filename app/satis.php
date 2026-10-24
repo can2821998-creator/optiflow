@@ -40,7 +40,7 @@ function urun_kategori_adi(?string $k): string
 
 function urun_hareket_sebepleri(): array
 {
-    return ['giris' => 'Stok girişi', 'satis' => 'Satış', 'iade' => 'İade / iptal', 'sayim' => 'Sayım düzeltmesi', 'fire' => 'Fire / kırık', 'transfer' => 'Şube transferi'];   // 4.49.0
+    return ['giris' => 'Stok girişi', 'satis' => 'Satış', 'iade' => 'İade / iptal', 'sayim' => 'Sayım düzeltmesi', 'fire' => 'Fire / kırık', 'transfer' => 'Şube transferi'];   // 4.50.0
 }
 
 /** Hızlı satış kullanabilir mi: tutarları görebilen herkes. İptal yalnızca yönetici. */
@@ -158,7 +158,7 @@ function urun_hareket(int $urunId, int $delta, string $sebep, ?int $satisId = nu
     }
     $yeni = (int) $u['stok'] + $delta;
     if ((int) $u['stok_takip'] === 1 && function_exists('sube_tablo_var') && sube_tablo_var()) {
-        $yeni = urun_stok_degis($urunId, $delta);   // 4.49.0 şube stoku; urunler.stok = toplam
+        $yeni = urun_stok_degis($urunId, $delta);   // 4.50.0 şube stoku; urunler.stok = toplam
     } elseif ((int) $u['stok_takip'] === 1) {
         update('urunler', ['stok' => $yeni, 'updated_at' => date('Y-m-d H:i:s')], 'id = ?', [$urunId]);
     } else {
@@ -467,7 +467,7 @@ function satis_listesi(string $bas, string $bit, bool $iptallerDahil = true): ar
 function satis_ozeti(string $bas, string $bit, ?int $personel = null): array
 {
     $p = [$bas . ' 00:00:00', $bit . ' 23:59:59'];
-    $ek = function_exists('sube_kosul') ? sube_kosul('s') : '';   // 4.49.0 şube
+    $ek = function_exists('sube_kosul') ? sube_kosul('s') : '';   // 4.50.0 şube
     if ($personel) {
         $ek .= ' AND s.created_by = ?';
         $p[] = $personel;

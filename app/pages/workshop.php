@@ -6,7 +6,7 @@ require_login();
 $staff = assignable_staff();
 $staffNames = array_column($staff, 'full_name', 'id');
 
-/* 4.49.0 şube: iş kuyrukları açıldığı şubeye, hazır gözlükler beklediği (teslim) şubeye göre */
+/* 4.50.0 şube: iş kuyrukları açıldığı şubeye, hazır gözlükler beklediği (teslim) şubeye göre */
 $sk = sube_kosul('o');
 $skh = sube_kosul_hazir('o');
 
@@ -173,7 +173,7 @@ page_start('Atölye panosu', 'workshop');
 
 
 
-<?php $yoldaki = sube_acik() ? sube_yoldaki_gozlukler() : []; if ($yoldaki): // 4.49.0 başka şubede teslim ?>
+<?php $yoldaki = sube_acik() ? sube_yoldaki_gozlukler() : []; if ($yoldaki): // 4.50.0 başka şubede teslim ?>
 <section class="card yoldaki">
   <div class="card-head"><h2><?= icon('truck') ?> Şubeye gelecek gözlükler</h2><small class="muted"><?= count($yoldaki) ?> gözlük yolda · gelince "Teslim aldık" deyin, müşteri aranacaklar listesine düşer</small></div>
   <ul class="yoldaki-liste">

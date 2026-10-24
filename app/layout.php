@@ -157,7 +157,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
     }
     array_unshift($nav['Atölye'], ['tezgah', 'tezgah.php', 'Yeni müşteri · reçete', 'plus', 0], ['tamir', 'tamir.php', 'Tamir · hizmet', 'settings', 0]);
     ozellik_menusu_ekle($nav);   // 4.12.0 merkezden açılan modüller
-    if (function_exists('sube_acik') && sube_acik() && count(sube_listesi()) > 1) {   // 4.49.0 şube transferi
+    if (function_exists('sube_acik') && sube_acik() && count(sube_listesi()) > 1) {   // 4.50.0 şube transferi
         $gelenTransfer = (int) scalar("SELECT COUNT(*) FROM sube_transferleri WHERE durum = 'yolda'" . sube_kosul('', 'hedef_sube_id'))
             + (int) scalar("SELECT COUNT(*) FROM orders WHERE tasima_durum = 'yolda' AND order_stage = 'hazirlandi'" . sube_kosul('', 'teslim_sube_id'));
         $nav['Atölye'][] = ['transfer', 'transfer.php', 'Şube transferi', 'truck', $gelenTransfer];
@@ -169,12 +169,12 @@ function page_start(string $title, string $active = '', array $opts = []): void
             ['push', 'push-admin.php', 'Bildirim gönder', 'bell', 0],
             ['reports', 'reports.php', 'Raporlar', 'chart', 0],
             ['kar', 'kar.php', 'Kârlılık ve prim', 'chart', 0],
-            ['subeler', 'subeler.php', 'Şubeler', 'grid', 0],   // 4.49.0 yalnız özellik açıkken (aşağıda süzülür)
+            ['subeler', 'subeler.php', 'Şubeler', 'grid', 0],   // 4.50.0 yalnız özellik açıkken (aşağıda süzülür)
             ['yedek', 'yedek.php', 'Yedekleme', 'download', function_exists('backup_overdue') && backup_overdue() ? 1 : 0],
             ['logs', 'logs.php', 'İşlem geçmişi', 'history', 0],
             ['settings', 'settings.php', 'Ayarlar', 'settings', 0],
         ];
-        if (!function_exists('sube_acik') || !sube_acik()) {   // 4.49.0
+        if (!function_exists('sube_acik') || !sube_acik()) {   // 4.50.0
             $nav['Yönetim'] = array_values(array_filter($nav['Yönetim'], static fn($o) => $o[0] !== 'subeler'));
         }
         if (function_exists('ozellik_acik') && ozellik_acik('tedarik_finans')) {   // 4.14.0
@@ -556,7 +556,7 @@ function menu_gruplari(array $nav): array
 }
 
 /**
- * 4.49.0 — Menüdeki şube seçici. Özellik kapalıysa ya da kullanıcı tek şube görüyorsa ''.
+ * 4.50.0 — Menüdeki şube seçici. Özellik kapalıysa ya da kullanıcı tek şube görüyorsa ''.
  * Seçim subeler.php'ye gider (eylem=sec) ve aynı sayfaya döner.
  */
 function sube_secici(): string

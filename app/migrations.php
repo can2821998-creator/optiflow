@@ -1765,7 +1765,7 @@ function migrate_v39_hizmet(): void
     add_column('orders', 'hizmet_detay', 'TEXT NULL');
 }
 
-/** 4.49.0 — Şubeler (app/sube.php): tek hesap, ortak müşteri; sipariş, satış, kasa ve stok şubeye bağlı.
+/** 4.50.0 — Şubeler (app/sube.php): tek hesap, ortak müşteri; sipariş, satış, kasa ve stok şubeye bağlı.
     Mevcut her kayıt 1 numaralı ana şubeye yazılır; transfer fişi ve başka şubede teslim için alanlar. */
 function migrate_v40_subeler(): void
 {
@@ -1829,7 +1829,7 @@ function migrate_v40_subeler(): void
     db()->exec('INSERT IGNORE INTO urun_stok (urun_id, sube_id, stok) SELECT id, 1, stok FROM urunler');
 }
 
-/** 4.49.0 — Çerçeve barkodu şube içinde tekil: aynı model başka şubede ayrı satır (transfer, şube stoku). */
+/** 4.50.0 — Çerçeve barkodu şube içinde tekil: aynı model başka şubede ayrı satır (transfer, şube stoku). */
 function migrate_v41_cerceve_barkod_sube(): void
 {
     if (index_exists('frame_items', 'idx_frame_items_barcode')) {

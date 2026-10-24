@@ -92,8 +92,8 @@ if ($yazi) {
     $desc = $yazi['meta'] ?: mb_substr(trim(preg_replace('/\s+/', ' ', strip_tags($yazi['govde'])) ?? ''), 0, 155);
     $canon = rehber_url($yazi['slug']);
 } else {
-    $title = 'Gözlükçüler İçin Rehber: Medula, SGK, ÜTS ve Dükkân Yönetimi';
-    $desc = 'Optik mağazaları için uygulamalı rehberler: Medula reçetesi, SGK katkı payı, ÜTS karekod, atölye takibi, stok ve kasa yönetimi.';
+    $title = 'Optik ve Gözlük Rehberi: Medula, SGK Gözlük Hakkı, Camlar';
+    $desc = 'Gözlük reçetesi nasıl okunur, SGK gözlük hakkı, Medula Optik, cam indeksleri, progresif cam ve optik mağaza yönetimi üzerine uygulamalı rehberler.';
     $canon = rehber_url();
 }
 
@@ -142,9 +142,16 @@ $foto = static function (string $gorsel, string $alt, bool $buyuk, bool $tembel 
     'headline' => mb_substr($yazi['baslik'], 0, 110), 'description' => $desc, 'inLanguage' => 'tr',
     'datePublished' => $yazi['yayin_tarihi'] ?: $yazi['guncelleme'], 'dateModified' => $yazi['guncelleme'] ?: $yazi['yayin_tarihi'],
     'mainEntityOfPage' => $canon, 'image' => 'https://optiflow.com.tr/assets/og-optiflow.png',
+    'keywords' => (string) $yazi['hedef_kelime'],
     'author' => ['@type' => 'Organization', 'name' => 'OptiFlow', 'url' => 'https://optiflow.com.tr/'],
     'publisher' => ['@type' => 'Organization', 'name' => 'OptiFlow', 'logo' => ['@type' => 'ImageObject', 'url' => 'https://optiflow.com.tr/assets/icons/icon-512.png']],
 ]) ?></script>
+<?php $sss = rehber_sss($yazi); if ($sss): ?>
+<script type="application/ld+json"><?= $ld([
+    '@context' => 'https://schema.org', '@type' => 'FAQPage',
+    'mainEntity' => array_map(static fn($q) => ['@type' => 'Question', 'name' => $q[0], 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $q[1]]], $sss),
+]) ?></script>
+<?php endif; ?>
 <script type="application/ld+json"><?= $ld([
     '@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [
         ['@type' => 'ListItem', 'position' => 1, 'name' => 'OptiFlow', 'item' => 'https://optiflow.com.tr/'],
@@ -240,6 +247,16 @@ h1,h2,h3{font-weight:500;margin:0;text-wrap:balance}
   mix-blend-mode:multiply}
 .foto figcaption{font-size:13.5px;font-style:italic;color:var(--soluk);padding-top:6px;border-bottom:1px solid var(--ince);padding-bottom:6px}
 .foto.buyuk img{aspect-ratio:16/9}
+
+/* 4.49.0 — sık sorulanlar ve kaynaklar */
+.sss{margin:30px 0 6px;border-top:3px double var(--murekkep);padding-top:12px}
+.sss h2{font-size:1.55rem;margin:0 0 6px}
+.sss h3{font-size:1.08rem;margin:18px 0 4px;font-style:normal}
+.sss p{margin:0;hyphens:auto;-webkit-hyphens:auto}
+.kaynak{margin-top:24px;font-size:.92rem;color:var(--soluk);border-top:1px solid var(--ince);padding-top:10px}
+.kaynak h2{font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;margin:0 0 6px;font-style:normal}
+.kaynak ul{margin:0;padding-left:18px}
+.kaynak a{color:inherit}
 
 /* gövde metni */
 .metin p{margin:0 0 .9em;hyphens:auto;-webkit-hyphens:auto}
@@ -373,6 +390,18 @@ h1,h2,h3{font-weight:500;margin:0;text-wrap:balance}
         </p>
         <?php $foto($gorsel, $fotoAlt[$gorsel] ?? 'OptiFlow ekranı', true, false); ?>
         <div class="metin"><?= rehber_temizle($yazi['govde']) ?></div>
+        <?php if ($sss = rehber_sss($yazi)): ?>
+        <section class="sss" aria-labelledby="sss-bas">
+          <h2 id="sss-bas">Sık sorulanlar</h2>
+          <?php foreach ($sss as [$soru, $cevap]): ?><h3><?= pz_e($soru) ?></h3><p><?= pz_e($cevap) ?></p><?php endforeach; ?>
+        </section>
+        <?php endif; ?>
+        <?php if ($kaynak = rehber_kaynaklar($yazi)): ?>
+        <section class="kaynak" aria-labelledby="kaynak-bas">
+          <h2 id="kaynak-bas">Kaynaklar</h2>
+          <ul><?php foreach ($kaynak as [$kad, $kurl]): ?><li><a href="<?= pz_e($kurl) ?>" rel="noopener nofollow" target="_blank"><?= pz_e($kad) ?></a></li><?php endforeach; ?></ul>
+        </section>
+        <?php endif; ?>
         <p><span class="son-isaret" aria-hidden="true"></span></p>
       </article>
     </main>

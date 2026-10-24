@@ -119,7 +119,7 @@ if ($lens !== '') { $where[] = 'i.lens_type = ?'; $params[] = $lens; }
 if ($from !== '' && valid_date($from)) { $where[] = 'i.created_at >= ?'; $params[] = $from . ' 00:00:00'; }
 if ($until !== '' && valid_date($until)) { $where[] = 'i.created_at < ?'; $params[] = date('Y-m-d', strtotime($until . ' +1 day')) . ' 00:00:00'; }
 if ($supplierFilter && $tab !== 'eksik') { $where[] = 'i.supplier_id = ?'; $params[] = $supplierFilter; }
-$whereSql = implode(' AND ', $where) . sube_kosul('o');   // 4.49.0 şube: camın siparişi bu şubede
+$whereSql = implode(' AND ', $where) . sube_kosul('o');   // 4.50.0 şube: camın siparişi bu şubede
 
 $items = rows(
     "SELECT i.*, r.order_id, c.first_name, c.last_name, o.order_stage, o.promised_date, sup.name AS supplier_name, cs.durum AS fis_durum

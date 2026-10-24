@@ -3199,7 +3199,7 @@ details.card:not([open]) > summary.card-head { border-radius: 12px; }
 @media (max-width: 900px) { .hizmet-izgara { grid-template-columns: minmax(0, 1fr); } }
 
 /* ==========================================================================
-   4.49.0 — Şubeler: menü seçicisi, şube rozeti, sipariş şube kartı, gelen gözlükler, transfer
+   4.50.0 — Şubeler: menü seçicisi, şube rozeti, sipariş şube kartı, gelen gözlükler, transfer
    ========================================================================== */
 .sube-secici { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; padding: 0 10px; min-height: 40px; border: 1px solid rgba(255, 255, 255, .12); border-radius: 10px; background: rgba(255, 255, 255, .05); color: var(--gece-yazi, #f4eef0); }
 .sube-secici .ic { width: 16px; height: 16px; color: var(--coral, #ff6b81); flex: none; }

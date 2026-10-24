@@ -1,6 +1,11 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 24 Ekim 2026 (4.49.0 dalda `oturum/sube`, canlı 4.48.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 24 Ekim 2026 (4.50.0 main'de, yayın sürüyor; canlı 4.49.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+
+**Rehber SEO (24.10, 4.49.0):** 10 yeni rehber yazısı (reçete okuma, SGK gözlük hakkı, Medula Optik, e-reçete, cam indeksi,
+progresif, mavi ışık, optik açmak, ÜTS, kontakt lens) + SSS/FAQ verisi + kaynaklar. SGK tutarları kaynaklarda çelişkili olduğu
+için rakam verilmedi (SUT EK-3/D'ye yönlendirildi). Sıradaki: Search Console'da yeni yazılar için "dizine eklenmeyi iste",
+sitemap yeniden gönder; ayda 2 yazı; sektör sitelerinden bağlantı. "optik"/"gözlük" tek kelimeleri e-ticaret devlerinin; hedef uzun kuyruk.
 
 **Instagram filmleri (23.10):** `docs/tanitim-video/` — ortak motor (`ortak/`) + 3 film: Bir müşteri geldi (Medula sorgu → aktar; SGK payı örneği 150 ₺), Bugün aranacaklar, Tamir fişi. Ay sonu filmi kullanıcı kararıyla çıkarıldı. Ücretsiz MIT ses (Coqui, Actions › Seslendir) kötü bulundu → kullanıcı başka yapay zekâ ile okutacak: metin + dosya adları `docs/tanitim-video/SESLENDIRME.md`. 23.10 akşam: TTSMaker sesleri (v1–v3) `bol.py` ile bölündü, kullanıcının fon müziğiyle (`--muzik`, konuşmada kısılır) üç film teslim edildi (40 / 35 / 34 sn). Ses ve müzik dosyaları git'e girmedi (kullanıcıda).
 
@@ -16,10 +21,10 @@ Domain Names "resolve to other servers" yeniden açılabilir; Plesk güncellemes
 dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. TürkTicaret hostingi iptal edilirse e-posta da gider.
 
 ## Sürüm
-- **Sunucu 4.49.0** (dal `oturum/sube`, main'e birleştirilmedi — kullanıcı onayı bekliyor; 4.48.0 main'de; kullanıcı GitHub FTP sırlarını yeni sunucuya çevirdi,
-  "Canlıya al" artık yeni sunucuya yükler), şema **41** (v40 şubeler, v41 çerçeve barkodu şube içinde; v36 atölye parafları + raf; v37 taksit + kasa devir/küpür; v38 arama_kayitlari; v39 hizmet_detay). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.48.0** (23.10 "Sürüm yayınla" + "Canlıya al" başarılı, ilk kez yeni sunucuya; Release v4.48.0-pro5.6.0;
-  göç v36–v39 her mağazada ilk açılışta çalışır).
+- **Sunucu 4.50.0** (24.10 main'e birleştirildi: şubeler + kayıtta telefon; kullanıcı GitHub FTP sırlarını yeni sunucuya çevirdi,
+  "Canlıya al" yeni sunucuya yükler), şema **41** (v40 şubeler, v41 çerçeve barkodu şube içinde; v36 atölye parafları + raf; v37 taksit + kasa devir/küpür; v38 arama_kayitlari; v39 hizmet_detay). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Canlı site: 4.49.0** (24.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.49.0-pro5.6.0 — Rehber; şema 39).
+  Not: başka oturum Rehber'i 4.49.0 olarak çıkardığı için şubeler 4.50.0 oldu; göç v40–v41 her mağazada ilk açılışta çalışır.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);
@@ -33,7 +38,7 @@ dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. T
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.49.0 — Şubeler + kayıtta telefon; TEKNOPLUS, dal oturum/sube)
+## Son oturum (4.50.0 — Şubeler + kayıtta telefon; TEKNOPLUS, dal oturum/sube → main)
 - Kullanıcı (24.10): "şubeli versiyona talep var acilen geliştirelim" + "kayıt sonrasında hesap aktif edilince insanlarla
   tekrar iletişime geçemiyoruz, telefon numarası alalım". Seçimler: tek hesap ortak müşteri; personel kendi şubesi,
   yönetici hepsi; ilk sürümde şube tanımı + seçici, karşılaştırma, stok transferi, başka şubede teslim (hepsi).
@@ -466,7 +471,7 @@ dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. T
 1. **SEO bağlantısı:** kullanıcı hizmet hesabını kurunca panelde ilk veriyi birlikte kontrol et; sorgulara göre yeni rehber yazıları planla.
 2. Gerçek Medula PDF'iyle SGK döküm okuyucusunu doğrula (kullanıcıdan kişisel verisi karartılmış örnek PDF).
 3. Kullanıcıya sor: sıradaki modül (karar bekleyen: SGK dönem sonu paketi + kesinti defteri).
-4. ✔ **Şube özelliği** 4.49.0 (şube, yetki, karşılaştırma, transfer, başka şubede teslim). Kalan: raporlarda şube süzgeci, 'Çok Şubeli' fiyatı.
+4. ✔ **Şube özelliği** 4.50.0 (şube, yetki, karşılaştırma, transfer, başka şubede teslim). Kalan: raporlarda şube süzgeci, 'Çok Şubeli' fiyatı.
 
 ## Açık sorunlar / doğrulanmamış
 - Güvenlik denetiminden (06.10), düzeltilmedi — tasarım kararı gerekir:

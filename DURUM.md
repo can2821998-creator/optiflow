@@ -2,6 +2,10 @@
 
 *Son güncelleme: 24 Ekim 2026 (4.55.0 canlıda / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
+**Instagram filmleri 4–6 (24.10 akşam):** `docs/tanitim-video/fis-ozel` (Fişiniz size özel), `cam-takip` (Cam geldi mi?),
+`subeler` (İki mağaza, tek hesap). Müzikli sessiz önizlemeler kullanıcıya verildi; seslendirme metinleri SESLENDIRME.md 4–6
+(TTSMaker'da v4/v5/v6.mp3 okutulacak → `bol.py` ile bölünüp çekilecek).
+
 **4.55.0 (24.10):** yeni mağazaya rastgele çıktı görünümü (tenant_etkinlestir → cikti_yeni_magaza_ata; mevcut mağazalar
 değişmedi). Ayarlar menüsü solda gruplu yan menü oldu.
 

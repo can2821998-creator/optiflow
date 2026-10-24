@@ -1,0 +1,30 @@
+[
+ {
+  "id": "iki",
+  "metin": "İki mağazanız var, ama tek hesabınız."
+ },
+ {
+  "id": "kart",
+  "metin": "Müşteri hangi şubeye gelirse gelsin; kartı, reçetesi ve geçmişi orada."
+ },
+ {
+  "id": "teslim",
+  "metin": "Sipariş Kadıköy'de alınır, teslim şubesi olarak Moda seçilir."
+ },
+ {
+  "id": "yolda",
+  "metin": "Gözlük hazırlanınca yola çıkar. Moda teslim aldık deyince, müşteri orada aranacaklar listesine düşer."
+ },
+ {
+  "id": "karsilastir",
+  "metin": "Hangi şubede bugün ne satıldı, atölyede ne var, tek ekranda görürsünüz."
+ },
+ {
+  "id": "teslimal",
+  "metin": "Müşteri gözlüğünü evine en yakın şubeden alır."
+ },
+ {
+  "id": "son",
+  "metin": "OptiFlow. Otuz gün ücretsiz deneyin."
+ }
+]

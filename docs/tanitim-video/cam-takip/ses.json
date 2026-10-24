@@ -1,0 +1,30 @@
+[
+ {
+  "id": "aksam",
+  "metin": "Akşam yedi. Gün bitti; depodan istenecek camlar kaldı."
+ },
+ {
+  "id": "eskiden",
+  "metin": "Eskiden numaraları kâğıda yeniden yazar, fotoğrafını çekip depoya atardınız."
+ },
+ {
+  "id": "ozet",
+  "metin": "OptiFlow eksik camları türe ve numaraya göre kendisi gruplar. Depoya müşteri bilgisi gitmez."
+ },
+ {
+  "id": "gonder",
+  "metin": "Tek tuşa basarsınız; liste WhatsApp'tan depoya gider, camlar sipariş verildi olarak işaretlenir."
+ },
+ {
+  "id": "geldi",
+  "metin": "Ertesi sabah camlar gelince işaretlersiniz. Camı tamamlanan sipariş kendiliğinden atölyeye geçer."
+ },
+ {
+  "id": "atolye",
+  "metin": "Depoyu aramadan, kâğıda tek numara yazmadan."
+ },
+ {
+  "id": "son",
+  "metin": "OptiFlow. Otuz gün ücretsiz deneyin."
+ }
+]

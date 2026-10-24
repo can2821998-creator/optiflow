@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>OptiFlow · Cam geldi mi? (Reels 1080×1920)</title>
+<link rel="stylesheet" href="../ortak/stil.css">
+<style>
+.depo-ust{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:20px}
+.depo-ust .et{font:500 18px var(--mono);letter-spacing:.14em;color:#ff95a6}
+.depo-ust h3{font-weight:800;font-size:34px;letter-spacing:-.02em;margin:6px 0 6px}
+.depo-ust p{font-size:19px;color:var(--d-m);font-weight:600;max-width:520px;line-height:1.35}
+.gruplar{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grup{background:var(--d-sur);border:2px solid var(--d-line);border-radius:18px;padding:16px 18px;opacity:0}
+.grup b{display:block;font-weight:800;font-size:23px;margin-bottom:10px}
+.grup b span{color:var(--d-m);font-weight:600}
+.grup ul{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.grup li{font:500 20px var(--mono);padding:6px 10px;border-radius:9px;background:#120e0f;border:1.5px solid #3a2c30}
+.grup li em{font-style:normal;color:#ff95a6;margin-left:6px}
+.musteri-yok{display:inline-flex;align-items:center;gap:10px;margin-top:18px;font-weight:750;font-size:19px;color:var(--d-ok);background:#10241a;border:2px solid #1f4a33;padding:10px 14px;border-radius:12px;opacity:0}
+.durumlar{display:flex;gap:10px;margin-top:16px}
+.wa{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#25a066,#17663f) !important}
+/* sipariş satırları (geldi) */
+.sat{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;background:var(--d-sur);border:2px solid var(--d-line);border-radius:18px;padding:16px 18px;margin-bottom:12px;position:relative;overflow:hidden}
+.sat .kut{width:34px;height:34px;border-radius:9px;border:2.5px solid #5a4a4f;display:grid;place-items:center;color:#fff}
+.sat .kut.on{background:#b4233c;border-color:#e0435f}
+.sat b{font-weight:800;font-size:24px;display:block}
+.sat small{font:500 18px var(--mono);color:var(--d-m)}
+.sat .bt{position:absolute;inset:0;display:flex;align-items:center;gap:12px;padding:0 24px;font-weight:800;font-size:24px;background:#10241a;color:var(--d-ok);opacity:0}
+.geldi-bar{display:flex;gap:12px;margin-top:6px;align-items:center}
+.sekmeler{display:flex;gap:8px;margin-bottom:18px}
+.sekmeler span{font-weight:750;font-size:19px;padding:9px 14px;border-radius:12px;background:#1d1719;color:var(--d-m)}
+.sekmeler span.on{background:#f4eef0;color:#141012}
+.sekmeler em{font-style:normal;margin-left:6px;opacity:.75}
+.kagit-uc{position:absolute;opacity:0;z-index:8;background:#fffdf6;border-radius:6px;box-shadow:0 14px 30px rgba(27,20,22,.25);padding:22px 24px;width:330px;font:500 21px/1.55 var(--mono);color:#3a3033;transform-origin:50% 100%}
+.kagit-uc i{color:#b4233c;font-style:normal}
+.cekim{position:absolute;left:560px;top:860px;width:170px;height:320px;border-radius:28px;background:#1b1416;opacity:0;z-index:9;padding:12px 10px 46px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.cekim div{width:100%;height:100%;border-radius:16px;background:repeating-linear-gradient(#fffdf6 0 14px,#c9b9a8 14px 16px) 18px 30px/110px 120px no-repeat,#5a4a3a;position:relative;overflow:hidden}
+.cekim div::before{content:"";position:absolute;left:22px;top:26px;width:104px;height:128px;border:2px dashed rgba(255,255,255,.8);border-radius:6px}
+.cekim div::after{content:"";position:absolute;inset:0;background:#fff;opacity:var(--flas,0)}
+.cekim::after{content:"";position:absolute;left:50%;bottom:10px;width:28px;height:28px;margin-left:-14px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px #1b1416,0 0 0 5px #fff}
+</style>
+</head>
+<body>
+<div id="tuval"></div>
+<script src="../ortak/motor.js"></script>
+<script>
+const GRUP = [
+  ['Tek odak 1.6', 3, [['−2,00', 2], ['+1,25 CYL −0,75', 1]]],
+  ['Progresif 1.5', 2, [['+1,50 ADD 2,00', 1], ['−0,50 ADD 2,25', 1]]],
+  ['Mavi ışık 1.6', 2, [['−3,25', 2]]],
+  ['Tek odak 1.67', 1, [['−5,75 CYL −1,25', 1]]],
+];
+FILM({
+  kisiler: {},
+  gorunumler: {
+    vDepo: `<div class="sekmeler"><span class="on">Eksik<em id="nEksik">8</em></span><span>Depoya sipariş verildi<em id="nVerildi">0</em></span><span>Gelen</span></div>
+      <div class="depo-ust"><div><span class="et">GÜN SONU</span><h3>Depoya gidecek 8 eksik cam</h3>
+        <p>Türe ve numaraya göre gruplandı. Gönderince camlar "Depoya sipariş verildi" olur.</p></div>
+        <div class="dugme wa" id="gonder">${IK.mesaj}WhatsApp'ta depoya gönder</div></div>
+      <div class="gruplar">${GRUP.map(([t, n, s]) => `<div class="grup"><b>${t} <span>(${n})</span></b><ul>${s.map(([no, a]) => `<li>${no}${a > 1 ? `<em>× ${a}</em>` : ''}</li>`).join('')}</ul></div>`).join('')}</div>
+      <div class="musteri-yok" id="myok">${IK.ok20}Depoya müşteri bilgisi gitmez</div>`,
+    vGeldi: `<div class="sekmeler"><span>Eksik<em>0</em></span><span class="on">Depoya sipariş verildi<em>8</em></span><span>Gelen</span></div>
+      <div class="sat" id="s1"><span class="kut" id="k1"></span><div><b>#00128 · Ayşe Y.</b><small>Progresif 1.5 · sağ + sol</small></div><span class="cip warn">Depoya sipariş verildi</span>
+        <div class="bt" id="b1">${IK.ok}#00128 "Atölyede" aşamasına alındı</div></div>
+      <div class="sat" id="s2"><span class="kut" id="k2"></span><div><b>#00131 · Murat D.</b><small>Tek odak 1.6 · −2,00 × 2</small></div><span class="cip warn">Depoya sipariş verildi</span>
+        <div class="bt" id="b2">${IK.ok}#00131 "Atölyede" aşamasına alındı</div></div>
+      <div class="sat"><span class="kut"></span><div><b>#00134 · Elif K.</b><small>Mavi ışık 1.6 · −3,25 × 2</small></div><span class="cip warn">Depoya sipariş verildi</span></div>
+      <div class="geldi-bar"><div class="dugme" id="geldi">${IK.ok20}Geldi</div><span class="etiket" id="secili">0 SEÇİLİ</span></div>`,
+  },
+  ekHTML: `<div class="kagit-uc" id="kagitUc" style="left:150px;top:870px">Prog 1.5 <i>+1,50</i> add 2<br>T.O. 1.6 <i>−2,00</i> ×2<br>Mavi <i>−3,25</i> ×2 …<br>T.O. 1.67 <i>−5,75</i> c−1,25</div>
+    <div class="cekim" id="cekim"><div></div></div>`,
+  sifirla() { ['kagitUc', 'cekim'].forEach((id) => { $(id).style.opacity = 0; }); },
+  sahneler: [
+    { ad: 'aksam', sure: 3.6, katman: 'dukkan', eb: '19:00 · GÜN SONU', h: 'Gün bitti, <span class="k">eksik camlar</span> kaldı.',
+      ses: 'Akşam yedi. Gün bitti; depodan istenecek camlar kaldı.',
+      ciz(u) { dukkan({ t: u, aksam: 1, lamba: 1, saat: [19, 0], gul: -0.4, kas: 0.6, kirp: [1.4], defter: 1, tepsi: 0 }); } },
+    { ad: 'eskiden', sure: 3.8, katman: 'dukkan', eb: 'ESKİDEN', h: 'Numaraları <span class="s">yeniden yaz</span>, fotoğrafını çek.', cizgi: [1.4],
+      ses: 'Eskiden numaraları kâğıda yeniden yazar, fotoğrafını çekip depoya atardınız.',
+      ciz(u) {
+        dukkan({ t: u + 4, aksam: 1, lamba: 1, saat: [19, 25], gul: -0.8, kas: 1, kirp: [2.2], defter: 1, kagit: 1, tepsi: 0, tel: u > 1.8 ? 1 : 0 });
+        const k = eo(p(u, 0.2, 0.8));
+        gorun($('kagitUc'), k); $('kagitUc').style.transform = `rotate(-4deg) scale(${(0.8 + 0.2 * k).toFixed(3)})`;
+        gorun($('cekim'), eo(p(u, 1.8, 2.2)));
+        $('cekim').querySelector('div').style.setProperty('--flas', u > 2.6 && u < 2.8 ? 1 : 0);
+      } },
+    { ad: 'ozet', sure: 5.2, katman: 'ui', zoom: true, gecis: 0.7, eb: 'GÜN SONU DEPO SİPARİŞİ', h: 'Eksik camlar <span class="k">türe ve numaraya göre</span> hazır.',
+      ses: 'OptiFlow eksik camları türe ve numaraya göre kendisi gruplar. Depoya müşteri bilgisi gitmez.',
+      ciz(u) {
+        gorunum('vDepo', 1);
+        document.querySelectorAll('#vDepo .grup').forEach((g, i) => { const q = eo(p(u, 0.5 + i * 0.35, 1.0 + i * 0.35)); g.style.opacity = q; g.style.transform = `translateY(${((1 - q) * 30).toFixed(1)}px)`; });
+        const m = geri(p(u, 2.6, 3.0)); $('myok').style.opacity = p(u, 2.6, 2.75); $('myok').style.transform = `scale(${m.toFixed(3)})`;
+        $('nEksik').textContent = '8'; $('nVerildi').textContent = '0';
+      } },
+    { ad: 'gonder', sure: 4.6, katman: 'ui', eb: 'TEK TUŞ', h: 'Liste depoya <span class="k">WhatsApp</span> ile gider.',
+      ses: 'Tek tuşa basarsınız; liste WhatsApp\'tan depoya gider, camlar sipariş verildi olarak işaretlenir.',
+      ciz(u) {
+        gorunum('vDepo', 1);
+        document.querySelectorAll('#vDepo .grup').forEach((g) => { g.style.opacity = u > 1.0 ? 1 - 0.55 * p(u, 1.0, 1.4) : 1; g.style.transform = 'none'; });
+        $('myok').style.opacity = 1; $('myok').style.transform = 'none';
+        const [x, y] = uiNokta($('gonder'));
+        imlecYol(u, [[0.1, 520, 640], [0.7, x, y]], [0.85], gor(u, 0.1, 1.6, 0.2));
+        bas($('gonder'), u, 0.85);
+        $('nEksik').textContent = u > 1.0 ? '0' : '8'; $('nVerildi').textContent = u > 1.0 ? '8' : '0';
+        bildirim(eo(p(u, 1.3, 1.8)), { baslik: 'Yıldız Cam Deposu', metin: 'Tek odak 1.6: −2,00 ×2 · +1,25 c−0,75 / Progresif 1.5: +1,50 add 2,00 · −0,50 add 2,25 / Mavi ışık 1.6: −3,25 ×2 …', link: 'WhatsApp · müşteri bilgisi yok', cik: 1 - p(u, 4.1, 4.5) });
+      } },
+    { ad: 'geldi', sure: 5.0, katman: 'ui', gecis: 0.5, eb: 'ERTESİ SABAH', h: 'Camlar geldi: <span class="k">işaretleyin.</span>',
+      ses: 'Ertesi sabah camlar gelince işaretlersiniz. Camı tamamlanan sipariş kendiliğinden atölyeye geçer.',
+      ciz(u) {
+        gorunum('vGeldi', 1);
+        const plan = [[$('k1'), 0.8], [$('k2'), 1.4], [$('geldi'), 2.2]];
+        const yol = [[0.2, 600, 700]];
+        plan.forEach(([el, a]) => { const [x, y] = uiNokta(el); yol.push([a - 0.25, x, y]); yol.push([a + 0.15, x, y]); });
+        imlecYol(u, yol, plan.map((q) => q[1]), gor(u, 0.2, 3.0, 0.2));
+        $('k1').className = u > 0.8 ? 'kut on' : 'kut'; $('k1').innerHTML = u > 0.8 ? IK.ok20 : '';
+        $('k2').className = u > 1.4 ? 'kut on' : 'kut'; $('k2').innerHTML = u > 1.4 ? IK.ok20 : '';
+        $('secili').textContent = (u > 1.4 ? 2 : u > 0.8 ? 1 : 0) + ' SEÇİLİ';
+        bas($('geldi'), u, 2.2);
+        $('b1').style.opacity = eo(p(u, 2.4, 2.7)); $('b2').style.opacity = eo(p(u, 2.6, 2.9));
+      } },
+    { ad: 'atolye', sure: 3.4, katman: 'dukkan', eb: 'ATÖLYE', h: 'Telefon açmadan, <span class="k">kâğıt yazmadan.</span>',
+      ses: 'Depoyu aramadan, kâğıda tek numara yazmadan.',
+      ciz(u) {
+        dukkan({ t: u + 8, saat: [9, 40], gul: 1.2, kirp: [1.3], tepsi: 1, sag: lerp(-8, -40, eo(p(u, 0.3, 0.8))) });
+        balon(p(u, 0.4, 0.8) * (1 - p(u, 3.0, 3.3)), 'Camlar tamam, montaja başlıyorum.');
+      } },
+    { ad: 'son', sure: 3.6, son: true, ses: 'OptiFlow. Otuz gün ücretsiz deneyin.' },
+  ],
+});
+</script>
+</body>
+</html>

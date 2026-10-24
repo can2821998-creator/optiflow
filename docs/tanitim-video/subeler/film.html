@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>OptiFlow · İki mağaza, tek hesap (Reels 1080×1920)</title>
+<link rel="stylesheet" href="../ortak/stil.css">
+<style>
+.fon{position:absolute;left:0;top:560px;width:1080px;height:960px;background:radial-gradient(80% 70% at 50% 40%,#fbf7f6 0,#efe6e3 75%);opacity:0;z-index:1}
+#harita{position:absolute;left:0;top:560px;width:1080px;height:960px;opacity:0;z-index:2}
+.secici{display:inline-flex;align-items:center;gap:12px;font-weight:800;font-size:22px;padding:11px 16px;border-radius:14px;background:#231b1e;border:2px solid #3a2c30}
+.secici i{width:12px;height:12px;border-radius:50%;background:#e0435f}
+.mkart{display:flex;align-items:center;gap:18px;margin:20px 0 18px}
+.mkart .av{width:72px;height:72px;border-radius:50%;background:var(--d-soft);color:#ff95a6;display:grid;place-items:center;font-weight:800;font-size:28px}
+.mkart b{font-size:32px;font-weight:800;display:block}.mkart small{font:500 20px var(--mono);color:var(--d-m)}
+.gecmis .s{display:grid;grid-template-columns:150px 1fr auto;gap:14px;align-items:center;padding:16px 18px;border-radius:16px;background:var(--d-sur);border:2px solid var(--d-line);margin-bottom:10px;opacity:0}
+.gecmis .s small{font:500 19px var(--mono);color:var(--d-m)}
+.gecmis .s b{font-weight:750;font-size:22px}
+.sube{font:800 17px/1 Manrope;padding:8px 12px;border-radius:999px;background:#1c2433;color:#9fb8ff;border:2px solid #2d3d5c}
+.sube.m{background:#10241a;color:var(--d-ok);border-color:#1f4a33}
+.form .sat{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:2px solid var(--d-line)}
+.form .sat span{font-weight:650;font-size:22px;color:var(--d-m)}
+.form .sat b{font-weight:800;font-size:23px}
+.seg{display:flex;background:#1d1719;border-radius:14px;padding:5px;gap:4px}
+.seg span{font-weight:750;font-size:21px;padding:10px 18px;border-radius:10px;color:var(--d-m) !important;position:relative;overflow:hidden}
+.seg span.on{background:#f4eef0;color:#141012 !important}
+.tablo{width:100%;border-collapse:separate;border-spacing:0 8px}
+.tablo th{font:500 17px var(--mono);letter-spacing:.12em;color:var(--d-m);text-align:right;padding:0 16px 4px}
+.tablo th:first-child{text-align:left}
+.tablo td{background:var(--d-sur);padding:16px;font-weight:800;font-size:24px;text-align:right;border-top:2px solid var(--d-line);border-bottom:2px solid var(--d-line);opacity:0}
+.tablo td:first-child{text-align:left;font-weight:650;font-size:21px;color:var(--d-m);border-left:2px solid var(--d-line);border-radius:14px 0 0 14px}
+.tablo td:last-child{border-right:2px solid var(--d-line);border-radius:0 14px 14px 0}
+.tablo td .bar{display:block;height:6px;border-radius:3px;background:#e0435f;margin:8px 0 0 auto}
+.tablo td.m .bar{background:var(--d-ok)}
+.teslimaldik{position:absolute;left:660px;top:1380px;z-index:9;opacity:0;display:flex;align-items:center;gap:12px;font-weight:800;font-size:28px;color:#fff;padding:16px 22px;border-radius:18px;
+  background:linear-gradient(135deg,#25a066,#17663f);box-shadow:0 16px 34px rgba(23,102,63,.4)}
+.yolda{position:absolute;z-index:9;opacity:0;font:800 22px/1 Manrope;color:#9a5b00;background:#fdefd6;border:2px solid #e6c27a;padding:10px 14px;border-radius:999px}
+</style>
+</head>
+<body>
+<div id="tuval"></div>
+<script src="../ortak/motor.js"></script>
+<script>
+/* İki mağaza cephesi: x konumu, ad, tente rengi */
+const cephe = (x, ad, renk, id) => `<g id="${id}" transform="translate(${x} 330)">
+  <rect x="0" y="40" width="340" height="420" rx="10" fill="#fbf8f7" stroke="#d6c7c1" stroke-width="4"/>
+  <rect x="-10" y="0" width="360" height="60" rx="8" fill="#3a3033"/>
+  <text x="170" y="40" text-anchor="middle" font-family="Manrope" font-weight="800" font-size="26" letter-spacing="4" fill="#fff">${ad}</text>
+  <g>${[0, 1, 2, 3, 4, 5].map((i) => `<path d="M${-10 + i * 60} 60 h60 v34 q-30 22 -60 0z" fill="${i % 2 ? '#fff' : renk}"/>`).join('')}</g>
+  <rect x="30" y="140" width="170" height="150" rx="6" fill="#dfe5e4" stroke="#3a3033" stroke-width="6"/>
+  <g fill="none" stroke="${renk}" stroke-width="5"><rect x="60" y="200" width="40" height="28" rx="10"/><rect x="108" y="200" width="40" height="28" rx="10"/></g>
+  <rect x="230" y="160" width="86" height="300" rx="4" fill="#3a3033"/><rect x="242" y="172" width="62" height="280" fill="#dfe5e4"/>
+  <rect x="0" y="456" width="340" height="10" fill="#d6c7c1"/></g>`;
+FILM({
+  kisiler: { ayse: { sac: 'bob', sacRenk: '#3b2a24', ceket: '#b98a5e', kol: '#a87a50', atki: '#b4233c' } },
+  gorunumler: {
+    vKart: `<div class="ust"><h2>Müşteri kartı</h2><span class="secici" id="secici"><i></i><span id="seciciAd">Moda şubesi</span></span></div>
+      <div class="mkart"><div class="av">AY</div><div><b>Ayşe Yılmaz</b><small>0532 ••• •• 18 · tek kart, iki şube</small></div></div>
+      <span class="etiket" style="display:block;margin-bottom:12px">GEÇMİŞ</span>
+      <div class="gecmis">
+        <div class="s"><small>12.03.2025</small><b>Gözlük · Progresif 1.5</b><span class="sube">Kadıköy</span></div>
+        <div class="s"><small>04.11.2025</small><b>Reçete · Dr. Kaya</b><span class="sube">Kadıköy</span></div>
+        <div class="s"><small>24.10.2026</small><b>Kontrol · lens önerisi</b><span class="sube m">Moda</span></div></div>`,
+    vSiparis: `<div class="ust"><h2>Yeni sipariş</h2><span class="m">#00211 · KADIKÖY</span></div>
+      <div class="form">
+        <div class="sat"><span>Müşteri</span><b>Ayşe Yılmaz</b></div>
+        <div class="sat"><span>Gözlük</span><b>Progresif 1.6 · Ray-Ban</b></div>
+        <div class="sat"><span>Söz verilen</span><b>Cuma, 30 Ekim</b></div>
+        <div class="sat"><span>Teslim şubesi</span><div class="seg"><span id="segK" class="on">Kadıköy</span><span id="segM">Moda</span></div></div>
+      </div>
+      <div class="dugme" id="kaydetS" style="margin-top:26px">Siparişi kaydet</div>`,
+    vKarsi: `<div class="ust"><h2>Şubeler</h2><span class="m">BUGÜN</span></div>
+      <table class="tablo"><thead><tr><th></th><th>KADIKÖY</th><th>MODA</th></tr></thead><tbody>
+      ${[['Sipariş', 7, 4, '7', '4'], ['Tahsilat', 18450, 9200, '18.450 ₺', '9.200 ₺'], ['Atölyede', 5, 2, '5', '2'], ['Hazır bekleyen', 3, 1, '3', '1'], ['Yolda', 1, 0, '1', '0']]
+        .map(([a, k, m, kt, mt]) => `<tr><td>${a}</td><td data-v="${k / Math.max(k, m, 1)}">${kt}<i class="bar"></i></td><td class="m" data-v="${m / Math.max(k, m, 1)}">${mt}<i class="bar"></i></td></tr>`).join('')}
+      </tbody></table>`,
+  },
+  ekHTML: `<div class="fon" id="fon"></div>
+    <svg id="harita" viewBox="0 0 1080 960">${cephe(60, 'KADIKÖY', '#b4233c', 'cK')}${cephe(680, 'MODA', '#137a52', 'cM')}
+      <path id="yol" d="M400 640 C520 860 560 860 680 640" fill="none" stroke="#b3a6a9" stroke-width="6" stroke-dasharray="14 12"/>
+      <g id="hesap" opacity="0"><rect x="420" y="130" width="240" height="96" rx="20" fill="#141012"/>
+        <text x="540" y="172" text-anchor="middle" font-family="Manrope" font-weight="800" font-size="28" fill="#fff">OptiFlow</text>
+        <text x="540" y="206" text-anchor="middle" font-family="IBM Plex Mono" font-size="19" fill="#ab9fa3">TEK HESAP</text>
+        <path d="M480 226 L260 330 M600 226 L840 330" stroke="#141012" stroke-width="4" stroke-dasharray="8 8"/></g>
+      <g id="kutu" opacity="0"><rect x="-42" y="-30" width="84" height="60" rx="12" fill="#c49a45"/><path d="M-42 -6 h84" stroke="#a07a2c" stroke-width="4"/>
+        <g fill="none" stroke="#1b1416" stroke-width="5"><rect x="-30" y="2" width="26" height="18" rx="7"/><rect x="4" y="2" width="26" height="18" rx="7"/></g></g></svg>
+    <div class="yolda" id="yoldaEt" style="left:480px;top:1390px">Yolda</div>
+    <div class="teslimaldik" id="taldik">${IK.ok}Teslim aldık</div>`,
+  sifirla() { ['fon', 'harita', 'yoldaEt', 'taldik'].forEach((id) => { $(id).style.opacity = 0; }); },
+  sahneler: [
+    { ad: 'iki', sure: 3.8, katman: 'ev', eb: 'KADIKÖY · MODA', h: 'İki mağaza, <span class="k">tek hesap.</span>',
+      ses: 'İki mağazanız var, ama tek hesabınız.',
+      ciz(u) {
+        $('ev').style.opacity = 0; gorun($('fon'), 1); gorun($('harita'), 1);
+        const a = eo(p(u, 0.1, 0.7)), b = eo(p(u, 0.3, 0.9));
+        at($('cK'), 'transform', `translate(60 ${(330 + (1 - a) * 400).toFixed(1)})`); $('cK').style.opacity = a;
+        at($('cM'), 'transform', `translate(680 ${(330 + (1 - b) * 400).toFixed(1)})`); $('cM').style.opacity = b;
+        $('yol').style.opacity = 0; $('kutu').style.opacity = 0;
+        const h = eo(p(u, 1.4, 2.0)); $('hesap').style.opacity = h; at($('hesap'), 'transform', `translate(0 ${((1 - h) * -30).toFixed(1)})`);
+      } },
+    { ad: 'kart', sure: 4.8, katman: 'ui', gecis: 0.6, eb: 'ORTAK MÜŞTERİ KARTI', h: 'Hangi şubeye gelirse, <span class="k">kartı orada.</span>',
+      ses: 'Müşteri hangi şubeye gelirse gelsin; kartı, reçetesi ve geçmişi orada.',
+      ciz(u) {
+        gorunum('vKart', 1);
+        document.querySelectorAll('#vKart .s').forEach((s, i) => { const q = eo(p(u, 0.6 + i * 0.4, 1.1 + i * 0.4)); s.style.opacity = q; s.style.transform = `translateX(${((1 - q) * 40).toFixed(1)}px)`; });
+        const z = Math.sin(Math.PI * p(u, 2.7, 3.2));
+        $('secici').style.transform = `scale(${(1 + 0.08 * z).toFixed(3)})`;
+      } },
+    { ad: 'teslim', sure: 4.6, katman: 'ui', gecis: 0.5, eb: 'TESLİM ŞUBESİ', h: 'Kadıköy\'de sipariş, <span class="k">Moda\'da teslim.</span>',
+      ses: 'Sipariş Kadıköy\'de alınır, teslim şubesi olarak Moda seçilir.',
+      ciz(u) {
+        gorunum('vSiparis', 1);
+        const [x1, y1] = uiNokta($('segM')), [x2, y2] = uiNokta($('kaydetS'));
+        imlecYol(u, [[0.3, 600, 500], [1.1, x1, y1], [1.6, x1, y1], [2.4, x2, y2]], [1.25, 2.55], gor(u, 0.3, 3.6, 0.2));
+        $('segK').className = u > 1.25 ? '' : 'on'; $('segM').className = u > 1.25 ? 'on' : '';
+        bas($('segM'), u, 1.25); bas($('kaydetS'), u, 2.55);
+      } },
+    { ad: 'yolda', sure: 5.2, katman: 'ev', eb: 'HAZIR · YOLDA', h: 'Gözlük yolda; Moda <span class="k">"teslim aldık"</span> der.',
+      ses: 'Gözlük hazırlanınca yola çıkar. Moda teslim aldık deyince, müşteri orada aranacaklar listesine düşer.',
+      ciz(u) {
+        $('ev').style.opacity = 0; gorun($('fon'), 1); gorun($('harita'), 1);
+        at($('cK'), 'transform', 'translate(60 330)'); $('cK').style.opacity = 1;
+        at($('cM'), 'transform', 'translate(680 330)'); $('cM').style.opacity = 1;
+        $('hesap').style.opacity = 0;
+        $('yol').style.opacity = p(u, 0.2, 0.5);
+        const yol = $('yol'), L = yol.getTotalLength(), q = eio(p(u, 0.8, 2.8)), pt = yol.getPointAtLength(L * q);
+        $('kutu').style.opacity = p(u, 0.6, 0.8) * (1 - p(u, 3.0, 3.2));
+        at($('kutu'), 'transform', `translate(${pt.x.toFixed(1)} ${(pt.y - 30).toFixed(1)}) rotate(${(Math.sin(u * 9) * 4).toFixed(1)})`);
+        gorun($('yoldaEt'), eo(p(u, 0.9, 1.2)) * (1 - p(u, 2.8, 3.0)));
+        const t2 = geri(p(u, 3.0, 3.5)); gorun($('taldik'), p(u, 3.0, 3.2)); $('taldik').style.transform = `scale(${t2.toFixed(3)})`;
+      } },
+    { ad: 'karsilastir', sure: 4.8, katman: 'ui', gecis: 0.6, eb: 'YÖNETİM · ŞUBELER', h: 'Hangi şube ne yaptı, <span class="k">tek ekranda.</span>',
+      ses: 'Hangi şubede bugün ne satıldı, atölyede ne var, tek ekranda görürsünüz.',
+      ciz(u) {
+        gorunum('vKarsi', 1);
+        document.querySelectorAll('#vKarsi tbody tr').forEach((tr, i) => {
+          tr.querySelectorAll('td').forEach((td) => {
+            const q = eo(p(u, 0.5 + i * 0.3, 1.0 + i * 0.3)); td.style.opacity = q;
+            const b = td.querySelector('.bar'); if (b) b.style.width = (Number(td.dataset.v) * 150 * eo(p(u, 0.9 + i * 0.3, 1.6 + i * 0.3))).toFixed(1) + 'px';
+          });
+        });
+      } },
+    { ad: 'teslimal', sure: 3.4, katman: 'dukkan', eb: 'MODA · CUMA', h: 'Müşteri en yakın şubeden <span class="k">alır.</span>',
+      ses: 'Müşteri gözlüğünü evine en yakın şubeden alır.',
+      ciz(u) {
+        dukkan({ t: u + 4, sag: lerp(-8, -62, eo(p(u, 0.2, 0.7))), gul: 1.3, saat: [18, 10], kirp: [1.4] });
+        kisi('ayse', { t: u, x: lerp(900, 720, eio(p(u, 0, 0.8))), yuru: u < 0.8, gozluk: eo(p(u, 1.0, 1.4)), gul: 14, kirp: [2.0], par: u > 1.2 && u < 2.6 ? Math.sin(p(u, 1.2, 2.6) * Math.PI) : 0 });
+      } },
+    { ad: 'son', sure: 3.6, son: true, ses: 'OptiFlow. Otuz gün ücretsiz deneyin.' },
+  ],
+});
+</script>
+</body>
+</html>

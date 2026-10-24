@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>OptiFlow · Fişiniz size özel (Reels 1080×1920)</title>
+<link rel="stylesheet" href="../ortak/stil.css">
+<style>
+/* ---- küçük fiş (yarım + yarım), renk --c / --cd, düzen sınıfları ---- */
+.mf{position:absolute;width:300px;height:424px;background:#fff;border-radius:8px;box-shadow:0 18px 40px rgba(27,20,22,.18);overflow:hidden;--c:#3a3236;--cd:#141012;--ct:#f3efef}
+.mf .y{position:absolute;left:0;right:0;height:212px;padding:16px 18px;overflow:hidden}
+.mf .y1{top:0}.mf .y2{top:212px}
+.mf .kes{position:absolute;left:0;right:0;top:211px;border-top:2px dashed #b3a6a9;z-index:3}
+.mf .bt{height:38px;border-radius:5px;background:linear-gradient(115deg,var(--c),var(--cd));display:flex;align-items:center;gap:8px;padding:0 10px;color:#fff;font-weight:800;font-size:13px}
+.mf .bt i{width:16px;height:16px;border-radius:50%;background:#fff;opacity:.9;flex:none}
+.mf .bt b{margin-left:auto;font:500 13px var(--mono)}
+.mf .ln{height:5px;border-radius:3px;background:#e2dadb;margin:9px 0}
+.mf .ln.k{width:62%}.mf .ln.o{width:80%}
+.mf .vz{position:absolute;right:18px;bottom:22px;width:96px;height:44px;border-radius:5px;background:var(--cd)}
+.mf .vz2{position:absolute;right:18px;bottom:76px;width:96px;height:34px;border-radius:5px;border:2px solid #1b1416}
+/* müşteri yarısı düzenleri */
+.mf .y1.serit{padding-left:66px}.mf .y1.serit .bt{position:absolute;left:0;top:0;bottom:0;width:50px;height:auto;border-radius:0;flex-direction:column;justify-content:center;padding:10px 0}
+.mf .y1.serit .bt span{writing-mode:vertical-rl;transform:rotate(180deg)}.mf .y1.serit .bt b{margin:0;writing-mode:vertical-rl;transform:rotate(180deg)}
+.mf .y1.mektup .bt{background:none;color:#1b1416;justify-content:center;flex-direction:column;height:54px;gap:2px;border-bottom:5px double var(--c);border-radius:0}
+.mf .y1.mektup .bt i{background:var(--c)}.mf .y1.mektup .bt b{position:absolute;right:16px;top:14px;color:var(--cd);font-size:11px}
+.mf .y1.kocan{padding-right:96px}.mf .y1.kocan .bt b{display:none}
+.mf .y1.kocan::after{content:"";position:absolute;right:0;top:0;bottom:0;width:80px;background:var(--ct);border-left:2px dashed #b3a6a9}
+.mf .y1.kocan .no{position:absolute;right:6px;top:84px;width:70px;text-align:center;font:500 15px var(--mono);color:var(--cd);z-index:2}
+.mf .y1 .no{display:none}.mf .y1.kocan .no{display:block}
+.mf .y1.muhur .bt{padding-right:70px}.mf .y1.muhur .bt b{display:none}
+.mf .y1.muhur .st{display:grid}
+.mf .st{display:none;position:absolute;right:12px;top:8px;width:62px;height:62px;border-radius:50%;background:#fff;place-items:center;font:500 11px var(--mono);color:var(--cd);transform:rotate(-10deg);
+  box-shadow:0 0 0 3px var(--c),inset 0 0 0 4px #fff,inset 0 0 0 5.5px var(--c);z-index:2}
+/* atölye yarısı düzenleri */
+.mf .y2.etiket .bt{background:#fff;color:#1b1416;box-shadow:inset 0 0 0 3px #1b1416;border-radius:4px 14px 14px 4px;padding-left:30px;position:relative}
+.mf .y2.etiket .bt::before{content:"";position:absolute;left:10px;top:13px;width:11px;height:11px;border-radius:50%;box-shadow:inset 0 0 0 2.5px #1b1416}
+.mf .y2.etiket .bt i{background:#1b1416}.mf .y2.etiket .bt b{font-size:17px}
+.mf .y2.sade .bt{background:none;color:#1b1416;border-radius:0;border-bottom:3px solid #1b1416;padding-left:0}.mf .y2.sade .bt i{background:#1b1416}
+.mf .y2.sade .vz{background:#fff;border:2px solid #1b1416}
+.mf .y2.serit{padding-left:30px}.mf .y2.serit::before{content:"";position:absolute;left:0;top:0;bottom:0;width:14px;background:var(--c)}
+.mf .y2.serit .bt{background:none;color:#1b1416;border-bottom:2px solid var(--c);border-radius:0}.mf .y2.serit .bt i{background:var(--c)}
+.mf .ad{font-weight:800;letter-spacing:.02em}
+
+.tabela{position:absolute;font-weight:800;font-size:30px;letter-spacing:.12em;color:#463b3e;text-align:center;width:300px;opacity:0;z-index:8}
+.tabela small{display:block;font:500 18px var(--mono);letter-spacing:.14em;color:#8a7c80;margin-top:6px}
+.soru{position:absolute;left:470px;top:960px;width:140px;height:140px;border-radius:50%;background:#1b1416;color:#fff;font:800 92px/140px Manrope;text-align:center;opacity:0;z-index:9}
+.fon{position:absolute;left:0;top:560px;width:1080px;height:960px;background:radial-gradient(70% 60% at 50% 45%,#fff 0,#f1e9e6 70%);opacity:0;z-index:1}
+.fon-k{background:radial-gradient(70% 60% at 50% 45%,#2a1f22 0,#141012 75%)}
+
+/* ---- uygulama ekranı: çıktı görünümü ---- */
+.renkler{display:flex;gap:12px;margin-bottom:26px}
+.renkler span{width:62px;height:62px;border-radius:16px;position:relative;box-shadow:inset 0 0 0 2px rgba(255,255,255,.08)}
+.renkler span.sec::after{content:"";position:absolute;inset:-7px;border-radius:21px;border:3px solid #fff}
+.duzenler{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px}
+.duzenler div{border:2px solid #3a2c30;border-radius:14px;padding:10px 8px 8px;background:#151012;text-align:center;font-weight:750;font-size:16px;color:var(--d-m)}
+.duzenler div i{display:block;height:56px;border-radius:8px;background:#fff;margin-bottom:8px;position:relative;overflow:hidden}
+.duzenler div.sec{border-color:#fff;color:#fff;background:#231b1e}
+.duzenler .d-bant i::before{content:"";position:absolute;left:6px;right:6px;top:6px;height:12px;border-radius:3px;background:var(--dc,#7e1528)}
+.duzenler .d-serit i::before{content:"";position:absolute;left:0;top:0;bottom:0;width:16px;background:var(--dc,#7e1528)}
+.duzenler .d-mektup i::before{content:"";position:absolute;left:50%;top:6px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--dc,#7e1528)}
+.duzenler .d-mektup i::after{content:"";position:absolute;left:8px;right:8px;top:20px;height:3px;border-top:1px solid var(--dc,#7e1528);border-bottom:1px solid var(--dc,#7e1528)}
+.duzenler .d-kocan i::after{content:"";position:absolute;right:0;top:0;bottom:0;width:22px;background:#e7f2ee;border-left:2px dashed #b3a6a9}
+.duzenler .d-kocan i::before{content:"";position:absolute;left:6px;right:30px;top:6px;height:10px;border-radius:2px;background:#3a3236}
+.duzenler .d-muhur i::before{content:"";position:absolute;left:6px;right:6px;top:6px;height:12px;border-radius:3px;background:var(--dc,#7e1528)}
+.duzenler .d-muhur i::after{content:"";position:absolute;right:6px;top:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--dc,#7e1528)}
+.ayar-iki{display:grid;grid-template-columns:1fr 330px;gap:26px;align-items:start}
+.onz{position:relative;height:470px;border-radius:18px;background:#e9e5e6;overflow:hidden}
+.onz .mf{left:15px;top:22px;transform-origin:0 0}
+#karistir{margin-top:4px}
+</style>
+</head>
+<body>
+<div id="tuval"></div>
+<script src="../ortak/motor.js"></script>
+<script>
+/* Küçük fiş: renk [ana, koyu, açık], müşteri yarısı düzeni, atölye yarısı düzeni, dükkân adı */
+const RENK = { gri: ['#3a3236', '#141012', '#f3efef'], bordo: ['#b4233c', '#4a0d1d', '#fbe8ec'], zumrut: ['#137a52', '#083121', '#e7f2ee'], lacivert: ['#23407a', '#0e1a33', '#e8edf6'],
+  hardal: ['#b8860b', '#4a3604', '#f8f0dc'], mor: ['#6b3fa0', '#2b1940', '#f0e9f7'], mercan: ['#d0573f', '#53231a', '#fbebe7'], petrol: ['#0e6b73', '#062b2e', '#e5f1f2'] };
+const mf = (id, r, m, a, ad, no) => `<div class="mf" id="${id}" style="--c:${RENK[r][0]};--cd:${RENK[r][1]};--ct:${RENK[r][2]}">
+  <div class="y y1 ${m}"><div class="bt"><i></i><span class="ad">${ad}</span><b>${no}</b></div><div class="st">${no}</div><div class="no">${no}</div>
+    <div class="ln"></div><div class="ln k"></div><div class="ln o"></div><div class="ln k"></div><div class="vz"></div></div>
+  <div class="kes"></div>
+  <div class="y y2 ${a}"><div class="bt"><i></i><span class="ad">${ad}</span><b>${no}</b></div>
+    <div class="ln"></div><div class="ln o"></div><div class="ln k"></div><div class="vz2"></div><div class="vz"></div></div></div>`;
+const yerlestir = (el, x, y, s = 1, r = 0, op = 1) => { gorun(el, op); el.style.left = '0px'; el.style.top = '0px'; el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${r.toFixed(2)}deg) scale(${s.toFixed(3)})`; el.style.transformOrigin = '150px 212px'; };
+const boya = (el, r) => { el.style.setProperty('--c', RENK[r][0]); el.style.setProperty('--cd', RENK[r][1]); el.style.setProperty('--ct', RENK[r][2]); };
+const duzen = (el, m, a) => { el.querySelector('.y1').className = 'y y1 ' + m; el.querySelector('.y2').className = 'y y2 ' + a; };
+const CESIT = [['bordo', 'muhur', 'bant', 'KADIKÖY OPTİK'], ['zumrut', 'kocan', 'etiket', 'MODA GÖZLÜK'], ['lacivert', 'mektup', 'sade', 'ÇARŞI OPTİK'],
+  ['hardal', 'serit', 'serit', 'GÜNEŞ OPTİK'], ['mor', 'bant', 'etiket', 'LİMAN OPTİK'], ['mercan', 'kocan', 'bant', 'ADA GÖZLÜK']];
+const SW = ['bordo', 'mercan', 'hardal', 'zumrut', 'petrol', 'lacivert', 'mor', 'gri'];
+const DZ = [['bant', 'Üst bant'], ['serit', 'Yan şerit'], ['mektup', 'Antetli'], ['kocan', 'Koçan'], ['muhur', 'Mühür']];
+
+FILM({
+  kisiler: { ayse: { sac: 'bob', sacRenk: '#3b2a24', ceket: '#b98a5e', kol: '#a87a50', atki: '#137a52' } },
+  gorunumler: {
+    vAyar: `<div class="ust"><h2>Çıktı görünümü</h2><span class="m">AYARLAR</span></div>
+      <div class="ayar-iki"><div>
+        <span class="etiket" style="display:block;margin-bottom:12px">RENK</span>
+        <div class="renkler" id="renkler">${SW.map((r) => `<span style="background:linear-gradient(135deg,${RENK[r][0]},${RENK[r][1]})"></span>`).join('')}</div>
+        <span class="etiket" style="display:block;margin-bottom:12px">MÜŞTERİ YARISI</span>
+        <div class="duzenler" id="duzenler">${DZ.map(([k, ad]) => `<div class="d-${k}"><i></i>${ad}</div>`).join('')}</div>
+        <div class="dugme ikincil" id="karistir">Karıştır, bana bir görünüm öner</div>
+      </div><div class="onz">${mf('ayarFis', 'gri', 'bant', 'bant', 'ÖRNEK OPTİK', 'T-042')}</div></div>`,
+  },
+  ekHTML: `<div class="fon" id="fon"></div>
+    ${mf('fA', 'gri', 'bant', 'bant', 'A OPTİK', '#0128')}${mf('fB', 'gri', 'bant', 'bant', 'B OPTİK', '#0371')}
+    <div class="tabela" id="tA" style="left:120px;top:640px">A OPTİK<small>NO 12</small></div>
+    <div class="tabela" id="tB" style="left:660px;top:640px">B OPTİK<small>NO 14</small></div>
+    <div class="soru" id="soru">?</div>
+    ${mf('fBuyuk', 'zumrut', 'kocan', 'etiket', 'MODA GÖZLÜK', 'T-042')}
+    <div class="etk" id="eUst" style="left:770px;top:760px">Müşteriye</div><div class="etk" id="eAlt" style="left:60px;top:1240px">Atölyeye</div>
+    ${CESIT.map((c, i) => mf('c' + i, c[0], c[1], c[2], c[3], 'T-0' + (41 + i))).join('')}
+    ${mf('fEl', 'zumrut', 'kocan', 'etiket', 'MODA GÖZLÜK', 'T-042')}`,
+  hazirla() {
+    const st = document.createElement('style');
+    st.textContent = '.etk{position:absolute;z-index:8;font-weight:800;font-size:28px;color:#fff;background:linear-gradient(135deg,#1f8a57,#137a52 55%,#083121);padding:12px 20px;border-radius:999px;opacity:0;white-space:nowrap}';
+    document.head.appendChild(st);
+    document.querySelectorAll('#tuval > .mf').forEach((m) => { m.style.zIndex = 7; });
+  },
+  sifirla() {
+    ['fon', 'tA', 'tB', 'soru', 'eUst', 'eAlt'].forEach((id) => { $(id).style.opacity = 0; });
+    document.querySelectorAll('#tuval > .mf').forEach((m) => { m.style.opacity = 0; });
+    $('fon').className = 'fon';
+  },
+  sahneler: [
+    { ad: 'ayni', sure: 3.8, katman: 'ev', eb: 'AYNI SOKAK · İKİ OPTİK', h: 'İki dükkân, <span class="k">aynı fiş.</span>',
+      ses: 'Aynı sokakta iki optik. Müşterinin elindeki fişler birbirinin aynı.',
+      ciz(u) {
+        $('ev').style.opacity = 0; gorun($('fon'), 1);
+        gorun($('tA'), eo(p(u, 0.1, 0.5))); gorun($('tB'), eo(p(u, 0.25, 0.65)));
+        const a = eo(p(u, 0.3, 1.0)), b = eo(p(u, 0.5, 1.2));
+        yerlestir($('fA'), 120, lerp(1500, 760, a), 1, lerp(-12, -4, a), a);
+        yerlestir($('fB'), 660, lerp(1500, 760, b), 1, lerp(12, 4, b), b);
+        const s = geri(p(u, 1.8, 2.3));
+        gorun($('soru'), p(u, 1.8, 1.95)); $('soru').style.transform = `scale(${s.toFixed(3)})`;
+      } },
+    { ad: 'ayar', sure: 5.0, katman: 'ui', gecis: 0.6, eb: 'AYARLAR · ÇIKTI GÖRÜNÜMÜ', h: 'Renginizi, <span class="k">fiş düzeninizi</span> seçin.',
+      ses: 'OptiFlow\'da fişinizin rengini, düzenini ve yazısını siz seçersiniz.',
+      ciz(u) {
+        gorunum('vAyar', 1);
+        const sw = $('renkler').children, dz = $('duzenler').children, af = $('ayarFis');
+        const plan = [[sw[3], 1.0], [dz[3], 2.4], [dz[4], 3.5]];
+        const yol = [[0.3, 500, 700]];
+        plan.forEach(([el, a]) => { const [x, y] = uiNokta(el); yol.push([a - 0.3, x, y]); yol.push([a + 0.2, x, y]); });
+        imlecYol(u, yol, plan.map((x) => x[1]), gor(u, 0.3, 4.6, 0.2));
+        [...sw].forEach((e, i) => { e.className = (u > 1.0 ? i === 3 : i === 7) ? 'sec' : ''; });
+        const renk = u > 1.0 ? 'zumrut' : 'gri';
+        const m = u > 3.5 ? 'muhur' : (u > 2.4 ? 'kocan' : 'bant');
+        [...dz].forEach((e, i) => { e.className = 'd-' + DZ[i][0] + (DZ[i][0] === m ? ' sec' : ''); e.style.setProperty('--dc', RENK[renk][0]); });
+        boya(af, renk); duzen(af, m, 'bant');
+        af.style.transform = `scale(${(1 + 0.05 * Math.sin(Math.PI * Math.max(p(u, 1.0, 1.3), p(u, 2.4, 2.7), p(u, 3.5, 3.8)))).toFixed(3)})`;
+      } },
+    { ad: 'yarilar', sure: 4.6, katman: 'ev', eb: 'İKİYE BÖLÜNEN FİŞ', h: 'Müşteri yarısı da, <span class="k">atölye yarısı da</span> size özel.',
+      ses: 'Üst yarı müşteriye, alt yarı atölyeye. İkisinin de düzenini ayrı ayrı seçersiniz.',
+      ciz(u) {
+        $('ev').style.opacity = 0; gorun($('fon'), 1);
+        const c = eo(p(u, 0.0, 0.8));
+        const f = $('fBuyuk'); yerlestir(f, 390, 830, lerp(0.6, 1.7, c), 0, c);
+        const ay = eio(p(u, 1.8, 2.5));
+        f.querySelector('.y1').style.transform = `translate(${(-ay * 26).toFixed(1)}px, ${(-ay * 14).toFixed(1)}px) rotate(${(-ay * 3).toFixed(2)}deg)`;
+        f.querySelector('.y2').style.transform = `translate(${(ay * 26).toFixed(1)}px, ${(ay * 14).toFixed(1)}px) rotate(${(ay * 3).toFixed(2)}deg)`;
+        f.querySelector('.kes').style.opacity = 1 - ay;
+        f.style.overflow = ay > 0 ? 'visible' : 'hidden'; f.style.background = ay > 0 ? 'transparent' : '#fff'; f.style.boxShadow = ay > 0 ? 'none' : '';
+        f.querySelectorAll('.y').forEach((y) => { y.style.background = '#fff'; y.style.boxShadow = ay > 0 ? '0 18px 40px rgba(27,20,22,.18)' : 'none'; });
+        gorun($('eUst'), eo(p(u, 2.5, 2.8))); gorun($('eAlt'), eo(p(u, 2.7, 3.0)));
+      } },
+    { ad: 'cesit', sure: 4.4, katman: 'ev', eb: 'SAYISIZ BİRLEŞİM', h: 'Bant, şerit, <span class="k">mühür, koçan…</span>',
+      ses: 'Bant, yan şerit, mühür, koçan. On dört renk, beş yazı karakteri.',
+      ciz(u) {
+        $('ev').style.opacity = 0; gorun($('fon'), 1);
+        CESIT.forEach((_, i) => {
+          const q = geri(p(u, 0.2 + i * 0.28, 0.75 + i * 0.28));
+          const x = 60 + (i % 3) * 330, y = 600 + Math.floor(i / 3) * 450;
+          yerlestir($('c' + i), x + 15, y, 0.92 * cl(q, 0, 1.2), (i % 2 ? 3 : -3) * (1 - cl(q)), p(u, 0.2 + i * 0.28, 0.4 + i * 0.28));
+        });
+      } },
+    { ad: 'yeni', sure: 3.8, katman: 'ui', gecis: 0.5, eb: 'YENİ MAĞAZA', h: 'Her mağazaya <span class="k">kendine özgü</span> bir görünüm.',
+      ses: 'Yeni açılan her mağazaya, kendine özgü bir görünüm kendiliğinden atanır.',
+      ciz(u) {
+        gorunum('vAyar', 1);
+        const sw = $('renkler').children, dz = $('duzenler').children, af = $('ayarFis');
+        const [x, y] = uiNokta($('karistir'));
+        imlecYol(u, [[0.2, 500, 760], [0.8, x, y]], [0.95, 1.7, 2.45], gor(u, 0.2, 3.4, 0.2));
+        bas($('karistir'), u, 0.95); if (u > 1.6) bas($('karistir'), u, 1.7); if (u > 2.3) bas($('karistir'), u, 2.45);
+        const k = u > 2.45 ? 3 : (u > 1.7 ? 2 : (u > 0.95 ? 1 : 0));
+        const tur = [['zumrut', 'muhur', 3], ['mor', 'serit', 6], ['hardal', 'mektup', 2], ['lacivert', 'kocan', 5]][k];
+        [...sw].forEach((e, i) => { e.className = i === SW.indexOf(tur[0]) ? 'sec' : ''; });
+        [...dz].forEach((e, i) => { e.className = 'd-' + DZ[i][0] + (DZ[i][0] === tur[1] ? ' sec' : ''); e.style.setProperty('--dc', RENK[tur[0]][0]); });
+        boya(af, tur[0]); duzen(af, tur[1], ['bant', 'etiket', 'sade', 'serit'][k]);
+        const z = [0.95, 1.7, 2.45].map((a) => Math.sin(Math.PI * p(u, a, a + 0.3))).reduce((m, v) => Math.max(m, v), 0);
+        af.style.transform = `rotate(${(z * 4).toFixed(2)}deg) scale(${(1 - 0.06 * z).toFixed(3)})`;
+      } },
+    { ad: 'musteri', sure: 3.4, katman: 'dukkan', eb: 'TESLİM', h: 'Fişe bakan, <span class="k">sizi hatırlar.</span>',
+      ses: 'Fişe bakan müşteri, sizi hatırlar.',
+      ciz(u) {
+        dukkan({ t: u + 4, sag: lerp(-8, -62, eo(p(u, 0, 0.5))), gul: 1.3, saat: [17, 40], kirp: [1.5] });
+        kisi('ayse', { t: u, x: 720, gozluk: 1, gul: 14, kirp: [1.0], par: u > 0.6 && u < 2 ? Math.sin(p(u, 0.6, 2) * Math.PI) : 0 });
+        const q = eo(p(u, 0.3, 0.9));
+        yerlestir($('fEl'), 760, lerp(1300, 980, q), 0.62, lerp(8, -6, q), q);
+      } },
+    { ad: 'son', sure: 3.6, son: true, ses: 'OptiFlow. Otuz gün ücretsiz deneyin.' },
+  ],
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+[
+ {
+  "id": "ayni",
+  "metin": "Aynı sokakta iki optik. Müşterinin elindeki fişler birbirinin aynı."
+ },
+ {
+  "id": "ayar",
+  "metin": "OptiFlow'da fişinizin rengini, düzenini ve yazısını siz seçersiniz."
+ },
+ {
+  "id": "yarilar",
+  "metin": "Üst yarı müşteriye, alt yarı atölyeye. İkisinin de düzenini ayrı ayrı seçersiniz."
+ },
+ {
+  "id": "cesit",
+  "metin": "Bant, yan şerit, mühür, koçan. On dört renk, beş yazı karakteri."
+ },
+ {
+  "id": "yeni",
+  "metin": "Yeni açılan her mağazaya, kendine özgü bir görünüm kendiliğinden atanır."
+ },
+ {
+  "id": "musteri",
+  "metin": "Fişe bakan müşteri, sizi hatırlar."
+ },
+ {
+  "id": "son",
+  "metin": "OptiFlow. Otuz gün ücretsiz deneyin."
+ }
+]

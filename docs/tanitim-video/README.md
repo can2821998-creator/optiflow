@@ -7,6 +7,9 @@ Kodla çizilen, kare kare çekilen dikey (1080×1920, 30 fps) Reels filmleri. He
 |---|---|
 | `musteri-geldi/` | Bir müşteri geldi: kapı → **Medula'dan e-Reçete sorgulama** → **Reçeteyi aktar** → SGK payı düşülmüş teklif → atölye panosu → "gözlüğünüz hazır" mesajı → teslim |
 | `aranacaklar/` | Bugün aranacaklar: sabah "kimi arayacağım?" → liste (hazır, gelmeyen, ödeme sözü, planlı) → Ulaşıldı / Açmadı / WhatsApp → kimse unutulmaz → müşteri gelir |
+| `fis-ozel/` | Fişiniz size özel (4.53–4.55): aynı sokakta aynı fişler → Ayarlar › Çıktı görünümü (renk, koçan, mühür) → müşteri ve atölye yarısı ayrı → sayısız birleşim → yeni mağazaya kendine özgü görünüm → "fişe bakan sizi hatırlar" |
+| `cam-takip/` | Cam geldi mi?: gün sonu eksik camlar → eskiden kâğıda yeniden yaz + fotoğraf → türe ve numaraya göre gruplu liste (müşteri bilgisi yok) → tek tuş WhatsApp'ta depoya → ertesi sabah "Geldi" → sipariş atölyeye geçer |
+| `subeler/` | İki mağaza, tek hesap: ortak müşteri kartı → teslim şubesi seçimi → yolda → "Teslim aldık" → şubeler karşılaştırması → müşteri en yakın şubeden alır |
 | `tamir/` | Tamir · hizmet: vidası düşen gözlük → işlem + teslim alırken görülen → bırakıldı / ücretsiz → yarım A4 fiş (üst müşteriye, alt gözlüğe) → aranacaklara düşer → teslim |
 
 Ortak parçalar `ortak/` altında: `motor.js` (sahne tablosu, karakterler, dükkân, uygulama paneli, altyazı, kapanış) ve `stil.css`.
@@ -39,8 +42,9 @@ MP4 dosyaları git'e girmez; kaynak burada durur ve film yeniden çekilir.
   Altyazılar 250–520 px arasında, sahne 560–1520 px arasında durur.
 
 ## Fikirler (sıradaki filmler)
-- "Telefon çaldı, açamadık": arayan kartı, cevapsız aramaya SMS, geri aranacaklar listesi
-- "Cam geldi mi?": tedarikçi ve atölye takibi
+- "Telefon çaldı, açamadık": arayan kartı, cevapsız aramaya SMS, geri aranacaklar listesi (asistan askıda; çıkınca)
+- "Veresiye defteri": ödeme sözü, hatırlatma, kalan bakiye
+- "Kontakt lens bitiyor": lens yenileme hatırlatması
 
 ## Seslendirme
 - Taslak ses: Coqui TTS Türkçe (GlowTTS + HiFiGAN, **MIT**, Common Voice verisi), `.github/workflows/seslendir.yml`.

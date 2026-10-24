@@ -226,6 +226,9 @@ function page_start(string $title, string $active = '', array $opts = []): void
 <?php if (config('ortam', '') === 'test'): ?>
 <div role="note" style="position:sticky;top:0;z-index:9999;background:#b3261e;color:#fff;text-align:center;padding:7px 12px;font:700 13px/1.35 system-ui,Arial,sans-serif">TEST ORTAMI — gerçek müşteri kaydı girmeyin, buradaki bilgiler canlı sisteme geçmez</div>
 <?php endif; ?>
+<?php if (ortam_beta()): ?>
+<div class="beta-serit" role="note"><b>BETA</b> Yeni sürümü önceden deniyorsunuz · Veriler canlıyla ortaktır · Değişiklikler her gece canlıya geçer · Sorun görürseniz bize yazın</div>
+<?php endif; ?>
 <a class="skip" href="#main">İçeriğe geç</a>
 <div class="app">
   <aside class="sidebar" id="sidebar">

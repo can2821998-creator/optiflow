@@ -1163,6 +1163,11 @@ function order_public_token(int $orderId): string
  */
 function app_base_url(): string
 {
+    // 4.56.0 beta: müşteriye giden bağlantılar (fiş karekodu, WhatsApp) CANLI adresle üretilir; ortak veritabanındaki
+    // site_base_url ayarı beta'dan yazılmaz (yoksa canlıdaki cron mesajları beta adresini kullanırdı).
+    if (function_exists('ortam_beta') && ortam_beta()) {
+        return 'https://' . ortam_canli_host();
+    }
     $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
     if ($host !== '' && preg_match('/^[a-z0-9.\-:]+$/i', $host)) {
         $guvenli = (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')

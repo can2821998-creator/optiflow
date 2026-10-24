@@ -1,6 +1,16 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 24 Ekim 2026 (4.55.0 canlıda / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 25 Ekim 2026 (4.56.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+
+**BETA ORTAMI (25.10, 4.56.0) — YAYIN DÜZENİ DEĞİŞİYOR:** kullanıcı: "yeni kayıtlar geliyor, önce pilot
+beta.optiflow.com.tr'de denesin, gün içindekiler gece canlıya geçsin". Kod hazır (app/ortam.php, canliya-al.yml, rehber
+**`docs/BETA.md`**). Beta = aynı DB + aynı `.gizli-anahtar`; yalnız "Beta kanalı (pilot)" özelliği açık mağaza girer
+(göçten önce kontrol); beta'da cron yok, müşteri linkleri canlı adresle, kayıt canlıya, noindex, BETA şeridi.
+GitHub Variables › `BETA_ACIK=1` olana kadar yayınlar ESKİSİ GİBİ doğrudan canlıya gider. **Kullanıcının yapacakları:**
+DNS A `beta` · Plesk alt alan adı + Let's Encrypt · config.php + storage/.gizli-anahtar'ı beta klasörüne kopyala ·
+merkez panelde pilota "Beta kanalı" · `BETA_ACIK=1` · Actions › Canlıya al › hedef=beta. Sonra: pilot sorun bildirirse
+`CANLI_DURDUR=1`. **GELİŞTİRİCİ KURALI: göçler yalnız ekler** (beta göçü canlı DB'yi de değiştirir).
+Sıradaki: Pro 5.7.0'a "beta kanalı" (yalnız https://beta.optiflow.com.tr).
 
 **Instagram filmleri 4–6 (24.10 akşam):** kullanıcı kuralı: içerik **bütün gözlükçülerin ortak derdi** olmalı (keşfete düşen
 "defter açmadan teslim", "kim aranacak" gibi). Yayına: `veresiye` (Kalanını sonra veririm), `cam-takip` (Cam geldi mi?),

@@ -12,6 +12,12 @@ header('Content-Type: text/plain; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Robots-Tag: noindex');
 
+// 4.56.0 beta: zamanlanmış görevler yalnız canlıda çalışır (WhatsApp / e-posta iki kez gitmesin)
+if (ortam_beta()) {
+    echo "beta: zamanlanmış görevler yalnız canlıda çalışır\n";
+    exit;
+}
+
 $beklenen = cron_anahtar();
 $gelen = (string) ($_GET['anahtar'] ?? $_SERVER['HTTP_X_CRON_ANAHTAR'] ?? '');
 if ($beklenen === '' || !hash_equals($beklenen, $gelen)) {

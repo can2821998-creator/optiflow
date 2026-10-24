@@ -1,26 +1,41 @@
-# OptiFlow — canlıya al (GitHub Release → hosting, FTP ile)
+# OptiFlow — beta'ya / canlıya al (GitHub Release → hosting, FTP ile)
 #
-# "Sürüm yayınla" başarıyla bitince (ya da Actions › "Canlıya al" › Run workflow ile elle)
-# en son Release'teki hosting zip'ini hosting'e yükler. Masaüstü kurulumu yalnızca
-# sürümü hosting'dekinden farklıysa yüklenir; latest.yml EN SON yüklenir.
+# 4.56.0 YAYIN DÜZENİ (rehber: docs/BETA.md)
+#   Variables › BETA_ACIK = 1 iken:
+#     • "Sürüm yayınla" başarıyla bitince → en son Release BETA'ya yüklenir (beta.optiflow.com.tr; pilot gün içinde dener).
+#     • Her gece 02:30 (TR) → en son Release CANLIYA yüklenir; yalnızca: canlı o sürümde değilse, sürüm beta'da
+#       yayındaysa (yani denendiyse) ve Variables › CANLI_DURDUR = 1 DEĞİLSE (pilot sorun bildirdiyse bunu 1 yapın).
+#     • Elle: Actions › "Canlıya al" › Run workflow › hedef = beta | canli (canli = acil düzeltme, beta şartı aranmaz).
+#   BETA_ACIK tanımlı değilse eski düzen: "Sürüm yayınla" bitince doğrudan canlıya; gece işi bir şey yapmaz.
 #
 # Bir kez yapılacak ayar (GitHub › depo › Settings › Secrets and variables › Actions › Secrets):
 #   FTP_SUNUCU    ör. optiflow.com.tr (ya da Plesk'teki sunucu adı / IP)
 #   FTP_KULLANICI Plesk › Web siteleri › FTP erişimi'ndeki kullanıcı
 #   FTP_SIFRE     o kullanıcının şifresi
-#   FTP_KLASOR    (isteğe bağlı) site klasörü, varsayılan: httpdocs
+#   FTP_KLASOR    (isteğe bağlı) canlı site klasörü, varsayılan: httpdocs
+# Variables (isteğe bağlı): BETA_ACIK, BETA_KLASOR (varsayılan beta.optiflow.com.tr), BETA_ADRESI
+#   (varsayılan https://beta.optiflow.com.tr), SITE_ADRESI (varsayılan https://optiflow.com.tr), CANLI_DURDUR.
 # Bağlantı her zaman FTPS (TLS) ile yapılır; şifre açık metin gitmez.
 # Bu sırlar yoksa iş hiçbir şey yüklemeden "atlandı" der.
 #
 # GÜVENLİK: config.php ve storage/ zip'te YOKTUR; hosting'deki dosyalar silinmez, yalnızca
-# yeni/güncel dosyalar üzerine yazılır. Veritabanı göçü ilk personel girişinde kendiliğinden yapılır.
+# yeni/güncel dosyalar üzerine yazılır. Veritabanı göçü ilk personel girişinde kendiliğinden yapılır
+# (beta'da yalnız beta kanalındaki mağazalar için — app/ortam.php).
 name: Canlıya al
 
 on:
   workflow_run:
     workflows: ['Sürüm yayınla']
     types: [completed]
+  schedule:
+    - cron: '30 23 * * *'   # 23:30 UTC = 02:30 Türkiye
   workflow_dispatch:
+    inputs:
+      hedef:
+        description: 'Nereye? beta = pilot ortamı, canli = herkes (acil düzeltme)'
+        type: choice
+        options: [beta, canli]
+        default: beta
 
 permissions:
   contents: read
@@ -31,35 +46,70 @@ concurrency:
 
 jobs:
   canli:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     env:
       FTP_SUNUCU: ${{ secrets.FTP_SUNUCU }}
       FTP_KULLANICI: ${{ secrets.FTP_KULLANICI }}
       FTP_SIFRE: ${{ secrets.FTP_SIFRE }}
-      FTP_KLASOR: ${{ secrets.FTP_KLASOR }}
-      SITE: ${{ vars.SITE_ADRESI || 'https://optiflow.com.tr' }}
+      CANLI_KLASOR: ${{ secrets.FTP_KLASOR || 'httpdocs' }}
+      CANLI_SITE: ${{ vars.SITE_ADRESI || 'https://optiflow.com.tr' }}
+      BETA_ACIK: ${{ vars.BETA_ACIK }}
+      BETA_KLASOR: ${{ vars.BETA_KLASOR || 'beta.optiflow.com.tr' }}
+      BETA_SITE: ${{ vars.BETA_ADRESI || 'https://beta.optiflow.com.tr' }}
+      CANLI_DURDUR: ${{ vars.CANLI_DURDUR }}
+      OLAY: ${{ github.event_name }}
+      GIRDI: ${{ inputs.hedef }}
       # Plesk'in FTP sertifikası çoğu zaman sunucu adına kendinden imzalıdır; bağlantı yine de
       # TLS ile şifrelenir (ssl-force). Geçerli sertifikanız varsa Variables › FTP_SERTIFIKA_KONTROL = yes.
       SERTIFIKA: ${{ vars.FTP_SERTIFIKA_KONTROL || 'no' }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - id: ayar
-        name: FTP ayarı var mı?
+        name: Hedef ve FTP ayarı
         run: |
+          atla() { echo "::notice::$1"; echo "var=0" >> "$GITHUB_OUTPUT"; exit 0; }
           if [ -z "$FTP_SUNUCU" ] || [ -z "$FTP_KULLANICI" ] || [ -z "$FTP_SIFRE" ]; then
-            echo "::notice::FTP sırları tanımlı değil; canlıya yükleme atlandı (bkz. iş akışı başındaki açıklama)."
-            echo "var=0" >> "$GITHUB_OUTPUT"
-          else
-            echo "var=1" >> "$GITHUB_OUTPUT"
+            atla "FTP sırları tanımlı değil; yükleme atlandı (bkz. iş akışı başındaki açıklama)."
           fi
+          if [ "$BETA_ACIK" != "1" ]; then
+            [ "$OLAY" = "schedule" ] && atla "Beta düzeni kapalı (Variables › BETA_ACIK); gece işi bir şey yapmadı."
+            HEDEF=canli
+          else
+            case "$OLAY" in
+              workflow_run) HEDEF=beta ;;
+              schedule) HEDEF=gece ;;
+              *) HEDEF="${GIRDI:-beta}" ;;
+            esac
+          fi
+          TAG=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName -q .tagName)
+          BEKLENEN=$(echo "$TAG" | sed -E 's/^v([0-9.]+)-pro.*/\1/')
+          surum() { curl -fsSL "$1/VERSION.txt" 2>/dev/null | grep -m1 '^Release:' | awk '{print $2}' || true; }
+          if [ "$HEDEF" = "gece" ]; then
+            CANLIDA=$(surum "$CANLI_SITE"); BETADA=$(surum "$BETA_SITE")
+            echo "Release: $BEKLENEN · canlı: ${CANLIDA:-?} · beta: ${BETADA:-?}"
+            [ "$CANLIDA" = "$BEKLENEN" ] && atla "Canlı zaten $BEKLENEN sürümünde; yapılacak bir şey yok."
+            [ "$CANLI_DURDUR" = "1" ] && atla "CANLI_DURDUR = 1: $BEKLENEN canlıya ALINMADI (pilot sorun bildirdi mi?). Sorun çözülünce değişkeni silin."
+            if [ "$BETADA" != "$BEKLENEN" ]; then
+              echo "::warning::$BEKLENEN beta'da yayında görünmüyor (beta: ${BETADA:-erişilemedi}); denenmemiş sürüm canlıya alınmadı."
+              echo "var=0" >> "$GITHUB_OUTPUT"; exit 0
+            fi
+            HEDEF=canli
+          fi
+          if [ "$HEDEF" = "beta" ]; then
+            echo "KLASOR=$BETA_KLASOR" >> "$GITHUB_ENV"; echo "SITE=$BETA_SITE" >> "$GITHUB_ENV"
+          else
+            echo "KLASOR=$CANLI_KLASOR" >> "$GITHUB_ENV"; echo "SITE=$CANLI_SITE" >> "$GITHUB_ENV"
+          fi
+          echo "TAG=$TAG" >> "$GITHUB_ENV"; echo "BEKLENEN=$BEKLENEN" >> "$GITHUB_ENV"; echo "HEDEF=$HEDEF" >> "$GITHUB_ENV"
+          echo "::notice::$TAG → $HEDEF"
+          echo "var=1" >> "$GITHUB_OUTPUT"
+          echo "hedef=$HEDEF" >> "$GITHUB_OUTPUT"
 
       - name: En son Release'i indir
         if: steps.ayar.outputs.var == '1'
         run: |
-          TAG=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName -q .tagName)
           echo "Release: $TAG"
-          echo "TAG=$TAG" >> "$GITHUB_ENV"
           mkdir -p rel && cd rel
           gh release download "$TAG" --repo "$GITHUB_REPOSITORY"
           ls -la
@@ -79,7 +129,6 @@ jobs:
       - name: Bakım işaretini koy
         if: steps.ayar.outputs.var == '1'
         run: |
-          KLASOR="${FTP_KLASOR:-httpdocs}"
           echo "$TAG $(date -u +%FT%TZ)" > guncelleniyor.txt
           lftp -u "$FTP_KULLANICI","$FTP_SIFRE" "$FTP_SUNUCU" -e "
             set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $SERTIFIKA; set net:max-retries 3; set net:timeout 30;
@@ -89,7 +138,6 @@ jobs:
       - name: Sunucu dosyalarını yükle
         if: steps.ayar.outputs.var == '1'
         run: |
-          KLASOR="${FTP_KLASOR:-httpdocs}"
           lftp -u "$FTP_KULLANICI","$FTP_SIFRE" "$FTP_SUNUCU" -e "
             set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $SERTIFIKA; set net:max-retries 3; set net:timeout 30;
             set xfer:use-temp-file yes; set xfer:temp-file-name .yukleniyor.*;
@@ -99,16 +147,14 @@ jobs:
       - name: Bakım işaretini kaldır
         if: always() && steps.ayar.outputs.var == '1'
         run: |
-          KLASOR="${FTP_KLASOR:-httpdocs}"
           lftp -u "$FTP_KULLANICI","$FTP_SIFRE" "$FTP_SUNUCU" -e "
             set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate $SERTIFIKA; set net:max-retries 3; set net:timeout 30;
             cd $KLASOR; rm -f .guncelleniyor;
             quit"
 
-      - name: Masaüstü kurulumunu yükle (sürüm değiştiyse)
-        if: steps.ayar.outputs.var == '1'
+      - name: Masaüstü kurulumunu yükle (yalnız canlıda, sürüm değiştiyse)
+        if: steps.ayar.outputs.var == '1' && steps.ayar.outputs.hedef == 'canli'
         run: |
-          KLASOR="${FTP_KLASOR:-httpdocs}"
           YENI=$(grep -m1 '^version:' rel/latest.yml | awk '{print $2}')
           ESKI=$(curl -fsSL "$SITE/indir/masaustu/latest.yml" 2>/dev/null | grep -m1 '^version:' | awk '{print $2}' || true)
           echo "Hosting'deki masaüstü: ${ESKI:-yok} · Release: $YENI"
@@ -130,7 +176,6 @@ jobs:
         run: |
           sleep 5
           SURUM=$(curl -fsSL "$SITE/VERSION.txt" | grep -m1 '^Release:' || true)
-          echo "Canlıdaki: $SURUM"
-          BEKLENEN=$(echo "$TAG" | sed -E 's/^v([0-9.]+)-pro.*/\1/')
-          echo "$SURUM" | grep -q "Release: $BEKLENEN" || { echo "::error::Canlıdaki VERSION.txt $BEKLENEN göstermiyor"; exit 1; }
-          echo "::notice::Canlı site $BEKLENEN sürümünde. İlk personel girişinde veritabanı kendiliğinden güncellenir."
+          echo "$HEDEF ($SITE): $SURUM"
+          echo "$SURUM" | grep -q "Release: $BEKLENEN" || { echo "::error::$HEDEF VERSION.txt $BEKLENEN göstermiyor"; exit 1; }
+          echo "::notice::$HEDEF ($SITE) $BEKLENEN sürümünde. İlk personel girişinde veritabanı kendiliğinden güncellenir."

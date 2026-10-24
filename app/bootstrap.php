@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.55.0';
+const APP_VERSION = '4.56.0';
 const APP_ROOT = __DIR__ . '/..';
 
 // 4.16.8: canlıya yükleme sürerken yarım dosyalara denk gelmemek için kısa bakım ekranı (app/guncelleme.php).
@@ -95,6 +95,7 @@ ini_set('display_errors', $debug ? '1' : '0');
 ini_set('log_errors', '1');
 
 require __DIR__ . '/helpers.php';
+require __DIR__ . '/ortam.php';   // 4.56.0 beta ortamı (beta.optiflow.com.tr)
 require __DIR__ . '/domain.php';
 require __DIR__ . '/db.php';
 require __DIR__ . '/migrations.php';
@@ -215,6 +216,7 @@ if ($merkezSayfasi || $sunucuUcNoktasi) {
     merkez_db();   // yalnızca merkez (mağazalar) veritabanına bağlanır; henüz hiçbir mağaza/tenant veritabanı seçilmemiştir
 } elseif ($kopruUcNoktasi && !tenant_oturum()) {
     kopru_tenant_bagla();   // 4.10.0 eklenti: mağaza, köprü adresindeki &m= ile seçilir (oturumsuz)
+    beta_kapisi();
     db();
     run_migrations();
 } elseif ($musteriSayfasi) {
@@ -232,6 +234,7 @@ if ($merkezSayfasi || $sunucuUcNoktasi) {
     exit;
 } elseif (!$anaSayfaMisafir && !$manifestMisafir) {
     tenant_gereksin();   // config('db')'yi oturumdaki mağazanın veritabanına çevirir, yoksa magaza-giris.php'ye yönlendirir
+    beta_kapisi();       // 4.56.0 beta'da yalnız "Beta kanalı" açık mağazalar; GÖÇTEN ÖNCE (başka mağazanın DB'si değişmesin)
     db();
     run_migrations();
 }

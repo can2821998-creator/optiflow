@@ -22,6 +22,11 @@ declare(strict_types=1);
 function ozellik_tanimlari(): array
 {
     return [
+        'beta' => [   // 4.56.0 — app/ortam.php: beta.optiflow.com.tr'ye yalnız bu özelliği açık mağazalar girebilir
+            'ad'       => 'Beta kanalı (pilot)',
+            'kisa'     => 'Mağaza beta.optiflow.com.tr\'den girebilir: yeni sürümler gün içinde önce burada denenir, gece canlıya geçer. Veriler ortaktır.',
+            'masaustu' => false,
+        ],
         'whatsapp' => [
             'ad'       => 'WhatsApp mesaj otomasyonu',
             'kisa'     => 'Gözlük hazır, hatırlatma, yorum isteği ve lens mesajları kuyruktan gider.',

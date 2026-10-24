@@ -3317,3 +3317,8 @@ details.card:not([open]) > summary.card-head { border-radius: 12px; }
 .ck-a4-antet b { left: 0; right: 0; top: 0; height: 7px; background: linear-gradient(115deg, #141012, #7e1528); }
 .ck-a4-antet u { left: 0; top: 0; bottom: 0; width: 3px; background: #b4233c; }
 .ck-a4-antet i { top: 14px; height: 54px; background: linear-gradient(#b4233c, #b4233c) 0 8px/100% 2px no-repeat, repeating-linear-gradient(#d6cccd 0 2px, transparent 2px 7px) 0 14px/100% 100% no-repeat; }
+
+/* 4.56.0 — Beta ortamı şeridi (beta.optiflow.com.tr) */
+.beta-serit { position: sticky; top: 0; z-index: 9998; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 10px; padding: 6px 12px; background: #1b1416; color: #f3eef0; font: 600 12.5px/1.35 var(--sans, system-ui, sans-serif); text-align: center; }
+.beta-serit b { padding: 1px 8px; border-radius: 999px; background: #ff6b81; color: #1b1416; font-weight: 800; letter-spacing: .08em; }
+@media print { .beta-serit { display: none; } }

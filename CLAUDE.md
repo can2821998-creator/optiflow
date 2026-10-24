@@ -68,6 +68,7 @@ php tests/atolye/test.php
 php tests/defter/test.php
 php tests/aranacak/test.php
 php tests/hizmet/test.php
+php tests/beta/test.php
 php tests/sube/test.php
 php tests/eposta/test.php
 php tests/cikti/test.php

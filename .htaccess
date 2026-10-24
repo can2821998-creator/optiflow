@@ -8,6 +8,9 @@
   RewriteEngine On
   RewriteCond %{HTTP_HOST} ^www\.optiflow\.com\.tr$ [NC]
   RewriteRule ^(.*)$ https://optiflow.com.tr/$1 [R=301,L]
+  # 4.56.0 beta.optiflow.com.tr arama motorlarına kapalı: robots.txt yerine robots-beta.txt
+  RewriteCond %{HTTP_HOST} ^beta\. [NC]
+  RewriteRule ^robots\.txt$ robots-beta.txt [L]
 </IfModule>
 
 # Dizin listelemeyi kapat

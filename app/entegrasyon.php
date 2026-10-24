@@ -35,6 +35,10 @@ function gizli_anahtar(): string
         }
         throw new RuntimeException('storage/.gizli-anahtar bozuk. Dosyayı yedekten geri yükleyin (silerseniz kayıtlı entegrasyon şifrelerini yeniden girmeniz gerekir).');
     }
+    if (function_exists('ortam_beta') && ortam_beta()) {
+        // 4.56.0 beta canlıyla aynı veritabanını kullanır: kendi anahtarını üretirse canlı onun şifrelediğini çözemez
+        throw new RuntimeException('Beta ortamında storage/.gizli-anahtar yok. Canlı sitedeki dosyayı beta klasörüne kopyalayın (docs/BETA.md).');
+    }
     $dizin = dirname($yol);
     if (!is_dir($dizin) || !is_writable($dizin)) {
         throw new RuntimeException('storage/ klasörü yazılabilir değil; entegrasyon anahtarları kaydedilemez.');

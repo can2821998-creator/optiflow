@@ -1,6 +1,15 @@
 OPTIFLOW
-Release: 4.55.0 (2026-10-24)
+Release: 4.56.0 (2026-10-25)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.56.0 (Beta ortamı beta.optiflow.com.tr + gece canlıya geçiş; şema değişmedi)
+  - Kullanıcı: "yeni kayıtlar geliyor, canlıya çıkışları böyle yapamayız; önce pilot beta.optiflow.com.tr'de denesin,
+    gün içindeki geliştirmeler gece kullanılmayan saatte canlıya geçsin".
+  - app/ortam.php: beta tespiti; yalnız "Beta kanalı (pilot)" özelliği açık mağazalar girer (göçten önce); beta'da cron
+    çalışmaz, müşteri bağlantıları canlı adresle, kayıt canlıya yönlenir, noindex + robots-beta.txt, üstte BETA şeridi;
+    beta şifreleme anahtarını kendisi üretmez (canlıyla aynı olmalı).
+  - canliya-al.yml: BETA_ACIK=1 iken sürüm önce beta'ya; her gece 02:30 canlıya (canlı eskiyse + sürüm beta'daysa +
+    CANLI_DURDUR yoksa); elle hedef=canli acil düzeltme. BETA_ACIK yokken eski düzen. Rehber: docs/BETA.md.
 
 DEĞİŞİKLİK NOTLARI — 4.55.0 (Yeni mağazaya rastgele çıktı görünümü + Ayarlar menüsü yeniden; şema değişmedi)
   - Kullanıcı: "evet rastgele görünüm ata; ayarlar sayfasının üst barı iğrenç ve kafa karıştırıcı".

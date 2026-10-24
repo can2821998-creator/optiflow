@@ -96,6 +96,9 @@ function send_security_headers(): void
     }
     header('X-Content-Type-Options: nosniff');
     header('X-Frame-Options: SAMEORIGIN');
+    if (function_exists('ortam_beta') && ortam_beta()) {
+        header('X-Robots-Tag: noindex, nofollow');   // 4.56.0 beta arama motorlarına kapalı (canlıyla kopya içerik olmasın)
+    }
     header('Referrer-Policy: same-origin');
     header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
     // GA4 ayarlıysa yalnızca Google ölçümleme alan adlarına izin ver (satır içi kod hâlâ yasak).

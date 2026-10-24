@@ -2,6 +2,10 @@
 declare(strict_types=1);
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 
+if (ortam_beta()) {   // 4.56.0 yeni kayıt yalnız canlıda
+    redirect('https://' . ortam_canli_host() . '/kayit.php' . (($_SERVER['QUERY_STRING'] ?? '') !== '' ? '?' . $_SERVER['QUERY_STRING'] : ''));
+}
+
 if (tenant_oturum()) {
     redirect('login.php');
 }

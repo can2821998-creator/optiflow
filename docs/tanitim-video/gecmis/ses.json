@@ -1,0 +1,26 @@
+[
+ {
+  "id": "soru",
+  "metin": "Müşteri soruyor: Geçen sefer hangi camı taktırmıştım?"
+ },
+ {
+  "id": "klasor",
+  "metin": "Klasörler, eski fişler, defterler… Bulmak yarım saat sürer."
+ },
+ {
+  "id": "ara",
+  "metin": "OptiFlow'da telefonun birkaç hanesini yazarsınız; müşteri karşınızda."
+ },
+ {
+  "id": "gecmis",
+  "metin": "Bütün reçeteleri, taktığı camlar, çerçeveler. Yıllar sonra bile, on saniyede."
+ },
+ {
+  "id": "cevap",
+  "metin": "Cevap bir dakikada hazır. Müşteri güvenle, aynısını ister."
+ },
+ {
+  "id": "son",
+  "metin": "OptiFlow. Otuz gün ücretsiz deneyin."
+ }
+]

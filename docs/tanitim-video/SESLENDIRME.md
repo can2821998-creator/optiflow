@@ -58,27 +58,27 @@ gönderin; her ses kendi sahnesinin başına yerleşir. Ses uzun gelirse sahne k
 | `tamir-teslim` | Fişin alt yarısı gözlüğün üstünde; teslim karışmaz. | ~3 sn |
 | `tamir-son` | OptiFlow. Otuz gün ücretsiz deneyin. | ~3 sn |
 
-## 4) Fişiniz size özel (`fis-ozel`)
+## 4) Kalanını sonra veririm (`veresiye`)
 
 | Dosya | Metin | İdeal |
 |---|---|---|
-| `fis-ozel-ayni` | Aynı sokakta iki optik. Müşterinin elindeki fişler birbirinin aynı. | ~3,5 sn |
-| `fis-ozel-ayar` | OptiFlow'da fişinizin rengini, düzenini ve yazısını siz seçersiniz. | ~4 sn |
-| `fis-ozel-yarilar` | Üst yarı müşteriye, alt yarı atölyeye. İkisinin de düzenini ayrı ayrı seçersiniz. | ~4 sn |
-| `fis-ozel-cesit` | Bant, yan şerit, mühür, koçan. On dört renk, beş yazı karakteri. | ~4 sn |
-| `fis-ozel-yeni` | Yeni açılan her mağazaya, kendine özgü bir görünüm kendiliğinden atanır. | ~3,5 sn |
-| `fis-ozel-musteri` | Fişe bakan müşteri, sizi hatırlar. | ~2,5 sn |
-| `fis-ozel-son` | OptiFlow. Otuz gün ücretsiz deneyin. | ~3 sn |
+| `veresiye-soz` | Gözlüğünü alan müşteri: kalanını ay başında veririm, der. | ~3 sn |
+| `veresiye-defter` | Deftere yazılır. Ay başı gelir, geçer; kimse hatırlamaz. | ~3 sn |
+| `veresiye-tarih` | OptiFlow'da kalan tutara, ödeme sözü tarihini yazarsınız. | ~3,5 sn |
+| `veresiye-liste` | Söz günü geçince müşteri, bugün aranacaklar listesine kendiliğinden düşer. Hesap özetini WhatsApp'tan tek dokunuşla gönderirsiniz. | ~6 sn |
+| `veresiye-toplam` | Kimde ne kadar alacağınız var, kimin sözü kaç gün geçti; hepsi tek sayfada. | ~4 sn |
+| `veresiye-kapandi` | Müşteri gelir, hesap kapanır. Defter açılmadan. | ~3 sn |
+| `veresiye-son` | OptiFlow. Otuz gün ücretsiz deneyin. | ~3 sn |
 
 TTSMaker'a tek seferde (her cümle ayrı satırda; dosyayı `v4.mp3` diye gönderin):
 
 ```
-Aynı sokakta iki optik. Müşterinin elindeki fişler birbirinin aynı.
-OptiFlow'da fişinizin rengini, düzenini ve yazısını siz seçersiniz.
-Üst yarı müşteriye, alt yarı atölyeye. İkisinin de düzenini ayrı ayrı seçersiniz.
-Bant, yan şerit, mühür, koçan. On dört renk, beş yazı karakteri.
-Yeni açılan her mağazaya, kendine özgü bir görünüm kendiliğinden atanır.
-Fişe bakan müşteri, sizi hatırlar.
+Gözlüğünü alan müşteri: kalanını ay başında veririm, der.
+Deftere yazılır. Ay başı gelir, geçer; kimse hatırlamaz.
+OptiFlow'da kalan tutara, ödeme sözü tarihini yazarsınız.
+Söz günü geçince müşteri, bugün aranacaklar listesine kendiliğinden düşer. Hesap özetini WhatsApp'tan tek dokunuşla gönderirsiniz.
+Kimde ne kadar alacağınız var, kimin sözü kaç gün geçti; hepsi tek sayfada.
+Müşteri gelir, hesap kapanır. Defter açılmadan.
 OptiFlow. Otuz gün ücretsiz deneyin.
 ```
 
@@ -106,29 +106,29 @@ Depoyu aramadan, kâğıda tek numara yazmadan.
 OptiFlow. Otuz gün ücretsiz deneyin.
 ```
 
-## 6) İki mağaza, tek hesap (`subeler`)
+## 6) Geçen sefer hangi cam? (`gecmis`)
 
 | Dosya | Metin | İdeal |
 |---|---|---|
-| `subeler-iki` | İki mağazanız var, ama tek hesabınız. | ~2,5 sn |
-| `subeler-kart` | Müşteri hangi şubeye gelirse gelsin; kartı, reçetesi ve geçmişi orada. | ~4 sn |
-| `subeler-teslim` | Sipariş Kadıköy'de alınır, teslim şubesi olarak Moda seçilir. | ~4 sn |
-| `subeler-yolda` | Gözlük hazırlanınca yola çıkar. Moda teslim aldık deyince, müşteri orada aranacaklar listesine düşer. | ~5,5 sn |
-| `subeler-karsilastir` | Hangi şubede bugün ne satıldı, atölyede ne var, tek ekranda görürsünüz. | ~4,5 sn |
-| `subeler-teslimal` | Müşteri gözlüğünü evine en yakın şubeden alır. | ~3 sn |
-| `subeler-son` | OptiFlow. Otuz gün ücretsiz deneyin. | ~3 sn |
+| `gecmis-soru` | Müşteri soruyor: Geçen sefer hangi camı taktırmıştım? | ~3 sn |
+| `gecmis-klasor` | Klasörler, eski fişler, defterler… Bulmak yarım saat sürer. | ~3,5 sn |
+| `gecmis-ara` | OptiFlow'da telefonun birkaç hanesini yazarsınız; müşteri karşınızda. | ~3,5 sn |
+| `gecmis-gecmis` | Bütün reçeteleri, taktığı camlar, çerçeveler. Yıllar sonra bile, on saniyede. | ~4,5 sn |
+| `gecmis-cevap` | Cevap bir dakikada hazır. Müşteri güvenle, aynısını ister. | ~3 sn |
+| `gecmis-son` | OptiFlow. Otuz gün ücretsiz deneyin. | ~3 sn |
 
 TTSMaker'a tek seferde (her cümle ayrı satırda; dosyayı `v6.mp3` diye gönderin):
 
 ```
-İki mağazanız var, ama tek hesabınız.
-Müşteri hangi şubeye gelirse gelsin; kartı, reçetesi ve geçmişi orada.
-Sipariş Kadıköy'de alınır, teslim şubesi olarak Moda seçilir.
-Gözlük hazırlanınca yola çıkar. Moda teslim aldık deyince, müşteri orada aranacaklar listesine düşer.
-Hangi şubede bugün ne satıldı, atölyede ne var, tek ekranda görürsünüz.
-Müşteri gözlüğünü evine en yakın şubeden alır.
+Müşteri soruyor: Geçen sefer hangi camı taktırmıştım?
+Klasörler, eski fişler, defterler… Bulmak yarım saat sürer.
+OptiFlow'da telefonun birkaç hanesini yazarsınız; müşteri karşınızda.
+Bütün reçeteleri, taktığı camlar, çerçeveler. Yıllar sonra bile, on saniyede.
+Cevap bir dakikada hazır. Müşteri güvenle, aynısını ister.
 OptiFlow. Otuz gün ücretsiz deneyin.
 ```
+
+> `fis-ozel` ve `subeler` filmleri yayın dışı (ürüne özel konu); seslendirilmez.
 
 ---
 

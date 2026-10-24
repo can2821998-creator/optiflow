@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>OptiFlow · Kalanını sonra veririm (Reels 1080×1920)</title>
+<link rel="stylesheet" href="../ortak/stil.css">
+<style>
+.mus{display:flex;align-items:center;gap:18px;margin-bottom:18px}
+.mus .av{width:64px;height:64px;border-radius:50%;background:var(--d-soft);color:#ff95a6;display:grid;place-items:center;font-weight:800;font-size:25px}
+.mus b{font-size:29px;font-weight:800;display:block}.mus small{font:500 20px var(--mono);color:var(--d-m)}
+.hs{background:var(--d-sur);border:2px solid var(--d-line);border-radius:20px;padding:8px 24px;margin-bottom:18px}
+.hs div{display:flex;justify-content:space-between;padding:13px 0;border-bottom:2px solid var(--d-line);font-size:23px;font-weight:650;color:var(--d-m)}
+.hs div:last-child{border-bottom:0}
+.hs b{font:500 25px var(--mono);color:var(--d-ink)}
+.hs .kalan b{color:#ff95a6;font-size:30px}
+.soz{display:flex;align-items:center;gap:16px;background:#1d1719;border:2px solid #3a2c30;border-radius:18px;padding:16px 20px}
+.soz span{font-weight:700;font-size:22px;color:var(--d-m)}
+.soz .alan{flex:1;height:58px;border-radius:12px;border:2px solid var(--d-line);background:#120e0f;display:flex;align-items:center;padding:0 18px;font:500 26px var(--mono)}
+.soz .alan.on{border-color:#e0435f}
+.takvim{position:absolute;right:60px;top:500px;width:320px;background:#f4eef0;color:#141012;border-radius:18px;padding:16px;opacity:0;box-shadow:0 20px 40px rgba(0,0,0,.4);z-index:3}
+.takvim b{display:block;font-weight:800;font-size:20px;margin-bottom:10px;text-align:center}
+.takvim .g{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font:600 17px Manrope}
+.takvim .g span{padding:7px 0;border-radius:8px}
+.takvim .g span.sec{background:#b4233c;color:#fff}
+.ar{background:var(--d-sur);border:2px solid var(--d-line);border-radius:20px;padding:18px 22px;margin-bottom:12px;position:relative;overflow:hidden;opacity:0}
+.ar .ust1{display:flex;align-items:center;gap:12px}
+.ar b{font-size:27px;font-weight:800}
+.ar .det{font-size:20px;color:var(--d-m);font-weight:600;margin:6px 0 12px}
+.ar .tus{display:flex;gap:10px}
+.ar .tus span{font-weight:750;font-size:19px;padding:9px 14px;border-radius:12px;background:#231b1e;border:2px solid #3a2c30;color:var(--d-ink);display:inline-flex;align-items:center;gap:8px;position:relative;overflow:hidden}
+.ar .sonuc{position:absolute;inset:0;display:flex;align-items:center;gap:14px;padding:0 26px;font-weight:800;font-size:26px;background:#10241a;color:var(--d-ok);opacity:0}
+.bant{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.bant div{background:var(--d-sur);border:2px solid var(--d-line);border-radius:18px;padding:16px 18px}
+.bant small{display:block;font:500 16px var(--mono);letter-spacing:.08em;color:var(--d-m)}
+.bant b{display:block;font:500 30px var(--mono);margin-top:8px}
+.bant .kirmizi b{color:#ff7d86}
+.dsat{display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:center;padding:14px 18px;border-radius:14px;background:#151012;border:2px solid #2a2124;margin-bottom:8px;font-size:22px;opacity:0}
+.dsat b{font-weight:750}
+.dsat .tl{font:500 23px var(--mono)}
+.dsat .gun{font:500 18px var(--mono);color:var(--d-m);min-width:120px;text-align:right}
+.dsat .gun.gec{color:#ff7d86}
+</style>
+</head>
+<body>
+<div id="tuval"></div>
+<script src="../ortak/motor.js"></script>
+<script>
+const DEFTER = [['Ayşe Yılmaz', '1.450 ₺', 'söz geçti · 3 gün', 1], ['Hasan Demir', '2.200 ₺', 'söz geçti · 11 gün', 1], ['Fatma Ş.', '600 ₺', '1 Kasım', 0], ['Kemal A.', '3.900 ₺', '15 Kasım', 0], ['Zeynep T.', '850 ₺', '20 Kasım', 0]];
+FILM({
+  kisiler: { ayse: { sac: 'bob', sacRenk: '#3b2a24', ceket: '#b98a5e', kol: '#a87a50', atki: '#b4233c' } },
+  gorunumler: {
+    vSoz: `<div class="ust"><h2>Teslim</h2><span class="m">#00128</span></div>
+      <div class="mus"><div class="av">AY</div><div><b>Ayşe Yılmaz</b><small>0532 ••• •• 18</small></div></div>
+      <div class="hs"><div><span>Toplam</span><b>5.500 ₺</b></div><div><span>SGK payı</span><b>−150 ₺</b></div><div><span>Alınan</span><b>3.900 ₺</b></div>
+        <div class="kalan"><span>Kalan</span><b>1.450 ₺</b></div></div>
+      <div class="soz"><span>Ödeme sözü</span><div class="alan" id="sozAlan">—</div></div>
+      <div class="dugme" id="teslimEt" style="margin-top:18px">Teslim et</div>
+      <div class="takvim" id="takvim"><b>Kasım 2026</b><div class="g">${['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'].map((g) => `<span style="color:#8a7c80">${g}</span>`).join('')}
+        ${Array.from({ length: 6 }, () => '<span></span>').join('')}${Array.from({ length: 30 }, (_, i) => `<span id="g${i + 1}">${i + 1}</span>`).join('')}</div></div>`,
+    vAra: `<div class="ust"><h2>Bugün aranacaklar</h2><span class="m" style="color:#ff95a6">2 KİŞİ</span></div>
+      <div class="ar" id="a1"><div class="ust1"><b>Ayşe Yılmaz</b><span class="cip br" style="margin-left:auto">Ödeme sözü geçti</span></div>
+        <div class="det">#00128 · söz 1 Kasım'dı · kalan 1.450 ₺</div>
+        <div class="tus"><span>${IK.ok20}Ulaşıldı</span><span>Açmadı</span><span id="wa">${IK.mesaj}Hesap özeti · WhatsApp</span></div>
+        <div class="sonuc" id="waSonuc">${IK.ok}Hesap özeti WhatsApp'tan gönderildi</div></div>
+      <div class="ar" id="a2"><div class="ust1"><b>Mehmet Kaya</b><span class="cip ok" style="margin-left:auto">Gözlüğü hazır</span></div>
+        <div class="det">#00131 · dün hazırlandı</div></div>`,
+    vDefter: `<div class="ust"><h2>Veresiye defteri</h2><span class="m">KASA</span></div>
+      <div class="bant"><div><small>AÇIK BAKİYE</small><b id="topB">9.000 ₺</b></div><div class="kirmizi"><small>SÖZÜ GEÇMİŞ</small><b>3.650 ₺</b></div><div><small>MÜŞTERİ</small><b>5</b></div></div>
+      ${DEFTER.map(([a, t, g, gec]) => `<div class="dsat"><b>${a}</b><span class="tl">${t}</span><span class="gun${gec ? ' gec' : ''}">${g}</span></div>`).join('')}`,
+  },
+  sifirla() {},
+  sahneler: [
+    { ad: 'soz', sure: 3.8, katman: 'dukkan', eb: 'TESLİM · 17:40', h: '"Kalanını <span class="k">ay başında</span> veririm."',
+      ses: 'Gözlüğünü alan müşteri: kalanını ay başında veririm, der.',
+      ciz(u) {
+        dukkan({ t: u, sag: -40, gul: 1, saat: [17, 40], kirp: [1.6] });
+        kisi('ayse', { t: u, x: 720, gozluk: 1, gul: 10, kirp: [0.8] });
+        balon(p(u, 0.5, 0.9) * (1 - p(u, 3.4, 3.7)), 'Kalanını ay başında veririm, olur mu?');
+      } },
+    { ad: 'defter', sure: 3.6, katman: 'dukkan', eb: 'ESKİDEN', h: 'Deftere yazılır, <span class="s">sonra unutulur.</span>', cizgi: [1.4],
+      ses: 'Deftere yazılır. Ay başı gelir, geçer; kimse hatırlamaz.',
+      ciz(u) {
+        dukkan({ t: u + 4, defter: 1, tepsi: 0, gul: -0.3, kas: 0.5, saat: [lerp(17, 23, p(u, 1.2, 3)) | 0, 50], aksam: p(u, 1.2, 2.6), lamba: p(u, 1.6, 2.6), kirp: [2.4] });
+      } },
+    { ad: 'tarih', sure: 4.6, katman: 'ui', zoom: true, gecis: 0.7, eb: 'TESLİMDE', h: 'Kalan tutara <span class="k">söz tarihi</span> yazılır.',
+      ses: 'OptiFlow\'da kalan tutara, ödeme sözü tarihini yazarsınız.',
+      ciz(u) {
+        gorunum('vSoz', 1);
+        const [x1, y1] = uiNokta($('sozAlan')), [x2, y2] = uiNokta($('g1')), [x3, y3] = uiNokta($('teslimEt'));
+        imlecYol(u, [[0.4, 600, 600], [1.0, x1, y1], [1.5, x1, y1], [2.1, x2, y2], [2.6, x2, y2], [3.2, x3, y3]], [1.15, 2.25, 3.35], gor(u, 0.4, 4.2, 0.2));
+        $('sozAlan').className = u > 1.15 ? 'alan on' : 'alan';
+        css($('takvim'), { opacity: u > 1.15 && u < 2.5 ? eo(p(u, 1.15, 1.4)) : 0, transform: `translateY(${((1 - eo(p(u, 1.15, 1.4))) * 20).toFixed(1)}px)` });
+        $('g1').className = u > 2.25 ? 'sec' : '';
+        $('sozAlan').textContent = u > 2.3 ? '1 Kasım 2026' : '—';
+        bas($('teslimEt'), u, 3.35);
+      } },
+    { ad: 'liste', sure: 5.4, katman: 'ui', gecis: 0.5, eb: '4 KASIM · SABAH', h: 'Söz geçince, <span class="k">kendiliğinden</span> listede.',
+      ses: 'Söz günü geçince müşteri, bugün aranacaklar listesine kendiliğinden düşer. Hesap özetini WhatsApp\'tan tek dokunuşla gönderirsiniz.',
+      ciz(u) {
+        gorunum('vAra', 1);
+        $('vAra').querySelector('.m').textContent = '2 KİŞİ';
+        ['a1', 'a2'].forEach((id, i) => { const q = eo(p(u, 0.2 + i * 0.3, 0.6 + i * 0.3)); css($(id), { opacity: q, transform: `translateY(${((1 - q) * 40).toFixed(1)}px)` }); });
+        const [x, y] = uiNokta($('wa'));
+        imlecYol(u, [[1.6, 700, 700], [2.5, x, y]], [2.7], gor(u, 1.6, 3.8, 0.2));
+        bas($('wa'), u, 2.7);
+        $('waSonuc').style.opacity = eo(p(u, 2.9, 3.2));
+      } },
+    { ad: 'toplam', sure: 4.6, katman: 'ui', gecis: 0.5, eb: 'VERESİYE DEFTERİ', h: 'Kim, ne kadar, <span class="k">kaç gün:</span> tek sayfa.',
+      ses: 'Kimde ne kadar alacağınız var, kimin sözü kaç gün geçti; hepsi tek sayfada.',
+      ciz(u) {
+        gorunum('vDefter', 1);
+        document.querySelectorAll('#vDefter .dsat').forEach((d, i) => { const q = eo(p(u, 0.4 + i * 0.22, 0.8 + i * 0.22)); d.style.opacity = q; d.style.transform = `translateX(${((1 - q) * 40).toFixed(1)}px)`; });
+      } },
+    { ad: 'kapandi', sure: 3.4, katman: 'dukkan', eb: 'ERTESİ GÜN', h: 'Müşteri gelir, <span class="k">hesap kapanır.</span>',
+      ses: 'Müşteri gelir, hesap kapanır. Defter açılmadan.',
+      ciz(u) {
+        dukkan({ t: u + 9, sag: lerp(-8, -62, eo(p(u, 0.2, 0.6))), gul: 1.3, saat: [11, 20], kirp: [1.6] });
+        kisi('ayse', { t: u, x: lerp(900, 720, eio(p(u, 0, 0.7))), yuru: u < 0.7, gozluk: 1, gul: 14, kirp: [2.1] });
+        damga(p(u, 1.0, 1.25), { metin: 'HESAP KAPANDI', x: 300, y: 1250 });
+      } },
+    { ad: 'son', sure: 3.6, son: true, ses: 'OptiFlow. Otuz gün ücretsiz deneyin.' },
+  ],
+});
+</script>
+</body>
+</html>

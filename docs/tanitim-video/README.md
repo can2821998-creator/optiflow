@@ -7,9 +7,11 @@ Kodla çizilen, kare kare çekilen dikey (1080×1920, 30 fps) Reels filmleri. He
 |---|---|
 | `musteri-geldi/` | Bir müşteri geldi: kapı → **Medula'dan e-Reçete sorgulama** → **Reçeteyi aktar** → SGK payı düşülmüş teklif → atölye panosu → "gözlüğünüz hazır" mesajı → teslim |
 | `aranacaklar/` | Bugün aranacaklar: sabah "kimi arayacağım?" → liste (hazır, gelmeyen, ödeme sözü, planlı) → Ulaşıldı / Açmadı / WhatsApp → kimse unutulmaz → müşteri gelir |
-| `fis-ozel/` | Fişiniz size özel (4.53–4.55): aynı sokakta aynı fişler → Ayarlar › Çıktı görünümü (renk, koçan, mühür) → müşteri ve atölye yarısı ayrı → sayısız birleşim → yeni mağazaya kendine özgü görünüm → "fişe bakan sizi hatırlar" |
+| `veresiye/` | Kalanını sonra veririm: deftere yazılan alacak unutulur → teslimde kalan tutara ödeme sözü tarihi → söz geçince bugün aranacaklarda + WhatsApp hesap özeti → veresiye defteri tek sayfa → hesap kapanır |
+| `gecmis/` | Geçen sefer hangi cam?: müşteri eski camını soruyor → klasör, eski fiş, defter (30 dk) → telefonun birkaç hanesiyle arama → reçete ve gözlük geçmişi → bir dakikada "aynısından" |
+| `fis-ozel/` | *(yayın dışı: ürüne özel dert)* Fişiniz size özel (4.53–4.55): aynı sokakta aynı fişler → Ayarlar › Çıktı görünümü (renk, koçan, mühür) → müşteri ve atölye yarısı ayrı → sayısız birleşim → yeni mağazaya kendine özgü görünüm → "fişe bakan sizi hatırlar" |
 | `cam-takip/` | Cam geldi mi?: gün sonu eksik camlar → eskiden kâğıda yeniden yaz + fotoğraf → türe ve numaraya göre gruplu liste (müşteri bilgisi yok) → tek tuş WhatsApp'ta depoya → ertesi sabah "Geldi" → sipariş atölyeye geçer |
-| `subeler/` | İki mağaza, tek hesap: ortak müşteri kartı → teslim şubesi seçimi → yolda → "Teslim aldık" → şubeler karşılaştırması → müşteri en yakın şubeden alır |
+| `subeler/` | *(yayın dışı: ürüne özel dert)* İki mağaza, tek hesap: ortak müşteri kartı → teslim şubesi seçimi → yolda → "Teslim aldık" → şubeler karşılaştırması → müşteri en yakın şubeden alır |
 | `tamir/` | Tamir · hizmet: vidası düşen gözlük → işlem + teslim alırken görülen → bırakıldı / ücretsiz → yarım A4 fiş (üst müşteriye, alt gözlüğe) → aranacaklara düşer → teslim |
 
 Ortak parçalar `ortak/` altında: `motor.js` (sahne tablosu, karakterler, dükkân, uygulama paneli, altyazı, kapanış) ve `stil.css`.
@@ -28,6 +30,11 @@ node docs/tanitim-video/cek.mjs docs/tanitim-video/musteri-geldi/film.html cikti
 Önizleme için `film.html` dosyasını tarayıcıda açmak yeterli (gerçek zamanlı döner).
 
 MP4 dosyaları git'e girmez; kaynak burada durur ve film yeniden çekilir.
+
+## İçerik kuralı (kullanıcı, 24.10)
+Filmler **bütün gözlükçülerin ortak derdini** anlatır ve OptiFlow'un onu nasıl çözdüğünü gösterir (defter açmadan teslim,
+kimi arayacağım, cam geldi mi, veresiye, eski reçete). Yalnız bizim uygulamamıza özgü konular (çıktı görünümü, şubeler)
+keşfete düşmüyor; onlar ürün sayfası / tanıtım içindir.
 
 ## Kurallar
 - **Marka:** `docs/kurumsal-kimlik` kurallarına uyulur.

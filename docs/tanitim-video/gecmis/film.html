@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>OptiFlow · Geçen sefer hangi cam? (Reels 1080×1920)</title>
+<link rel="stylesheet" href="../ortak/stil.css">
+<style>
+.ara{display:flex;align-items:center;gap:14px;height:78px;border-radius:16px;border:2px solid #e0435f;background:#120e0f;padding:0 22px;font:500 30px var(--mono);margin-bottom:20px}
+.ara svg{color:var(--d-m);flex:none}
+.ara i{width:3px;height:36px;background:#fff;display:inline-block;margin-left:2px}
+.sonuc{display:flex;align-items:center;gap:18px;background:var(--d-sur);border:2px solid var(--d-line);border-radius:20px;padding:18px 22px;margin-bottom:12px;opacity:0;position:relative;overflow:hidden}
+.sonuc .av{width:60px;height:60px;border-radius:50%;background:var(--d-soft);color:#ff95a6;display:grid;place-items:center;font-weight:800;font-size:23px;flex:none}
+.sonuc b{font-size:27px;font-weight:800;display:block}.sonuc small{font:500 19px var(--mono);color:var(--d-m)}
+.sonuc .say{margin-left:auto;text-align:right;font-weight:700;font-size:19px;color:var(--d-m)}
+.sonuc mark{background:none;color:#ff95a6}
+.mus{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.mus .av{width:58px;height:58px;border-radius:50%;background:var(--d-soft);color:#ff95a6;display:grid;place-items:center;font-weight:800;font-size:22px}
+.mus b{font-size:28px;font-weight:800;display:block}.mus small{font:500 18px var(--mono);color:var(--d-m)}
+.rx{background:var(--d-sur);border:2px solid var(--d-line);border-radius:18px;padding:14px 18px;margin-bottom:10px;opacity:0;position:relative}
+.rx.vurgu{border-color:#e0435f;box-shadow:0 0 0 4px rgba(224,67,95,.18)}
+.rx header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.rx header b{font-weight:800;font-size:22px}
+.rx header small{font:500 17px var(--mono);color:var(--d-m)}
+.rx table{width:100%;border-collapse:collapse;font:500 20px var(--mono)}
+.rx td{padding:4px 8px;text-align:right;color:var(--d-ink)}
+.rx td:first-child{text-align:left;color:var(--d-m);width:70px}
+.rx .gozl{margin-top:8px;font-family:Manrope;font-weight:700;font-size:19px;color:#ffd5dc;display:flex;gap:8px;flex-wrap:wrap}
+.rx .gozl span{padding:6px 10px;border-radius:10px;background:var(--d-soft)}
+.klasor{position:absolute;z-index:8;opacity:0;width:150px;height:110px;border-radius:8px;background:#c49a45;box-shadow:0 10px 20px rgba(27,20,22,.25)}
+.klasor::before{content:"";position:absolute;left:10px;top:-14px;width:60px;height:20px;border-radius:6px 6px 0 0;background:#b3893a}
+.klasor::after{content:"";position:absolute;left:14px;right:14px;top:-6px;height:70px;background:#fffdf6;border-radius:3px;transform:rotate(-3deg);z-index:-1}
+.balon.sol{left:110px !important;transform-origin:10% 110%}
+.balon.sol::after{right:auto;left:70px;border-right-color:transparent;border-left:18px solid #fff}
+.saatsay{position:absolute;left:420px;top:1270px;z-index:9;opacity:0;font:500 54px var(--mono);color:#b4233c;background:#fff;padding:14px 22px;border-radius:18px;box-shadow:0 14px 30px rgba(27,20,22,.2)}
+</style>
+</head>
+<body>
+<div id="tuval"></div>
+<script src="../ortak/motor.js"></script>
+<script>
+const RX = [
+  ['24.10.2026', 'Progresif', 'Dr. Kaya', [['Sağ', '−1,25', '−0,50', '90°', '+2,00'], ['Sol', '−1,50', '—', '—', '+2,00']], ['Varilux 1.6', 'Mavi ışık filtreli', 'Ray-Ban RB5154']],
+  ['18.09.2024', 'Progresif', 'Dr. Kaya', [['Sağ', '−1,00', '−0,50', '90°', '+1,75'], ['Sol', '−1,00', '—', '—', '+1,75']], ['Varilux 1.6', 'Mavi ışık filtreli', 'Persol 3092']],
+  ['03.05.2022', 'Uzak', 'Dr. Ersoy', [['Sağ', '−0,75', '−0,25', '85°', ''], ['Sol', '−0,75', '—', '—', '']], ['Tek odak 1.5', 'Antirefle']],
+];
+const rxHTML = (r, i) => `<div class="rx" id="rx${i}"><header><b>${r[0]} · ${r[1]}</b><small>${r[2]}</small></header>
+  <table>${r[3].map((s) => `<tr>${s.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</table>
+  <div class="gozl">${r[4].map((g) => `<span>${g}</span>`).join('')}</div></div>`;
+FILM({
+  kisiler: { mehmet: { sac: 'kisa', sacRenk: '#6b6466', biyik: true, ceket: '#4f5966', kol: '#434c58', ten: '#dca27c', boyun: '#cf9470', atki: null, canta: false, pantolon: '#2e2a30' } },
+  gorunumler: {
+    vAra: `<div class="ust"><h2>Müşteriler</h2><span class="m">2.418 KAYIT</span></div>
+      <div class="ara">${IK.ara}<span id="yazi"></span><i id="imlecY"></i></div>
+      <div class="sonuc" id="son1"><div class="av">MK</div><div><b>Mehmet Kaya</b><small><mark>0533 4</mark>•• •• 47</small></div><div class="say">3 reçete · 4 gözlük<br>2019'dan beri</div></div>`,
+    vGecmis: `<div class="mus"><div class="av">MK</div><div><b>Mehmet Kaya</b><small>REÇETE GEÇMİŞİ · EN YENİ ÜSTTE</small></div></div>
+      ${RX.slice(1).map((r, i) => rxHTML(r, i + 1)).join('')}`,
+  },
+  ekHTML: `<div class="klasor" id="k1" style="left:120px;top:1000px"></div><div class="klasor" id="k2" style="left:230px;top:1060px"></div><div class="klasor" id="k3" style="left:150px;top:1140px"></div>
+    <div class="saatsay" id="saatsay">00:00</div>`,
+  sifirla() { ['k1', 'k2', 'k3', 'saatsay'].forEach((id) => { $(id).style.opacity = 0; }); $('balon').className = 'balon'; },
+  sahneler: [
+    { ad: 'soru', sure: 3.8, katman: 'dukkan', eb: 'TEZGÂH · 11:15', h: '"Geçen sefer <span class="k">hangi camı</span> almıştım?"',
+      ses: 'Müşteri soruyor: Geçen sefer hangi camı taktırmıştım?',
+      ciz(u) {
+        dukkan({ t: u, saat: [11, 15], gul: 0.6, kirp: [1.8] });
+        kisi('mehmet', { t: u, x: lerp(1000, 720, eio(p(u, 0, 1.0))), yuru: u < 1.0, kirik: 1, gul: 2, kirp: [2.4] });
+        balon(p(u, 1.0, 1.4) * (1 - p(u, 3.4, 3.7)), 'Geçen sefer hangi camı taktırmıştım? Aynısından olsun.');
+      } },
+    { ad: 'klasor', sure: 3.8, katman: 'dukkan', eb: 'ESKİDEN', h: 'Klasörler, eski fişler, <span class="s">defterler…</span>', cizgi: [1.6],
+      ses: 'Klasörler, eski fişler, defterler… Bulmak yarım saat sürer.',
+      ciz(u) {
+        dukkan({ t: u + 4, saat: [11, lerp(16, 46, p(u, 0.5, 3.4)) | 0], gul: -0.8, kas: 1, kirp: [2.0], defter: 1, kagit: 1, tepsi: 0 });
+        kisi('mehmet', { t: u, x: 720, kirik: 1, gul: -3, kirp: [1.2] });
+        ['k1', 'k2', 'k3'].forEach((id, i) => { const q = geri(p(u, 0.2 + i * 0.2, 0.7 + i * 0.2)); gorun($(id), p(u, 0.2 + i * 0.2, 0.35 + i * 0.2)); $(id).style.transform = `rotate(${(i - 1) * 8}deg) scale(${q.toFixed(3)})`; });
+        gorun($('saatsay'), p(u, 0.6, 0.9));
+        const dk = Math.round(lerp(0, 30, eio(p(u, 0.8, 3.3))));
+        $('saatsay').textContent = `${dk} dk`;
+      } },
+    { ad: 'ara', sure: 4.4, katman: 'ui', zoom: true, gecis: 0.7, eb: 'OPTİFLOW', h: 'Telefonun birkaç hanesi, <span class="k">müşteri karşınızda.</span>',
+      ses: 'OptiFlow\'da telefonun birkaç hanesini yazarsınız; müşteri karşınızda.',
+      ciz(u) {
+        gorunum('vAra', 1);
+        const yazi = '0533 4';
+        $('yazi').textContent = yazi.slice(0, Math.round(p(u, 0.5, 1.4) * yazi.length));
+        $('imlecY').style.opacity = Math.sin(u * 8) > 0 ? 1 : 0;
+        const q = eo(p(u, 1.5, 1.9));
+        css($('son1'), { opacity: q, transform: `translateY(${((1 - q) * 30).toFixed(1)}px)` });
+        const [x, y] = uiNokta($('son1'));
+        imlecYol(u, [[1.9, 600, 700], [2.8, x, y]], [3.0], gor(u, 1.9, 4.0, 0.2));
+        bas($('son1'), u, 3.0);
+      } },
+    { ad: 'gecmis', sure: 5.2, katman: 'ui', gecis: 0.5, eb: 'REÇETE GEÇMİŞİ', h: 'Bütün reçeteler, <span class="k">bütün gözlükler.</span>',
+      ses: 'Bütün reçeteleri, taktığı camlar, çerçeveler. Yıllar sonra bile, on saniyede.',
+      ciz(u) {
+        gorunum('vGecmis', 1);
+        [1, 2].forEach((i, k) => { const q = eo(p(u, 0.3 + k * 0.45, 0.8 + k * 0.45)); css($('rx' + i), { opacity: q, transform: `translateY(${((1 - q) * 40).toFixed(1)}px)` }); });
+        $('rx1').className = u > 2.4 ? 'rx vurgu' : 'rx';
+        $('rx1').style.transform += ` scale(${(1 + 0.03 * Math.sin(Math.PI * p(u, 2.4, 2.9))).toFixed(3)})`;
+      } },
+    { ad: 'cevap', sure: 3.8, katman: 'dukkan', eb: 'TEZGÂH · 11:16', h: 'Cevap bir dakikada: <span class="k">aynısından.</span>',
+      ses: 'Cevap bir dakikada hazır. Müşteri güvenle, aynısını ister.',
+      ciz(u) {
+        dukkan({ t: u + 9, saat: [11, 16], gul: 1.3, sag: lerp(-8, -50, eo(p(u, 0.2, 0.6))), kirp: [1.4] });
+        kisi('mehmet', { t: u, x: 720, kirik: 1 - eo(p(u, 2.2, 2.6)), gul: 14, kirp: [1.0], par: u > 2.4 && u < 3.6 ? Math.sin(p(u, 2.4, 3.6) * Math.PI) : 0 });
+        $('balon').className = 'balon sol';
+        balon(p(u, 0.2, 0.6) * (1 - p(u, 2.0, 2.3)), 'Varilux 1.6, mavi ışık filtreli. Aynısını yapıyoruz.');
+      } },
+    { ad: 'son', sure: 3.6, son: true, ses: 'OptiFlow. Otuz gün ücretsiz deneyin.' },
+  ],
+});
+</script>
+</body>
+</html>

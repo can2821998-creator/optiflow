@@ -1,0 +1,30 @@
+[
+ {
+  "id": "soz",
+  "metin": "Gözlüğünü alan müşteri: kalanını ay başında veririm, der."
+ },
+ {
+  "id": "defter",
+  "metin": "Deftere yazılır. Ay başı gelir, geçer; kimse hatırlamaz."
+ },
+ {
+  "id": "tarih",
+  "metin": "OptiFlow'da kalan tutara, ödeme sözü tarihini yazarsınız."
+ },
+ {
+  "id": "liste",
+  "metin": "Söz günü geçince müşteri, bugün aranacaklar listesine kendiliğinden düşer. Hesap özetini WhatsApp'tan tek dokunuşla gönderirsiniz."
+ },
+ {
+  "id": "toplam",
+  "metin": "Kimde ne kadar alacağınız var, kimin sözü kaç gün geçti; hepsi tek sayfada."
+ },
+ {
+  "id": "kapandi",
+  "metin": "Müşteri gelir, hesap kapanır. Defter açılmadan."
+ },
+ {
+  "id": "son",
+  "metin": "OptiFlow. Otuz gün ücretsiz deneyin."
+ }
+]

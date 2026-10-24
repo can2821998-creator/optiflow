@@ -1,6 +1,18 @@
 OPTIFLOW
-Release: 4.51.0 (2026-10-24)
+Release: 4.52.0 (2026-10-24)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.52.0 (E-posta tasarımı türüne göre + 5 yeni otomatik e-posta + yeni e-posta paneli; merkez: eposta_kuyruk.gorunum)
+  - Kullanıcı: "mail tasarımı çok güzel olsun, türüne göre değişsin; kayıt vb. otomatik olsun; paneldeki e-posta ekranı kaymış".
+  - Markalı HTML tasarım: renkli başlık alanı (rozet + büyük başlık), büyük vurgu kutusu (kalan gün vb.), adım listesi,
+    bilgi tablosu, Outlook uyumlu düğme, otomatik imza ve alt bilgi, gelen kutusu önizleme satırı. Tema e-posta türüne
+    göre: kayıt turuncu, hesap hazır yeşil, deneme mavi/turuncu/kırmızı, yönetici bildirimi siyah, duyuru bordo.
+  - Yeni otomatik e-postalar (merkez panel işlemlerinden): deneme uzatıldı, abonelik başladı (plan ücretli),
+    hesap donduruldu, hesap yeniden açıldı, giriş şifresi değişti (şifre e-postada yok). Toplu işlemde kuyruğa girer.
+  - Şablonlara "başlık" alanı; panelden gönderimde görünüm (6 renk), başlık ve düğme (https/mailto).
+  - Merkez panel › E-posta yeniden düzenlendi: sekmeler (Gönder / Otomatik / Kayıt / Ayarlar), her otomatik e-posta
+    için aç-kapa anahtarı, düzenleme + canlı önizleme, kayıtta "Gör". Kayma nedeni (.field span kuralı) giderildi.
+  - tests/eposta: 111 test.
 
 DEĞİŞİKLİK NOTLARI — 4.51.0 (Merkez e-postası: info@optiflow.com.tr'den otomatik + panelden e-posta; merkez DB'ye eposta_kuyruk)
   - Kullanıcı: "kayıtta vs otomatik mail atsın, yönetim panelinden şablon ya da özel mail gönderebileyim, info@optiflow.com.tr'den".

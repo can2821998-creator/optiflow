@@ -114,6 +114,20 @@ function eposta_ayar_kaydet(array $v): array
     return $a;
 }
 
+/** Tek bir otomatik e-postayı açar/kapatır (merkez panel › Otomatik e-postalar). */
+function eposta_otomatik_ayarla(string $sablon, bool $acik): void
+{
+    if (!isset(eposta_sablon_tanimlari()[$sablon])) {
+        throw new DomainException('Bilinmeyen şablon.');
+    }
+    $f = eposta_dizin() . '/ayar.json';
+    $p = is_file($f) ? json_decode((string) file_get_contents($f), true) : [];
+    $p = is_array($p) ? $p : [];
+    $p['otomatik'] = array_merge(eposta_ayar()['otomatik'], [$sablon => $acik]);
+    file_put_contents($f, json_encode($p, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX);
+    @chmod($f, 0640);
+}
+
 function eposta_hazir(?array $a = null): bool
 {
     $a ??= eposta_ayar();
@@ -122,46 +136,82 @@ function eposta_hazir(?array $a = null): bool
 
 /* ---------------- Şablonlar ---------------- */
 
-/** Otomatik e-postalar: anahtar => [ad, ne zaman, alıcı]. */
+/** Otomatik e-postalar: anahtar => [ad, ne zaman, alıcı, grup]. */
 function eposta_sablon_tanimlari(): array
 {
     return [
-        'kayit_alindi'        => ['Başvuru alındı', 'Kayıt formu gönderildi, mağaza beklemede', 'Mağaza'],
-        'hesap_hazir'         => ['Hesap hazır', 'Mağaza aktif oldu (otomatik ya da merkez panelden etkinleştirildi)', 'Mağaza'],
-        'yonetici_yeni_kayit' => ['Yeni kayıt bildirimi', 'Her yeni kayıtta', 'Bildirim adresi (siz)'],
-        'deneme_7'            => ['Deneme bitiyor (7 gün)', 'Deneme bitişinden 7 gün önce', 'Mağaza'],
-        'deneme_1'            => ['Deneme bitiyor (yarın)', 'Deneme bitişinden 1 gün önce', 'Mağaza'],
-        'deneme_bitti'        => ['Deneme sona erdi', 'Deneme bitişinin ertesi günü', 'Mağaza'],
+        'kayit_alindi'        => ['Kaydınız alındı', 'Kayıt formu gönderilince (mağaza onay bekliyorsa)', 'Mağaza', 'Kayıt'],
+        'hesap_hazir'         => ['Hesabınız hazır', 'Kayıtta hesap hemen açılınca ya da merkez panelden etkinleştirilince', 'Mağaza', 'Kayıt'],
+        'yonetici_yeni_kayit' => ['Yeni kayıt bildirimi', 'Her yeni kayıtta', 'Siz', 'Kayıt'],
+        'deneme_7'            => ['Deneme bitiyor: 7 gün', 'Deneme bitişinden 7 gün önce', 'Mağaza', 'Deneme'],
+        'deneme_1'            => ['Deneme bitiyor: yarın', 'Deneme bitişinden 1 gün önce', 'Mağaza', 'Deneme'],
+        'deneme_bitti'        => ['Deneme sona erdi', 'Deneme bitişinin ertesi günü', 'Mağaza', 'Deneme'],
+        'deneme_uzatildi'     => ['Deneme uzatıldı', 'Merkez panelden deneme süresi uzatılınca', 'Mağaza', 'Deneme'],
+        'plan_ucretli'        => ['Abonelik başladı', 'Plan merkez panelden "Ücretli" yapılınca', 'Mağaza', 'Hesap'],
+        'hesap_donduruldu'    => ['Hesap donduruldu', 'Merkez panelden donduruldu', 'Mağaza', 'Hesap'],
+        'hesap_acildi'        => ['Hesap yeniden açıldı', 'Dondurulan hesap yeniden aktif yapılınca', 'Mağaza', 'Hesap'],
+        'sifre_degisti'       => ['Giriş şifresi değişti', 'Merkez panelden mağaza giriş şifresi sıfırlanınca', 'Mağaza', 'Hesap'],
     ];
 }
 
+/** Varsayılan metinler. İmza ve alt bilgi tasarımda kendiliğinden eklenir; metne yazmayın. */
 function eposta_varsayilan_sablonlar(): array
 {
-    $imza = "Kolaylıklar dileriz,\nOptiFlow\n{site} · {telefon}";
     return [
         'kayit_alindi' => [
-            'konu' => 'OptiFlow başvurunuz alındı',
-            'metin' => "Merhaba,\n\n{magaza} için OptiFlow başvurunuzu aldık. Hesabınızı hazırlıyoruz; hazır olduğunda size ayrıca e-posta göndereceğiz.\n\nBaşvurudaki e-posta adresi: {email}\nYönetici kullanıcı adı: {kullanici}\n\nSorunuz olursa bu e-postayı yanıtlamanız yeterli.\n\n$imza",
+            'konu' => 'Kaydınız alındı · OptiFlow',
+            'baslik' => 'Hoş geldiniz, {magaza}!',
+            'metin' => "Merhaba,\n\nOptiFlow'a kaydınızı aldık, aramıza katıldığınız için teşekkür ederiz. Mağazanızın hesabını şu anda hazırlıyoruz; hazır olduğunda giriş bilgilerinizle size hemen yeni bir e-posta göndereceğiz.\n\nBu arada bir sorunuz olursa bu e-postayı yanıtlamanız yeterli.",
         ],
         'hesap_hazir' => [
-            'konu' => 'OptiFlow hesabınız hazır',
-            'metin' => "Merhaba,\n\n{magaza} için OptiFlow hesabınız hazır. Aşağıdaki adresten giriş yapabilirsiniz:\n{giris_adresi}\n\n1. Mağaza girişi: {email} ve kayıtta belirlediğiniz mağaza şifresi\n2. Kullanıcı girişi: {kullanici} ve yönetici şifreniz\n\nDeneme süreniz {deneme_bitis} tarihine kadar sürer; kart bilgisi istenmez.\n\nİlk adımlar ve Medula, SGK, atölye rehberleri: {site}/rehber.php\n\nKurulumda yardım isterseniz bu e-postayı yanıtlayın ya da bizi arayın.\n\n$imza",
+            'konu' => 'Hesabınız hazır, giriş yapabilirsiniz · OptiFlow',
+            'baslik' => 'Hesabınız kullanıma hazır',
+            'metin' => "Merhaba,\n\n{magaza} için OptiFlow hesabınız açıldı. Müşteri kartından reçeteye, siparişten SGK faturasına kadar her şey artık tek ekranda.\n\nDeneme süreniz boyunca bütün özellikler açık; kart bilgisi istemiyoruz. Kurulumda yardım isterseniz bu e-postayı yanıtlayın ya da bizi arayın, birlikte bakalım.",
         ],
         'yonetici_yeni_kayit' => [
             'konu' => 'Yeni kayıt: {magaza}',
-            'metin' => "Yeni mağaza kaydı geldi.\n\nMağaza: {magaza}\nE-posta: {email}\nYönetici: {kullanici}\nDurum: {durum}\nDeneme bitişi: {deneme_bitis}\n\nMerkez panel: {site}/merkez-panel.php?magaza={id}",
+            'baslik' => '{magaza} kayıt oldu',
+            'metin' => 'Yeni bir mağaza kaydı geldi. Ayrıntılar aşağıda.',
         ],
         'deneme_7' => [
-            'konu' => 'OptiFlow deneme sürenizin bitmesine 7 gün kaldı',
-            'metin' => "Merhaba,\n\n{magaza} için OptiFlow deneme süreniz {deneme_bitis} tarihinde bitiyor.\n\nKullanmaya devam etmek isterseniz bu e-postayı yanıtlamanız ya da bizi aramanız yeterli; verileriniz olduğu gibi kalır.\n\nHenüz denemediğiniz bir özellik varsa kısa bir görüşmede birlikte bakabiliriz.\n\n$imza",
+            'konu' => 'Deneme sürenizin bitmesine {kalan_gun} gün kaldı · OptiFlow',
+            'baslik' => 'Deneme sürenizin bitmesine {kalan_gun} gün kaldı',
+            'metin' => "Merhaba,\n\n{magaza} için OptiFlow deneme süreniz {deneme_bitis} tarihinde bitiyor. Kullanmaya devam etmek isterseniz bu e-postayı yanıtlamanız ya da bizi aramanız yeterli; verileriniz olduğu gibi kalır.\n\nHenüz denemediğiniz bir özellik varsa (Medula aktarımı, SGK ay sonu faturası, atölye takibi) kısa bir görüşmede birlikte bakabiliriz.",
         ],
         'deneme_1' => [
-            'konu' => 'OptiFlow deneme süreniz yarın bitiyor',
-            'metin' => "Merhaba,\n\n{magaza} için OptiFlow deneme süreniz yarın ({deneme_bitis}) bitiyor.\n\nDevam etmek için bu e-postayı yanıtlayın ya da bizi arayın; hesabınız ve verileriniz kesintisiz devam eder.\n\n$imza",
+            'konu' => 'Deneme süreniz yarın bitiyor · OptiFlow',
+            'baslik' => 'Deneme süreniz yarın bitiyor',
+            'metin' => "Merhaba,\n\n{magaza} için OptiFlow deneme süreniz yarın ({deneme_bitis}) bitiyor.\n\nDevam etmek için bu e-postayı yanıtlayın ya da bizi arayın; hesabınız ve bütün kayıtlarınız kesintisiz devam eder.",
         ],
         'deneme_bitti' => [
-            'konu' => 'OptiFlow deneme süreniz sona erdi',
-            'metin' => "Merhaba,\n\n{magaza} için OptiFlow deneme süreniz {deneme_bitis} tarihinde sona erdi. Verileriniz silinmedi.\n\nDevam etmek isterseniz bu e-postayı yanıtlamanız yeterli; hesabınızı hemen yeniden açarız.\n\n$imza",
+            'konu' => 'Deneme süreniz sona erdi · OptiFlow',
+            'baslik' => 'Deneme süreniz sona erdi',
+            'metin' => "Merhaba,\n\n{magaza} için OptiFlow deneme süreniz {deneme_bitis} tarihinde sona erdi. Merak etmeyin: müşterileriniz, siparişleriniz ve bütün kayıtlarınız silinmedi.\n\nDevam etmek isterseniz bu e-postayı yanıtlamanız yeterli; hesabınızı hemen yeniden açarız.",
+        ],
+        'deneme_uzatildi' => [
+            'konu' => 'Deneme süreniz uzatıldı · OptiFlow',
+            'baslik' => 'Deneme süreniz uzatıldı',
+            'metin' => "Merhaba,\n\n{magaza} için OptiFlow deneme sürenizi uzattık. Yeni bitiş tarihi {deneme_bitis}; o güne kadar bütün özellikler açık.\n\nİyi kullanımlar!",
+        ],
+        'plan_ucretli' => [
+            'konu' => 'Aboneliğiniz başladı, teşekkürler · OptiFlow',
+            'baslik' => 'Teşekkürler, {magaza}!',
+            'metin' => "Merhaba,\n\nOptiFlow aboneliğiniz başladı; bizi tercih ettiğiniz için teşekkür ederiz. Hesabınız ve bütün kayıtlarınız olduğu gibi devam ediyor.\n\nYeni özellikler ve güncellemeler kendiliğinden gelir. Bir isteğiniz ya da sorunuz olursa bu e-postayı yanıtlamanız yeterli.",
+        ],
+        'hesap_donduruldu' => [
+            'konu' => 'Hesabınız donduruldu · OptiFlow',
+            'baslik' => 'Hesabınız donduruldu',
+            'metin' => "Merhaba,\n\n{magaza} için OptiFlow hesabınız donduruldu; şu anda giriş yapılamıyor. Kayıtlarınız silinmedi, hesap yeniden açıldığında her şey kaldığı yerden devam eder.\n\nBunun bir hata olduğunu düşünüyorsanız ya da hesabı yeniden açmak istiyorsanız bu e-postayı yanıtlayın ya da bizi arayın.",
+        ],
+        'hesap_acildi' => [
+            'konu' => 'Hesabınız yeniden açıldı · OptiFlow',
+            'baslik' => 'Tekrar hoş geldiniz!',
+            'metin' => "Merhaba,\n\n{magaza} için OptiFlow hesabınız yeniden açıldı. Bütün kayıtlarınız kaldığı yerde; hemen giriş yapabilirsiniz.",
+        ],
+        'sifre_degisti' => [
+            'konu' => 'Mağaza giriş şifreniz değiştirildi · OptiFlow',
+            'baslik' => 'Giriş şifreniz değiştirildi',
+            'metin' => "Merhaba,\n\n{magaza} için OptiFlow mağaza giriş şifresi {tarih} tarihinde değiştirildi. Yeni şifre güvenliğiniz için bu e-postada yer almaz.\n\nBu değişikliği siz istemediyseniz hemen bizi arayın.",
         ],
     ];
 }
@@ -174,17 +224,14 @@ function eposta_sablonlar(): array
     $out = [];
     foreach (eposta_varsayilan_sablonlar() as $k => $s) {
         $o = $ozel[$k] ?? [];
-        $out[$k] = [
-            'konu' => trim((string) ($o['konu'] ?? '')) !== '' ? (string) $o['konu'] : $s['konu'],
-            'metin' => trim((string) ($o['metin'] ?? '')) !== '' ? (string) $o['metin'] : $s['metin'],
-            'ozel' => isset($ozel[$k]),
-        ];
+        $sec = static fn(string $alan) => trim((string) ($o[$alan] ?? '')) !== '' ? (string) $o[$alan] : $s[$alan];
+        $out[$k] = ['konu' => $sec('konu'), 'baslik' => $sec('baslik'), 'metin' => $sec('metin'), 'ozel' => isset($ozel[$k])];
     }
     return $out;
 }
 
 /** Şablonu kaydeder; boş konu/metin ya da $varsayilan=true → varsayılana döner. */
-function eposta_sablon_kaydet(string $anahtar, string $konu, string $metin, bool $varsayilan = false): void
+function eposta_sablon_kaydet(string $anahtar, string $konu, string $metin, bool $varsayilan = false, string $baslik = ''): void
 {
     if (!isset(eposta_sablon_tanimlari()[$anahtar])) {
         throw new DomainException('Bilinmeyen şablon.');
@@ -195,10 +242,10 @@ function eposta_sablon_kaydet(string $anahtar, string $konu, string $metin, bool
     if ($varsayilan || (trim($konu) === '' && trim($metin) === '')) {
         unset($ozel[$anahtar]);
     } else {
-        if (mb_strlen($konu) > 200 || mb_strlen($metin) > 10000) {
-            throw new DomainException('Konu ya da metin çok uzun.');
+        if (mb_strlen($konu) > 200 || mb_strlen($baslik) > 200 || mb_strlen($metin) > 10000) {
+            throw new DomainException('Konu, başlık ya da metin çok uzun.');
         }
-        $ozel[$anahtar] = ['konu' => str_replace(["\r", "\n"], ' ', $konu), 'metin' => str_replace("\r\n", "\n", $metin)];
+        $ozel[$anahtar] = ['konu' => str_replace(["\r", "\n"], ' ', $konu), 'baslik' => str_replace(["\r", "\n"], ' ', $baslik), 'metin' => str_replace("\r\n", "\n", $metin)];
     }
     file_put_contents($f, json_encode($ozel, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), LOCK_EX);
 }
@@ -213,18 +260,22 @@ function eposta_degiskenler(?array $m, ?array $a = null): array
     }
     $bitis = (string) ($m['deneme_bitis'] ?? '');
     $kalan = $bitis !== '' ? (int) round((strtotime($bitis) - strtotime(date('Y-m-d'))) / 86400) : 0;
-    $durumlar = ['aktif' => 'Aktif', 'beklemede' => 'Beklemede (elle etkinleştirilecek)', 'dondu' => 'Donduruldu'];
+    $durumlar = ['aktif' => 'Aktif', 'beklemede' => 'Onay bekliyor', 'dondu' => 'Donduruldu'];
+    $mTel = (string) ($m['telefon'] ?? '');
     return [
-        'magaza'       => (string) ($m['isim'] ?? ''),
-        'email'        => (string) ($m['email'] ?? ''),
-        'kullanici'    => (string) ($m['admin_kullanici'] ?? ''),
-        'deneme_bitis' => $bitis !== '' ? date('d.m.Y', (int) strtotime($bitis)) : '',
-        'kalan_gun'    => (string) max(0, $kalan),
-        'durum'        => $durumlar[(string) ($m['durum'] ?? '')] ?? (string) ($m['durum'] ?? ''),
-        'id'           => (string) ($m['id'] ?? ''),
-        'giris_adresi' => $a['site_url'] . '/magaza-giris.php',
-        'site'         => $a['site_url'],
-        'telefon'      => $tel,
+        'magaza'         => (string) ($m['isim'] ?? ''),
+        'email'          => (string) ($m['email'] ?? ''),
+        'kullanici'      => (string) ($m['admin_kullanici'] ?? ''),
+        'magaza_telefon' => $mTel !== '' && function_exists('phone_display') ? phone_display($mTel) : $mTel,
+        'deneme_bitis'   => $bitis !== '' ? date('d.m.Y', (int) strtotime($bitis)) : '',
+        'kalan_gun'      => (string) max(0, $kalan),
+        'durum'          => $durumlar[(string) ($m['durum'] ?? '')] ?? (string) ($m['durum'] ?? ''),
+        'id'             => (string) ($m['id'] ?? ''),
+        'giris_adresi'   => $a['site_url'] . '/magaza-giris.php',
+        'site'           => $a['site_url'],
+        'telefon'        => $tel,
+        'iletisim'       => $a['yanit_adres'] ?: $a['gonderen_adres'],
+        'tarih'          => date('d.m.Y H:i'),
     ];
 }
 
@@ -233,30 +284,233 @@ function eposta_doldur(string $metin, array $d): string
     return preg_replace_callback('/\{([a-z_]+)\}/', static fn($x) => array_key_exists($x[1], $d) ? (string) $d[$x[1]] : $x[0], $metin) ?? $metin;
 }
 
+/* ---------------- Görünüm (e-posta türüne göre tasarım) ---------------- */
+
+/** Renk temaları: [ana, koyu, açık zemin, adı]. */
+function eposta_temalar(): array
+{
+    return [
+        'bordo'   => ['#b4233c', '#6e1324', '#fbe8ec', 'Duyuru (bordo)'],
+        'yesil'   => ['#1f8a57', '#0f5233', '#e3f3ea', 'Müjde (yeşil)'],
+        'mavi'    => ['#2c5aa0', '#17345f', '#e6eefb', 'Bilgi (mavi)'],
+        'amber'   => ['#c47f17', '#7a4c0c', '#fcf0dc', 'Hatırlatma (turuncu)'],
+        'kirmizi' => ['#b3312a', '#6b1712', '#fde9e8', 'Önemli (kırmızı)'],
+        'koyu'    => ['#3a3236', '#141012', '#f3efef', 'Sade (siyah)'],
+    ];
+}
+
+/**
+ * Otomatik e-postanın tasarım parçaları (doldurulmamış; {değişken}ler eposta_gorunum_doldur ile dolar).
+ * tema, rozet, alt (başlık altı), vurgu [büyük, küçük], adimlar [[başlık, açıklama, tamam]], bilgiler [[etiket, değer]], buton [yazı, adres].
+ */
+function eposta_sablon_gorunum(string $sablon): array
+{
+    $giris = ['Mağazama giriş yap', '{giris_adresi}'];
+    $yaz = ['Bize yazın', 'mailto:{iletisim}?subject=OptiFlow%20-%20{id}'];
+    return match ($sablon) {
+        'kayit_alindi' => ['tema' => 'amber', 'rozet' => 'Kaydınız alındı', 'alt' => 'Mağazanızın hesabını hazırlıyoruz.',
+            'adimlar' => [['Kayıt alındı', 'Bilgileriniz bize ulaştı.', true], ['Hesap hazırlanıyor', 'Mağazanıza özel veritabanını kuruyoruz.', false], ['Giriş bilgileri', 'Hazır olunca e-postayla haber veriyoruz.', false]],
+            'bilgiler' => [['Mağaza', '{magaza}'], ['E-posta', '{email}'], ['Yönetici kullanıcı', '{kullanici}']]],
+        'hesap_hazir' => ['tema' => 'yesil', 'rozet' => 'Hesabınız açıldı', 'alt' => 'İki adımda giriş yapın, hemen başlayın.',
+            'adimlar' => [['Mağaza girişi', 'E-posta: {email} ve kayıtta belirlediğiniz mağaza şifresi', false], ['Kullanıcı girişi', 'Kullanıcı adı: {kullanici} ve yönetici şifreniz', false], ['İlk adımlar', 'Medula, SGK ve atölye rehberleri: {site}/rehber.php', false]],
+            'bilgiler' => [['Deneme bitişi', '{deneme_bitis}']], 'buton' => $giris],
+        'yonetici_yeni_kayit' => ['tema' => 'koyu', 'rozet' => 'Merkez bildirimi', 'alt' => '{tarih}',
+            'bilgiler' => [['Mağaza', '{magaza}'], ['E-posta', '{email}'], ['Telefon', '{magaza_telefon}'], ['Yönetici', '{kullanici}'], ['Durum', '{durum}'], ['Deneme bitişi', '{deneme_bitis}']],
+            'buton' => ['Merkez panelde aç', '{site}/merkez-panel.php?magaza={id}']],
+        'deneme_7' => ['tema' => 'mavi', 'rozet' => 'Deneme süresi', 'vurgu' => ['{kalan_gun} gün', 'Deneme bitişi: {deneme_bitis}'], 'buton' => $yaz],
+        'deneme_1' => ['tema' => 'amber', 'rozet' => 'Son gün yaklaştı', 'vurgu' => ['Yarın', 'Deneme bitişi: {deneme_bitis}'], 'buton' => $yaz],
+        'deneme_bitti' => ['tema' => 'kirmizi', 'rozet' => 'Deneme bitti', 'vurgu' => ['Verileriniz güvende', 'Hiçbir kayıt silinmedi'], 'buton' => ['Hesabımı yeniden açın', 'mailto:{iletisim}?subject=OptiFlow%20devam%20-%20{id}']],
+        'deneme_uzatildi' => ['tema' => 'mavi', 'rozet' => 'Güzel haber', 'vurgu' => ['{deneme_bitis}', 'Yeni deneme bitiş tarihi'], 'buton' => $giris],
+        'plan_ucretli' => ['tema' => 'bordo', 'rozet' => 'Aboneliğiniz başladı', 'alt' => 'OptiFlow ailesine hoş geldiniz.', 'buton' => $giris],
+        'hesap_donduruldu' => ['tema' => 'kirmizi', 'rozet' => 'Hesap durumu', 'alt' => 'Kayıtlarınız silinmedi.', 'buton' => $yaz],
+        'hesap_acildi' => ['tema' => 'yesil', 'rozet' => 'Hesabınız açık', 'alt' => 'Her şey kaldığı yerde.', 'buton' => $giris],
+        'sifre_degisti' => ['tema' => 'koyu', 'rozet' => 'Güvenlik bildirimi', 'bilgiler' => [['Mağaza', '{magaza}'], ['Değişiklik zamanı', '{tarih}']]],
+        default => [],
+    };
+}
+
+/** Görünümdeki bütün metinlere değişkenleri yerleştirir; boş kalan bilgi satırlarını atar. */
+function eposta_gorunum_doldur(array $g, array $d): array
+{
+    $dol = static fn($x) => is_string($x) ? eposta_doldur($x, $d) : $x;
+    foreach (['rozet', 'baslik', 'alt'] as $k) {
+        if (isset($g[$k])) {
+            $g[$k] = $dol($g[$k]);
+        }
+    }
+    foreach (['vurgu', 'buton'] as $k) {
+        if (isset($g[$k])) {
+            $g[$k] = array_map($dol, $g[$k]);
+        }
+    }
+    if (isset($g['adimlar'])) {
+        $g['adimlar'] = array_map(static fn($s) => [$dol($s[0]), $dol($s[1]), !empty($s[2])], $g['adimlar']);
+    }
+    if (isset($g['bilgiler'])) {
+        $g['bilgiler'] = array_values(array_filter(array_map(static fn($s) => [$dol($s[0]), $dol($s[1])], $g['bilgiler']), static fn($s) => trim($s[1]) !== ''));
+    }
+    return $g;
+}
+
+/** Düz metin sürümü (HTML gösteremeyen programlar ve önizleme satırı için). */
+function eposta_duz(string $metin, array $g = [], ?array $a = null): string
+{
+    $a ??= eposta_ayar();
+    $t = trim(str_replace("\r\n", "\n", $metin));
+    if (!empty($g['adimlar'])) {
+        $t .= "\n";
+        foreach ($g['adimlar'] as $i => $s) {
+            $t .= "\n" . ($i + 1) . '. ' . $s[0] . ($s[1] !== '' ? ': ' . $s[1] : '');
+        }
+    }
+    if (!empty($g['bilgiler'])) {
+        $t .= "\n";
+        foreach ($g['bilgiler'] as $s) {
+            $t .= "\n" . $s[0] . ': ' . $s[1];
+        }
+    }
+    if (!empty($g['buton'][1]) && !str_contains($t, (string) $g['buton'][1])) {
+        $t .= "\n\n" . $g['buton'][0] . ': ' . preg_replace('/^mailto:([^?]+).*$/', '$1', (string) $g['buton'][1]);
+    }
+    if (($g['tur'] ?? '') !== 'yonetici') {
+        $tel = function_exists('optiflow_pazarlama') ? (string) (optiflow_pazarlama()['telefon'] ?? '') : '';
+        $t .= "\n\nKolaylıklar dileriz,\nOptiFlow ekibi\n" . preg_replace('#^https?://#', '', $a['site_url']) . ($tel !== '' ? ' · ' . $tel : '');
+    }
+    return $t;
+}
+
 /* ---------------- Gövde (düz metin → markalı HTML) ---------------- */
 
-function eposta_html(string $metin, string $retUrl = '', ?array $a = null): string
+function eposta_html(string $metin, string $retUrl = '', ?array $a = null, array $g = []): string
 {
     $a ??= eposta_ayar();
     $h = static fn(string $s): string => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
-    $paragraflar = preg_split("/\n{2,}/", trim(str_replace("\r\n", "\n", $metin))) ?: [];
+    $temalar = eposta_temalar();
+    [$ana, $koyu, $acik] = $temalar[$g['tema'] ?? ''] ?? $temalar[($g['tur'] ?? '') === 'duyuru' ? 'bordo' : 'koyu'];
+    $font = "font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+    $site = preg_replace('#^https?://#', '', $a['site_url']);
+    $tel = function_exists('optiflow_pazarlama') ? (string) (optiflow_pazarlama()['telefon'] ?? '') : '';
+    $butonUrl = (string) ($g['buton'][1] ?? '');
+
+    // Metin paragrafları (bağlantılar tıklanır; düğmeyle aynı tek başına bağlantı paragrafı atılır)
     $govde = '';
-    foreach ($paragraflar as $p) {
+    foreach (preg_split("/\n{2,}/", trim(str_replace("\r\n", "\n", $metin))) ?: [] as $p) {
+        if ($butonUrl !== '' && trim($p) === $butonUrl) {
+            continue;
+        }
         $p = $h($p);
-        $p = preg_replace('#(https?://[^\s<]+)#', '<a href="$1" style="color:#8f1a2e">$1</a>', $p) ?? $p;
-        $govde .= '<p style="margin:0 0 14px;line-height:1.6">' . nl2br($p, false) . '</p>';
+        $p = preg_replace('#(https?://[^\s<]+)#', '<a href="$1" style="color:' . $ana . ';font-weight:600">$1</a>', $p) ?? $p;
+        $govde .= '<p style="margin:0 0 16px;font-size:15.5px;line-height:1.65;color:#2b2326">' . nl2br($p, false) . '</p>';
     }
-    $alt = $h('OptiFlow · ' . preg_replace('#^https?://#', '', $a['site_url']));
-    $ret = $retUrl !== '' ? '<br><a href="' . $h($retUrl) . '" style="color:#776b6e">Bu tür e-postaları almak istemiyorum</a>' : '';
-    return '<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
-        . '<body style="margin:0;background:#f5f3f3;font-family:Arial,Helvetica,sans-serif;color:#1b1416">'
-        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f3f3"><tr><td align="center" style="padding:24px 12px">'
-        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e8e1e2">'
-        . '<tr><td style="background:#141012;padding:18px 26px;color:#ffffff;font-size:20px;font-weight:bold;letter-spacing:-.3px">Opti<span style="color:#ff6b81">Flow</span></td></tr>'
-        . '<tr><td style="height:4px;background:#b4233c;font-size:0;line-height:0">&nbsp;</td></tr>'
-        . '<tr><td style="padding:26px;font-size:15px">' . $govde . '</td></tr>'
-        . '<tr><td style="padding:14px 26px 22px;font-size:12px;color:#776b6e;border-top:1px solid #e8e1e2">' . $alt . $ret . '</td></tr>'
-        . '</table></td></tr></table></body></html>';
+
+    // Önizleme satırı (gelen kutusunda konunun yanında görünen metin)
+    $ozet = mb_substr(trim(preg_replace('/\s+/', ' ', preg_replace('/^Merhaba,?\s*/u', '', trim($metin)) ?? '') ?? ''), 0, 140);
+    $html = '<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+        . '<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>' . $h((string) ($g['baslik'] ?? 'OptiFlow')) . '</title></head>'
+        . '<body style="margin:0;padding:0;background:#efeaeb;-webkit-text-size-adjust:100%">'
+        . '<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#efeaeb">' . $h($ozet) . str_repeat('&#8199;&#65279;&#847; ', 30) . '</div>'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#efeaeb"><tr><td align="center" style="padding:28px 12px 36px">'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px">';
+
+    // Üst şerit: logo
+    $html .= '<tr><td style="padding:0 6px 14px;' . $font . '"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
+        . '<td style="font-size:22px;font-weight:800;letter-spacing:-.4px;color:#141012;' . $font . '">'
+        . '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' . $ana . ';margin-right:8px;vertical-align:middle"></span>Opti<span style="color:#b4233c">Flow</span></td>'
+        . '<td align="right" style="font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#8a7d80;' . $font . '">Optik mağaza yönetimi</td>'
+        . '</tr></table></td></tr>';
+
+    // Kart
+    $html .= '<tr><td style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 18px 40px -28px rgba(60,14,28,.45)">'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">';
+
+    // Kahraman alanı: türüne göre renk
+    if (!empty($g['baslik']) || !empty($g['rozet'])) {
+        $html .= '<tr><td style="background-color:' . $koyu . ';background-image:linear-gradient(135deg,' . $ana . ' 0%,' . $koyu . ' 100%);padding:34px 34px 30px;border-radius:20px 20px 0 0;' . $font . '">';
+        if (!empty($g['rozet'])) {
+            $html .= '<span style="display:inline-block;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);color:#ffffff;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase">' . $h((string) $g['rozet']) . '</span>';
+        }
+        if (!empty($g['baslik'])) {
+            $html .= '<h1 style="margin:16px 0 0;font-size:28px;line-height:1.22;font-weight:800;letter-spacing:-.5px;color:#ffffff;' . $font . '">' . $h((string) $g['baslik']) . '</h1>';
+        }
+        if (!empty($g['alt'])) {
+            $html .= '<p style="margin:10px 0 0;font-size:15px;line-height:1.5;color:rgba(255,255,255,.82)">' . $h((string) $g['alt']) . '</p>';
+        }
+        $html .= '</td></tr>';
+    } else {
+        $html .= '<tr><td style="height:6px;background:' . $ana . ';border-radius:20px 20px 0 0;font-size:0;line-height:0">&nbsp;</td></tr>';
+    }
+
+    $html .= '<tr><td style="padding:30px 34px 8px;' . $font . '">';
+
+    // Büyük vurgu kutusu (deneme günü vb.)
+    if (!empty($g['vurgu'][0])) {
+        $html .= '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px"><tr><td align="center" style="background:' . $acik . ';border-radius:16px;padding:22px 16px;' . $font . '">'
+            . '<div style="font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-1px;color:' . $koyu . '">' . $h((string) $g['vurgu'][0]) . '</div>'
+            . (!empty($g['vurgu'][1]) ? '<div style="margin-top:6px;font-size:13px;font-weight:700;color:' . $ana . ';letter-spacing:.3px">' . $h((string) $g['vurgu'][1]) . '</div>' : '')
+            . '</td></tr></table>';
+    }
+
+    $html .= $govde;
+
+    // Adımlar (numaralı ya da tamamlandı işaretli)
+    if (!empty($g['adimlar'])) {
+        $html .= '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 18px">';
+        foreach ($g['adimlar'] as $i => $s) {
+            $tamam = !empty($s[2]);
+            $daire = $tamam ? 'background:' . $ana . ';color:#ffffff' : 'background:' . $acik . ';color:' . $koyu;
+            $cizgi = $i < count($g['adimlar']) - 1 ? 'border-left:2px solid ' . $acik . ';' : '';
+            $aciklama = preg_replace('#(https?://[^\s<]+)#', '<a href="$1" style="color:' . $ana . ';font-weight:600">$1</a>', $h((string) $s[1])) ?? '';
+            $html .= '<tr><td width="34" valign="top" style="padding:0">'
+                . '<div style="width:30px;height:30px;line-height:30px;border-radius:50%;text-align:center;font-size:13px;font-weight:800;' . $daire . ';' . $font . '">' . ($tamam ? '&#10003;' : ($i + 1)) . '</div>'
+                . ($cizgi !== '' ? '<div style="margin:2px 0 0 14px;height:20px;' . $cizgi . '"></div>' : '')
+                . '</td><td valign="top" style="padding:4px 0 12px 12px;' . $font . '">'
+                . '<div style="font-size:15px;font-weight:800;color:#1b1416">' . $h((string) $s[0]) . '</div>'
+                . ($s[1] !== '' ? '<div style="font-size:13.5px;line-height:1.5;color:#6b5f62;margin-top:2px">' . $aciklama . '</div>' : '')
+                . '</td></tr>';
+        }
+        $html .= '</table>';
+    }
+
+    // Bilgi tablosu
+    if (!empty($g['bilgiler'])) {
+        $html .= '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 22px;background:#faf7f7;border:1px solid #eee5e6;border-radius:14px">';
+        $son = count($g['bilgiler']) - 1;
+        foreach ($g['bilgiler'] as $i => $s) {
+            $alt = $i < $son ? 'border-bottom:1px solid #eee5e6;' : '';
+            $html .= '<tr><td style="padding:12px 16px;' . $alt . 'font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#8a7d80;' . $font . '" width="40%">' . $h((string) $s[0]) . '</td>'
+                . '<td style="padding:12px 16px;' . $alt . 'font-size:14.5px;font-weight:700;color:#1b1416;word-break:break-word;' . $font . '">' . $h((string) $s[1]) . '</td></tr>';
+        }
+        $html .= '</table>';
+    }
+
+    // Düğme (Outlook dahil çalışan tablo düğmesi)
+    if ($butonUrl !== '') {
+        $html .= '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 26px"><tr>'
+            . '<td align="center" bgcolor="' . $ana . '" style="border-radius:12px;background:' . $ana . ';background-image:linear-gradient(135deg,' . $ana . ',' . $koyu . ');box-shadow:0 10px 22px -12px ' . $ana . '">'
+            . '<a href="' . $h($butonUrl) . '" style="display:inline-block;padding:15px 28px;font-size:15px;font-weight:800;color:#ffffff;text-decoration:none;border-radius:12px;' . $font . '">' . $h((string) $g['buton'][0]) . ' &rarr;</a>'
+            . '</td></tr></table>';
+    }
+
+    // İmza
+    if (($g['tur'] ?? '') !== 'yonetici') {
+        $html .= '<p style="margin:4px 0 26px;font-size:15px;line-height:1.6;color:#2b2326">Kolaylıklar dileriz,<br><b style="color:#1b1416">OptiFlow ekibi</b></p>';
+    }
+    $html .= '</td></tr></table></td></tr>';
+
+    // Alt bilgi
+    $iletisim = $h($a['yanit_adres'] ?: $a['gonderen_adres']);
+    $html .= '<tr><td align="center" style="padding:22px 20px 0;font-size:12.5px;line-height:1.7;color:#8a7d80;' . $font . '">'
+        . '<b style="color:#4a3f42">OptiFlow</b> · Optik mağazaları için müşteri, reçete, sipariş ve SGK takibi<br>'
+        . '<a href="' . $h($a['site_url']) . '" style="color:#8a7d80;text-decoration:underline">' . $h($site) . '</a>'
+        . ($tel !== '' ? ' · <a href="tel:' . $h(preg_replace('/[^\d+]/', '', $tel) ?? '') . '" style="color:#8a7d80;text-decoration:none">' . $h($tel) . '</a>' : '')
+        . ($iletisim !== '' ? ' · <a href="mailto:' . $iletisim . '" style="color:#8a7d80;text-decoration:none">' . $iletisim . '</a>' : '');
+    if ($retUrl !== '') {
+        $html .= '<br><span style="font-size:11.5px">Bu e-postayı OptiFlow kullanıcısı olduğunuz için aldınız. <a href="' . $h($retUrl) . '" style="color:#8a7d80;text-decoration:underline">Duyuru e-postalarını almak istemiyorum</a></span>';
+    } elseif (($g['tur'] ?? '') !== 'yonetici') {
+        $html .= '<br><span style="font-size:11.5px">Bu e-posta OptiFlow hesabınızla ilgili olduğu için gönderildi.</span>';
+    }
+    $html .= '</td></tr></table></td></tr></table></body></html>';
+    return $html;
 }
 
 /* ---------------- MIME iletisi ---------------- */
@@ -373,7 +627,8 @@ function eposta_smtp(array $a, string $kime, string $ileti): void
 /* ---------------- Kuyruk ---------------- */
 
 /**
- * Kuyruğa ekler. $e: kime, konu, metin, tur (islem|duyuru|yonetici), sablon, magaza_id, anahtar (tekrarı önler).
+ * Kuyruğa ekler. $e: kime, konu, metin, tur (islem|duyuru|yonetici), sablon, magaza_id, anahtar (tekrarı önler),
+ * gorunum (tasarım: tema, rozet, baslik, alt, vurgu, adimlar, bilgiler, buton — doldurulmuş).
  * Döner: kuyruk kimliği; aynı anahtarla daha önce eklenmişse 0.
  */
 function eposta_kuyruga(array $e): int
@@ -393,9 +648,10 @@ function eposta_kuyruga(array $e): int
     }
     $tur = in_array($e['tur'] ?? 'islem', ['islem', 'duyuru', 'yonetici'], true) ? (string) ($e['tur'] ?? 'islem') : 'islem';
     merkez_q(
-        'INSERT INTO eposta_kuyruk (magaza_id, kime, konu, metin, tur, sablon, anahtar, durum, deneme, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO eposta_kuyruk (magaza_id, kime, konu, metin, tur, sablon, anahtar, durum, deneme, created_at, gorunum) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [isset($e['magaza_id']) ? (int) $e['magaza_id'] : null, $kime, mb_substr($konu, 0, 200), $metin, $tur, (string) ($e['sablon'] ?? 'serbest'),
-         $anahtar !== '' ? $anahtar : null, 'bekliyor', 0, date('Y-m-d H:i:s')]
+         $anahtar !== '' ? $anahtar : null, 'bekliyor', 0, date('Y-m-d H:i:s'),
+         !empty($e['gorunum']) && is_array($e['gorunum']) ? json_encode($e['gorunum'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null]
     );
     return (int) merkez_scalar('SELECT MAX(id) FROM eposta_kuyruk WHERE kime = ?', [$kime]);
 }
@@ -433,7 +689,10 @@ function eposta_satir_gonder(array $r, ?array $a = null): bool
         $ek[] = 'List-Unsubscribe-Post: List-Unsubscribe=One-Click';
     }
     try {
-        $ileti = eposta_ileti($a, (string) $r['kime'], (string) $r['konu'], (string) $r['metin'], eposta_html((string) $r['metin'], $retUrl, $a), $ek);
+        $g = json_decode((string) ($r['gorunum'] ?? ''), true);
+        $g = is_array($g) ? $g : [];
+        $g['tur'] = (string) $r['tur'];
+        $ileti = eposta_ileti($a, (string) $r['kime'], (string) $r['konu'], eposta_duz((string) $r['metin'], $g, $a), eposta_html((string) $r['metin'], $retUrl, $a, $g), $ek);
         eposta_tasi($a, (string) $r['kime'], $ileti);
         merkez_q('UPDATE eposta_kuyruk SET durum = ?, deneme = ?, hata = NULL, gonderildi_at = ?, guncelleme = ? WHERE id = ?',
             ['gonderildi', (int) $r['deneme'] + 1, $simdi, $simdi, $r['id']]);
@@ -469,7 +728,7 @@ function eposta_hemen(array $e): int
 {
     try {
         $id = eposta_kuyruga($e);
-        if ($id && eposta_hazir()) {
+        if ($id && eposta_hazir() && empty($GLOBALS['eposta_ertele'])) {
             $r = merkez_row('SELECT * FROM eposta_kuyruk WHERE id = ?', [$id]);
             if ($r) {
                 eposta_satir_gonder($r);
@@ -501,6 +760,7 @@ function eposta_sablonla(string $sablon, array $m, string $anahtar = ''): int
     return eposta_hemen([
         'kime' => $kime, 'konu' => eposta_doldur($s['konu'], $d), 'metin' => eposta_doldur($s['metin'], $d),
         'tur' => $yonetici ? 'yonetici' : 'islem', 'sablon' => $sablon, 'magaza_id' => $m['id'] ?? null, 'anahtar' => $anahtar,
+        'gorunum' => eposta_gorunum_doldur(eposta_sablon_gorunum($sablon) + ['baslik' => $s['baslik']], $d),
     ]);
 }
 
@@ -534,6 +794,52 @@ function eposta_olay_etkinlestirildi(int $magazaId): void
     } catch (Throwable $e) {
         if (function_exists('app_log')) {
             app_log('eposta_olay_etkinlestirildi: ' . $e->getMessage());
+        }
+    }
+}
+
+/**
+ * Merkez panelde mağaza değişince (4.51.1): önceki ve sonraki satıra bakıp uygun e-postayı seçer.
+ * dondu → hesap_donduruldu, dondu→aktif → hesap_acildi, plan ücretli olunca → plan_ucretli,
+ * deneme bitişi ileri alınınca (deneme planında) → deneme_uzatildi. Her olay o güne bir kez.
+ */
+function eposta_olay_magaza_degisti(?array $once, int $magazaId): void
+{
+    try {
+        $m = merkez_row('SELECT * FROM magazalar WHERE id = ?', [$magazaId]);
+        if (!$m || !$once) {
+            return;
+        }
+        $gun = date('Y-m-d');
+        if ($once['durum'] !== 'dondu' && $m['durum'] === 'dondu') {
+            eposta_sablonla('hesap_donduruldu', $m, 'hesap_donduruldu:' . $magazaId . ':' . $gun);
+        } elseif ($once['durum'] === 'dondu' && $m['durum'] === 'aktif') {
+            eposta_sablonla('hesap_acildi', $m, 'hesap_acildi:' . $magazaId . ':' . $gun);
+        }
+        if (($once['plan'] ?? '') !== 'ucretli' && ($m['plan'] ?? '') === 'ucretli' && $m['durum'] === 'aktif') {
+            eposta_sablonla('plan_ucretli', $m, 'plan_ucretli:' . $magazaId . ':' . $gun);
+        } elseif (($m['plan'] ?? '') === 'deneme' && $m['durum'] === 'aktif' && !empty($m['deneme_bitis'])
+            && (string) $m['deneme_bitis'] > (string) ($once['deneme_bitis'] ?? '') && (string) $m['deneme_bitis'] >= $gun) {
+            eposta_sablonla('deneme_uzatildi', $m, 'deneme_uzatildi:' . $magazaId . ':' . $m['deneme_bitis']);
+        }
+    } catch (Throwable $e) {
+        if (function_exists('app_log')) {
+            app_log('eposta_olay_magaza_degisti: ' . $e->getMessage());
+        }
+    }
+}
+
+/** Merkez panelden mağaza giriş şifresi sıfırlandı → güvenlik bildirimi (şifre e-postada yer almaz). */
+function eposta_olay_sifre_degisti(int $magazaId): void
+{
+    try {
+        $m = merkez_row('SELECT * FROM magazalar WHERE id = ?', [$magazaId]);
+        if ($m) {
+            eposta_sablonla('sifre_degisti', $m, 'sifre_degisti:' . $magazaId . ':' . date('YmdHis') . bin2hex(random_bytes(3)));
+        }
+    } catch (Throwable $e) {
+        if (function_exists('app_log')) {
+            app_log('eposta_olay_sifre_degisti: ' . $e->getMessage());
         }
     }
 }
@@ -592,6 +898,21 @@ function eposta_panel_gonder(array $v): int
     $tur = ($v['tur'] ?? 'duyuru') === 'islem' ? 'islem' : 'duyuru';
     $hedef = (string) ($v['hedef'] ?? 'tek');
     $a = eposta_ayar();
+    // Tasarım: tema + isteğe bağlı başlık ve düğme
+    $tema = isset(eposta_temalar()[$v['tema'] ?? '']) ? (string) $v['tema'] : ($tur === 'duyuru' ? 'bordo' : 'koyu');
+    $baslik = trim(str_replace(["\r", "\n"], ' ', (string) ($v['baslik'] ?? '')));
+    $butonYazi = trim(str_replace(["\r", "\n"], ' ', (string) ($v['buton_yazi'] ?? '')));
+    $butonUrl = trim((string) ($v['buton_url'] ?? ''));
+    if ($butonUrl !== '' && !preg_match('#^(https?://|mailto:)[^\s"<>]+$#i', $butonUrl)) {
+        throw new DomainException('Düğme bağlantısı https:// ya da mailto: ile başlamalı.');
+    }
+    if (mb_strlen($baslik) > 200 || mb_strlen($butonYazi) > 60) {
+        throw new DomainException('Başlık ya da düğme yazısı çok uzun.');
+    }
+    $gorunumHam = ['tema' => $tema, 'rozet' => $tur === 'duyuru' ? 'Duyuru' : 'Bilgilendirme', 'baslik' => $baslik !== '' ? $baslik : $konu];
+    if ($butonUrl !== '') {
+        $gorunumHam['buton'] = [$butonYazi !== '' ? $butonYazi : 'Ayrıntılar', $butonUrl];
+    }
     if (!eposta_hazir($a)) {
         throw new DomainException('Önce e-posta ayarlarını kaydedip açın.');
     }
@@ -606,7 +927,8 @@ function eposta_panel_gonder(array $v): int
         }
         foreach ($adresler as $x) {
             $d = eposta_degiskenler(['email' => $x], $a);
-            if (eposta_kuyruga(['kime' => $x, 'konu' => eposta_doldur($konu, $d), 'metin' => eposta_doldur($metin, $d), 'tur' => 'islem', 'sablon' => 'serbest'])) {
+            if (eposta_kuyruga(['kime' => $x, 'konu' => eposta_doldur($konu, $d), 'metin' => eposta_doldur($metin, $d), 'tur' => 'islem', 'sablon' => 'serbest',
+                'gorunum' => eposta_gorunum_doldur($gorunumHam, $d)])) {
                 $sayi++;
             }
         }
@@ -621,7 +943,7 @@ function eposta_panel_gonder(array $v): int
             }
             $d = eposta_degiskenler($m, $a);
             if (eposta_kuyruga(['kime' => (string) $m['email'], 'konu' => eposta_doldur($konu, $d), 'metin' => eposta_doldur($metin, $d),
-                'tur' => $tur, 'sablon' => 'serbest', 'magaza_id' => (int) $m['id']])) {
+                'tur' => $tur, 'sablon' => 'serbest', 'magaza_id' => (int) $m['id'], 'gorunum' => eposta_gorunum_doldur($gorunumHam, $d)])) {
                 $sayi++;
             }
         }
@@ -639,9 +961,11 @@ function eposta_test_gonder(string $kime): void
     if (!filter_var($kime, FILTER_VALIDATE_EMAIL)) {
         throw new DomainException('Test adresi geçersiz.');
     }
-    $metin = "Merhaba,\n\nBu, OptiFlow merkez panelinden gönderilen bir deneme e-postasıdır. Bu e-postayı görüyorsanız e-posta ayarlarınız çalışıyor.\n\nGönderen: {$a['gonderen_adres']}\nSunucu: {$a['host']}:{$a['port']}\n\nOptiFlow";
+    $metin = "Merhaba,\n\nBu, OptiFlow merkez panelinden gönderilen bir deneme e-postasıdır. Bu e-postayı görüyorsanız e-posta ayarlarınız çalışıyor.";
+    $g = ['tema' => 'yesil', 'rozet' => 'Deneme', 'baslik' => 'E-posta ayarlarınız çalışıyor', 'alt' => 'Mağazalarınıza giden e-postalar bu tasarımla ulaşır.',
+          'bilgiler' => [['Gönderen', $a['gonderen_adres']], ['Sunucu', $a['host'] . ':' . $a['port']], ['Zaman', date('d.m.Y H:i')]], 'tur' => 'islem'];
     try {
-        eposta_tasi($a, $kime, eposta_ileti($a, $kime, 'OptiFlow e-posta denemesi', $metin, eposta_html($metin, '', $a)));
+        eposta_tasi($a, $kime, eposta_ileti($a, $kime, 'OptiFlow e-posta denemesi', eposta_duz($metin, $g, $a), eposta_html($metin, '', $a, $g)));
     } catch (RuntimeException $e) {
         throw new DomainException($e->getMessage());
     }
@@ -685,4 +1009,40 @@ function eposta_ret_uygula(int $magazaId, string $imza, bool $geriAl = false): ?
     }
     merkez_q('UPDATE magazalar SET eposta_ret = ? WHERE id = ?', [$geriAl ? 0 : 1, $magazaId]);
     return (string) $m['isim'];
+}
+
+/**
+ * Merkez panelde önizleme: bir şablonun (ya da kayıtlı bir gönderimin) e-postada görüneceği HTML.
+ * Mağaza seçilmezse örnek bir mağazayla doldurulur.
+ */
+function eposta_onizleme(string $sablon, ?array $m = null): string
+{
+    $a = eposta_ayar();
+    if ($a['gonderen_adres'] === '') {
+        $a['gonderen_adres'] = 'info@optiflow.com.tr';
+    }
+    $m ??= ['id' => 0, 'isim' => 'Örnek Optik', 'email' => 'ornek@optik.com', 'admin_kullanici' => 'patron', 'telefon' => '05321234567',
+            'durum' => 'aktif', 'plan' => 'deneme', 'deneme_bitis' => date('Y-m-d', strtotime('+7 days'))];
+    $s = eposta_sablonlar()[$sablon] ?? null;
+    if (!$s) {
+        throw new DomainException('Bilinmeyen şablon.');
+    }
+    $d = eposta_degiskenler($m, $a);
+    $g = eposta_gorunum_doldur(eposta_sablon_gorunum($sablon) + ['baslik' => $s['baslik']], $d);
+    $g['tur'] = $sablon === 'yonetici_yeni_kayit' ? 'yonetici' : 'islem';
+    return eposta_html(eposta_doldur($s['metin'], $d), '', $a, $g);
+}
+
+/** Kuyruktaki bir gönderimin HTML'i (gönderim kaydında "Gör"). */
+function eposta_kayit_html(int $id): ?string
+{
+    $r = merkez_row('SELECT * FROM eposta_kuyruk WHERE id = ?', [$id]);
+    if (!$r) {
+        return null;
+    }
+    $g = json_decode((string) ($r['gorunum'] ?? ''), true);
+    $g = is_array($g) ? $g : [];
+    $g['tur'] = (string) $r['tur'];
+    $ret = $r['tur'] === 'duyuru' && !empty($r['magaza_id']) ? eposta_ret_url((int) $r['magaza_id']) : '';
+    return eposta_html((string) $r['metin'], $ret, null, $g);
 }

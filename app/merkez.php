@@ -154,12 +154,14 @@ function merkez_sema_hazirla(PDO $pdo): void
             created_at DATETIME NOT NULL,
             guncelleme DATETIME NULL,
             gonderildi_at DATETIME NULL,
+            gorunum TEXT NULL,
             UNIQUE KEY uq_ek_anahtar (anahtar),
             INDEX idx_ek_durum (durum, id),
             INDEX idx_ek_magaza (magaza_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
     merkez_kolon_ekle($pdo, 'magazalar', 'eposta_ret', 'TINYINT(1) NOT NULL DEFAULT 0');
+    merkez_kolon_ekle($pdo, 'eposta_kuyruk', 'gorunum', 'TEXT NULL');   // 4.51.1 tasarım (tema, başlık, düğme…)
 }
 
 /** Mağaza satırından db_baglanti_degistir() ayarı (port boşsa varsayılan 3306). */

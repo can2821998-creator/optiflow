@@ -54,7 +54,9 @@ if (is_post()) {
     try {
         switch ($action) {
             case 'durum':
+                $once = merkez_magaza($id);
                 merkez_magaza_durum_degistir($id, post('durum'));
+                eposta_olay_magaza_degisti($once, $id);   // 4.51.1 donduruldu / yeniden açıldı
                 merkez_log('durum', $id, post('durum'));
                 flash('Durum güncellendi.');
                 break;
@@ -69,12 +71,16 @@ if (is_post()) {
                 flash('Özellikler güncellendi.');
                 break;
             case 'plan':
+                $once = merkez_magaza($id);
                 merkez_magaza_plan_guncelle($id, post('plan'), post('deneme_bitis') ?: null);
+                eposta_olay_magaza_degisti($once, $id);   // abonelik başladı / deneme uzatıldı
                 merkez_log('plan', $id, post('plan') . ' · ' . post('deneme_bitis'));
                 flash('Plan güncellendi.');
                 break;
             case 'uzat':
+                $once = merkez_magaza($id);
                 merkez_deneme_uzat($id, post_int('gun'));
+                eposta_olay_magaza_degisti($once, $id);
                 merkez_log('uzat', $id, '+' . post_int('gun') . ' gün');
                 flash('Deneme süresi uzatıldı.');
                 break;
@@ -96,6 +102,7 @@ if (is_post()) {
                 break;
             case 'sifre':
                 merkez_giris_sifresi_sifirla($id, (string) ($_POST['yeni_sifre'] ?? ''));
+                eposta_olay_sifre_degisti($id);   // güvenlik bildirimi (şifre e-postada yok)
                 merkez_log('sifre', $id);
                 flash('Mağaza giriş şifresi sıfırlandı.');
                 break;
@@ -185,8 +192,10 @@ if (is_post()) {
                     throw new DomainException('Hiç mağaza seçilmedi.');
                 }
                 $sayac = 0;
+                $GLOBALS['eposta_ertele'] = true;   // toplu işlemde e-postalar kuyruğa girer, cron gönderir
                 foreach ($ids as $mid) {
                     try {
+                        $once = merkez_magaza($mid);
                         if ($eylem === 'dondur') { merkez_magaza_durum_degistir($mid, 'dondu'); $sayac++; }
                         elseif ($eylem === 'aktif') { merkez_magaza_durum_degistir($mid, 'aktif'); $sayac++; }
                         elseif ($eylem === 'uzat30') { merkez_deneme_uzat($mid, 30); $sayac++; }
@@ -195,6 +204,7 @@ if (is_post()) {
                         elseif ($eylem === 'surum_pro') { merkez_magaza_surum_guncelle($mid, 'pro'); $sayac++; }
                         elseif ($eylem === 'surum_lite') { merkez_magaza_surum_guncelle($mid, 'lite'); $sayac++; }
                         elseif (preg_match('/^ozellik_(ac|kapat):([a-z_]+)$/', $eylem, $om)) { merkez_ozellik_ayarla($mid, $om[2], $om[1] === 'ac'); $sayac++; }
+                        eposta_olay_magaza_degisti($once, $mid);
                     } catch (Throwable $e) { /* tek tek atla */ }
                 }
                 merkez_log('toplu', null, $eylem . ' × ' . $sayac);
@@ -298,51 +308,57 @@ if (is_post()) {
                     'kullanici' => post('kullanici'), 'sifre' => (string) ($_POST['sifre'] ?? ''), 'sifre_sil' => post('sifre_sil') === '1',
                     'gonderen_adres' => post('gonderen_adres'), 'gonderen_ad' => post('gonderen_ad'), 'yanit_adres' => post('yanit_adres'),
                     'bildirim_adres' => post('bildirim_adres'), 'site_url' => post('site_url'),
-                    'otomatik' => array_map(static fn($x) => $x === '1', (array) ($_POST['otomatik'] ?? [])),
                 ]);
                 merkez_log('eposta', null, 'ayarlar kaydedildi');
                 flash('E-posta ayarları kaydedildi.');
-                $geri = 'merkez-panel.php?gorunum=eposta';
+                $geri = 'merkez-panel.php?gorunum=eposta&bolum=ayar';
+                break;
+            case 'eposta_otomatik':
+                eposta_otomatik_ayarla(post('sablon'), post('acik') === '1');
+                merkez_log('eposta', null, 'otomatik · ' . post('sablon') . ' · ' . (post('acik') === '1' ? 'açık' : 'kapalı'));
+                flash((eposta_sablon_tanimlari()[post('sablon')][0] ?? post('sablon')) . (post('acik') === '1' ? ' açıldı.' : ' kapatıldı.'));
+                $geri = 'merkez-panel.php?gorunum=eposta&bolum=otomatik';
                 break;
             case 'eposta_test':
                 eposta_test_gonder(post('test_adres'));
                 merkez_log('eposta', null, 'deneme e-postası · ' . post('test_adres'));
                 flash('Deneme e-postası gönderildi: ' . post('test_adres') . '. Gelen kutusunu (ve gereksiz klasörünü) kontrol edin.');
-                $geri = 'merkez-panel.php?gorunum=eposta';
+                $geri = 'merkez-panel.php?gorunum=eposta&bolum=ayar';
                 break;
             case 'eposta_sablon':
-                eposta_sablon_kaydet(post('sablon'), (string) ($_POST['konu'] ?? ''), (string) ($_POST['metin'] ?? ''), post('varsayilan') === '1');
+                eposta_sablon_kaydet(post('sablon'), (string) ($_POST['konu'] ?? ''), (string) ($_POST['metin'] ?? ''), post('varsayilan') === '1', (string) ($_POST['baslik'] ?? ''));
                 merkez_log('eposta', null, 'şablon · ' . post('sablon'));
                 flash(post('varsayilan') === '1' ? 'Şablon varsayılana döndü.' : 'Şablon kaydedildi.');
-                $geri = 'merkez-panel.php?gorunum=eposta#sablonlar';
+                $geri = 'merkez-panel.php?gorunum=eposta&bolum=otomatik';
                 break;
             case 'eposta_gonder':
                 $n = eposta_panel_gonder([
                     'hedef' => post('hedef'), 'magaza_id' => post_int('alici'), 'adres' => (string) ($_POST['adres'] ?? ''),
                     'tur' => post('tur'), 'konu' => (string) ($_POST['konu'] ?? ''), 'metin' => (string) ($_POST['metin'] ?? ''),
+                    'tema' => post('tema'), 'baslik' => (string) ($_POST['baslik'] ?? ''), 'buton_yazi' => post('buton_yazi'), 'buton_url' => post('buton_url'),
                 ]);
                 $k = eposta_kuyruk_isle(20);
                 merkez_log('eposta', post('hedef') === 'tek' ? post_int('alici') : null, 'gönderim · ' . post('hedef') . ' · ' . $n . ' alıcı');
                 flash($n . ' e-posta kuyruğa alındı; ' . $k['gonderilen'] . ' tanesi hemen gönderildi'
                     . ($n > $k['gonderilen'] + $k['hata'] ? ', kalanı zamanlanmış görevle birkaç dakika içinde gider.' : '.')
                     . ($k['hata'] ? ' ' . $k['hata'] . ' gönderim başarısız; aşağıdaki kayıtta nedenini görün.' : ''), $k['hata'] ? 'error' : 'ok');
-                $geri = 'merkez-panel.php?gorunum=eposta#kayit';
+                $geri = 'merkez-panel.php?gorunum=eposta&bolum=kayit';
                 break;
             case 'eposta_isle':
                 $k = eposta_kuyruk_isle(20);
                 flash('Gönderilen: ' . $k['gonderilen'] . ($k['hata'] ? ' · başarısız: ' . $k['hata'] : ''), $k['hata'] ? 'error' : 'ok');
-                $geri = 'merkez-panel.php?gorunum=eposta#kayit';
+                $geri = 'merkez-panel.php?gorunum=eposta&bolum=kayit';
                 break;
             case 'eposta_yeniden':
                 eposta_yeniden_dene(post_int('kid'));
                 $k = eposta_kuyruk_isle(5);
                 flash($k['gonderilen'] ? 'Gönderildi.' : 'Yeniden denendi; nedeni kayıtta.', $k['gonderilen'] ? 'ok' : 'error');
-                $geri = 'merkez-panel.php?gorunum=eposta#kayit';
+                $geri = 'merkez-panel.php?gorunum=eposta&bolum=kayit';
                 break;
             case 'eposta_iptal':
                 eposta_iptal(post_int('kid'));
                 flash('Gönderim iptal edildi.');
-                $geri = 'merkez-panel.php?gorunum=eposta#kayit';
+                $geri = 'merkez-panel.php?gorunum=eposta&bolum=kayit';
                 break;
             case 'cikis':
                 unset($_SESSION['merkez_admin'], $_SESSION['merkez_impersonate']);
@@ -361,9 +377,12 @@ if (is_post()) {
             $geri = 'merkez-panel.php?magaza=' . $id . '#tasima';
         }
         if (str_starts_with($action, 'eposta_')) {
-            $geri = 'merkez-panel.php?gorunum=eposta' . ($action === 'eposta_gonder' ? '&alici=' . post_int('alici') . '#gonder' : '');
+            $geri = 'merkez-panel.php?gorunum=eposta&bolum=' . match ($action) {
+                'eposta_gonder' => 'gonder&alici=' . post_int('alici'), 'eposta_sablon', 'eposta_otomatik' => 'otomatik', 'eposta_ayar', 'eposta_test' => 'ayar', default => 'kayit',
+            };
             if ($action === 'eposta_gonder') {
-                $_SESSION['eposta_taslak'] = ['hedef' => post('hedef'), 'adres' => (string) ($_POST['adres'] ?? ''), 'tur' => post('tur'), 'konu' => (string) ($_POST['konu'] ?? ''), 'metin' => (string) ($_POST['metin'] ?? '')];
+                $_SESSION['eposta_taslak'] = ['hedef' => post('hedef'), 'adres' => (string) ($_POST['adres'] ?? ''), 'tur' => post('tur'), 'konu' => (string) ($_POST['konu'] ?? ''),
+                    'metin' => (string) ($_POST['metin'] ?? ''), 'tema' => post('tema'), 'baslik' => (string) ($_POST['baslik'] ?? ''), 'buton_yazi' => post('buton_yazi'), 'buton_url' => post('buton_url')];
             }
         }
     } catch (Throwable $e) {
@@ -375,6 +394,23 @@ if (is_post()) {
         $geri = 'merkez-panel.php?magaza=' . $id . '#tasima';
     }
     redirect($geri);
+}
+
+/* ---------------- 4.51 E-posta önizleme (yalnız merkez yöneticisi) ---------------- */
+if (query('eposta_onizle') !== '' || query_int('eposta_gor') > 0) {
+    try {
+        $onHtml = query('eposta_onizle') !== '' ? eposta_onizleme(query('eposta_onizle')) : eposta_kayit_html(query_int('eposta_gor'));
+    } catch (DomainException $e) {
+        $onHtml = null;
+    }
+    if ($onHtml === null) {
+        http_response_code(404);
+        exit('Bulunamadı.');
+    }
+    header('Content-Type: text/html; charset=utf-8');
+    header('Cache-Control: no-store');
+    echo $onHtml;
+    exit;
 }
 
 /* ---------------- CSV dışa aktar ---------------- */
@@ -580,6 +616,72 @@ details.acc .body{padding:0 16px 16px}
 details.card>summary{font-weight:800}
 @media(max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis.ikincil{grid-template-columns:repeat(3,minmax(0,1fr))}.grid2{grid-template-columns:1fr}.health{grid-template-columns:repeat(2,1fr)}.hide-sm{display:none}}
 @media(max-width:560px){.wrap{padding:14px}.band,.dhead{padding:22px 20px;background-size:220px auto,auto,auto}.band h1{font-size:28px}.kpis.ikincil{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* 4.51 E-posta */
+.ep-durum{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.ep-sayilar{display:flex;gap:8px}
+.ep-sayilar div{min-width:86px;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);text-align:left}
+.ep-sayilar b{display:block;font-size:22px;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums}
+.ep-sayilar small{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.ep-sayilar .kotu{background:rgba(255,125,134,.2);border-color:rgba(255,125,134,.5)}
+.ep-sekme{display:flex;gap:4px;flex-wrap:wrap;padding:5px;margin:0 0 18px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);width:max-content;max-width:100%}
+.ep-sekme a{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;text-decoration:none;font-weight:800;font-size:13.5px;color:var(--soft) !important}
+.ep-sekme a:hover{background:var(--card-2);color:var(--ink) !important}
+.ep-sekme a.on{background:var(--ink);color:var(--card) !important}
+.ep-sekme em{font-style:normal;font-size:11px;padding:2px 7px;border-radius:99px;background:var(--card-2);color:var(--soft)}
+.ep-sekme a.on em{background:rgba(255,255,255,.18);color:inherit}
+.ep-sekme em.kotu{background:var(--red-tint);color:var(--red)}
+.ep-iki{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start}
+.ep-yan{display:flex;flex-direction:column;gap:18px}
+.ep-secim{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:-4px 0 14px}
+.ep-secim label,.ep-acik{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1.4px solid var(--line-2);border-radius:12px;cursor:pointer;background:var(--card)}
+.ep-secim label:has(input:checked),.ep-acik:has(input:checked){border-color:var(--primary);background:color-mix(in srgb,var(--primary-tint) 60%,var(--card))}
+.ep-secim input,.ep-acik input{margin-top:3px;accent-color:var(--primary);flex:none}
+.ep-secim b,.ep-acik b{display:block;font-size:14px}
+.ep-secim small,.ep-acik small{display:block;color:var(--soft);font-size:12.5px;line-height:1.4;margin-top:2px}
+.ep-acik{margin:0 0 16px}
+.ep-tema{display:flex;gap:8px;flex-wrap:wrap;margin:-4px 0 14px}
+.ep-tema label{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:8px 8px 6px;border-radius:12px;border:1.4px solid transparent;min-width:74px}
+.ep-tema label:has(input:checked){border-color:var(--ink);background:var(--card-2)}
+.ep-tema input{position:absolute;opacity:0;pointer-events:none}
+.ep-tema i{display:block;width:42px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.ep-tema small{font-size:11.5px;font-weight:800;color:var(--soft)}
+.ep-alt{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.ep-uc{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:16px}
+.ep-kucuk{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--soft);margin:-4px 0 12px}
+.ep-satir{display:flex;gap:8px}.ep-satir input{flex:1;min-width:0}
+.ep-degisken{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.ep-degisken li{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.ep-degisken code{font:700 12.5px ui-monospace,Consolas,monospace;color:var(--primary-deep);background:var(--primary-tint);padding:2px 7px;border-radius:6px}
+html.tema-koyu .ep-degisken code{color:#ff95a6}
+.ep-degisken span{color:var(--soft)}
+.ep-hazir{display:flex;flex-wrap:wrap;gap:6px}
+.ep-hazir a{padding:6px 11px;border-radius:99px;border:1.4px solid var(--line-2);font-size:12.5px;font-weight:700;text-decoration:none;color:var(--ink) !important}
+.ep-hazir a:hover{border-color:var(--primary);color:var(--primary-deep) !important}
+.ep-adim{margin:0;padding-left:18px;font-size:13px;line-height:1.65}.ep-adim li{margin-bottom:4px}
+.ep-grup{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--soft);margin:22px 0 10px;font-weight:800}
+.ep-liste{display:grid;gap:10px}
+.ep-oto{padding:0;overflow:hidden}
+.ep-oto.kapali{opacity:.72}
+.ep-oto-bas{display:flex;align-items:center;gap:14px;padding:14px 16px}
+.ep-nokta{flex:none;width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 4px color-mix(in srgb,currentColor 0%,var(--card-2))}
+.ep-oto-ad{flex:1;min-width:0}
+.ep-oto-ad b{display:block;font-size:14.5px}
+.ep-oto-ad small{display:block;color:var(--soft);font-size:12.5px}
+.ep-oto-ad em{font-style:normal;color:var(--primary-deep);font-weight:700}
+.ep-anahtar{display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:99px;border:1.4px solid var(--line-2);background:var(--card-2);color:var(--soft);font:800 12.5px Manrope,sans-serif;cursor:pointer;min-width:92px}
+.ep-anahtar span{width:30px;height:18px;border-radius:99px;background:var(--line-2);position:relative;transition:background .15s}
+.ep-anahtar span::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
+.ep-anahtar.on{border-color:color-mix(in srgb,var(--ok) 40%,var(--line-2));background:var(--ok-tint);color:var(--ok)}
+.ep-anahtar.on span{background:var(--ok)}.ep-anahtar.on span::after{left:14px}
+.ep-duzen{border-top:1px solid var(--line)}
+.ep-duzen summary{cursor:pointer;padding:10px 16px;font-size:13px;font-weight:800;list-style:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ep-duzen summary::-webkit-details-marker{display:none}
+.ep-duzen summary::before{content:"▸ ";color:var(--soft)}.ep-duzen[open] summary::before{content:"▾ "}
+.ep-duzen-ic{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;padding:4px 16px 16px}
+.ep-onizle{width:100%;height:620px;border:1px solid var(--line);border-radius:14px;background:#efeaeb}
+.ep-tablo-bas{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;flex-wrap:wrap}
+@media(max-width:1000px){.ep-iki,.ep-duzen-ic{grid-template-columns:1fr}.ep-durum{align-items:flex-start}}
+@media(max-width:620px){.ep-secim,.ep-uc{grid-template-columns:1fr}.ep-oto-bas{flex-wrap:wrap}.ep-sayilar div{min-width:0}}
 CSS;
 
 $logo = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><linearGradient id="ml" x1="8" y1="10" x2="92" y2="90" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6b81"/><stop offset=".5" stop-color="#d0334f"/><stop offset="1" stop-color="#8f1a2e"/></linearGradient></defs><g transform="rotate(-10 50 50)"><path fill-rule="evenodd" clip-rule="evenodd" d="M50 5a45 45 0 1 1 0 90 45 45 0 0 1 0-90Z M50 30c13 0 24.5 8.5 29 20-4.5 11.5-16 20-29 20s-24.5-8.5-29-20c4.5-11.5 16-20 29-20Z" fill="url(#ml)"/></g></svg>';
@@ -1270,172 +1372,241 @@ $gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yen
     <?php endif; ?>
   </div>
 
-<?php elseif ($gorunum === 'eposta'): /* ==================== E-POSTA (4.51.0) ==================== */
+<?php elseif ($gorunum === 'eposta'): /* ==================== E-POSTA (4.51) ==================== */
   $ea = eposta_ayar();
   $esifreVar = eposta_sifre($ea) !== '';
   $eoz = eposta_ozet();
   $esab = eposta_sablonlar();
   $etan = eposta_sablon_tanimlari();
-  $ekayit = eposta_son_kayitlar(50);
+  $etemalar = eposta_temalar();
   $etaslak = $_SESSION['eposta_taslak'] ?? [];
   unset($_SESSION['eposta_taslak']);
   $ealici = query_int('alici');
   $eKaynak = query('sablon');
   if ($eKaynak !== '' && isset($esab[$eKaynak]) && !$etaslak) {
-      $etaslak = ['konu' => $esab[$eKaynak]['konu'], 'metin' => $esab[$eKaynak]['metin'], 'tur' => 'islem'];
+      $etaslak = ['konu' => $esab[$eKaynak]['konu'], 'baslik' => $esab[$eKaynak]['baslik'], 'metin' => $esab[$eKaynak]['metin'], 'tur' => 'islem',
+                  'tema' => eposta_sablon_gorunum($eKaynak)['tema'] ?? 'koyu'];
+  }
+  $ebolum = query('bolum', $ealici || $etaslak ? 'gonder' : '');
+  $ehazir = eposta_hazir($ea);
+  if (!in_array($ebolum, ['gonder', 'otomatik', 'kayit', 'ayar'], true)) {
+      $ebolum = $ehazir ? 'gonder' : 'ayar';
   }
   $emag = merkez_rows('SELECT id, isim, email, durum, plan, eposta_ret FROM magazalar ORDER BY isim');
   $ehedef = (string) ($etaslak['hedef'] ?? ($ealici ? 'tek' : 'aktif'));
+  $etur = (string) ($etaslak['tur'] ?? 'duyuru');
+  $etema = (string) ($etaslak['tema'] ?? ($etur === 'islem' ? 'koyu' : 'bordo'));
   $edurum = ['bekliyor' => ['Bekliyor', 'b-beklemede'], 'gonderildi' => ['Gönderildi', 'b-aktif'], 'hata' => ['Başarısız', 'b-dondu'], 'iptal' => ['İptal', 'b-lite']];
   $eturAd = ['islem' => 'Hesap', 'duyuru' => 'Duyuru', 'yonetici' => 'Size'];
-  $ehazir = eposta_hazir($ea);
+  $eAcikSay = count(array_filter($etan, static fn($k) => !empty($ea['otomatik'][$k]), ARRAY_FILTER_USE_KEY));
+  $eCikan = count(array_filter($emag, static fn($m) => !empty($m['eposta_ret'])));
+  $ebag = static fn(string $b, string $ek = ''): string => 'merkez-panel.php?gorunum=eposta&amp;bolum=' . $b . $ek;
 ?>
-  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+  <section class="band">
     <div>
+      <span class="kick">Merkez e-postası</span>
       <h1>E-posta</h1>
-      <p class="muted" style="margin:2px 0 0">Mağazalara <b><?= e($ea['gonderen_adres'] ?: 'info@optiflow.com.tr') ?></b> adresinden otomatik ve elle e-posta. Kayıt, hesap hazır ve deneme bitişi e-postaları kendiliğinden gider.</p>
+      <p>Mağazalara <b><?= e($ea['gonderen_adres'] ?: 'info@optiflow.com.tr') ?></b> adresinden. <?= $eAcikSay ?> otomatik e-posta açık<?= $eCikan ? ' · ' . $eCikan . ' mağaza duyurulardan çıkmış' : '' ?>.</p>
     </div>
-    <span class="badge <?= $ehazir ? 'b-aktif' : 'b-dondu' ?>"><?= $ehazir ? 'Gönderim açık' : 'Gönderim kapalı' ?></span>
-  </div>
-
-  <div class="kpis">
-    <div class="kpi act"><div class="n"><?= (int) $eoz['gonderildi'] ?></div><div class="l">Gönderildi</div></div>
-    <div class="kpi"><div class="n"><?= (int) $eoz['bekliyor'] ?></div><div class="l">Kuyrukta bekliyor</div></div>
-    <div class="kpi"><div class="n" style="<?= $eoz['hata'] ? 'color:var(--red)' : '' ?>"><?= (int) $eoz['hata'] ?></div><div class="l">Başarısız</div></div>
-    <div class="kpi"><div class="n"><?= count(array_filter($emag, static fn($m) => !empty($m['eposta_ret']))) ?></div><div class="l">Duyurulardan çıkan mağaza</div></div>
-  </div>
-
-  <div class="grid2" style="align-items:start;margin-bottom:18px">
-    <div class="card panel">
-      <h2 style="margin:0 0 12px;font-size:17px">Gönderim ayarları (SMTP)</h2>
-      <form method="post" autocomplete="off">
-        <?= csrf_field() ?><input type="hidden" name="action" value="eposta_ayar">
-        <label style="display:flex;gap:8px;align-items:center;font-weight:800;margin:0 0 14px"><input type="checkbox" name="acik" value="1" <?= $ea['acik'] ? 'checked' : '' ?>> E-posta gönderimi açık</label>
-        <div class="grid2">
-          <label class="field"><span>Gönderen adres</span><input type="email" name="gonderen_adres" value="<?= e($ea['gonderen_adres']) ?>" placeholder="info@optiflow.com.tr"></label>
-          <label class="field"><span>Gönderen adı</span><input type="text" name="gonderen_ad" maxlength="80" value="<?= e($ea['gonderen_ad']) ?>"></label>
-        </div>
-        <div class="grid2">
-          <label class="field"><span>SMTP sunucusu</span><input type="text" name="host" value="<?= e($ea['host']) ?>" placeholder="smtp.gmail.com"></label>
-          <div class="grid2" style="gap:10px">
-            <label class="field"><span>Port</span><input type="number" name="port" min="1" max="65535" value="<?= (int) $ea['port'] ?>"></label>
-            <label class="field"><span>Güvenlik</span><select name="guvenlik"><?php foreach (['tls' => 'STARTTLS (587)', 'ssl' => 'SSL (465)', 'yok' => 'Yok'] as $k => $v): ?><option value="<?= e($k) ?>" <?= $ea['guvenlik'] === $k ? 'selected' : '' ?>><?= e($v) ?></option><?php endforeach; ?></select></label>
-          </div>
-        </div>
-        <div class="grid2">
-          <label class="field"><span>Kullanıcı adı</span><input type="text" name="kullanici" value="<?= e($ea['kullanici']) ?>" placeholder="info@optiflow.com.tr" autocomplete="off"></label>
-          <label class="field"><span>Şifre (Google: uygulama şifresi)</span><input type="password" name="sifre" placeholder="<?= $esifreVar ? 'Kayıtlı · değiştirmek için yazın' : '16 haneli uygulama şifresi' ?>" autocomplete="new-password"></label>
-        </div>
-        <?php if ($esifreVar): ?><label class="muted mini" style="display:flex;gap:6px;align-items:center;margin:-4px 0 12px"><input type="checkbox" name="sifre_sil" value="1"> Kayıtlı şifreyi sil</label><?php endif; ?>
-        <div class="grid2">
-          <label class="field"><span>Yanıt adresi (isteğe bağlı)</span><input type="email" name="yanit_adres" value="<?= e($ea['yanit_adres']) ?>" placeholder="boşsa gönderen adres"></label>
-          <label class="field"><span>Yeni kayıt bildirimi gidecek adres</span><input type="email" name="bildirim_adres" value="<?= e($ea['bildirim_adres']) ?>" placeholder="boşsa gönderen adres"></label>
-        </div>
-        <label class="field"><span>Site adresi (e-postalardaki bağlantılar)</span><input type="url" name="site_url" value="<?= e($ea['site_url']) ?>"></label>
-        <div class="field"><span>Otomatik e-postalar</span>
-          <?php foreach ($etan as $k => [$ad, $ne, $kime]): ?>
-            <label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:13.5px"><input type="checkbox" name="otomatik[<?= e($k) ?>]" value="1" <?= !empty($ea['otomatik'][$k]) ? 'checked' : '' ?> style="margin-top:3px"><span><b><?= e($ad) ?></b> <span class="muted">· <?= e($ne) ?> · <?= e($kime) ?></span></span></label>
-          <?php endforeach; ?>
-          <input type="hidden" name="otomatik[_]" value="0">
-        </div>
-        <button class="btn btn-primary">Kaydet</button>
-      </form>
-    </div>
-
-    <div>
-      <div class="card panel" style="margin-bottom:16px">
-        <h2 style="margin:0 0 10px;font-size:17px">Deneme e-postası</h2>
-        <form method="post" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0">
-          <?= csrf_field() ?><input type="hidden" name="action" value="eposta_test">
-          <input type="email" name="test_adres" required placeholder="kendi adresiniz" style="flex:1;min-width:200px">
-          <button class="btn btn-ghost">Gönder</button>
-        </form>
-        <p class="muted mini" style="margin:8px 0 0">Ayarları kaydettikten sonra deneyin. Hata olursa sunucunun verdiği yanıt ekranda görünür.</p>
-      </div>
-      <div class="card panel">
-        <h2 style="margin:0 0 8px;font-size:17px">Google Workspace / Gmail için</h2>
-        <ol class="mini" style="margin:0;padding-left:18px;line-height:1.7">
-          <li>SMTP sunucusu <b>smtp.gmail.com</b>, port <b>587</b>, güvenlik <b>STARTTLS</b>.</li>
-          <li>Kullanıcı adı ve gönderen adres: <b>info@optiflow.com.tr</b>.</li>
-          <li>Şifre olarak hesap şifresi değil <b>uygulama şifresi</b> girilir: Google Hesabı › Güvenlik › <b>2 Adımlı Doğrulama</b>'yı açın › <b>Uygulama şifreleri</b> › ad: "OptiFlow" › çıkan 16 haneli şifreyi buraya yapıştırın.</li>
-          <li>Workspace yöneticisi uygulama şifresini kapattıysa: Yönetici konsolu › Güvenlik › Kimlik doğrulama › 2 Adımlı Doğrulama'da izin verin.</li>
-          <li>Google'da <b>DKIM</b> kaydını açmak e-postaların gereksiz klasörüne düşmesini önler (Yönetici konsolu › Gmail › E-postanın kimliğini doğrula).</li>
-          <li>Gmail'in gönderim sınırı günde yaklaşık 2.000 e-postadır; toplu gönderimler 10 dakikada bir 40'lık parçalar hâlinde gider.</li>
-        </ol>
-        <p class="muted mini" style="margin:8px 0 0">Şifre sunucuda şifreli saklanır (storage/.gizli-anahtar) ve ekranda bir daha gösterilmez.</p>
+    <div class="ep-durum">
+      <span class="badge <?= $ehazir ? 'b-aktif' : 'b-dondu' ?>"><?= $ehazir ? 'Gönderim açık' : 'Gönderim kapalı' ?></span>
+      <div class="ep-sayilar">
+        <div><b><?= (int) $eoz['gonderildi'] ?></b><small>gönderildi</small></div>
+        <div><b><?= (int) $eoz['bekliyor'] ?></b><small>kuyrukta</small></div>
+        <div class="<?= $eoz['hata'] ? 'kotu' : '' ?>"><b><?= (int) $eoz['hata'] ?></b><small>başarısız</small></div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="card panel" id="gonder" style="margin-bottom:18px">
-    <h2 style="margin:0 0 4px;font-size:17px">E-posta gönder</h2>
-    <p class="muted mini" style="margin:0 0 12px">Şablondan doldur:
-      <?php foreach ($etan as $k => [$ad]): if ($k === 'yonetici_yeni_kayit') { continue; } ?><a href="merkez-panel.php?gorunum=eposta&amp;sablon=<?= e($k) ?><?= $ealici ? '&amp;alici=' . $ealici : '' ?>#gonder" style="font-weight:700;margin-right:10px"><?= e($ad) ?></a><?php endforeach; ?></p>
-    <form method="post">
+  <nav class="ep-sekme" aria-label="E-posta bölümleri">
+    <a class="<?= $ebolum === 'gonder' ? 'on' : '' ?>" href="<?= $ebag('gonder') ?>">E-posta gönder</a>
+    <a class="<?= $ebolum === 'otomatik' ? 'on' : '' ?>" href="<?= $ebag('otomatik') ?>">Otomatik e-postalar <em><?= $eAcikSay ?>/<?= count($etan) ?></em></a>
+    <a class="<?= $ebolum === 'kayit' ? 'on' : '' ?>" href="<?= $ebag('kayit') ?>">Gönderim kaydı<?= $eoz['hata'] ? ' <em class="kotu">' . (int) $eoz['hata'] . '</em>' : '' ?></a>
+    <a class="<?= $ebolum === 'ayar' ? 'on' : '' ?>" href="<?= $ebag('ayar') ?>">Ayarlar<?= $ehazir ? '' : ' <em class="kotu">!</em>' ?></a>
+  </nav>
+
+  <?php if (!$ehazir && $ebolum !== 'ayar'): ?>
+    <div class="flash flash-error">E-posta gönderimi kapalı ya da ayarlar eksik. <a href="<?= $ebag('ayar') ?>">Ayarlar</a> sekmesinden SMTP bilgilerini girip "Gönderim açık" seçin.</div>
+  <?php endif; ?>
+
+  <?php if ($ebolum === 'gonder'): ?>
+  <div class="ep-iki">
+    <form method="post" class="card panel" id="gonder">
       <?= csrf_field() ?><input type="hidden" name="action" value="eposta_gonder">
+      <h3>Yeni e-posta</h3>
+      <p class="desc">İmza ve alt bilgi kendiliğinden eklenir. Boş satır paragraf ayırır, bağlantılar tıklanır.</p>
+
       <div class="grid2">
         <label class="field"><span>Alıcı</span><select name="hedef">
-          <?php foreach (['tek' => 'Tek mağaza (aşağıdan seçin)', 'aktif' => 'Tüm aktif mağazalar', 'deneme' => 'Deneme sürecindekiler', 'ucretli' => 'Ücretli mağazalar', 'beklemede' => 'Beklemedekiler', 'dondu' => 'Dondurulmuşlar', 'hepsi' => 'Bütün mağazalar', 'adres' => 'Elle yazacağım adresler'] as $k => $v): ?>
+          <?php foreach (['tek' => 'Tek mağaza', 'aktif' => 'Tüm aktif mağazalar', 'deneme' => 'Deneme sürecindekiler', 'ucretli' => 'Ücretli mağazalar', 'beklemede' => 'Onay bekleyenler', 'dondu' => 'Dondurulmuşlar', 'hepsi' => 'Bütün mağazalar', 'adres' => 'Elle yazacağım adresler'] as $k => $v): ?>
             <option value="<?= e($k) ?>" <?= $ehedef === $k ? 'selected' : '' ?>><?= e($v) ?></option>
           <?php endforeach; ?></select></label>
-        <label class="field"><span>Mağaza (tek mağaza için)</span><select name="alici"><option value="0">—</option>
+        <label class="field"><span>Mağaza (tek mağaza seçiliyse)</span><select name="alici"><option value="0">— seçin —</option>
           <?php foreach ($emag as $m): ?><option value="<?= (int) $m['id'] ?>" <?= $ealici === (int) $m['id'] ? 'selected' : '' ?>><?= e($m['isim']) ?> · <?= e($m['email']) ?><?= !empty($m['eposta_ret']) ? ' (duyuru istemiyor)' : '' ?></option><?php endforeach; ?></select></label>
       </div>
-      <label class="field"><span>Adresler (yalnızca "elle yazacağım" seçiliyse; virgül ya da satırla ayırın, en fazla 50)</span><textarea name="adres" rows="2"><?= e((string) ($etaslak['adres'] ?? '')) ?></textarea></label>
-      <div class="field"><span>Tür</span>
-        <label style="display:flex;gap:8px;align-items:center;margin:4px 0;font-size:13.5px"><input type="radio" name="tur" value="duyuru" <?= ($etaslak['tur'] ?? 'duyuru') === 'duyuru' ? 'checked' : '' ?>> <span><b>Duyuru / kampanya</b> <span class="muted">· altına "almak istemiyorum" bağlantısı eklenir, çıkmış mağazalara gitmez</span></span></label>
-        <label style="display:flex;gap:8px;align-items:center;margin:4px 0;font-size:13.5px"><input type="radio" name="tur" value="islem" <?= ($etaslak['tur'] ?? '') === 'islem' ? 'checked' : '' ?>> <span><b>Hesapla ilgili bildirim</b> <span class="muted">· ödeme, deneme süresi, bakım gibi; herkese gider</span></span></label>
+      <label class="field"><span>Adresler (elle yazacağım seçiliyse · virgül ya da satırla, en fazla 50)</span><textarea name="adres" rows="2" placeholder="ornek@optik.com, diger@optik.com"><?= e((string) ($etaslak['adres'] ?? '')) ?></textarea></label>
+
+      <div class="field"><span>Tür</span></div>
+      <div class="ep-secim">
+        <label><input type="radio" name="tur" value="duyuru" <?= $etur !== 'islem' ? 'checked' : '' ?>><div><b>Duyuru / kampanya</b><small>Altına "almak istemiyorum" bağlantısı eklenir; çıkmış mağazalara gitmez.</small></div></label>
+        <label><input type="radio" name="tur" value="islem" <?= $etur === 'islem' ? 'checked' : '' ?>><div><b>Hesap bildirimi</b><small>Ödeme, deneme süresi, bakım gibi; herkese gider.</small></div></label>
       </div>
-      <label class="field"><span>Konu</span><input type="text" name="konu" maxlength="200" required value="<?= e((string) ($etaslak['konu'] ?? '')) ?>"></label>
-      <label class="field"><span>Metin (düz yazı; boş satır paragraf ayırır, bağlantılar kendiliğinden tıklanır)</span><textarea name="metin" rows="10" required><?= e((string) ($etaslak['metin'] ?? '')) ?></textarea></label>
-      <p class="muted mini" style="margin:-4px 0 12px">Değişkenler: {magaza} {email} {kullanici} {deneme_bitis} {kalan_gun} {giris_adresi} {site} {telefon}</p>
-      <button class="btn btn-primary" <?= $ehazir ? '' : 'disabled title="Önce ayarları kaydedip gönderimi açın"' ?>>Gönder</button>
+
+      <div class="field"><span>Görünüm</span></div>
+      <div class="ep-tema">
+        <?php foreach ($etemalar as $k => [$ana, $koyu, , $ad]): ?>
+          <label title="<?= e($ad) ?>"><input type="radio" name="tema" value="<?= e($k) ?>" <?= $etema === $k ? 'checked' : '' ?>><i style="background:linear-gradient(135deg,<?= e($ana) ?>,<?= e($koyu) ?>)"></i><small><?= e(explode(' (', $ad)[0]) ?></small></label>
+        <?php endforeach; ?>
+      </div>
+
+      <label class="field"><span>Konu</span><input type="text" name="konu" maxlength="200" required value="<?= e((string) ($etaslak['konu'] ?? '')) ?>" placeholder="Gelen kutusunda görünen satır"></label>
+      <label class="field"><span>Başlık (isteğe bağlı · boşsa konu kullanılır)</span><input type="text" name="baslik" maxlength="200" value="<?= e((string) ($etaslak['baslik'] ?? '')) ?>" placeholder="E-postanın üstündeki büyük yazı"></label>
+      <label class="field"><span>Metin</span><textarea name="metin" rows="9" required placeholder="Merhaba {magaza},&#10;&#10;…"><?= e((string) ($etaslak['metin'] ?? '')) ?></textarea></label>
+      <div class="grid2">
+        <label class="field"><span>Düğme yazısı (isteğe bağlı)</span><input type="text" name="buton_yazi" maxlength="60" value="<?= e((string) ($etaslak['buton_yazi'] ?? '')) ?>" placeholder="Hemen deneyin"></label>
+        <label class="field"><span>Düğme bağlantısı</span><input type="text" name="buton_url" value="<?= e((string) ($etaslak['buton_url'] ?? '')) ?>" placeholder="https://optiflow.com.tr/magaza-giris.php"></label>
+      </div>
+      <div class="ep-alt">
+        <button class="btn btn-primary" <?= $ehazir ? '' : 'disabled' ?>>Gönder</button>
+        <span class="muted mini">Toplu gönderim 10 dakikada bir 40'ar e-posta hâlinde gider.</span>
+      </div>
     </form>
+
+    <aside class="ep-yan">
+      <div class="card panel">
+        <h3>Değişkenler</h3>
+        <p class="desc">Her mağazaya kendi bilgisiyle dolar.</p>
+        <ul class="ep-degisken">
+          <?php foreach (['magaza' => 'Mağaza adı', 'email' => 'Mağaza e-postası', 'kullanici' => 'Yönetici kullanıcı', 'deneme_bitis' => 'Deneme bitişi', 'kalan_gun' => 'Kalan gün', 'giris_adresi' => 'Giriş sayfası', 'site' => 'Site adresi', 'telefon' => 'Telefonumuz'] as $k => $v): ?>
+            <li><code>{<?= e($k) ?>}</code><span><?= e($v) ?></span></li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
+      <div class="card panel">
+        <h3>Hazır metinle başla</h3>
+        <p class="desc">Otomatik şablonlardan birini forma doldurur.</p>
+        <div class="ep-hazir">
+          <?php foreach ($etan as $k => [$ad]): if ($k === 'yonetici_yeni_kayit') { continue; } ?>
+            <a href="<?= $ebag('gonder', '&amp;sablon=' . e($k) . ($ealici ? '&amp;alici=' . $ealici : '')) ?>#gonder"><?= e($ad) ?></a>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    </aside>
   </div>
 
-  <div class="card panel" id="sablonlar" style="margin-bottom:18px">
-    <h2 style="margin:0 0 4px;font-size:17px">Otomatik e-posta şablonları</h2>
-    <p class="muted mini" style="margin:0 0 10px">Metni değiştirip kaydedin; "Varsayılana dön" orijinal metni geri getirir. Değişkenler: {magaza} {email} {kullanici} {deneme_bitis} {kalan_gun} {giris_adresi} {site} {telefon} {durum} {id}</p>
-    <?php foreach ($etan as $k => [$ad, $ne, $kime]): $s = $esab[$k]; ?>
-      <details style="border-top:1px solid var(--line);padding:10px 0">
-        <summary style="cursor:pointer;font-weight:800"><?= e($ad) ?> <span class="muted mini" style="font-weight:600">· <?= e($ne) ?> · <?= e($kime) ?></span>
-          <?php if (empty($ea['otomatik'][$k])): ?> <span class="badge b-lite">Kapalı</span><?php endif; ?><?php if ($s['ozel']): ?> <span class="badge b-ucretli">Özelleştirildi</span><?php endif; ?></summary>
-        <form method="post" style="margin-top:10px">
-          <?= csrf_field() ?><input type="hidden" name="action" value="eposta_sablon"><input type="hidden" name="sablon" value="<?= e($k) ?>">
-          <label class="field"><span>Konu</span><input type="text" name="konu" maxlength="200" value="<?= e($s['konu']) ?>"></label>
-          <label class="field"><span>Metin</span><textarea name="metin" rows="9"><?= e($s['metin']) ?></textarea></label>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary btn-sm">Kaydet</button>
-            <?php if ($s['ozel']): ?><button class="btn btn-ghost btn-sm" name="varsayilan" value="1">Varsayılana dön</button><?php endif; ?></div>
-        </form>
-      </details>
+  <?php elseif ($ebolum === 'otomatik'): ?>
+  <p class="muted" style="margin:-4px 0 16px">Bunlar kendiliğinden gider; her biri bir kez (aynı olay için tekrar gönderilmez). Kapatılan e-posta gitmez. Metni değiştirmek için "Düzenle"; tasarım türüne göre hazırdır.</p>
+  <?php foreach (['Kayıt' => 'Kayıt', 'Deneme' => 'Deneme süresi', 'Hesap' => 'Hesap değişiklikleri'] as $grup => $grupAd): ?>
+    <h2 class="ep-grup"><?= e($grupAd) ?></h2>
+    <div class="ep-liste">
+    <?php foreach ($etan as $k => [$ad, $ne, $kime, $g]): if ($g !== $grup) { continue; } $s = $esab[$k]; $acik = !empty($ea['otomatik'][$k]); $tema = eposta_sablon_gorunum($k)['tema'] ?? 'koyu'; ?>
+      <div class="card ep-oto <?= $acik ? '' : 'kapali' ?>">
+        <div class="ep-oto-bas">
+          <i class="ep-nokta" style="background:<?= e($etemalar[$tema][0]) ?>"></i>
+          <div class="ep-oto-ad">
+            <b><?= e($ad) ?></b>
+            <small><?= e($ne) ?> · <?= e($kime) ?><?= $s['ozel'] ? ' · <em>metin değiştirildi</em>' : '' ?></small>
+          </div>
+          <a class="btn btn-ghost btn-sm" href="merkez-panel.php?eposta_onizle=<?= e($k) ?>" target="_blank" rel="noopener">Önizle</a>
+          <form method="post" class="inline"><?= csrf_field() ?><input type="hidden" name="action" value="eposta_otomatik"><input type="hidden" name="sablon" value="<?= e($k) ?>"><input type="hidden" name="acik" value="<?= $acik ? '0' : '1' ?>">
+            <button class="ep-anahtar <?= $acik ? 'on' : '' ?>" title="<?= $acik ? 'Kapat' : 'Aç' ?>"><span></span><?= $acik ? 'Açık' : 'Kapalı' ?></button></form>
+        </div>
+        <details class="ep-duzen">
+          <summary>Düzenle · <span class="muted"><?= e($s['konu']) ?></span></summary>
+          <div class="ep-duzen-ic">
+            <form method="post">
+              <?= csrf_field() ?><input type="hidden" name="action" value="eposta_sablon"><input type="hidden" name="sablon" value="<?= e($k) ?>">
+              <label class="field"><span>Konu</span><input type="text" name="konu" maxlength="200" value="<?= e($s['konu']) ?>"></label>
+              <label class="field"><span>Başlık</span><input type="text" name="baslik" maxlength="200" value="<?= e($s['baslik']) ?>"></label>
+              <label class="field"><span>Metin</span><textarea name="metin" rows="8"><?= e($s['metin']) ?></textarea></label>
+              <p class="muted mini" style="margin:-4px 0 10px">{magaza} {email} {kullanici} {deneme_bitis} {kalan_gun} {giris_adresi} {site} {telefon} {tarih}</p>
+              <div class="ep-alt"><button class="btn btn-primary btn-sm">Kaydet</button>
+                <?php if ($s['ozel']): ?><button class="btn btn-ghost btn-sm" name="varsayilan" value="1">Varsayılana dön</button><?php endif; ?></div>
+            </form>
+            <iframe class="ep-onizle" src="merkez-panel.php?eposta_onizle=<?= e($k) ?>" loading="lazy" title="<?= e($ad) ?> önizleme"></iframe>
+          </div>
+        </details>
+      </div>
     <?php endforeach; ?>
-  </div>
+    </div>
+  <?php endforeach; ?>
 
-  <div class="card" id="kayit" style="overflow-x:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px 4px;flex-wrap:wrap">
-      <b>Gönderim kaydı (son 50)</b>
-      <?php if ($eoz['bekliyor']): ?><form method="post" style="margin:0"><?= csrf_field() ?><input type="hidden" name="action" value="eposta_isle"><button class="btn btn-ghost btn-sm">Bekleyenleri şimdi gönder</button></form><?php endif; ?>
+  <?php elseif ($ebolum === 'kayit'): $ekayit = eposta_son_kayitlar(100); ?>
+  <div class="card" style="overflow-x:auto">
+    <div class="ep-tablo-bas">
+      <b>Son 100 gönderim</b>
+      <?php if ($eoz['bekliyor']): ?><form method="post" class="inline"><?= csrf_field() ?><input type="hidden" name="action" value="eposta_isle"><button class="btn btn-ghost btn-sm">Bekleyenleri şimdi gönder (<?= (int) $eoz['bekliyor'] ?>)</button></form><?php endif; ?>
     </div>
     <table class="utable">
-      <thead><tr><th style="text-align:left">Tarih</th><th style="text-align:left">Alıcı</th><th style="text-align:left">Konu</th><th style="text-align:left">Tür</th><th style="text-align:left">Durum</th><th></th></tr></thead>
+      <thead><tr><th>Tarih</th><th>Alıcı</th><th>Konu</th><th>Tür</th><th>Durum</th><th></th></tr></thead>
       <tbody>
       <?php foreach ($ekayit as $r): [$dAd, $dSinif] = $edurum[$r['durum']] ?? [$r['durum'], 'b-lite']; ?>
         <tr>
           <td class="mini" style="white-space:nowrap"><?= e(date('d.m.Y H:i', (int) strtotime((string) ($r['gonderildi_at'] ?: $r['created_at'])))) ?></td>
-          <td class="mini"><?= $r['magaza_isim'] ? e((string) $r['magaza_isim']) . '<br>' : '' ?><span class="muted"><?= e((string) $r['kime']) ?></span></td>
-          <td class="mini"><?= e((string) $r['konu']) ?><?= $r['hata'] && $r['durum'] !== 'gonderildi' ? '<br><span style="color:var(--red)">' . e((string) $r['hata']) . '</span>' : '' ?></td>
+          <td class="mini"><?= $r['magaza_isim'] ? '<b>' . e((string) $r['magaza_isim']) . '</b><br>' : '' ?><span class="muted"><?= e((string) $r['kime']) ?></span></td>
+          <td class="mini" style="min-width:220px"><?= e((string) $r['konu']) ?><?= $r['hata'] && $r['durum'] !== 'gonderildi' ? '<br><span style="color:var(--red)">' . e((string) $r['hata']) . '</span>' : '' ?></td>
           <td class="mini"><?= e($eturAd[$r['tur']] ?? (string) $r['tur']) ?><?= $r['sablon'] !== 'serbest' ? '<br><span class="muted">' . e($etan[$r['sablon']][0] ?? (string) $r['sablon']) . '</span>' : '' ?></td>
           <td><span class="badge <?= e($dSinif) ?>"><?= e($dAd) ?></span><?= (int) $r['deneme'] > 1 ? '<br><span class="muted mini">' . (int) $r['deneme'] . '. deneme</span>' : '' ?></td>
           <td><div class="row-act">
+            <a class="btn btn-ghost btn-sm" href="merkez-panel.php?eposta_gor=<?= (int) $r['id'] ?>" target="_blank" rel="noopener">Gör</a>
             <?php if ($r['durum'] === 'hata' || ($r['durum'] === 'bekliyor' && $r['hata'])): ?><form method="post" class="inline"><?= csrf_field() ?><input type="hidden" name="action" value="eposta_yeniden"><input type="hidden" name="kid" value="<?= (int) $r['id'] ?>"><button class="btn btn-ghost btn-sm">Yeniden dene</button></form><?php endif; ?>
             <?php if ($r['durum'] === 'bekliyor'): ?><form method="post" class="inline"><?= csrf_field() ?><input type="hidden" name="action" value="eposta_iptal"><input type="hidden" name="kid" value="<?= (int) $r['id'] ?>"><button class="btn btn-ghost btn-sm">İptal</button></form><?php endif; ?>
           </div></td>
         </tr>
       <?php endforeach; ?>
-      <?php if (!$ekayit): ?><tr><td colspan="6" class="muted" style="padding:18px;text-align:center">Henüz e-posta gönderilmedi.</td></tr><?php endif; ?>
+      <?php if (!$ekayit): ?><tr><td colspan="6" class="muted" style="padding:28px;text-align:center">Henüz e-posta gönderilmedi.</td></tr><?php endif; ?>
       </tbody>
     </table>
   </div>
+
+  <?php else: /* ayar */ ?>
+  <div class="ep-iki">
+    <form method="post" class="card panel" autocomplete="off">
+      <?= csrf_field() ?><input type="hidden" name="action" value="eposta_ayar">
+      <h3>Gönderim ayarları (SMTP)</h3>
+      <p class="desc">Google Workspace için sunucu smtp.gmail.com, port 587, STARTTLS.</p>
+      <label class="ep-acik"><input type="checkbox" name="acik" value="1" <?= $ea['acik'] ? 'checked' : '' ?>><div><b>E-posta gönderimi açık</b><small>Kapalıyken hiçbir e-posta gitmez (otomatikler dahil).</small></div></label>
+      <div class="grid2">
+        <label class="field"><span>Gönderen adres</span><input type="email" name="gonderen_adres" value="<?= e($ea['gonderen_adres']) ?>" placeholder="info@optiflow.com.tr"></label>
+        <label class="field"><span>Gönderen adı</span><input type="text" name="gonderen_ad" maxlength="80" value="<?= e($ea['gonderen_ad']) ?>"></label>
+      </div>
+      <div class="ep-uc">
+        <label class="field"><span>SMTP sunucusu</span><input type="text" name="host" value="<?= e($ea['host']) ?>" placeholder="smtp.gmail.com"></label>
+        <label class="field"><span>Port</span><input type="number" name="port" min="1" max="65535" value="<?= (int) $ea['port'] ?>"></label>
+        <label class="field"><span>Güvenlik</span><select name="guvenlik"><?php foreach (['tls' => 'STARTTLS', 'ssl' => 'SSL', 'yok' => 'Yok'] as $k => $v): ?><option value="<?= e($k) ?>" <?= $ea['guvenlik'] === $k ? 'selected' : '' ?>><?= e($v) ?></option><?php endforeach; ?></select></label>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>Kullanıcı adı</span><input type="text" name="kullanici" value="<?= e($ea['kullanici']) ?>" placeholder="info@optiflow.com.tr" autocomplete="off"></label>
+        <label class="field"><span>Uygulama şifresi</span><input type="password" name="sifre" placeholder="<?= $esifreVar ? '•••• kayıtlı · değiştirmek için yazın' : '16 haneli uygulama şifresi' ?>" autocomplete="new-password"></label>
+      </div>
+      <?php if ($esifreVar): ?><label class="ep-kucuk"><input type="checkbox" name="sifre_sil" value="1"> Kayıtlı şifreyi sil</label><?php endif; ?>
+      <div class="grid2">
+        <label class="field"><span>Yanıt adresi (boşsa gönderen)</span><input type="email" name="yanit_adres" value="<?= e($ea['yanit_adres']) ?>"></label>
+        <label class="field"><span>Yeni kayıt bildirimi (boşsa gönderen)</span><input type="email" name="bildirim_adres" value="<?= e($ea['bildirim_adres']) ?>"></label>
+      </div>
+      <label class="field"><span>Site adresi (e-postalardaki bağlantılar)</span><input type="url" name="site_url" value="<?= e($ea['site_url']) ?>"></label>
+      <div class="ep-alt"><button class="btn btn-primary">Kaydet</button><span class="muted mini">Şifre şifreli saklanır, bir daha gösterilmez.</span></div>
+    </form>
+
+    <aside class="ep-yan">
+      <form method="post" class="card panel">
+        <?= csrf_field() ?><input type="hidden" name="action" value="eposta_test">
+        <h3>Deneme e-postası</h3>
+        <p class="desc">Ayarları kaydettikten sonra kendinize gönderin.</p>
+        <div class="ep-satir"><input type="email" name="test_adres" required placeholder="kendi adresiniz"><button class="btn btn-ghost">Gönder</button></div>
+      </form>
+      <div class="card panel">
+        <h3>Google Workspace</h3>
+        <ol class="ep-adim">
+          <li>Google Hesabı › Güvenlik › <b>2 Adımlı Doğrulama</b>'yı açın.</li>
+          <li><b>myaccount.google.com/apppasswords</b> › ad "OptiFlow" › çıkan 16 haneli şifreyi buraya yapıştırın.</li>
+          <li>Yönetici konsolu › Gmail › <b>E-postanın kimliğini doğrula</b> › DKIM'i açın (gereksiz klasörüne düşmesin).</li>
+          <li>Gmail sınırı günde ≈2.000 e-posta.</li>
+        </ol>
+      </div>
+    </aside>
+  </div>
+  <?php endif; ?>
 
 <?php elseif ($gorunum === 'yeni'): /* ==================== YENİ MAĞAZA ==================== */ ?>
   <a class="crumb" href="merkez-panel.php">← Tüm mağazalar</a>

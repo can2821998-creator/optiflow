@@ -20,7 +20,7 @@ $GLOBALS['__merkez'] = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE
 $GLOBALS['__merkez']->exec("CREATE TABLE magazalar (id INTEGER PRIMARY KEY, isim TEXT, email TEXT, admin_kullanici TEXT, plan TEXT DEFAULT 'deneme', deneme_bitis TEXT NULL, durum TEXT DEFAULT 'aktif', eposta_ret INTEGER NOT NULL DEFAULT 0)");
 $GLOBALS['__merkez']->exec("CREATE TABLE eposta_kuyruk (id INTEGER PRIMARY KEY AUTOINCREMENT, magaza_id INTEGER NULL, kime TEXT NOT NULL, konu TEXT NOT NULL, metin TEXT NOT NULL,
     tur TEXT NOT NULL DEFAULT 'islem', sablon TEXT NOT NULL DEFAULT 'serbest', anahtar TEXT NULL UNIQUE, durum TEXT NOT NULL DEFAULT 'bekliyor', deneme INTEGER NOT NULL DEFAULT 0,
-    hata TEXT NULL, created_at TEXT NOT NULL, guncelleme TEXT NULL, gonderildi_at TEXT NULL)");
+    hata TEXT NULL, created_at TEXT NOT NULL, guncelleme TEXT NULL, gonderildi_at TEXT NULL, gorunum TEXT NULL)");
 function mq(string $sql, array $a): PDOStatement { $s = $GLOBALS['__merkez']->prepare($sql); $s->execute(array_values($a)); return $s; }
 function merkez_row(string $sql, array $a = []): ?array { $r = mq($sql, $a)->fetch(); return $r === false ? null : $r; }
 function merkez_rows(string $sql, array $a = []): array { return mq($sql, $a)->fetchAll(); }
@@ -242,6 +242,74 @@ dogru('merkez panelde e-posta görünümü ve eylemler', str_contains($panel, "\
 dogru('panelde satır içi script yok', !preg_match('/<script(?![^>]*\bsrc=)[^>]*>/i', $panel) && !preg_match('/\son(click|change|submit)=/i', $panel));
 dogru('cron e-postayı işler', str_contains((string) file_get_contents($kokDepo . '/app/pages/cron.php'), 'eposta_cron('));
 dogru('kayıt olayı bağlı', substr_count((string) file_get_contents($kokDepo . '/app/merkez.php'), 'eposta_olay_kayit(') >= 2);
+
+
+/* --- 9. Tasarım + yeni olaylar (4.52.0) --------------------------------------------------------------------------------- */
+merkez_q('DELETE FROM eposta_kuyruk');
+$giden = [];
+merkez_q("ALTER TABLE magazalar ADD COLUMN telefon TEXT NULL");
+foreach (array_keys(eposta_sablon_tanimlari()) as $k) {
+    $h = eposta_onizleme($k);
+    dogru("önizleme $k: başlık + tema rengi, doldurulmamış değişken yok", str_contains($h, '<h1') && str_contains($h, eposta_temalar()[eposta_sablon_gorunum($k)['tema']][0]) && !preg_match('/\{[a-z_]+\}/', $h));
+}
+$h = eposta_onizleme('hesap_hazir');
+dogru('hesap hazır: giriş düğmesi + adımlar', str_contains($h, 'Mağazama giriş yap') && str_contains($h, 'href="https://optiflow.com.tr/magaza-giris.php"') && str_contains($h, 'Kullanıcı girişi'));
+dogru('deneme 7: büyük gün vurgusu', str_contains(eposta_onizleme('deneme_7'), '>7 gün<'));
+dogru('işlem e-postasında çıkma bağlantısı yok', !str_contains($h, 'almak istemiyorum'));
+dogru('html kaçışlı (mağaza adı)', str_contains(eposta_onizleme('kayit_alindi', ['id' => 9, 'isim' => '<b>X</b>', 'email' => 'x@y.z']), '&lt;b&gt;X&lt;/b&gt;'));
+dogru('yönetici bildiriminde imza yok', !str_contains(eposta_onizleme('yonetici_yeni_kayit'), 'OptiFlow ekibi'));
+$d = eposta_duz('Metin', ['bilgiler' => [['Mağaza', 'A']], 'buton' => ['Giriş', 'https://x.y/z']]);
+dogru('düz metin: bilgiler + düğme bağlantısı + imza', str_contains($d, 'Mağaza: A') && str_contains($d, 'Giriş: https://x.y/z') && str_contains($d, 'OptiFlow ekibi'));
+$g = eposta_gorunum_doldur(['bilgiler' => [['Telefon', '{magaza_telefon}'], ['Mağaza', '{magaza}']]], eposta_degiskenler(['isim' => 'Q']));
+dogru('boş bilgi satırı atılır', count($g['bilgiler']) === 1 && $g['bilgiler'][0][1] === 'Q');
+
+$once = merkez_row('SELECT * FROM magazalar WHERE id = 4');
+merkez_q("UPDATE magazalar SET durum = 'dondu' WHERE id = 4");
+eposta_olay_magaza_degisti($once, 4);
+$son = end($giden);
+dogru('dondurulunca e-posta', count($giden) === 1 && $son['kime'] === 'ucretli@ornek.com' && str_contains($coz($son['ileti'])[0], 'donduruldu'));
+$once = merkez_row('SELECT * FROM magazalar WHERE id = 4');
+merkez_q("UPDATE magazalar SET durum = 'aktif' WHERE id = 4");
+eposta_olay_magaza_degisti($once, 4);
+dogru('yeniden açılınca e-posta', count($giden) === 2 && str_contains($coz(end($giden)['ileti'])[0], 'yeniden açıldı'));
+$once = merkez_row('SELECT * FROM magazalar WHERE id = 1');
+merkez_q("UPDATE magazalar SET plan = 'ucretli' WHERE id = 1");
+eposta_olay_magaza_degisti($once, 1);
+dogru('ücretliye geçince "abonelik başladı"', count($giden) === 3 && str_contains($coz(end($giden)['ileti'])[0], 'Aboneliğiniz'));
+eposta_olay_magaza_degisti($once, 1);
+dogru('aynı gün tekrar gitmez', count($giden) === 3);
+$once = merkez_row('SELECT * FROM magazalar WHERE id = 2');
+merkez_q('UPDATE magazalar SET deneme_bitis = ? WHERE id = 2', [$gun(31)]);
+eposta_olay_magaza_degisti($once, 2);
+dogru('deneme uzatılınca yeni tarih', count($giden) === 4 && str_contains($coz(end($giden)['ileti'])[1], date('d.m.Y', strtotime($gun(31)))));
+eposta_olay_magaza_degisti(merkez_row('SELECT * FROM magazalar WHERE id = 2'), 2);
+dogru('değişiklik yoksa e-posta yok', count($giden) === 4);
+eposta_olay_sifre_degisti(3);
+$p = $coz(end($giden)['ileti']);
+dogru('şifre değişti bildirimi (şifre yok)', count($giden) === 5 && str_contains($p[0], 'şifre') && end($giden)['kime'] === 'bitti@ornek.com');
+eposta_otomatik_ayarla('sifre_degisti', false);
+eposta_olay_sifre_degisti(3);
+dogru('kapatılan otomatik gitmez', count($giden) === 5 && empty(eposta_ayar()['otomatik']['sifre_degisti']) && !empty(eposta_ayar()['otomatik']['hesap_hazir']));
+$GLOBALS['eposta_ertele'] = true;
+eposta_olay_sifre_degisti(3);
+eposta_otomatik_ayarla('sifre_degisti', true);
+eposta_olay_sifre_degisti(3);
+dogru('ertele: kuyruğa girer, hemen gitmez', count($giden) === 5 && (int) merkez_scalar("SELECT COUNT(*) FROM eposta_kuyruk WHERE durum = 'bekliyor'") === 1);
+unset($GLOBALS['eposta_ertele']);
+eposta_kuyruk_isle();
+dogru('ertelenen cron ile gider', count($giden) === 6);
+
+$n = eposta_panel_gonder(['hedef' => 'tek', 'magaza_id' => 1, 'tur' => 'duyuru', 'tema' => 'yesil', 'konu' => 'K', 'baslik' => 'Büyük başlık {magaza}', 'metin' => 'M', 'buton_yazi' => 'Bak', 'buton_url' => 'https://optiflow.com.tr/x']);
+eposta_kuyruk_isle();
+$html = $coz(end($giden)['ileti'])[2];
+dogru('panel: tema + başlık + düğme', $n === 1 && str_contains($html, '#1f8a57') && str_contains($html, 'Büyük başlık Poyraz Optik') && str_contains($html, '>Bak &rarr;<') && str_contains($html, 'almak istemiyorum'));
+$hata = '';
+try { eposta_panel_gonder(['hedef' => 'tek', 'magaza_id' => 1, 'konu' => 'K', 'metin' => 'M', 'buton_url' => 'javascript:alert(1)']); } catch (DomainException $e) { $hata = 'ok'; }
+dogru('panel: zararlı düğme bağlantısı reddedilir', $hata === 'ok');
+$kid = (int) merkez_scalar('SELECT MAX(id) FROM eposta_kuyruk');
+dogru('gönderim kaydı HTML', str_contains((string) eposta_kayit_html($kid), 'Büyük başlık') && eposta_kayit_html(999999) === null);
+$panel = (string) file_get_contents($kokDepo . '/app/pages/merkez-panel.php');
+dogru('panel olayları bağlı', substr_count($panel, 'eposta_olay_magaza_degisti(') >= 4 && str_contains($panel, 'eposta_olay_sifre_degisti(') && str_contains($panel, "case 'eposta_otomatik'"));
 
 exec('rm -rf ' . escapeshellarg($kok));
 echo "eposta: $gecen geçti, $kalan kaldı\n";

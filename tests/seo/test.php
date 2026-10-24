@@ -166,6 +166,42 @@ $m = pz_dogrulama_meta();
 dogru('google meta', str_contains($m, '<meta name="google-site-verification" content="PanelKodu_1234567890">'), $m);
 dogru('bing meta', str_contains($m, '<meta name="msvalidate.01" content="ABCDEF0123456789ABCDEF0123456789">'), $m);
 
+echo "6) Rehber yazıları (4.49.0): alanlar, iç bağlantılar, SSS ve yapılandırılmış veri\n";
+require_once dirname(__DIR__, 2) . '/app/rehber.php';
+$hazir = glob(dirname(__DIR__, 2) . '/app/rehber-hazir/*.json') ?: [];
+dogru('en az 15 hazır yazı', count($hazir) >= 15, (string) count($hazir));
+$sluglar = array_map(static fn($f) => basename($f, '.json'), $hazir);
+foreach ($hazir as $f) {
+    $y = json_decode((string) file_get_contents($f), true);
+    $ad = basename($f);
+    dogru("$ad: geçerli JSON + slug = dosya adı", is_array($y) && ($y['slug'] ?? '') === basename($f, '.json'));
+    if (!is_array($y)) {
+        continue;
+    }
+    dogru("$ad: SEO başlığı ≤ 70", mb_strlen((string) ($y['seo_baslik'] ?? '')) <= 70);
+    dogru("$ad: açıklama 50–170", mb_strlen((string) ($y['meta'] ?? '')) >= 50 && mb_strlen((string) $y['meta']) <= 170);
+    dogru("$ad: hedef kelime var", trim((string) ($y['hedef_kelime'] ?? '')) !== '');
+    dogru("$ad: gövde temizlikten aynen geçer (yasak etiket yok)", strlen(rehber_temizle((string) $y['govde'])) > 0.9 * strlen((string) $y['govde']));
+    preg_match_all('#rehber\.php\?y=([a-z0-9-]+)#', (string) $y['govde'], $m);
+    foreach ($m[1] as $hedef) {
+        dogru("$ad: iç bağlantı hedefi var ($hedef)", in_array($hedef, $sluglar, true));
+    }
+    dogru("$ad: SSS biçimi", count(rehber_sss($y)) === count((array) ($y['sss'] ?? [])));
+}
+$sssli = rehber_bul('gozluk-recetesi-nasil-okunur');
+dogru('SSS normalize: 5 soru', $sssli && count(rehber_sss($sssli)) === 5);
+dogru('kaynak: javascript: elenir', rehber_kaynaklar(['kaynaklar' => [['ad' => 'x', 'url' => 'javascript:alert(1)'], ['ad' => 'y', 'url' => 'https://ornek.com/a']]]) === [['y', 'https://ornek.com/a']]);
+$sayfa = static function (string $slug): string {
+    $kod = '$_GET=["y"=>' . var_export($slug, true) . ']; $_SERVER["REQUEST_URI"]="/rehber.php"; require ' . var_export(dirname(__DIR__, 2) . '/app/pages/rehber.php', true) . ';';
+    return (string) shell_exec('php -d display_errors=1 -r ' . escapeshellarg($kod) . ' 2>&1');
+};
+$h = $sayfa('gozluk-recetesi-nasil-okunur');
+dogru('yazı sayfası: FAQPage verisi', str_contains($h, '"@type":"FAQPage"') && str_contains($h, '"@type":"Question"'), substr($h, 0, 300));
+dogru('yazı sayfası: görünür SSS bölümü', str_contains($h, 'Sık sorulanlar') && str_contains($h, 'Gözlük reçetesinde eksi ne demek?'));
+dogru('yazı sayfası: PHP uyarısı yok', !preg_match('/(Warning|Notice|Deprecated|Fatal error):/', $h));
+$h = $sayfa('sgk-gozluk-hakki');
+dogru('kaynaklar bölümü + nofollow', str_contains($h, 'Kaynaklar') && str_contains($h, 'rel="noopener nofollow"'));
+
 exec('rm -rf ' . escapeshellarg($kok));
 echo "SEO testleri: $gecen geçti, $kalan kaldı\n";
 exit($kalan ? 1 : 0);

@@ -1,0 +1,32 @@
+{
+ "slug": "e-recete-ile-gozluk-almak",
+ "baslik": "E-Reçete ile Gözlük Nasıl Alınır? Muayeneden Teslime Adım Adım",
+ "seo_baslik": "E-Reçete ile Gözlük Nasıl Alınır? Adım Adım",
+ "meta": "Göz muayenesinden sonra e-reçeteyle gözlük almanın adımları: optisyen seçimi, 10 iş günü, cam ve çerçeve seçimi, SGK farkı, hazırlık süresi ve teslimde kontrol.",
+ "hedef_kelime": "e-reçete gözlük",
+ "bolum": "Gözlük",
+ "gorsel": "atolye",
+ "govde": "<p>Göz doktoru gözlük yazdığında artık elinize kâğıt reçete verilmesi gerekmez: reçete elektronik olarak düzenlenir ve SGK ile anlaşmalı optisyenler tarafından Medula sistemi üzerinden görülür. Aşağıda muayeneden gözlüğü teslim almaya kadar olan yolu sırasıyla anlatıyoruz.</p>\n<h2>1. Reçeteniz e-Nabız'da</h2>\n<p>Muayeneden sonra gözlük reçeteniz e-Nabız'daki reçeteler bölümünde görünür. Optisyene gittiğinizde reçetenin bilgilerini gösterebilir ya da optisyenin Medula'dan sorgulamasını isteyebilirsiniz. Reçetedeki değerlerin ne anlama geldiğini merak ediyorsanız <a href=\"rehber.php?y=gozluk-recetesi-nasil-okunur\">gözlük reçetesi nasıl okunur</a> yazımıza bakın.</p>\n<h2>2. 10 iş günü içinde anlaşmalı bir optisyene gidin</h2>\n<p>SGK desteğinden yararlanmak için reçetenin düzenlendiği tarihten itibaren <strong>10 iş günü</strong> içinde SGK ile anlaşmalı bir optik mağazasına başvurmanız gerekir. Süre geçerse yeni muayene gerekir. Kurallar için <a href=\"rehber.php?y=sgk-gozluk-hakki\">SGK gözlük hakkı</a> rehberimize bakabilirsiniz.</p>\n<h2>3. Çerçeve ve cam seçimi</h2>\n<p>Optisyen önce çerçeveyi yüzünüze ve numaranıza göre seçmenize yardım eder. Yüksek numaralarda küçük ve kapalı çerçeveler camın kenar kalınlığını azaltır. Ardından cam seçilir: indeks (incelik), kaplamalar (yansıma önleyici, sert kaplama, kir tutmaz) ve gerekiyorsa çok odaklı tasarım. Fark için <a href=\"rehber.php?y=gozluk-cami-indeksi-farki\">cam indeksi rehberine</a> bakabilirsiniz.</p>\n<h2>4. Ölçüler</h2>\n<p>Optisyen göz bebekleri arası mesafeyi (PD) ölçer; <a href=\"rehber.php?y=progresif-cam-nedir\">progresif camlarda</a> ayrıca her göz için ayrı mesafe ve montaj yüksekliği ölçülür. Bu ölçüler yanlış alınırsa en iyi cam bile rahatsız edebilir.</p>\n<h2>5. Fiyat ve SGK farkı</h2>\n<p>SGK, seçilen cam ve çerçeve için SUT'ta belirlenen tutarı öder; kalanı siz ödersiniz. İyi bir optisyen teklifte SGK payını ve size kalan tutarı ayrı ayrı gösterir. Birden fazla cam seçeneğini yan yana görmek karar vermeyi kolaylaştırır.</p>\n<h2>6. Gözlüğünüz ne zaman hazır olur?</h2>\n<p>Stokta bulunan tek odaklı camlarla gözlük çoğu zaman aynı gün ya da ertesi gün hazırlanır. Astigmatı yüksek, özel indeksli ya da progresif camlar laboratuvardan sipariş edildiği için genellikle birkaç gün sürer. Optisyeninize tahmini teslim gününü sorun; bazı mağazalar gözlük hazır olduğunda mesajla haber verir.</p>\n<h2>7. Teslim alırken kontrol edin</h2>\n<ul>\n<li>Uzağa ve yakına bakarken net görüyor musunuz? Hafif bir alışma normaldir, ama baş ağrısı ya da çift görme varsa söyleyin.</li>\n<li>Gözlük kulaklarınızı ve burnunuzu sıkıyor mu? Ayar mağazada yapılır.</li>\n<li>Garanti belgesini ve fişinizi alın; çerçeve ve cam garantisinin süresini sorun. <a href=\"rehber.php?y=gozluk-garanti-belgesi-takibi\">Gözlük garantisi</a>.</li>\n</ul>\n<blockquote><strong>Gözlükçüyseniz:</strong> OptiFlow Pro, Medula Optik ekranındaki reçeteyi tek tuşla siparişe aktarır; SGK payı teklife, sipariş atölye panosuna, \"gözlüğünüz hazır\" mesajı müşteriye kendiliğinden gider. <a href=\"kayit.php\">30 gün ücretsiz deneyin</a>, kart gerekmez.</blockquote>",
+ "sss": [
+  {
+   "s": "E-reçeteyi optisyene nasıl gösteririm?",
+   "c": "Reçeteniz e-Nabız'da görünür; ayrıca SGK ile anlaşmalı optisyen reçeteyi Medula sisteminden sorgulayabilir."
+  },
+  {
+   "s": "Gözlük kaç günde hazır olur?",
+   "c": "Stok camlarla genellikle aynı gün ya da ertesi gün; laboratuvardan sipariş edilen özel ve progresif camlarda genellikle birkaç gün sürer."
+  },
+  {
+   "s": "Reçetedeki numarayı başka bir optisyende kullanabilir miyim?",
+   "c": "Evet, SGK ile anlaşmalı herhangi bir optisyene 10 iş günü içinde başvurabilirsiniz."
+  },
+  {
+   "s": "Gözlüğe alışmak ne kadar sürer?",
+   "c": "Tek odaklı camlarda birkaç gün, progresif camlarda bir-iki hafta sürebilir. Rahatsızlık sürerse optisyeninize ve doktorunuza danışın."
+  }
+ ],
+ "yayinda": true,
+ "yayin_tarihi": "2026-10-24",
+ "guncelleme": "2026-10-24",
+ "silindi": false
+}

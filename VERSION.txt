@@ -1,6 +1,14 @@
 OPTIFLOW
-Release: 4.48.0 (2026-10-23)
+Release: 4.49.0 (2026-10-24)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.49.0 (Rehber: 10 yeni yazı, SSS + kaynaklar, FAQ yapılandırılmış verisi; şema değişmedi)
+  - Kullanıcı: "rehberi optik, gözlük ve Medula aramalarında öne çıkacak içerikle doldur". 10 yeni yazı (app/rehber-hazir):
+    gözlük reçetesi nasıl okunur, SGK gözlük hakkı, Medula Optik nedir, e-reçete ile gözlük, cam indeksi, progresif cam,
+    mavi ışık filtresi, optik mağaza açmak, ÜTS bildirimi, kontakt lens takibi. Yazılar birbirine iç bağlantıyla bağlı.
+  - Yazılara isteğe bağlı "sss" (görünür "Sık sorulanlar" bölümü + FAQPage JSON-LD) ve "kaynaklar" (nofollow) alanları;
+    Article verisine anahtar kelime. Merkez panelden düzenlemede bu alanlar korunur (rehber_kaydet).
+  - Rehber ön sayfası başlık/açıklaması "Optik ve Gözlük Rehberi" olarak genişletildi. tests/seo: 170 test.
 
 DEĞİŞİKLİK NOTLARI — 4.48.0 (Tamir / hizmet fişi + bütün fişler yarım A4: üst müşteriye, alt mağazaya; şema 39)
   - Kullanıcı: "tüm fişleri bir A4 yarısı müşteriye yarısı bize kesilecek olarak düşün". Ortak çerçeve app/fis.php +

@@ -1,0 +1,32 @@
+{
+ "slug": "uts-optik-bildirim",
+ "baslik": "Optik Mağazalarında ÜTS Bildirimi: Alma, Tüketiciye Verme, İade ve İmha",
+ "seo_baslik": "ÜTS Bildirimi Optik Mağaza: Alma, Verme, İade Rehberi",
+ "meta": "Optisyenler ÜTS'ye hangi bildirimleri yapar? SGK'lı satışta neden bildirim yapılmaz, ücretli satışta tüketiciye verme, mal kabul, iade ve imha adım adım.",
+ "hedef_kelime": "üts bildirimi optik",
+ "bolum": "ÜTS",
+ "gorsel": "atolye",
+ "govde": "<p><strong>Ürün Takip Sistemi (ÜTS)</strong>, tıbbi cihazların üreticiden son kullanıcıya kadar izlendiği, Sağlık Bakanlığı'na bağlı bir sistemdir. Optik mağazalarında satılan karekodlu ürünler de bu sistemde izlenir; her ürünün mağazaya girişi ve mağazadan çıkışı bildirilir. Bildirimlerin hangi durumda kim tarafından yapıldığını karıştırmak, en sık yaşanan \"çift kayıt\" hatasına yol açar.</p>\n<h2>Temel kural: SGK'lı satışta bildirimi Medula yapar</h2>\n<p>SGK'lı bir reçetede ürünün karekodu Medula'ya okutulduğunda ürün ÜTS'den Medula üzerinden düşülür. Bu satış için mağazanın ayrıca ÜTS'ye \"tüketiciye verme\" bildirimi yapmasına gerek yoktur; yapılırsa aynı ürün iki kez bildirilmiş olur ve ÜTS reddeder. Mağaza kendi stokunda bu ürünün çıkışını yalnızca \"SGK (Medula)\" olarak kaydetmelidir.</p>\n<h2>Bildirim türleri</h2>\n<table><thead><tr><th>Durum</th><th>Bildirim</th><th>Not</th></tr></thead><tbody>\n<tr><td>Tedarikçiden mal geldi</td><td>Alma</td><td>Tedarikçi önce \"verme\" bildirir, mağaza \"alma\" ile kabul eder</td></tr>\n<tr><td>Ücretli (SGK'sız) satış</td><td>Tüketiciye verme</td><td>Teslim tarihiyle bildirilir</td></tr>\n<tr><td>SGK'lı satış</td><td>Bildirim yok</td><td>Medula düşer</td></tr>\n<tr><td>Müşteri iadesi / satış iptali</td><td>Tüketiciden iade alma</td><td>İlk \"tüketiciye verme\" kaydına bağlanır</td></tr>\n<tr><td>Tedarikçiye iade</td><td>Verme</td><td>Tedarikçinin ÜTS kurum numarası ve belge numarasıyla</td></tr>\n<tr><td>Son kullanma tarihi geçmiş / hasarlı ürün</td><td>İmha (bertaraf)</td><td>Tutanak numarasıyla</td></tr>\n</tbody></table>\n<h2>Sistem token'ı</h2>\n<p>ÜTS'ye program üzerinden bildirim yapmak için mağazanın ÜTS'de e-imza ya da mobil imzayla oluşturduğu bir <strong>sistem token'ı</strong> gerekir. Bu token bir şifre gibidir: yalnızca ÜTS'ye (saglik.gov.tr alan adına) ve şifreli bağlantıyla gönderilmeli, başka yerde saklanmamalıdır. ÜTS'nin ayrıca bir test ortamı vardır; yeni bir programa geçerken önce test ortamında denemek hatalı canlı kayıtları önler.</p>\n<h2>Müşteri bilgisi gönderilir mi?</h2>\n<p>Optik ürünlerin çoğunda tüketiciye verme bildirimi için müşterinin adı ya da T.C. kimlik numarası zorunlu değildir. KVKK açısından da zorunlu olmayan kişisel veriyi göndermemek en doğrusudur.</p>\n<h2>Sık yapılan hatalar</h2>\n<ul>\n<li><strong>SGK'lı satışı ayrıca bildirmek:</strong> Çift kayıt; ÜTS reddeder.</li>\n<li><strong>Mal kabulü unutmak:</strong> \"Alma\" bildirimi yapılmayan ürün Medula'da okutulamayabilir.</li>\n<li><strong>İadeyi yeni satış gibi girmek:</strong> İade, ilk satış kaydına bağlı \"tüketiciden iade alma\" ile yapılmalıdır.</li>\n</ul>\n<blockquote><strong>Gözlükçüyseniz:</strong> OptiFlow'un ÜTS modülü mal kabulde \"alma\", ücretli satışta teslimle birlikte \"tüketiciye verme\" bildirimini yapar; SGK'lı satışlarda bildirim yapmaz, stokta \"SGK (Medula)\" çıkışı kaydeder. Token şifreli saklanır. <a href=\"kayit.php\">30 gün ücretsiz deneyin</a>.</blockquote>",
+ "sss": [
+  {
+   "s": "SGK'lı gözlük satışında ÜTS bildirimi yapılır mı?",
+   "c": "Hayır. Karekod Medula'ya okutulduğunda ürün ÜTS'den Medula üzerinden düşülür; ayrıca tüketiciye verme bildirimi yapılırsa çift kayıt olur."
+  },
+  {
+   "s": "Ücretli satışta hangi bildirim yapılır?",
+   "c": "Ürün müşteriye teslim edildiğinde teslim tarihiyle \"tüketiciye verme\" bildirimi yapılır."
+  },
+  {
+   "s": "Müşteri ürünü iade ederse ne yapılır?",
+   "c": "İlk satıştaki tüketiciye verme kaydına bağlı olarak \"tüketiciden iade alma\" bildirimi yapılır."
+  },
+  {
+   "s": "ÜTS sistem token'ı nedir?",
+   "c": "Mağazanın ÜTS'de e-imza ya da mobil imzayla oluşturduğu, programların bildirim yapmasını sağlayan anahtardır; şifre gibi korunmalıdır."
+  }
+ ],
+ "yayinda": true,
+ "yayin_tarihi": "2026-10-24",
+ "guncelleme": "2026-10-24",
+ "silindi": false
+}

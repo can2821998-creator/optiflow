@@ -1,0 +1,37 @@
+{
+ "slug": "gozluk-recetesi-nasil-okunur",
+ "baslik": "Gözlük Reçetesi Nasıl Okunur? SPH, CYL, AKS, ADD ve PD Ne Demek?",
+ "seo_baslik": "Gözlük Reçetesi Nasıl Okunur? SPH, CYL, AKS, ADD Anlamı",
+ "meta": "Gözlük reçetesindeki SPH, CYL, AKS, ADD ve PD değerleri ne anlama gelir? Eksi ve artı numara, astigmat, yakın ilavesi ve göz bebeği mesafesi örneklerle.",
+ "hedef_kelime": "gözlük reçetesi nasıl okunur",
+ "bolum": "Gözlük",
+ "gorsel": "siparis",
+ "manset": false,
+ "govde": "<p>Göz doktorunun yazdığı gözlük reçetesi ilk bakışta bir sayı tablosuna benzer: iki satır (sağ ve sol göz), birkaç sütun ve önlerinde artı ya da eksi işaretleri. Oysa bu tablo, gözlük camının nasıl üretileceğini eksiksiz anlatır. Bu yazıda reçetedeki her kısaltmayı sırayla açıklıyoruz; ister gözlük alacak kişi olun ister tezgâhın arkasındaki optisyen.</p>\n<h2>Sağ göz, sol göz: OD ve OS</h2>\n<p>Reçetede iki satır bulunur. Türkiye'de çoğunlukla <strong>SAĞ</strong> ve <strong>SOL</strong> yazılır; yabancı kaynaklı reçetelerde aynı satırlar <strong>OD</strong> (oculus dexter, sağ göz) ve <strong>OS</strong> (oculus sinister, sol göz) olarak geçer. Bazı reçetelerde ayrıca <strong>UZAK</strong> ve <strong>YAKIN</strong> başlıkları vardır: uzak satırı araba kullanmak, televizyon izlemek gibi uzak bakışlar; yakın satırı ise okuma içindir.</p>\n<h2>SPH (sferik): gözün asıl numarası</h2>\n<p>SPH, halk arasında \"göz numarası\" denen değerdir ve diyoptri (D) birimiyle yazılır. Değerler 0,25'lik adımlarla ilerler.</p>\n<ul>\n<li><strong>Eksi (−) değerler</strong> miyopi, yani uzağı bulanık görme anlamına gelir. Örnek: −2,00.</li>\n<li><strong>Artı (+) değerler</strong> hipermetropi, yani yakını (çoğu zaman uzağı da) zorlanarak görme anlamına gelir. Örnek: +1,50.</li>\n<li>Sayı sıfırdan uzaklaştıkça numara büyür; −4,00, −1,00'dan daha güçlü bir camdır.</li>\n</ul>\n<h2>CYL (silindirik): astigmat</h2>\n<p>CYL, gözün ön yüzeyinin her yönde aynı kavisi taşımamasından doğan <strong>astigmatı</strong> gösterir. Astigmatta görüntü bir yönde daha bulanık ya da uzamış görünür. CYL değeri boşsa ya da \"0\" yazıyorsa astigmat yoktur. Türkiye'de reçeteler genellikle eksi silindirle yazılır, ör. −0,75.</p>\n<h2>AKS (AX): astigmatın yönü</h2>\n<p>AKS, silindirik gücün hangi açıda uygulanacağını derece olarak söyler ve <strong>0 ile 180</strong> arasında bir sayıdır. Yalnızca CYL varsa anlamlıdır. \"SAĞ −2,00 −0,75 × 90\" yazılışında 90, astigmat düzeltmesinin 90 derecelik eksende olacağını gösterir. AKS camın montajında birkaç derece kaydığında bile görme bozulabildiği için atölyede en dikkatli işlenen değerdir.</p>\n<h2>ADD: yakın ilavesi</h2>\n<p>ADD, kırk yaşından sonra başlayan ve yakını görmeyi zorlaştıran <strong>presbiyopi</strong> için uzak numaranın üzerine eklenen güçtür. Her zaman artıdır ve çoğunlukla +0,75 ile +3,50 arasında yazılır. Uzak numarası −1,00, ADD +2,00 olan biri için yakın numarası −1,00 + 2,00 = +1,00 olur. ADD bulunan reçeteyle tek odaklı okuma gözlüğü, bifokal ya da <a href=\"rehber.php?y=progresif-cam-nedir\">progresif (çok odaklı) cam</a> hazırlanabilir.</p>\n<h2>PD: göz bebekleri arası mesafe</h2>\n<p>PD (pupiller distans), iki göz bebeğinin merkezi arasındaki mesafedir ve milimetreyle yazılır (yetişkinlerde çoğunlukla 56–72 mm). Camın optik merkezinin göz bebeğinin tam önüne gelmesi için gereklidir. Reçetede yazmıyorsa optisyen ölçer; progresif camlarda her göz için ayrı (monoküler) PD ve <strong>montaj yüksekliği</strong> de ölçülür.</p>\n<h2>Prizma ve diğer notlar</h2>\n<p>Bazı reçetelerde <strong>PRİZMA</strong> ve <strong>BAZ</strong> (iç, dış, üst, alt) değerleri bulunur; şaşılık ya da çift görme gibi durumlarda kullanılır. Doktorun \"sürekli kullanım\", \"yalnız uzak için\" gibi notları da camın türünü belirler.</p>\n<h2>Örnek bir reçeteyi birlikte okuyalım</h2>\n<table><thead><tr><th></th><th>SPH</th><th>CYL</th><th>AKS</th><th>ADD</th></tr></thead>\n<tbody><tr><td>SAĞ</td><td>−2,00</td><td>−0,75</td><td>90</td><td>+2,00</td></tr><tr><td>SOL</td><td>−1,75</td><td>−0,50</td><td>85</td><td>+2,00</td></tr></tbody></table>\n<p>Bu kişi iki gözünde de hafif miyop, hafif astigmat ve yakın için +2,00 ilaveye ihtiyaç duyuyor. Uzak gözlüğü ya da tek camda hem uzak hem yakını gösteren progresif gözlük yapılabilir.</p>\n<h2>Gözlük reçetesi lens reçetesi yerine geçer mi?</h2>\n<p>Hayır. Kontakt lens gözün üzerinde durduğu için güç hesabı farklıdır; lens reçetesinde ayrıca eğrilik (BC) ve çap (DIA) gibi değerler bulunur. Ayrıntılar için <a href=\"rehber.php?y=kontakt-lens-takibi\">kontakt lens rehberine</a> bakabilirsiniz.</p>\n<blockquote><strong>Gözlükçüyseniz:</strong> OptiFlow Pro, Medula Optik ekranındaki reçeteyi tek tuşla siparişe aktarır; SGK payı teklife, sipariş atölye panosuna, \"gözlüğünüz hazır\" mesajı müşteriye kendiliğinden gider. <a href=\"kayit.php\">30 gün ücretsiz deneyin</a>, kart gerekmez.</blockquote>",
+ "sss": [
+  {
+   "s": "Gözlük reçetesinde eksi ne demek?",
+   "c": "Eksi (−) değer miyopiyi gösterir; uzağı bulanık görürsünüz. Sayı büyüdükçe (ör. −1,00'dan −3,00'a) numara artar."
+  },
+  {
+   "s": "CYL boşsa ne anlama gelir?",
+   "c": "CYL boş ya da sıfırsa astigmat yoktur ve AKS değeri de yazılmaz."
+  },
+  {
+   "s": "AKS kaç olmalı?",
+   "c": "AKS 0 ile 180 derece arasında herhangi bir değer olabilir; doğru ya da yanlış değeri yoktur, astigmatın yönünü gösterir."
+  },
+  {
+   "s": "ADD nedir, herkesin reçetesinde olur mu?",
+   "c": "ADD yakın ilavesidir; genellikle 40 yaşından sonra yakını görmek zorlaştığında yazılır. Gençlerin reçetesinde çoğunlukla bulunmaz."
+  },
+  {
+   "s": "PD reçetede yazmıyorsa ne olur?",
+   "c": "Sorun değil; optisyen göz bebekleri arası mesafeyi mağazada cetvel ya da pupillometreyle ölçer."
+  }
+ ],
+ "yayinda": true,
+ "yayin_tarihi": "2026-10-24",
+ "guncelleme": "2026-10-24",
+ "silindi": false
+}

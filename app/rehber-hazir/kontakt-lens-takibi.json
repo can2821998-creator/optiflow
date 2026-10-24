@@ -1,0 +1,32 @@
+{
+ "slug": "kontakt-lens-takibi",
+ "baslik": "Kontakt Lens Takibi: Kullanım Süreleri, Lens Reçetesi ve Müşteri Hatırlatma",
+ "seo_baslik": "Kontakt Lens Kullanım Süresi, Reçetesi ve Takibi",
+ "meta": "Günlük, iki haftalık ve aylık lensler ne zaman değişir? Lens reçetesindeki BC ve DIA ne demek, gözlük reçetesinden farkı ve optiklerde lens hatırlatma düzeni.",
+ "hedef_kelime": "kontakt lens kullanım süresi",
+ "bolum": "Müşteri",
+ "gorsel": "telefon",
+ "govde": "<p>Kontakt lens, optik mağazaları için hem müşterinin göz sağlığı hem de düzenli tekrar satış açısından önemli bir üründür. Lensin kullanım süresi aşıldığında göz enfeksiyonu riski artar; zamanında hatırlatma yapan mağaza ise hem müşterisini korur hem de onu kaybetmez.</p>\n<h2>Kullanım süreleri</h2>\n<table><thead><tr><th>Lens türü</th><th>Değişim</th><th>Not</th></tr></thead><tbody>\n<tr><td>Günlük</td><td>Her gün yenisi</td><td>Solüsyon gerekmez, akşam atılır</td></tr>\n<tr><td>İki haftalık</td><td>Paketi açıldıktan 14 gün sonra</td><td>Her gece solüsyonda saklanır</td></tr>\n<tr><td>Aylık</td><td>Paketi açıldıktan 30 gün sonra</td><td>Her gece solüsyonda saklanır</td></tr>\n<tr><td>Yıllık / sert (RGP)</td><td>Üreticinin ve hekimin belirttiği sürede</td><td>Düzenli kontrol gerekir</td></tr>\n</tbody></table>\n<p>Süre, lensin kaç gün takıldığından değil <strong>paketin açıldığı günden</strong> itibaren sayılır. Lensle uyumak, hekim özellikle önermedikçe yapılmamalıdır.</p>\n<h2>Lens reçetesi neden farklıdır?</h2>\n<p>Gözlük camı gözden yaklaşık 12 mm uzakta, lens ise doğrudan göz yüzeyindedir. Bu yüzden özellikle yüksek numaralarda güç farklı hesaplanır. Lens reçetesinde gözlük reçetesinden farklı olarak şunlar bulunur:</p>\n<ul>\n<li><strong>BC (taban eğrisi):</strong> Lensin iç yüzeyinin eğriliği, ör. 8,6 mm.</li>\n<li><strong>DIA (çap):</strong> Lensin çapı, ör. 14,2 mm.</li>\n<li><strong>SPH, CYL, AX:</strong> Astigmatlı (torik) lenslerde silindir ve eksen de yazılır.</li>\n<li><strong>Marka ve model:</strong> Hekim bazen belirli bir malzemeyi özellikle yazar.</li>\n</ul>\n<p>Gözlük reçetesindeki değerlerin anlamı için <a href=\"rehber.php?y=gozluk-recetesi-nasil-okunur\">gözlük reçetesi nasıl okunur</a> yazımıza bakabilirsiniz.</p>\n<h2>Hijyen: müşteriye her seferinde hatırlatın</h2>\n<ul>\n<li>Lensi takmadan ve çıkarmadan önce elleri yıkayıp kurulayın.</li>\n<li>Lensi ya da kabını musluk suyuyla yıkamayın; yalnızca uygun solüsyon kullanın.</li>\n<li>Solüsyonu her gece tazeleyin, kabı en az üç ayda bir değiştirin.</li>\n<li>Kızarıklık, ağrı ya da bulanık görmede lensi çıkarıp göz doktoruna başvurun.</li>\n</ul>\n<h2>Optikler için: lens hatırlatma düzeni</h2>\n<p>Lens müşterisi her ay ya da her üç ayda bir gelmesi gereken müşteridir. Hatırlatma yapılmazsa ya geç kalır ya da başka bir yerden alır. Basit bir düzen:</p>\n<ol>\n<li>Satışta lensin türünü, kutu adedini ve kullanım süresini kaydedin; bitiş tarihi bundan hesaplanır.</li>\n<li>Bitişten birkaç gün önce müşteriye kısa bir mesaj gönderin: \"Merhaba, lensleriniz önümüzdeki hafta bitiyor; yeni kutunuzu hazırlayabiliriz.\"</li>\n<li>Müşteri gelmezse bir telefonla hatırlatın; aramayı planlı arama olarak kaydedin. <a href=\"rehber.php?y=optik-atolye-siparis-takibi\">Sipariş ve müşteri takibi</a>.</li>\n<li>Mesaj göndermeden önce müşterinin bilgilendirme iznini almayı unutmayın.</li>\n</ol>\n<blockquote><strong>Gözlükçüyseniz:</strong> OptiFlow, satılan lensin kutu sayısı ve kullanım süresinden bitiş tarihini hesaplar, bitişi yaklaşan müşteriyi Hatırlatmalar › Kontakt lens listesinde gösterir; müşteri izinliyse WhatsApp mesajı kendiliğinden kuyruğa girer. <a href=\"kayit.php\">30 gün ücretsiz deneyin</a>.</blockquote>",
+ "sss": [
+  {
+   "s": "Aylık lens kaç gün kullanılır?",
+   "c": "Aylık lensler paketi açıldıktan 30 gün sonra değiştirilir; kaç gün takıldığına değil, paketin açıldığı güne göre sayılır."
+  },
+  {
+   "s": "Lens reçetesi ile gözlük reçetesi aynı mı?",
+   "c": "Hayır. Lens göz yüzeyinde durduğu için güç farklı hesaplanır ve lens reçetesinde ayrıca BC (taban eğrisi) ve DIA (çap) değerleri bulunur."
+  },
+  {
+   "s": "Lensle uyunur mu?",
+   "c": "Hekim özellikle bunun için üretilmiş bir lens önermedikçe lensle uyunmamalıdır; enfeksiyon riskini artırır."
+  },
+  {
+   "s": "Lens kabı ne sıklıkla değiştirilmeli?",
+   "c": "Lens kabını en az üç ayda bir değiştirin; solüsyonu da her gece tazeleyin."
+  }
+ ],
+ "yayinda": true,
+ "yayin_tarihi": "2026-10-24",
+ "guncelleme": "2026-10-24",
+ "silindi": false
+}

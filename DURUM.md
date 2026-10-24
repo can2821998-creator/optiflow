@@ -2,6 +2,11 @@
 
 *Son güncelleme: 23 Ekim 2026 (4.48.0 canlıda / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
+**Rehber SEO (24.10, 4.49.0):** 10 yeni rehber yazısı (reçete okuma, SGK gözlük hakkı, Medula Optik, e-reçete, cam indeksi,
+progresif, mavi ışık, optik açmak, ÜTS, kontakt lens) + SSS/FAQ verisi + kaynaklar. SGK tutarları kaynaklarda çelişkili olduğu
+için rakam verilmedi (SUT EK-3/D'ye yönlendirildi). Sıradaki: Search Console'da yeni yazılar için "dizine eklenmeyi iste",
+sitemap yeniden gönder; ayda 2 yazı; sektör sitelerinden bağlantı. "optik"/"gözlük" tek kelimeleri e-ticaret devlerinin; hedef uzun kuyruk.
+
 **Instagram filmleri (23.10):** `docs/tanitim-video/` — ortak motor (`ortak/`) + 3 film: Bir müşteri geldi (Medula sorgu → aktar; SGK payı örneği 150 ₺), Bugün aranacaklar, Tamir fişi. Ay sonu filmi kullanıcı kararıyla çıkarıldı. Ücretsiz MIT ses (Coqui, Actions › Seslendir) kötü bulundu → kullanıcı başka yapay zekâ ile okutacak: metin + dosya adları `docs/tanitim-video/SESLENDIRME.md`. 23.10 akşam: TTSMaker sesleri (v1–v3) `bol.py` ile bölündü, kullanıcının fon müziğiyle (`--muzik`, konuşmada kısılır) üç film teslim edildi (40 / 35 / 34 sn). Ses ve müzik dosyaları git'e girmedi (kullanıcıda).
 
 **Sunucu taşındı (23.10, ~16:50 canlı):** TürkTicaret paylaşımlı Plesk → kiralık sunucu (Plesk Obsidian, Administrator).

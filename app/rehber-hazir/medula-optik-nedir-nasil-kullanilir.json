@@ -1,0 +1,32 @@
+{
+ "slug": "medula-optik-nedir-nasil-kullanilir",
+ "baslik": "Medula Optik Nedir, Nasıl Kullanılır? Optisyenler İçin Adım Adım",
+ "seo_baslik": "Medula Optik Nedir, Nasıl Kullanılır? Adım Adım Rehber",
+ "meta": "Medula Optik ile e-reçete sorgulama, cam ve çerçeve seçimi, karekod okutma ve ay sonu faturası. Sık alınan uyarılar ve işi hızlandıran pratik yöntemler.",
+ "hedef_kelime": "medula optik",
+ "bolum": "Medula",
+ "gorsel": "siparis",
+ "govde": "<p><strong>Medula</strong>, Sosyal Güvenlik Kurumu'nun sağlık hizmeti sunucularıyla provizyon, reçete ve fatura işlemlerini yürüttüğü sistemdir. Hastaneler, eczaneler ve optisyenlik müesseseleri bu sistemin kendilerine ait ekranlarını kullanır. <strong>Medula Optik</strong>, SGK ile anlaşmalı optik mağazalarının gözlük reçetesini işleyip SGK'ya fatura ettiği bölümdür. Bu yazıda bir reçetenin Medula Optik'te izlediği yolu ve işi hızlandıran noktaları anlatıyoruz.</p>\n<h2>Kimler kullanır?</h2>\n<p>SGK ile sözleşmesi bulunan optisyenlik müesseseleri kullanır. Mağazaya Medula kullanıcı bilgileri tanımlanır; giriş kullanıcı adı ve şifreyle, bazı adımlarda güvenlik koduyla yapılır. Şifrenizi kimseyle paylaşmayın: Medula'da yapılan her işlem kullanıcıya bağlı kayıt altına alınır.</p>\n<h2>Bir reçetenin Medula Optik'teki yolu</h2>\n<ol>\n<li><strong>Reçeteyi sorgulama.</strong> Müşterinin e-reçetesi Medula'dan sorgulanır. Ekranda reçetenin tarihi, yazan hekim ve sağ/sol göz için SPH, CYL, AKS ve varsa ADD değerleri görünür. <a href=\"rehber.php?y=gozluk-recetesi-nasil-okunur\">Bu değerlerin anlamı</a>.</li>\n<li><strong>Uygunluk kontrolü.</strong> Reçetenin 10 iş günlük süresi ve kişinin gözlük hakkı kontrol edilir. Süresi geçmiş reçete ya da dolmamış yenileme süresi burada uyarı olarak çıkar.</li>\n<li><strong>Cam ve çerçeve seçimi.</strong> Reçeteye uygun cam ve çerçeve kalemleri seçilir. SGK'nın ödeyeceği tutar SUT listesine göre hesaplanır.</li>\n<li><strong>Karekod okutma.</strong> Karekodlu ürünler Medula'ya okutulur. SGK'lı satışta ürün ÜTS'den Medula üzerinden düşülür; aynı ürün için ayrıca ÜTS'ye \"tüketiciye verme\" bildirimi yapılmaz, yapılırsa çift kayıt olur. <a href=\"rehber.php?y=uts-optik-bildirim\">ÜTS rehberi</a>.</li>\n<li><strong>Kayıt ve teslim.</strong> İşlem kaydedilir, fark ücreti müşteriden alınır, gözlük hazırlanıp teslim edilir.</li>\n<li><strong>Ay sonu faturası.</strong> Ay içinde işlenen reçeteler ay sonunda tek faturada SGK'ya gönderilir. <a href=\"rehber.php?y=sgk-gozluk-faturasi-ay-sonu\">Ay sonu faturası nasıl hazırlanır</a>.</li>\n</ol>\n<h2>En çok vakit alan iş: değerleri iki kez yazmak</h2>\n<p>Medula'daki reçete bir kez ekranda görülür, ama çoğu mağazada aynı değerler sipariş fişine, deftere ya da başka bir programa yeniden yazılır. Kutuların içindeki sayılar kopyala-yapıştırla taşınamadığı için her reçete için sağ ve sol gözde dört-beş değer elle yazılır. Bu hem zaman kaybıdır hem de AKS gibi bir değerin yanlış yazılması atölyede yanlış cam demektir. <a href=\"rehber.php?y=medula-optik-recete-siparise-aktarma\">Medula reçetesini siparişe aktarma</a> yazımızda bu adımı nasıl ortadan kaldıracağınızı anlatıyoruz.</p>\n<h2>Sık görülen uyarılar ve ne yapmalı</h2>\n<ul>\n<li><strong>Reçete süresi dolmuş:</strong> Reçete 10 iş gününden eski. Müşteriyi yeniden muayeneye yönlendirin.</li>\n<li><strong>Yenileme süresi dolmamış:</strong> Kişi yakın zamanda SGK'dan gözlük almış. Ücretli satış yapılabilir; SGK payı uygulanmaz.</li>\n<li><strong>Karekod okunmuyor:</strong> Ürünün ÜTS'de mağazanıza \"alma\" bildirimiyle gelip gelmediğini kontrol edin.</li>\n<li><strong>Oturum düştü:</strong> Medula oturumu bir süre işlem yapılmazsa kapanır; uzun bekleyen işlemleri baştan açmak gerekebilir.</li>\n</ul>\n<h2>Güvenlik ve KVKK</h2>\n<p>Medula'da hasta kimlik bilgileri bulunur. Bu bilgileri mağazanın kendi sistemlerinde gereğinden fazla saklamamak gerekir. Örneğin OptiFlow, Medula'dan aktarılan metinlerdeki T.C. kimlik numarasını kaydetmeden önce gizler; Medula şifresi de yalnızca mağazanın kendi bilgisayarında, isterseniz saklanır.</p>\n<blockquote><strong>Gözlükçüyseniz:</strong> OptiFlow Pro, Medula Optik ekranındaki reçeteyi tek tuşla siparişe aktarır; SGK payı teklife, sipariş atölye panosuna, \"gözlüğünüz hazır\" mesajı müşteriye kendiliğinden gider. <a href=\"kayit.php\">30 gün ücretsiz deneyin</a>, kart gerekmez.</blockquote>",
+ "sss": [
+  {
+   "s": "Medula Optik'i kimler kullanabilir?",
+   "c": "SGK ile sözleşmesi bulunan optisyenlik müesseseleri, kendilerine tanımlanan kullanıcı bilgileriyle kullanır."
+  },
+  {
+   "s": "Medula'da reçete neden görünmüyor?",
+   "c": "Reçete henüz sisteme düşmemiş, yanlış numarayla sorgulanmış ya da 10 iş günlük süresi geçmiş olabilir. Reçete tarihini ve numarasını kontrol edin."
+  },
+  {
+   "s": "SGK'lı satışta ÜTS bildirimi yapılır mı?",
+   "c": "Karekod Medula'ya okutulduğunda ürün ÜTS'den Medula üzerinden düşülür; ayrıca tüketiciye verme bildirimi yapılmaz."
+  },
+  {
+   "s": "Medula reçetesini başka programa aktarmak mümkün mü?",
+   "c": "Evet. OptiFlow Pro, Medula Optik ekranındaki reçeteyi tek tuşla siparişe aktarır; değerler elle yazılmaz."
+  }
+ ],
+ "yayinda": true,
+ "yayin_tarihi": "2026-10-24",
+ "guncelleme": "2026-10-24",
+ "silindi": false
+}

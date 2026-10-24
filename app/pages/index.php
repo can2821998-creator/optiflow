@@ -56,6 +56,9 @@ if ($search !== '') {
     }
     $where[] = '(' . implode(' OR ', $or) . ')';
 }
+if ($sk = sube_kosul_siparis('o')) {   // 4.50.0 şube: açıldığı ya da teslim edileceği şube
+    $where[] = substr($sk, 5);
+}
 $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 $from = 'FROM orders o JOIN customers c ON c.id = o.customer_id ' . PAID_JOIN;
 
@@ -80,29 +83,29 @@ $stats = row(
         SUM(order_stage = 'hazirlandi') AS ready,
         SUM(order_stage = 'atolyede') AS workshop,
         SUM(DATE(created_at) = CURDATE() AND order_stage <> 'iptal') AS today
-     FROM orders"
+     FROM orders o WHERE 1 = 1" . sube_kosul_siparis('o')
 ) ?? [];
-$overdue = (int) scalar("SELECT COUNT(*) FROM orders WHERE promised_date < CURDATE() AND order_stage NOT IN ('hazirlandi','teslim_edildi','iptal')");
+$overdue = (int) scalar("SELECT COUNT(*) FROM orders o WHERE promised_date < CURDATE() AND order_stage NOT IN ('hazirlandi','teslim_edildi','iptal')" . sube_kosul_siparis('o'));
 $openBalance = is_super()
-    ? (float) scalar("SELECT COALESCE(SUM(o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount), 0) FROM orders o " . PAID_JOIN . " WHERE o.order_stage <> 'iptal' AND o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount > 0")
+    ? (float) scalar("SELECT COALESCE(SUM(o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount), 0) FROM orders o " . PAID_JOIN . " WHERE o.order_stage <> 'iptal' AND o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount > 0" . sube_kosul('o'))
     : null;
 
 // "Bugün" eylem panosu: dikkat gerektiren dört liste.
 $todayDue = rows(
     "SELECT o.id, o.promised_date, c.first_name, c.last_name FROM orders o JOIN customers c ON c.id = o.customer_id
-     WHERE o.promised_date = CURDATE() AND o.order_stage NOT IN ('teslim_edildi', 'iptal') ORDER BY o.id LIMIT 6"
+     WHERE o.promised_date = CURDATE() AND o.order_stage NOT IN ('teslim_edildi', 'iptal')" . sube_kosul_siparis('o') . " ORDER BY o.id LIMIT 6"
 );
 $overdueList = rows(
     "SELECT o.id, o.promised_date, c.first_name, c.last_name FROM orders o JOIN customers c ON c.id = o.customer_id
-     WHERE o.promised_date < CURDATE() AND o.order_stage NOT IN ('hazirlandi', 'teslim_edildi', 'iptal') ORDER BY o.promised_date LIMIT 6"
+     WHERE o.promised_date < CURDATE() AND o.order_stage NOT IN ('hazirlandi', 'teslim_edildi', 'iptal')" . sube_kosul_siparis('o') . " ORDER BY o.promised_date LIMIT 6"
 );
 $readyList = rows(
     "SELECT o.id, o.updated_at, c.first_name, c.last_name, c.phone FROM orders o JOIN customers c ON c.id = o.customer_id
-     WHERE o.order_stage = 'hazirlandi' ORDER BY o.updated_at LIMIT 6"
+     WHERE o.order_stage = 'hazirlandi'" . sube_kosul_hazir('o') . " ORDER BY o.updated_at LIMIT 6"
 );
 $dueBalanceList = can_see_amounts() ? rows(
     "SELECT o.id, c.first_name, c.last_name, o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount AS balance FROM orders o JOIN customers c ON c.id = o.customer_id " . PAID_JOIN . "
-     WHERE o.order_stage <> 'iptal' AND o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount > 0.009 ORDER BY balance DESC LIMIT 6"
+     WHERE o.order_stage <> 'iptal' AND o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount > 0.009" . sube_kosul('o') . " ORDER BY balance DESC LIMIT 6"
 ) : [];
 
 // 4.32.0 kâğıtsız tezgâh: gün sonu depoya gidecek eksik camlar (müşteri bilgisi gitmez)

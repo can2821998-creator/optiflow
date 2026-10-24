@@ -147,7 +147,7 @@ if (is_post()) {
             // Teklifsiz sipariş: sipariş + çerçeve + kapora, ardından reçete ve camlar (stoktaysa atölyeye)
             $c = find_customer($cid);
             $simdi = date('Y-m-d H:i:s');
-            $orderId = insert('orders', [
+            $orderId = insert('orders', sube_alan() + [
                 'customer_id' => $cid, 'first_name' => $c['first_name'], 'last_name' => $c['last_name'], 'phone' => (string) $c['phone'],
                 'total_amount' => $sip['tutar'], 'status' => 'siparis_verildi', 'order_stage' => 'siparis_verildi', 'transaction_type' => 'gozluk',
                 'lens_type' => $sip['lens'], 'frame_info' => mb_substr(post('frame_info'), 0, 255), 'notes' => mb_substr(post('notes'), 0, 2000) ?: null,

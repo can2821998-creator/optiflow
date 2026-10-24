@@ -9,6 +9,10 @@ if (!$order) {
     http_response_code(404);
     render_error_page('Sipariş bulunamadı', 'Silinmiş veya hatalı bir bağlantı olabilir.');
 }
+if (!sube_erisim($order['sube_id'] !== null ? (int) $order['sube_id'] : null) && !($order['teslim_sube_id'] && sube_erisim((int) $order['teslim_sube_id']))) {
+    http_response_code(403);   // 4.50.0 şube
+    render_error_page('Bu sipariş başka şubede', 'Sipariş ' . sube_adi((int) $order['sube_id']) . ' şubesine ait; yalnız o şubenin personeli ya da yönetici açabilir.');
+}
 $self = 'order.php?id=' . $id;
 
 if (is_post()) {
@@ -85,6 +89,7 @@ if (is_post()) {
                 flash('Dikkat: teslim edilen siparişte ' . money($order['balance']) . ' kalan bakiye var.', 'warn');
             }
             if ($stage === 'hazirlandi') {
+                sube_tasima_baslat($id);   // 4.50.0
                 $missing = (int) scalar("SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id WHERE r.order_id = ? AND i.stock_status <> 'stokta_var'", [$id]);
                 if ($missing) {
                     flash("Dikkat: bu siparişte henüz gelmemiş $missing cam görünüyor.", 'warn');
@@ -93,6 +98,25 @@ if (is_post()) {
         }
         $celebrateFlag = $stage === 'teslim_edildi' && $stage !== $order['order_stage'] ? '&teslim=1' : '';
         redirect((post('return') === 'pano' ? 'workshop.php' : $self) . $celebrateFlag);
+    }
+
+    // 4.50.0 şube: teslim şubesi ve şubeler arası gözlük taşıma
+    if ($action === 'teslim_sube' || $action === 'tasima_teslim') {
+        try {
+            if ($action === 'teslim_sube') {
+                $hedef = post_int('teslim_sube') ?: null;
+                sube_teslim_ayarla($id, $hedef);
+                audit('teslim_sube', 'order', $id, ['teslim şubesi' => $hedef ? sube_adi($hedef) : 'açıldığı şube']);
+                flash($hedef && $hedef !== (int) $order['sube_id'] ? 'Gözlük ' . sube_adi($hedef) . ' şubesinde teslim edilecek.' : 'Gözlük açıldığı şubede teslim edilecek.');
+            } else {
+                sube_tasima_teslim($id, (int) $user['id']);
+                audit('tasima_teslim', 'order', $id, ['şube' => sube_adi((int) $order['teslim_sube_id'])]);
+                flash('Gözlük şubeye geldi — müşteriye haber verilebilir.');
+            }
+        } catch (DomainException $e) {
+            flash($e->getMessage(), 'error');
+        }
+        redirect(post('return') === 'pano' ? 'workshop.php' : $self);
     }
 
     // 4.44.0 zarfsız atölye: adım parafı, geri alma, kutu / raf (app/atolye.php)
@@ -112,6 +136,9 @@ if (is_post()) {
                 $etki = atolye_adim_at($order, $adim, (int) $user['id'], post('raf_yeri'));
                 audit('atolye_adim', 'order', $id, ['adım' => ATOLYE_ADIMLARI[$adim], 'paraf' => $user['full_name']]);
                 if ($etki === 'hazir') {
+                    if (sube_tasima_baslat($id)) {
+                        flash('Gözlük ' . sube_adi((int) $order['teslim_sube_id']) . ' şubesine gönderilecek; orada teslim alınınca müşteriye haber verilir.', 'info');
+                    }
                     push_order_event($id, 'hazir');
                     $missing = (int) scalar("SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id WHERE r.order_id = ? AND i.stock_status <> 'stokta_var'", [$id]);
                     flash('Kontrol tamam — gözlük hazır, yeri: ' . atolye_raf(post('raf_yeri') ?: (string) $order['raf_yeri']) . '.');
@@ -158,6 +185,7 @@ if (is_post()) {
             ], 'id = ?', [$id]);
             audit('order_stage', 'order', $id, ['önce' => 'Atölyede · kalite kontrolde', 'sonra' => 'Hazır']);
             atolye_adim_kaydet($id, 'kontrol', (int) $user['id']);   // 4.44.0 sürükle-bırakta da paraf izi kalsın
+            sube_tasima_baslat($id);   // 4.50.0
             push_order_event($id, 'hazir');
             $missing = (int) scalar("SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id WHERE r.order_id = ? AND i.stock_status <> 'stokta_var'", [$id]);
             flash('Kalite kontrol tamamlandı, sipariş “Hazır” olarak işaretlendi.');
@@ -738,6 +766,33 @@ page_start($name . ' ' . order_no($id), 'orders');
   </div>
 <?php endif; ?>
 
+<?php if (sube_acik() && count(sube_listesi()) > 1):   // 4.50.0 şube: açıldığı şube, teslim şubesi, taşıma
+    $acilan = (int) $order['sube_id'];
+    $teslim = (int) ($order['teslim_sube_id'] ?: $acilan);
+    $yolda = $order['tasima_durum'] === 'yolda';
+    $acik = !in_array($order['order_stage'], ['teslim_edildi', 'iptal'], true); ?>
+<section class="card sube-kart">
+  <div class="sube-kart-govde">
+    <div><small>Açıldığı şube</small><b><?= sube_rozet($acilan) ?> <?= e(sube_adi($acilan)) ?></b></div>
+    <div><small>Teslim şubesi</small>
+      <?php if ($acik): ?>
+        <form method="post" class="inline"><?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="teslim_sube">
+          <select name="teslim_sube" data-auto-submit aria-label="Teslim şubesi"><?php foreach (sube_listesi() as $sid => $sb): ?><option value="<?= (int) $sid ?>" <?= $teslim === (int) $sid ? 'selected' : '' ?>><?= e((string) $sb['ad']) ?></option><?php endforeach; ?></select>
+          <noscript><button class="btn btn-sm">Kaydet</button></noscript></form>
+      <?php else: ?><b><?= e(sube_adi($teslim)) ?></b><?php endif; ?>
+    </div>
+    <?php if ($teslim !== $acilan): ?>
+      <div><small>Taşıma</small>
+        <?php if ($yolda): ?>
+          <b class="text-warn">Yolda → <?= e(sube_adi($teslim)) ?></b>
+          <?php if (sube_erisim($teslim)): ?><form method="post" class="inline"><?= csrf_field() ?><input type="hidden" name="order_id" value="<?= $id ?>"><input type="hidden" name="action" value="tasima_teslim"><button class="btn btn-sm btn-primary"><?= icon('check') ?> Teslim aldık</button></form><?php endif; ?>
+        <?php elseif ($order['tasima_durum'] === 'geldi'): ?><b class="text-ok">Şubeye geldi · <?= e(date_tr((string) $order['tasima_at'], true)) ?></b>
+        <?php else: ?><b class="muted">Hazır olunca gönderilir</b><?php endif; ?>
+      </div>
+    <?php endif; ?>
+  </div>
+</section>
+<?php endif; ?>
 <?php if (in_array($order['order_stage'], ['atolyede', 'hazirlandi'], true) && $order['transaction_type'] !== 'tamir'):
     // 4.44.0 zarfsız atölye: iş emrinin adım tablosu ekranda, kutu / raf zarfın yerine
     $wstage = $order['workshop_stage'] ?: 'montajda';

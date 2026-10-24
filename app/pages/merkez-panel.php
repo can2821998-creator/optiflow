@@ -85,7 +85,7 @@ if (is_post()) {
                 flash('Mağaza etkinleştirildi.');
                 break;
             case 'duzenle':
-                merkez_magaza_duzenle($id, post('isim'), post('email'));
+                merkez_magaza_duzenle($id, post('isim'), post('email'), post('telefon'));
                 merkez_log('duzenle', $id);
                 flash('Mağaza bilgileri güncellendi.');
                 break;
@@ -577,7 +577,7 @@ $gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yen
     <h1><?= e($detay['isim']) ?></h1>
     <span class="badge b-<?= e($detay['durum']) ?>"><?= e($durumEtiket[$detay['durum']] ?? $detay['durum']) ?></span>
     <span class="badge b-<?= e($detay['plan']) ?>"><?= e($planEtiket[$detay['plan']] ?? $detay['plan']) ?></span>
-    <span class="muted mini"><?= e($detay['email']) ?> · Kayıt: <?= e(date_tr($detay['created_at'])) ?><?= $detay['guncelleme'] ? ' · Güncelleme: ' . e(date_tr($detay['guncelleme'])) : '' ?></span>
+    <span class="muted mini"><?= e($detay['email']) ?><?php if (!empty($detay['telefon'])): ?> · <a href="tel:<?= e($detay['telefon']) ?>"><?= e(phone_display($detay['telefon'])) ?></a><?php endif; ?> · Kayıt: <?= e(date_tr($detay['created_at'])) ?><?= $detay['guncelleme'] ? ' · Güncelleme: ' . e(date_tr($detay['guncelleme'])) : '' ?></span>
     <?php if ($detay['durum'] === 'aktif'): ?>
     <form method="post" style="margin:0 0 0 auto">
       <?= csrf_field() ?><input type="hidden" name="action" value="gir"><input type="hidden" name="id" value="<?= (int) $detay['id'] ?>">
@@ -662,11 +662,12 @@ $gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yen
     <!-- Bilgiler -->
     <div class="card panel">
       <h3>Mağaza bilgileri</h3>
-      <p class="desc">Ad ve e-posta (giriş e-postası).</p>
+      <p class="desc">Ad, e-posta (giriş e-postası) ve iletişim telefonu.</p>
       <form method="post">
         <?= csrf_field() ?><input type="hidden" name="action" value="duzenle"><input type="hidden" name="id" value="<?= (int) $detay['id'] ?>"><input type="hidden" name="geri" value="detay">
         <label class="field"><span>Mağaza adı</span><input type="text" name="isim" value="<?= e($detay['isim']) ?>" required maxlength="120"></label>
         <label class="field"><span>E-posta</span><input type="email" name="email" value="<?= e($detay['email']) ?>" required></label>
+        <label class="field"><span>Telefon</span><input type="tel" name="telefon" value="<?= e($detay['telefon'] ?? '') ?>" placeholder="0532 111 22 33"></label>
         <p class="muted mini" style="margin:-4px 0 12px">Yönetici kullanıcı adı: <b><?= e($detay['admin_kullanici']) ?></b> (<?= e($detay['admin_ad']) ?>)</p>
         <button class="btn btn-primary">Kaydet</button>
       </form>
@@ -927,7 +928,7 @@ $gorunum = $detay ? 'detay' : (in_array(query('gorunum'), ['log', 'saglik', 'yen
       <tr class="<?= $m['durum'] === 'beklemede' ? 'bekle' : '' ?>">
         <td class="selc"><input class="selbox" type="checkbox" form="bulkform" name="sec[]" value="<?= (int) $m['id'] ?>" aria-label="Seç"></td>
         <td><a class="mg" href="merkez-panel.php?magaza=<?= (int) $m['id'] ?>"><span class="av"><?= e(merkez_bas_harf((string) $m['isim'])) ?></span><span><b><?= e($m['isim']) ?></b><small><?= e($m['admin_kullanici']) ?></small></span></a></td>
-        <td class="muted hide-sm"><?= e($m['email']) ?></td>
+        <td class="muted hide-sm"><?= e($m['email']) ?><?php if (!empty($m['telefon'])): ?><br><a href="tel:<?= e($m['telefon']) ?>"><?= e(phone_display($m['telefon'])) ?></a><?php endif; ?></td>
         <td class="muted hide-sm mini"><?= e($m['db_name'] ?? '—') ?></td>
         <td><span class="badge b-<?= e($m['plan']) ?>"><?= e($planEtiket[$m['plan']] ?? $m['plan']) ?></span></td>
         <td><span class="badge b-<?= ($m['surum'] ?? 'lite') === 'pro' ? 'pro' : 'lite' ?>"><?= ($m['surum'] ?? 'lite') === 'pro' ? 'Pro' : 'Lite' ?></span></td>

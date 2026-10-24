@@ -124,7 +124,7 @@ if (!is_post() && query_int('gelen') > 0) {
 /** Reçete için yeni sipariş açar (SGK aktarımı kaynaklı). */
 $siparisAc = static function (array $c) use ($me): int {
     $simdi = date('Y-m-d H:i:s');
-    $id = insert('orders', [
+    $id = insert('orders', sube_alan() + [
         'customer_id'   => (int) $c['id'],
         'first_name'    => $c['first_name'],
         'last_name'     => $c['last_name'],

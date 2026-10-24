@@ -506,7 +506,7 @@ function alis_kart_olustur(int $tedarikciId, array $k): int
             break;
         }
     }
-    return insert('frame_items', [
+    return insert('frame_items', (function_exists('sube_alan') ? sube_alan() : []) + [
         'brand'       => mb_substr($marka, 0, 80),
         'model'       => mb_substr($model, 0, 80) ?: null,
         'barcode'     => $barkod,

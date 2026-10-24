@@ -115,9 +115,9 @@ function page_start(string $title, string $active = '', array $opts = []): void
     $u = current_user();
     $missing = (int) scalar(
         "SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id
-         JOIN orders o ON o.id = r.order_id WHERE i.stock_status = 'stokta_yok' AND o.order_stage <> 'iptal'"
+         JOIN orders o ON o.id = r.order_id WHERE i.stock_status = 'stokta_yok' AND o.order_stage <> 'iptal'" . sube_kosul('o')
     );
-    $atolyede = (int) scalar("SELECT COUNT(*) FROM orders WHERE order_stage = 'atolyede'");
+    $atolyede = (int) scalar("SELECT COUNT(*) FROM orders o WHERE order_stage = 'atolyede'" . sube_kosul('o'));
     $pendingInvoices = (int) scalar("SELECT COUNT(*) FROM supplier_deliveries WHERE invoice_id IS NULL");
     $hatirlatma = function_exists('reminder_badge') ? reminder_badge() : 0;
     $gecikenBakiye = 0;
@@ -127,7 +127,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
                 "SELECT COUNT(*) FROM orders o " . PAID_JOIN . "
                   WHERE o.order_stage <> 'iptal'
                     AND o.total_amount - COALESCE(p.paid, 0) > 0.009
-                    AND o.balance_promise_date IS NOT NULL AND o.balance_promise_date < CURDATE()"
+                    AND o.balance_promise_date IS NOT NULL AND o.balance_promise_date < CURDATE()" . sube_kosul('o')
             );
         } catch (Throwable) {
             $gecikenBakiye = 0;
@@ -157,6 +157,11 @@ function page_start(string $title, string $active = '', array $opts = []): void
     }
     array_unshift($nav['Atölye'], ['tezgah', 'tezgah.php', 'Yeni müşteri · reçete', 'plus', 0], ['tamir', 'tamir.php', 'Tamir · hizmet', 'settings', 0]);
     ozellik_menusu_ekle($nav);   // 4.12.0 merkezden açılan modüller
+    if (function_exists('sube_acik') && sube_acik() && count(sube_listesi()) > 1) {   // 4.50.0 şube transferi
+        $gelenTransfer = (int) scalar("SELECT COUNT(*) FROM sube_transferleri WHERE durum = 'yolda'" . sube_kosul('', 'hedef_sube_id'))
+            + (int) scalar("SELECT COUNT(*) FROM orders WHERE tasima_durum = 'yolda' AND order_stage = 'hazirlandi'" . sube_kosul('', 'teslim_sube_id'));
+        $nav['Atölye'][] = ['transfer', 'transfer.php', 'Şube transferi', 'truck', $gelenTransfer];
+    }
     $nav = menu_gruplari($nav);   // 4.38.0 tek uzun liste yerine iş gruplarına
     if (is_super()) {
         $nav['Yönetim'] = [
@@ -164,10 +169,14 @@ function page_start(string $title, string $active = '', array $opts = []): void
             ['push', 'push-admin.php', 'Bildirim gönder', 'bell', 0],
             ['reports', 'reports.php', 'Raporlar', 'chart', 0],
             ['kar', 'kar.php', 'Kârlılık ve prim', 'chart', 0],
+            ['subeler', 'subeler.php', 'Şubeler', 'grid', 0],   // 4.50.0 yalnız özellik açıkken (aşağıda süzülür)
             ['yedek', 'yedek.php', 'Yedekleme', 'download', function_exists('backup_overdue') && backup_overdue() ? 1 : 0],
             ['logs', 'logs.php', 'İşlem geçmişi', 'history', 0],
             ['settings', 'settings.php', 'Ayarlar', 'settings', 0],
         ];
+        if (!function_exists('sube_acik') || !sube_acik()) {   // 4.50.0
+            $nav['Yönetim'] = array_values(array_filter($nav['Yönetim'], static fn($o) => $o[0] !== 'subeler'));
+        }
         if (function_exists('ozellik_acik') && ozellik_acik('tedarik_finans')) {   // 4.14.0
             array_splice($nav['Yönetim'], 1, 0, [
                 ['alis-faturasi', 'alis-faturasi.php', 'Alış faturası yükle', 'download', 0],
@@ -226,6 +235,7 @@ function page_start(string $title, string $active = '', array $opts = []): void
     </a>
     <button type="button" class="icon-btn tema-dugme tema-dugme-ust" data-tema-dugme title="Görünüm: açık / koyu / otomatik" aria-label="Görünümü değiştir"><?= icon('moon', 'ic tema-ay') ?><?= icon('sun', 'ic tema-gunes') ?></button>
     <a class="btn btn-block new-order" href="tezgah.php"><?= icon('plus') ?> Yeni müşteri · reçete</a>
+    <?= sube_secici() ?>
     <div class="global-search" data-global-search>
       <?= icon('search') ?>
       <input type="search" placeholder="Müşteri, sipariş no, tedarikçi ara…" autocomplete="off" data-global-search-input aria-label="Genel arama">
@@ -447,10 +457,10 @@ const BOLUM_ROZETI = ['atolye' => 'workshop', 'musteriler' => 'hatirlatma', 'kas
 const BOLUMLER = [
     'tezgah'     => ['Tezgâh',     'plus',     ['tezgah', 'tamir', 'hizli-satis', 'barkod', 'sgk-hak', 'sgk']],
     'siparisler' => ['Siparişler', 'orders',   ['orders', 'quotes', 'garantiler']],
-    'atolye'     => ['Atölye',     'glasses',  ['workshop', 'stock', 'cam-hatalari', 'cerceve', 'urunler', 'stok-oneri', 'uts-bildirim', 'uts']],
+    'atolye'     => ['Atölye',     'glasses',  ['workshop', 'stock', 'transfer', 'cam-hatalari', 'cerceve', 'urunler', 'stok-oneri', 'uts-bildirim', 'uts']],
     'musteriler' => ['Müşteriler', 'users',    ['customers', 'hatirlatma', 'mesajlar', 'telefon-asistani', 'bagis']],
     'kasa'       => ['Kasa',       'wallet',   ['tahsilat', 'kasa', 'faturalar', 'deliveries', 'sgk-mutabakat']],
-    'yonetim'    => ['Yönetim',    'settings', ['suppliers', 'alis-faturasi', 'senetler', 'reports', 'kar', 'push', 'yedek', 'logs', 'settings', 'basarilar']],
+    'yonetim'    => ['Yönetim',    'settings', ['subeler', 'suppliers', 'alis-faturasi', 'senetler', 'reports', 'kar', 'push', 'yedek', 'logs', 'settings', 'basarilar']],
 ];
 
 function bolumler(array $nav, string $active = ''): array
@@ -543,4 +553,37 @@ function menu_gruplari(array $nav): array
     }
     unset($nav['Atölye']);
     return $sonuc + $nav;
+}
+
+/**
+ * 4.50.0 — Menüdeki şube seçici. Özellik kapalıysa ya da kullanıcı tek şube görüyorsa ''.
+ * Seçim subeler.php'ye gider (eylem=sec) ve aynı sayfaya döner.
+ */
+function sube_secici(): string
+{
+    if (!function_exists('sube_acik') || !sube_acik()) {
+        return '';
+    }
+    $izinli = sube_izinli();
+    $tumu = is_super() && count($izinli) > 1;
+    if (count($izinli) < 2 && !$tumu) {
+        $tek = sube_listesi()[$izinli[0] ?? 0] ?? null;
+        return $tek ? '<div class="sube-secici tek">' . icon('home') . '<span>' . e((string) $tek['ad']) . '</span></div>' : '';
+    }
+    $aktif = aktif_sube();
+    $don = basename((string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? 'index.php'), PHP_URL_PATH)) ?: 'index.php';
+    $sorgu = (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_QUERY);
+    $h = '<form method="post" action="subeler.php" class="sube-secici">' . csrf_field()
+        . '<input type="hidden" name="eylem" value="sec"><input type="hidden" name="don" value="' . e($don . ($sorgu !== '' ? '?' . $sorgu : '')) . '">'
+        . icon('home') . '<select name="sube" data-auto-submit aria-label="Şube">';
+    if ($tumu) {
+        $h .= '<option value="0"' . ($aktif === 0 ? ' selected' : '') . '>Tüm şubeler</option>';
+    }
+    foreach ($izinli as $id) {
+        $s = sube_listesi()[$id] ?? null;
+        if ($s) {
+            $h .= '<option value="' . (int) $id . '"' . ($aktif === (int) $id ? ' selected' : '') . '>' . e((string) $s['ad']) . '</option>';
+        }
+    }
+    return $h . '</select><noscript><button class="btn btn-sm">Seç</button></noscript></form>';
 }

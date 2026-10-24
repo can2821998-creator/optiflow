@@ -11,11 +11,12 @@ $range = [$date . ' 00:00:00', date('Y-m-d', strtotime($date . ' +1 day')) . ' 0
 
 function kasa_expected_cash(array $range, string $date): float
 {
-    $cashIn = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE method = 'nakit' AND created_at >= ? AND created_at < ?", $range);
-    $cashRevenue = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM revenues WHERE method = 'nakit' AND revenue_date = ?", [$date]);
+    $cashIn = (float) scalar("SELECT COALESCE(SUM(p.amount), 0) FROM payments p JOIN orders o ON o.id = p.order_id WHERE p.method = 'nakit' AND p.created_at >= ? AND p.created_at < ?" . sube_kosul('o'), $range);
+    $cashRevenue = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM revenues WHERE method = 'nakit' AND revenue_date = ?" . sube_kosul(), [$date]);
     $cashOutSupplier = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM supplier_payments WHERE method = 'nakit' AND created_at >= ? AND created_at < ?", $range)
         + (table_var_mi('tedarikci_senetleri') ? (float) scalar("SELECT COALESCE(SUM(tutar), 0) FROM tedarikci_senetleri WHERE durum = 'odendi' AND odeme_yontemi = 'nakit' AND odeme_tarihi = ?", [$date]) : 0.0);   // 4.14.0 nakit ödenen senetler
-    $cashOutExpense = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE method = 'nakit' AND expense_date = ?", [$date]);
+    $cashOutExpense = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE method = 'nakit' AND expense_date = ?" . sube_kosul(), [$date]);
+    $cashOutSupplier *= sube_merkez_mi() ? 1 : 0;   // 4.50.0 tedarikçi ödemesi şubesiz: ana şube kasasından
     $cashSale = function_exists('satis_kasa_yontemleri')   // 4.17.0 hızlı satış nakdi
         ? (float) (array_column(satis_kasa_yontemleri($range), 'total', 'method')['nakit'] ?? 0) : 0.0;
     return kasa_devir($date) + $cashIn + $cashSale + $cashRevenue - $cashOutSupplier - $cashOutExpense;
@@ -31,7 +32,7 @@ if (is_post()) {
             flash('Gider açıklaması ve tutarı geçerli olmalı.', 'error');
             redirect('kasa.php?date=' . $date);
         }
-        insert('expenses', [
+        insert('expenses', sube_alan() + [
             'expense_date' => $date,
             'description'  => $desc,
             'amount'       => $amount,
@@ -56,7 +57,7 @@ if (is_post()) {
             flash('Gelir açıklaması ve tutarı geçerli olmalı.', 'error');
             redirect('kasa.php?date=' . $date);
         }
-        insert('revenues', [
+        insert('revenues', sube_alan() + [
             'revenue_date' => $date,
             'description'  => $desc,
             'amount'       => $amount,
@@ -91,7 +92,7 @@ if (is_post()) {
         }
         $expectedCash = kasa_expected_cash($range, $date);
         $diff = round($counted - $expectedCash, 2);
-        insert('cash_counts', [
+        insert('cash_counts', sube_alan() + [
             'count_date'      => $date,
             'counted_amount'  => $counted,
             'expected_amount' => $expectedCash,
@@ -108,7 +109,7 @@ if (is_post()) {
 }
 
 $byMethod = rows(
-    "SELECT method, COUNT(*) AS cnt, SUM(amount) AS total FROM payments WHERE created_at >= ? AND created_at < ? GROUP BY method ORDER BY total DESC",
+    "SELECT p.method, COUNT(*) AS cnt, SUM(p.amount) AS total FROM payments p JOIN orders o ON o.id = p.order_id WHERE p.created_at >= ? AND p.created_at < ?" . sube_kosul('o') . " GROUP BY p.method ORDER BY total DESC",
     $range
 );
 $byMethod = satis_kasa_birlestir($byMethod, satis_kasa_yontemleri($range));   // 4.17.0 hızlı satış ödemeleri dahil
@@ -116,8 +117,8 @@ $totalIn = (float) array_sum(array_column($byMethod, 'total'));
 
 $byStaff = rows(
     "SELECT COALESCE(u.full_name, 'Bilinmiyor') AS name, p.method, SUM(p.amount) AS total, COUNT(*) AS cnt
-     FROM payments p LEFT JOIN user_accounts u ON u.id = p.created_by
-     WHERE p.created_at >= ? AND p.created_at < ? GROUP BY name, p.method ORDER BY name, total DESC",
+     FROM payments p JOIN orders o ON o.id = p.order_id LEFT JOIN user_accounts u ON u.id = p.created_by
+     WHERE p.created_at >= ? AND p.created_at < ?" . sube_kosul('o') . " GROUP BY name, p.method ORDER BY name, total DESC",
     $range
 );
 $byStaff = satis_kasa_birlestir($byStaff, satis_kasa_personel($range), ['name', 'method']);
@@ -129,14 +130,15 @@ foreach ($byStaff as $r) {
     $staffTotals[$r['name']]['methods'][] = (payment_methods()[$r['method']] ?? $r['method']) . ' ' . money($r['total']);
 }
 
-$expenses = rows('SELECT e.*, u.full_name AS by_name FROM expenses e LEFT JOIN user_accounts u ON u.id = e.created_by WHERE e.expense_date = ? ORDER BY e.created_at DESC', [$date]);
+$expenses = rows('SELECT e.*, u.full_name AS by_name FROM expenses e LEFT JOIN user_accounts u ON u.id = e.created_by WHERE e.expense_date = ?' . sube_kosul('e') . ' ORDER BY e.created_at DESC', [$date]);
 $totalExpenses = (float) array_sum(array_column($expenses, 'amount'));
 
-$revenues = rows('SELECT r.*, u.full_name AS by_name FROM revenues r LEFT JOIN user_accounts u ON u.id = r.created_by WHERE r.revenue_date = ? ORDER BY r.created_at DESC', [$date]);
+$revenues = rows('SELECT r.*, u.full_name AS by_name FROM revenues r LEFT JOIN user_accounts u ON u.id = r.created_by WHERE r.revenue_date = ?' . sube_kosul('r') . ' ORDER BY r.created_at DESC', [$date]);
 $totalRevenues = (float) array_sum(array_column($revenues, 'amount'));
 
 $cashOutSupplier = (float) scalar("SELECT COALESCE(SUM(amount), 0) FROM supplier_payments WHERE method = 'nakit' AND created_at >= ? AND created_at < ?", $range)
         + (table_var_mi('tedarikci_senetleri') ? (float) scalar("SELECT COALESCE(SUM(tutar), 0) FROM tedarikci_senetleri WHERE durum = 'odendi' AND odeme_yontemi = 'nakit' AND odeme_tarihi = ?", [$date]) : 0.0);   // 4.14.0 nakit ödenen senetler
+$cashOutSupplier *= sube_merkez_mi() ? 1 : 0;   // 4.50.0
 $cashOutExpense = (float) array_sum(array_map(static fn($e) => $e['method'] === 'nakit' ? (float) $e['amount'] : 0, $expenses));
 $cashRevenue = (float) array_sum(array_map(static fn($r) => $r['method'] === 'nakit' ? (float) $r['amount'] : 0, $revenues));
 $cashIn = (float) (array_column($byMethod, 'total', 'method')['nakit'] ?? 0);
@@ -147,11 +149,11 @@ $payments = rows(
     "SELECT p.*, o.id AS order_id, c.first_name, c.last_name, u.full_name AS by_name
      FROM payments p JOIN orders o ON o.id = p.order_id JOIN customers c ON c.id = o.customer_id
      LEFT JOIN user_accounts u ON u.id = p.created_by
-     WHERE p.created_at >= ? AND p.created_at < ? ORDER BY p.created_at DESC",
+     WHERE p.created_at >= ? AND p.created_at < ?" . sube_kosul('o') . " ORDER BY p.created_at DESC",
     $range
 );
 
-$counts = rows('SELECT c.*, u.full_name AS by_name FROM cash_counts c LEFT JOIN user_accounts u ON u.id = c.created_by WHERE c.count_date = ? ORDER BY c.created_at DESC', [$date]);
+$counts = rows('SELECT c.*, u.full_name AS by_name FROM cash_counts c LEFT JOIN user_accounts u ON u.id = c.created_by WHERE c.count_date = ?' . sube_kosul('c') . ' ORDER BY c.created_at DESC', [$date]);
 $lastCount = $counts[0] ?? null;
 $isClosed = (bool) $lastCount;
 $isToday = $date === date('Y-m-d');
@@ -313,8 +315,9 @@ page_header(
         <?php if ($ok):
           $recentCounts = rows(
               "SELECT c.count_date, c.difference FROM cash_counts c
-               INNER JOIN (SELECT count_date, MAX(created_at) AS mx FROM cash_counts WHERE count_date <= ? GROUP BY count_date) latest
+               INNER JOIN (SELECT count_date, MAX(created_at) AS mx FROM cash_counts WHERE count_date <= ?" . sube_kosul() . " GROUP BY count_date) latest
                  ON latest.count_date = c.count_date AND latest.mx = c.created_at
+               WHERE 1 = 1" . sube_kosul('c') . "
                ORDER BY c.count_date DESC LIMIT 30",
               [$date]
           );
@@ -341,6 +344,8 @@ page_header(
             </form>
           </details>
         <?php endif; ?>
+      <?php elseif (sube_acik() && aktif_sube() === 0): // 4.50.0 tüm şubeler: sayım şubede yapılır ?>
+        <p class="hint" style="margin-top:16px">Kasa sayımı şube başına yapılır. Menüdeki şube seçicisinden bir şube seçin; burada tüm şubelerin toplamı görünüyor.</p>
       <?php else: ?>
         <form method="post" class="stack" style="margin-top:16px" data-kupur-form>
           <?= csrf_field() ?><input type="hidden" name="action" value="count">

@@ -26,7 +26,7 @@ function depo_eksik_kalemler(): array
            JOIN prescription_records r ON r.id = i.prescription_id
            JOIN orders o ON o.id = r.order_id
           WHERE i.stock_status = 'stokta_yok' AND o.order_stage <> 'iptal'
-            AND (i.cam_siparis_id IS NULL OR i.cam_siparis_id = 0)
+            AND (i.cam_siparis_id IS NULL OR i.cam_siparis_id = 0)" . (function_exists('sube_kosul') ? sube_kosul('o') : '') . "
           ORDER BY i.lens_type, i.id
           LIMIT 500"
     );

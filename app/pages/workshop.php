@@ -6,13 +6,17 @@ require_login();
 $staff = assignable_staff();
 $staffNames = array_column($staff, 'full_name', 'id');
 
+/* 4.50.0 şube: iş kuyrukları açıldığı şubeye, hazır gözlükler beklediği (teslim) şubeye göre */
+$sk = sube_kosul('o');
+$skh = sube_kosul_hazir('o');
+
 /* ---------- 1) Cam bekliyor ---------- */
 $waiting = rows(
     "SELECT o.id, o.order_stage, o.created_at, o.promised_date, o.raf_yeri, c.first_name, c.last_name,
             (SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id
               WHERE r.order_id = o.id AND i.stock_status <> 'stokta_var') AS missing
      FROM orders o JOIN customers c ON c.id = o.customer_id
-     WHERE o.order_stage IN ('siparis_verildi','bekliyor','rx_siparis_verildi') AND o.transaction_type <> 'tamir'
+     WHERE o.order_stage IN ('siparis_verildi','bekliyor','rx_siparis_verildi') AND o.transaction_type <> 'tamir' $sk
      ORDER BY o.created_at ASC LIMIT 60"
 );
 
@@ -20,7 +24,7 @@ $waiting = rows(
 $montajda = rows(
     "SELECT o.id, o.order_stage, o.workshop_stage, o.raf_yeri, o.created_at, o.promised_date, o.assigned_to, o.own_frame_pending, c.first_name, c.last_name
      FROM orders o JOIN customers c ON c.id = o.customer_id
-     WHERE o.order_stage = 'atolyede' AND (o.workshop_stage IS NULL OR o.workshop_stage = 'montajda') AND o.transaction_type <> 'tamir'
+     WHERE o.order_stage = 'atolyede' AND (o.workshop_stage IS NULL OR o.workshop_stage = 'montajda') AND o.transaction_type <> 'tamir' $sk
      ORDER BY o.own_frame_pending DESC, o.promised_date IS NULL, o.promised_date ASC, o.created_at ASC LIMIT 60"
 );
 
@@ -28,16 +32,16 @@ $montajda = rows(
 $kontrol = rows(
     "SELECT o.id, o.order_stage, o.workshop_stage, o.raf_yeri, o.created_at, o.promised_date, o.assigned_to, c.first_name, c.last_name
      FROM orders o JOIN customers c ON c.id = o.customer_id
-     WHERE o.order_stage = 'atolyede' AND o.workshop_stage = 'kontrol' AND o.transaction_type <> 'tamir'
+     WHERE o.order_stage = 'atolyede' AND o.workshop_stage = 'kontrol' AND o.transaction_type <> 'tamir' $sk
      ORDER BY o.promised_date IS NULL, o.promised_date ASC, o.created_at ASC LIMIT 60"
 );
 
 /* ---------- 4) Hazır (teslim bekleyen) ---------- */
-$hazirTotal = (int) scalar("SELECT COUNT(*) FROM orders WHERE order_stage = 'hazirlandi' AND transaction_type <> 'tamir'");
+$hazirTotal = (int) scalar("SELECT COUNT(*) FROM orders WHERE order_stage = 'hazirlandi' AND transaction_type <> 'tamir'" . sube_kosul_ifade('COALESCE(teslim_sube_id, sube_id)'));
 $hazir = rows(
     "SELECT o.id, o.order_stage, o.raf_yeri, o.created_at, o.updated_at, c.first_name, c.last_name, c.phone
      FROM orders o JOIN customers c ON c.id = o.customer_id
-     WHERE o.order_stage = 'hazirlandi' AND o.transaction_type <> 'tamir'
+     WHERE o.order_stage = 'hazirlandi' AND o.transaction_type <> 'tamir' $skh
      ORDER BY o.updated_at ASC LIMIT 20"
 );
 
@@ -45,19 +49,19 @@ $hazir = rows(
 $tamirAlindi = rows(
     "SELECT o.id, o.created_at, o.service_type, o.is_free, c.first_name, c.last_name
      FROM orders o JOIN customers c ON c.id = o.customer_id
-     WHERE o.transaction_type = 'tamir' AND o.order_stage IN ('siparis_verildi','bekliyor','rx_siparis_verildi')
+     WHERE o.transaction_type = 'tamir' AND o.order_stage IN ('siparis_verildi','bekliyor','rx_siparis_verildi') $sk
      ORDER BY o.created_at ASC LIMIT 30"
 );
 $tamirHazirlaniyor = rows(
     "SELECT o.id, o.created_at, o.service_type, o.is_free, c.first_name, c.last_name
      FROM orders o JOIN customers c ON c.id = o.customer_id
-     WHERE o.transaction_type = 'tamir' AND o.order_stage = 'atolyede'
+     WHERE o.transaction_type = 'tamir' AND o.order_stage = 'atolyede' $sk
      ORDER BY o.created_at ASC LIMIT 30"
 );
 $tamirHazir = rows(
     "SELECT o.id, o.updated_at, o.service_type, o.is_free, c.first_name, c.last_name, c.phone
      FROM orders o JOIN customers c ON c.id = o.customer_id
-     WHERE o.transaction_type = 'tamir' AND o.order_stage = 'hazirlandi'
+     WHERE o.transaction_type = 'tamir' AND o.order_stage = 'hazirlandi' $skh
      ORDER BY o.updated_at ASC LIMIT 30"
 );
 
@@ -65,12 +69,12 @@ $tamirHazir = rows(
 $dueBalance = can_see_amounts() ? rows(
     "SELECT o.id, c.first_name, c.last_name, o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount AS balance
      FROM orders o JOIN customers c ON c.id = o.customer_id " . PAID_JOIN . "
-     WHERE o.order_stage <> 'iptal' AND o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount > 0.009
+     WHERE o.order_stage <> 'iptal' AND o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount > 0.009 $sk
      ORDER BY balance DESC LIMIT 8"
 ) : [];
 $dueBalanceTotal = can_see_amounts() ? (float) scalar(
     "SELECT COALESCE(SUM(o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount), 0) FROM orders o " . PAID_JOIN . "
-     WHERE o.order_stage <> 'iptal' AND o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount > 0.009"
+     WHERE o.order_stage <> 'iptal' AND o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount > 0.009 $sk"
 ) : 0.0;
 
 /* ---------- 7) "Bugün" özeti ---------- */
@@ -168,6 +172,19 @@ page_start('Atölye panosu', 'workshop');
 </section>
 
 
+
+<?php $yoldaki = sube_acik() ? sube_yoldaki_gozlukler() : []; if ($yoldaki): // 4.50.0 başka şubede teslim ?>
+<section class="card yoldaki">
+  <div class="card-head"><h2><?= icon('truck') ?> Şubeye gelecek gözlükler</h2><small class="muted"><?= count($yoldaki) ?> gözlük yolda · gelince "Teslim aldık" deyin, müşteri aranacaklar listesine düşer</small></div>
+  <ul class="yoldaki-liste">
+    <?php foreach ($yoldaki as $y): ?>
+      <li><a href="order.php?id=<?= (int) $y['id'] ?>"><b><?= e($y['first_name'] . ' ' . $y['last_name']) ?></b> <span class="mono"><?= e(order_no((int) $y['id'])) ?></span></a>
+        <small><?= e(sube_adi((int) $y['sube_id'])) ?> → <?= e(sube_adi((int) $y['teslim_sube_id'])) ?></small>
+        <?php if (sube_erisim((int) $y['teslim_sube_id'])): ?><form method="post" action="order.php"><?= csrf_field() ?><input type="hidden" name="order_id" value="<?= (int) $y['id'] ?>"><input type="hidden" name="action" value="tasima_teslim"><input type="hidden" name="return" value="pano"><button class="btn btn-sm btn-primary"><?= icon('check') ?> Teslim aldık</button></form><?php endif; ?></li>
+    <?php endforeach; ?>
+  </ul>
+</section>
+<?php endif; ?>
 
 <div class="pano" data-pano>
 

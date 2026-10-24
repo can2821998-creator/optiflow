@@ -40,7 +40,7 @@ function urun_kategori_adi(?string $k): string
 
 function urun_hareket_sebepleri(): array
 {
-    return ['giris' => 'Stok girişi', 'satis' => 'Satış', 'iade' => 'İade / iptal', 'sayim' => 'Sayım düzeltmesi', 'fire' => 'Fire / kırık'];
+    return ['giris' => 'Stok girişi', 'satis' => 'Satış', 'iade' => 'İade / iptal', 'sayim' => 'Sayım düzeltmesi', 'fire' => 'Fire / kırık', 'transfer' => 'Şube transferi'];   // 4.50.0
 }
 
 /** Hızlı satış kullanabilir mi: tutarları görebilen herkes. İptal yalnızca yönetici. */
@@ -157,7 +157,9 @@ function urun_hareket(int $urunId, int $delta, string $sebep, ?int $satisId = nu
         $sebep = 'sayim';
     }
     $yeni = (int) $u['stok'] + $delta;
-    if ((int) $u['stok_takip'] === 1) {
+    if ((int) $u['stok_takip'] === 1 && function_exists('sube_tablo_var') && sube_tablo_var()) {
+        $yeni = urun_stok_degis($urunId, $delta);   // 4.50.0 şube stoku; urunler.stok = toplam
+    } elseif ((int) $u['stok_takip'] === 1) {
         update('urunler', ['stok' => $yeni, 'updated_at' => date('Y-m-d H:i:s')], 'id = ?', [$urunId]);
     } else {
         $yeni = (int) $u['stok'];
@@ -201,7 +203,7 @@ function satis_urun_ara(string $metin, int $limit = 12): array
         $f = rows(
             "SELECT * FROM frame_items WHERE is_active = 1
                AND (LOWER(COALESCE(brand, '')) LIKE ? OR LOWER(COALESCE(model, '')) LIKE ? OR LOWER(COALESCE(color, '')) LIKE ? OR LOWER(COALESCE(barcode, '')) LIKE ?)
-             ORDER BY qty > 0 DESC, brand, model LIMIT " . (int) $kalan,
+             " . (function_exists('sube_kosul') ? sube_kosul() : '') . " ORDER BY qty > 0 DESC, brand, model LIMIT " . (int) $kalan,
             [$like, $like, $like, $like]
         );
         foreach ($f as $x) {
@@ -225,7 +227,7 @@ function satis_urun_satiri(array $u): array
     return [
         'tur' => 'urun', 'id' => (int) $u['id'], 'ad' => (string) $u['ad'], 'kategori' => urun_kategori_adi($u['kategori']),
         'barkod' => (string) ($u['barkod'] ?? ''), 'fiyat' => $u['fiyat'] !== null ? (float) $u['fiyat'] : null,
-        'stok' => (int) $u['stok'], 'stok_takip' => (int) $u['stok_takip'] === 1,
+        'stok' => function_exists('urun_sube_stok') ? urun_sube_stok($u) : (int) $u['stok'], 'stok_takip' => (int) $u['stok_takip'] === 1,
     ];
 }
 
@@ -359,7 +361,7 @@ function satis_kaydet(array $kalemler, array $odemeler, float $genelIndirim = 0.
     $simdi = date('Y-m-d H:i:s');
 
     return (int) transaction(static function () use ($s, $temiz, $toplam, $toplamIndirim, $musteriId, $not, $kim, $simdi): int {
-        $id = insert('satislar', [
+        $id = insert('satislar', (function_exists('sube_alan') ? sube_alan() : []) + [
             'customer_id' => $musteriId ?: null,
             'ara_toplam'  => $s['ara_toplam'],
             'indirim'     => $toplamIndirim,
@@ -449,7 +451,7 @@ function satis_listesi(string $bas, string $bit, bool $iptallerDahil = true): ar
     $sql = 'SELECT s.*, u.full_name AS personel,
                    (SELECT COUNT(*) FROM satis_kalemleri k WHERE k.satis_id = s.id) AS kalem_sayisi
               FROM satislar s LEFT JOIN user_accounts u ON u.id = s.created_by
-             WHERE s.created_at >= ? AND s.created_at <= ?';
+             WHERE s.created_at >= ? AND s.created_at <= ?' . (function_exists('sube_kosul') ? sube_kosul('s') : '');
     $p = [$bas . ' 00:00:00', $bit . ' 23:59:59'];
     if (!$iptallerDahil) {
         $sql .= " AND s.durum <> 'iptal'";
@@ -465,9 +467,9 @@ function satis_listesi(string $bas, string $bit, bool $iptallerDahil = true): ar
 function satis_ozeti(string $bas, string $bit, ?int $personel = null): array
 {
     $p = [$bas . ' 00:00:00', $bit . ' 23:59:59'];
-    $ek = '';
+    $ek = function_exists('sube_kosul') ? sube_kosul('s') : '';   // 4.50.0 şube
     if ($personel) {
-        $ek = ' AND s.created_by = ?';
+        $ek .= ' AND s.created_by = ?';
         $p[] = $personel;
     }
     $r = row("SELECT COUNT(*) AS adet, COALESCE(SUM(s.toplam), 0) AS ciro, COALESCE(SUM(s.maliyet), 0) AS maliyet, COALESCE(SUM(s.indirim), 0) AS indirim
@@ -511,7 +513,7 @@ function satis_kasa_yontemleri(array $aralik): array
 {
     try {
         return rows("SELECT o.method, COUNT(*) AS cnt, SUM(o.amount) AS total FROM satis_odemeleri o JOIN satislar s ON s.id = o.satis_id
-                      WHERE s.durum <> 'iptal' AND o.created_at >= ? AND o.created_at < ? GROUP BY o.method", $aralik);
+                      WHERE s.durum <> 'iptal' AND o.created_at >= ? AND o.created_at < ?" . (function_exists('sube_kosul') ? sube_kosul('s') : '') . " GROUP BY o.method", $aralik);
     } catch (PDOException) {
         return [];
     }
@@ -523,7 +525,7 @@ function satis_kasa_personel(array $aralik): array
     try {
         return rows("SELECT COALESCE(u.full_name, 'Bilinmiyor') AS name, o.method, SUM(o.amount) AS total, COUNT(*) AS cnt
                        FROM satis_odemeleri o JOIN satislar s ON s.id = o.satis_id LEFT JOIN user_accounts u ON u.id = o.created_by
-                      WHERE s.durum <> 'iptal' AND o.created_at >= ? AND o.created_at < ? GROUP BY u.full_name, o.method", $aralik);
+                      WHERE s.durum <> 'iptal' AND o.created_at >= ? AND o.created_at < ?" . (function_exists('sube_kosul') ? sube_kosul('s') : '') . " GROUP BY u.full_name, o.method", $aralik);
     } catch (PDOException) {
         return [];
     }

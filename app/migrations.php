@@ -7,7 +7,7 @@ declare(strict_types=1);
  * ve eşzamanlı istekler için MySQL kilidi kullanılır. Hiçbir adım mevcut veriyi silmez
  * (tek istisna: v28'in progressive siparişlerde hatalı ürettiği fazladan yakın cam satırları).
  */
-const SCHEMA_VERSION = 39;
+const SCHEMA_VERSION = 41;
 
 function run_migrations(): void
 {
@@ -77,6 +77,8 @@ function run_migrations(): void
         if ($current < 37) { migrate_v37_defter(); set_schema_version(37); }
         if ($current < 38) { migrate_v38_arama_kayitlari(); set_schema_version(38); }
         if ($current < 39) { migrate_v39_hizmet(); set_schema_version(39); }
+        if ($current < 40) { migrate_v40_subeler(); set_schema_version(40); }
+        if ($current < 41) { migrate_v41_cerceve_barkod_sube(); set_schema_version(41); }
         app_log('Şema sürümü ' . $current . ' → ' . SCHEMA_VERSION . ' güncellendi.');
     } finally {
         scalar("SELECT RELEASE_LOCK('optiflow_migrate')");
@@ -1761,4 +1763,79 @@ function migrate_v38_arama_kayitlari(): void
 function migrate_v39_hizmet(): void
 {
     add_column('orders', 'hizmet_detay', 'TEXT NULL');
+}
+
+/** 4.50.0 — Şubeler (app/sube.php): tek hesap, ortak müşteri; sipariş, satış, kasa ve stok şubeye bağlı.
+    Mevcut her kayıt 1 numaralı ana şubeye yazılır; transfer fişi ve başka şubede teslim için alanlar. */
+function migrate_v40_subeler(): void
+{
+    db()->exec("CREATE TABLE IF NOT EXISTS subeler (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        ad VARCHAR(80) NOT NULL,
+        kisa VARCHAR(8) NOT NULL,
+        adres VARCHAR(255) NULL,
+        telefon VARCHAR(30) NULL,
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        sira INT NOT NULL DEFAULT 0,
+        created_at DATETIME NOT NULL
+    ) " . t_opts());
+    db()->exec("CREATE TABLE IF NOT EXISTS kullanici_subeleri (
+        user_id INT UNSIGNED NOT NULL,
+        sube_id INT UNSIGNED NOT NULL,
+        PRIMARY KEY (user_id, sube_id)
+    ) " . t_opts());
+    db()->exec("CREATE TABLE IF NOT EXISTS urun_stok (
+        urun_id INT UNSIGNED NOT NULL,
+        sube_id INT UNSIGNED NOT NULL,
+        stok INT NOT NULL DEFAULT 0,
+        PRIMARY KEY (urun_id, sube_id)
+    ) " . t_opts());
+    db()->exec("CREATE TABLE IF NOT EXISTS sube_transferleri (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        kaynak_sube_id INT UNSIGNED NOT NULL,
+        hedef_sube_id INT UNSIGNED NOT NULL,
+        durum VARCHAR(12) NOT NULL DEFAULT 'yolda',
+        not_metni VARCHAR(255) NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL,
+        teslim_by INT UNSIGNED NULL,
+        teslim_at DATETIME NULL,
+        INDEX idx_transfer_hedef (hedef_sube_id, durum)
+    ) " . t_opts());
+    db()->exec("CREATE TABLE IF NOT EXISTS sube_transfer_kalemleri (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        transfer_id INT UNSIGNED NOT NULL,
+        tur VARCHAR(10) NOT NULL,
+        kaynak_id INT UNSIGNED NOT NULL,
+        hedef_id INT UNSIGNED NULL,
+        ad VARCHAR(200) NOT NULL,
+        adet INT NOT NULL,
+        INDEX idx_transfer_kalem (transfer_id)
+    ) " . t_opts());
+    foreach (['orders', 'satislar', 'expenses', 'revenues', 'cash_counts', 'frame_items'] as $t) {
+        add_column($t, 'sube_id', 'INT UNSIGNED NULL');
+        add_index($t, 'idx_' . $t . '_sube', 'sube_id');
+    }
+    add_column('orders', 'teslim_sube_id', 'INT UNSIGNED NULL');   // boş = açıldığı şubede teslim
+    add_column('orders', 'tasima_durum', 'VARCHAR(10) NULL');      // yolda | geldi (teslim şubesi farklıysa)
+    add_column('orders', 'tasima_at', 'DATETIME NULL');
+    if (!(int) scalar('SELECT COUNT(*) FROM subeler')) {
+        db()->prepare('INSERT INTO subeler (id, ad, kisa, is_active, sira, created_at) VALUES (1, ?, ?, 1, 1, ?)')
+            ->execute(['Merkez', 'MRK', date('Y-m-d H:i:s')]);
+    }
+    foreach (['orders', 'satislar', 'expenses', 'revenues', 'cash_counts', 'frame_items'] as $t) {
+        db()->exec("UPDATE $t SET sube_id = 1 WHERE sube_id IS NULL");
+    }
+    db()->exec('INSERT IGNORE INTO urun_stok (urun_id, sube_id, stok) SELECT id, 1, stok FROM urunler');
+}
+
+/** 4.50.0 — Çerçeve barkodu şube içinde tekil: aynı model başka şubede ayrı satır (transfer, şube stoku). */
+function migrate_v41_cerceve_barkod_sube(): void
+{
+    if (index_exists('frame_items', 'idx_frame_items_barcode')) {
+        db()->exec('ALTER TABLE frame_items DROP INDEX idx_frame_items_barcode');
+    }
+    if (!index_exists('frame_items', 'uq_frame_items_sube_barkod')) {
+        db()->exec('ALTER TABLE frame_items ADD UNIQUE INDEX uq_frame_items_sube_barkod (barcode, sube_id)');
+    }
 }

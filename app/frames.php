@@ -21,6 +21,7 @@ function frame_reasons(): array
         'fire'   => 'Fire / kırık',
         'tedarikci_iade' => 'Tedarikçiye iade',   // 4.13.0 ÜTS
         'imha'   => 'İmha / bertaraf',            // 4.13.0 ÜTS
+        'transfer' => 'Şube transferi',           // 4.50.0
     ];
 }
 
@@ -56,7 +57,13 @@ function frame_new_barcode(): string
 function frame_find_by_barcode(string $barkod): ?array
 {
     $barkod = trim($barkod);
-    return $barkod === '' ? null : row('SELECT * FROM frame_items WHERE barcode = ?', [$barkod]);
+    if ($barkod === '') {
+        return null;
+    }
+    // 4.50.0 şube: aynı barkod birden çok şubede ayrı satır olabilir; aktif şubedeki önce
+    $sk = function_exists('sube_kosul') ? sube_kosul() : '';
+    return row('SELECT * FROM frame_items WHERE barcode = ?' . $sk . ' ORDER BY qty > 0 DESC, id LIMIT 1', [$barkod])
+        ?? ($sk !== '' ? row('SELECT * FROM frame_items WHERE barcode = ? ORDER BY qty > 0 DESC, id LIMIT 1', [$barkod]) : null);
 }
 
 /**

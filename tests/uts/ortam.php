@@ -166,6 +166,7 @@ function sema_kur(PDO $p): void
 
 require dirname(__DIR__, 2) . '/app/entegrasyon.php';
 require dirname(__DIR__, 2) . '/app/frames.php';
+require dirname(__DIR__, 2) . '/app/sube.php';   // 4.50.0: subeler tablosu yokken şube kodu hiçbir şey yapmaz
 require dirname(__DIR__, 2) . '/app/barkod.php';
 require dirname(__DIR__, 2) . '/app/uts.php';
 require dirname(__DIR__, 2) . '/app/alis.php';

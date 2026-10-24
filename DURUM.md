@@ -1,6 +1,6 @@
 # OptiFlow — güncel durum
 
-*Son güncelleme: 24 Ekim 2026 (4.49.0 canlıda / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
+*Son güncelleme: 24 Ekim 2026 (4.50.0 main'de, yayın sürüyor; canlı 4.49.0 / Pro 5.6.0 / Asistan 1.1.0 askıda)* — Claude Code devir notu: **`DEVAM-2026-10-11.md`**
 
 **Rehber SEO (24.10, 4.49.0):** 10 yeni rehber yazısı (reçete okuma, SGK gözlük hakkı, Medula Optik, e-reçete, cam indeksi,
 progresif, mavi ışık, optik açmak, ÜTS, kontakt lens) + SSS/FAQ verisi + kaynaklar. SGK tutarları kaynaklarda çelişkili olduğu
@@ -21,10 +21,10 @@ Domain Names "resolve to other servers" yeniden açılabilir; Plesk güncellemes
 dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. TürkTicaret hostingi iptal edilirse e-posta da gider.
 
 ## Sürüm
-- **Sunucu 4.48.0** (23.10 main'e birleştirildi: 4.46.0–4.48.0; kullanıcı GitHub FTP sırlarını yeni sunucuya çevirdi,
-  "Canlıya al" artık yeni sunucuya yükler), şema **39** (v36 atölye parafları + raf; v37 taksit + kasa devir/küpür; v38 arama_kayitlari; v39 hizmet_detay). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
-- **Canlı site: 4.49.0** (24.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.49.0-pro5.6.0; şema 39 değişmedi).
-  göç v36–v39 her mağazada ilk açılışta çalışır).
+- **Sunucu 4.50.0** (24.10 main'e birleştirildi: şubeler + kayıtta telefon; kullanıcı GitHub FTP sırlarını yeni sunucuya çevirdi,
+  "Canlıya al" yeni sunucuya yükler), şema **41** (v40 şubeler, v41 çerçeve barkodu şube içinde; v36 atölye parafları + raf; v37 taksit + kasa devir/küpür; v38 arama_kayitlari; v39 hizmet_detay). Android **OptiFlow Asistan 1.1.0** (site: indir/asistan/OptiFlow-Asistan.apk; dallarda önizleme: Release `asistan-onizleme`). Masaüstü **OptiFlow Pro 5.6.0**.
+- **Canlı site: 4.49.0** (24.10 "Sürüm yayınla" + "Canlıya al" başarılı; Release v4.49.0-pro5.6.0 — Rehber; şema 39).
+  Not: başka oturum Rehber'i 4.49.0 olarak çıkardığı için şubeler 4.50.0 oldu; göç v40–v41 her mağazada ilk açılışta çalışır.
 - Yeni çalışma bilgisayarı (07.10): `C:\Users\Poyraz AB\Documents\optiflow`, Git 2.55 + PHP 8.3 (winget), commit kimliği
   can <can2821998@gmail.com>. Bu bilgisayarda PHP testleri çalışır (seo testi Windows ortamı yüzünden düşer).
   15.10: Node 22 winget ile kuruldu (PATH'e girmedi: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_*\node-v22.23.2-win-x64`);
@@ -38,7 +38,20 @@ dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. T
   doğrulama CI'da (Linux).
 
 
-## Son oturum (4.48.0 — Tamir / hizmet fişi, bütün fişler yarım A4; TEKNOPLUS, dal oturum/tasarim)
+## Son oturum (4.50.0 — Şubeler + kayıtta telefon; TEKNOPLUS, dal oturum/sube → main)
+- Kullanıcı (24.10): "şubeli versiyona talep var acilen geliştirelim" + "kayıt sonrasında hesap aktif edilince insanlarla
+  tekrar iletişime geçemiyoruz, telefon numarası alalım". Seçimler: tek hesap ortak müşteri; personel kendi şubesi,
+  yönetici hepsi; ilk sürümde şube tanımı + seçici, karşılaştırma, stok transferi, başka şubede teslim (hepsi).
+- Yapılan: app/sube.php (yetki, aktif şube, süzgeçler sube_kosul / _siparis / _hazir, taşıma, transfer, şube stoku,
+  karşılaştırma), subeler.php, transfer.php, menü şube seçicisi, sipariş şube kartı; süzgeç: ana ekran, atölye, kasa,
+  veresiye, aranacaklar, tamir, satış, çerçeve, ürün, cam siparişleri, depo listesi. Göç v40 + v41. Özellik 'sube'.
+  Kayıtta telefon: kayit.php zorunlu, merkez magazalar.telefon, merkez panelde liste/ayrıntı/düzenleme.
+- Denendi (yerel, özellik açık, Merkez + Kadıköy): şubeye göre ayrışma, Kadıköy'de tamir kaydı, başka şubede teslim
+  (yolda → teslim aldık → aranacaklar), çerçeve transferi (5 → 4, hedefte aynı barkodlu yeni satır), 27 ekran iki
+  görünümde hatasız. Testler: sube 77; tümü geçti (seo Windows'ta bilinen nedenle).
+- Bilinmeyen / sonraya: Raporlar ve Kârlılık şube süzgecine bağlanmadı (karşılaştırma ekranı şube bazında); fiyat
+  (pazarlama 'Çok Şubeli') boş. Yerel veride 'sube' özelliği Örnek Optik'te açık, Kadıköy şubesi + deneme kayıtları var.
+## Önceki oturum (4.48.0 — Tamir / hizmet fişi, bütün fişler yarım A4; TEKNOPLUS, dal oturum/tasarim)
 - Kullanıcı (23.10): "5. adıma geç: tamir / hizmet fişi" + "tüm fişleri bir A4 yarısı müşteriye yarısı bize kesilecek
   olarak düşün kurgula". Ortak çerçeve app/fis.php + assets/fis.css (üst müşteri, kesim, alt mağaza; 2 × 148,5 mm).
 - Tezgâh › Tamir · hizmet (tamir.php, app/hizmet.php): çoklu işlem, teslim alırken görülenler, bırakıldı/hemen, ücretsiz.
@@ -458,7 +471,7 @@ dosyasında satır kalmış olabilir; Chrome "Güvenli DNS" Google'a alındı. T
 1. **SEO bağlantısı:** kullanıcı hizmet hesabını kurunca panelde ilk veriyi birlikte kontrol et; sorgulara göre yeni rehber yazıları planla.
 2. Gerçek Medula PDF'iyle SGK döküm okuyucusunu doğrula (kullanıcıdan kişisel verisi karartılmış örnek PDF).
 3. Kullanıcıya sor: sıradaki modül (karar bekleyen: SGK dönem sonu paketi + kesinti defteri).
-4. **Şube özelliği (en sona):** şube, şubeye göre yetki, merkezden görme, transfer; bitince pazarlama.php 'yakinda' kaldır.
+4. ✔ **Şube özelliği** 4.50.0 (şube, yetki, karşılaştırma, transfer, başka şubede teslim). Kalan: raporlarda şube süzgeci, 'Çok Şubeli' fiyatı.
 
 ## Açık sorunlar / doğrulanmamış
 - Güvenlik denetiminden (06.10), düzeltilmedi — tasarım kararı gerekir:

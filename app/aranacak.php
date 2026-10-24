@@ -42,7 +42,7 @@ function aranacak_listesi(?string $bugun = null): array
                 (SELECT MAX(a.created_at) FROM atolye_adimlari a WHERE a.order_id = o.id AND a.adim = 'haber') AS haber_at,
                 c.first_name, c.last_name, c.phone
            FROM orders o JOIN customers c ON c.id = o.customer_id
-          WHERE o.order_stage = 'hazirlandi'
+          WHERE o.order_stage = 'hazirlandi'" . (function_exists('sube_tablo_var') && sube_tablo_var() ? sube_kosul_hazir('o') . " AND (o.tasima_durum IS NULL OR o.tasima_durum = 'geldi')" : '') . "
           ORDER BY hazir_at"
     ) as $r) {
         $gun = aranacak_gun_farki((string) $r['hazir_at'], $bugun);
@@ -84,7 +84,7 @@ function aranacak_listesi(?string $bugun = null): array
         "SELECT o.id AS order_id, o.customer_id, o.balance_promise_date, c.first_name, c.last_name, c.phone,
                 o.total_amount - o.sgk_amount - (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE order_id = o.id) AS kalan
            FROM orders o JOIN customers c ON c.id = o.customer_id
-          WHERE o.order_stage <> 'iptal' AND o.balance_promise_date IS NOT NULL AND o.balance_promise_date < ?
+          WHERE o.order_stage <> 'iptal' AND o.balance_promise_date IS NOT NULL AND o.balance_promise_date < ?" . (function_exists('sube_kosul') ? sube_kosul('o') : '') . "
           ORDER BY o.balance_promise_date",
         [$bugun]
     ) as $r) {

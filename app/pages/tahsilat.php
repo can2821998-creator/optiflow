@@ -171,7 +171,7 @@ $liste = rows(
        JOIN customers c ON c.id = o.customer_id
       WHERE o.order_stage <> 'iptal'
         AND o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount > 0.009
-        $kosul
+        $kosul" . sube_kosul('o') . "
       ORDER BY (o.balance_promise_date IS NOT NULL AND o.balance_promise_date < CURDATE()) DESC,
                o.balance_promise_date IS NULL, o.balance_promise_date,
                yas DESC
@@ -206,7 +206,7 @@ $ozet = row(
                    DATEDIFF(CURDATE(), DATE(COALESCE(o.delivered_at, o.created_at))) AS yas,
                    o.balance_promise_date AS soz
               FROM orders o " . PAID_JOIN . "
-             WHERE o.order_stage <> 'iptal' AND o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount > 0.009
+             WHERE o.order_stage <> 'iptal' AND o.total_amount - COALESCE(p.paid, 0) - o.sgk_amount > 0.009" . sube_kosul('o') . "
        ) b"
 ) ?: ['adet' => 0, 'toplam' => 0, 'd30' => 0, 'd60' => 0, 'd90' => 0, 'd90p' => 0, 'geciken' => 0];
 

@@ -41,7 +41,7 @@ $sayilar = hizmet_sayilar();
 $son = rows(
     "SELECT o.id, o.order_stage, o.created_at, o.total_amount, o.is_free, o.service_type, o.hizmet_detay, o.promised_date, c.first_name, c.last_name
        FROM orders o JOIN customers c ON c.id = o.customer_id
-      WHERE o.transaction_type = 'tamir' ORDER BY o.id DESC LIMIT 12"
+      WHERE o.transaction_type = 'tamir'" . sube_kosul_siparis('o') . " ORDER BY o.id DESC LIMIT 12"
 );
 $eskiGirdi = $_SESSION['old_input'] ?? [];   // old() ilk çağrıda siler; çoklu seçimler önce alınır
 $eskiIslem = (array) ($eskiGirdi['islemler'] ?? []);

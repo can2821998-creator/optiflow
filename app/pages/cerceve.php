@@ -28,7 +28,8 @@ if (is_post()) {
             redirect($don);
         }
         $barkod = mb_substr(trim(post('barcode')), 0, 64);
-        if ($barkod !== '' && (int) scalar('SELECT COUNT(*) FROM frame_items WHERE barcode = ? AND id <> ?', [$barkod, $id])) {
+        // 4.49.0 şube: barkod şube içinde tekil (aynı model başka şubede ayrı satır)
+        if ($barkod !== '' && (int) scalar('SELECT COUNT(*) FROM frame_items WHERE barcode = ? AND id <> ? AND COALESCE(sube_id, 1) = ?', [$barkod, $id, $id ? (int) (scalar('SELECT sube_id FROM frame_items WHERE id = ?', [$id]) ?? 1) : (int) sube_alan()['sube_id']])) {
             flash('Bu barkod başka bir çerçevede kullanılıyor.', 'error');
             redirect($don);
         }
@@ -70,7 +71,7 @@ if (is_post()) {
             if ($veri['barcode'] === null) {
                 $veri['barcode'] = frame_new_barcode();
             }
-            $id = insert('frame_items', $veri + [
+            $id = insert('frame_items', sube_alan() + $veri + [
                 'qty'        => 0,
                 'created_by' => (int) $me['id'],
                 'created_at' => date('Y-m-d H:i:s'),
@@ -139,7 +140,7 @@ $kalemler = rows(
     "SELECT i.*, s.name AS supplier_name
        FROM frame_items i
        LEFT JOIN suppliers s ON s.id = i.supplier_id
-      WHERE 1 = 1 $kosul $arama
+      WHERE 1 = 1 $kosul $arama" . sube_kosul('i') . "
       ORDER BY i.qty <= i.min_qty DESC, i.brand, i.model
       LIMIT 400",
     $params

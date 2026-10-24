@@ -119,7 +119,7 @@ if ($lens !== '') { $where[] = 'i.lens_type = ?'; $params[] = $lens; }
 if ($from !== '' && valid_date($from)) { $where[] = 'i.created_at >= ?'; $params[] = $from . ' 00:00:00'; }
 if ($until !== '' && valid_date($until)) { $where[] = 'i.created_at < ?'; $params[] = date('Y-m-d', strtotime($until . ' +1 day')) . ' 00:00:00'; }
 if ($supplierFilter && $tab !== 'eksik') { $where[] = 'i.supplier_id = ?'; $params[] = $supplierFilter; }
-$whereSql = implode(' AND ', $where);
+$whereSql = implode(' AND ', $where) . sube_kosul('o');   // 4.49.0 şube: camın siparişi bu şubede
 
 $items = rows(
     "SELECT i.*, r.order_id, c.first_name, c.last_name, o.order_stage, o.promised_date, sup.name AS supplier_name, cs.durum AS fis_durum
@@ -140,7 +140,7 @@ foreach ($tabs as $k => [$label, $cond]) {
         $counts[$k] = (int) scalar("SELECT COUNT(*) FROM cam_siparisleri WHERE durum IN ('taslak', 'gonderildi')");   // açık fişler
         continue;
     }
-    $counts[$k] = (int) scalar("SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id JOIN orders o ON o.id = r.order_id WHERE $cond AND o.order_stage <> 'iptal'");
+    $counts[$k] = (int) scalar("SELECT COUNT(*) FROM prescription_lens_items i JOIN prescription_records r ON r.id = i.prescription_id JOIN orders o ON o.id = r.order_id WHERE $cond AND o.order_stage <> 'iptal'" . sube_kosul('o'));
 }
 $fisler = $tab === 'fisler' ? rows(
     "SELECT c.*, s.name AS tedarikci, (SELECT COUNT(*) FROM prescription_lens_items i WHERE i.cam_siparis_id = c.id) AS adet

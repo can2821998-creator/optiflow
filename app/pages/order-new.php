@@ -159,7 +159,7 @@ if (is_post()) {
             }
         }
         $c = find_customer($cid);
-        $id = insert('orders', [
+        $id = insert('orders', sube_alan() + [
             'customer_id'   => $cid,
             'first_name'    => $c['first_name'],
             'last_name'     => $c['last_name'],

@@ -222,6 +222,7 @@ function defter_musteriler(?string $bugun = null): array
            FROM orders o JOIN customers c ON c.id = o.customer_id
           WHERE o.order_stage <> 'iptal'
             AND o.total_amount - o.sgk_amount - (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE order_id = o.id) > 0.009"
+            . (function_exists('sube_kosul') ? sube_kosul('o') : '')
     );
     $m = [];
     $bugunTs = strtotime($bugun);
@@ -270,8 +271,17 @@ function defter_wa_metni(array $musteri, array $ekstre): string
 /** 4.45.0 — Dünden devir: bu tarihten önceki son kapanışta kasada bırakılan nakit (girilmemişse 0). */
 function kasa_devir(string $date): float
 {
+    // 4.49.0 şube: devir şubenin kendi kasasından; "tüm şubeler"de şubelerin devirleri toplanır
+    if (function_exists('sube_degerler') && sube_acik() && sube_degerler() === null) {
+        $t = 0.0;
+        foreach (array_keys(sube_listesi()) as $sid) {
+            $t += (float) (scalar('SELECT birakilan FROM cash_counts WHERE count_date < ? AND sube_id = ? ORDER BY count_date DESC, created_at DESC, id DESC LIMIT 1', [$date, $sid]) ?? 0);
+        }
+        return $t;
+    }
+    $sk = function_exists('sube_kosul') ? sube_kosul() : '';
     return (float) (scalar(
-        'SELECT birakilan FROM cash_counts WHERE count_date < ? ORDER BY count_date DESC, created_at DESC, id DESC LIMIT 1',
+        'SELECT birakilan FROM cash_counts WHERE count_date < ?' . $sk . ' ORDER BY count_date DESC, created_at DESC, id DESC LIMIT 1',
         [$date]
     ) ?? 0);
 }

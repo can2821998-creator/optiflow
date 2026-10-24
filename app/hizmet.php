@@ -67,7 +67,7 @@ function hizmet_kaydet(array $v, int $userId, string $kullaniciAd = ''): int
         }
         $c = row('SELECT first_name, last_name, phone FROM customers WHERE id = ?', [$cid]);
         $asama = $hemen ? 'teslim_edildi' : 'siparis_verildi';
-        $id = insert('orders', [
+        $id = insert('orders', (function_exists('sube_alan') ? sube_alan() : []) + [
             'customer_id'      => $cid,
             'first_name'       => $c['first_name'],
             'last_name'        => $c['last_name'],
@@ -126,7 +126,8 @@ function hizmet_sayilar(?string $bugun = null): array
 {
     $bugun ??= date('Y-m-d');
     $yarin = date('Y-m-d', strtotime($bugun . ' +1 day'));
-    $s = static fn(string $kosul, array $p = []): int => (int) scalar("SELECT COUNT(*) FROM orders WHERE transaction_type = 'tamir' AND $kosul", $p);
+    $sk = function_exists('sube_kosul') ? sube_kosul() : '';   // 4.49.0 şube
+    $s = static fn(string $kosul, array $p = []): int => (int) scalar("SELECT COUNT(*) FROM orders WHERE transaction_type = 'tamir' AND $kosul$sk", $p);
     return [
         'bugun'    => $s('created_at >= ? AND created_at < ?', [$bugun . ' 00:00:00', $yarin . ' 00:00:00']),
         'hemen'    => $s("created_at >= ? AND created_at < ? AND order_stage = 'teslim_edildi' AND delivered_at = created_at", [$bugun . ' 00:00:00', $yarin . ' 00:00:00']),

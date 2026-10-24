@@ -87,14 +87,14 @@ function optiflow_pazarlama(): array
                 'ad'       => 'Çok Şubeli',
                 'fiyat'    => '',               // Örn: '990 ₺'
                 'donem'    => '/ şube / ay · KDV dahil',
-                'aciklama' => 'Zincirler için şube yönetimi geliştiriliyor. Ön kayıt için bize yazın; hazır olunca ilk siz kullanın.',
+                'aciklama' => 'Zincirler için: müşteri kartı bütün şubelerde ortak; sipariş, kasa ve stok şubeye bağlı. Şubeler arası transfer, başka şubede teslim.',
                 'vurgu'    => false,
-                'yakinda'  => true,             // şube özelliği yayına girince kaldırın
                 'ozellikler' => [
                     "Pro paketindeki her şey",
                     'Şube başına ayrı kullanıcı ve yetki',
-                    'Merkezden tüm siparişleri görme',
-                    'Şube ve personel bazında raporlar',
+                    'Merkezden bütün şubeleri görme ve karşılaştırma',
+                    'Şubeler arası stok transferi',
+                    'Bir şubede sipariş, başka şubede teslim',
                     'Personel prim hesabı',
                     'Öncelikli destek',
                 ],

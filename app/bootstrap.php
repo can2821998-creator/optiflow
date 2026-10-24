@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.48.0';
+const APP_VERSION = '4.49.0';
 const APP_ROOT = __DIR__ . '/..';
 
 // 4.16.8: canlıya yükleme sürerken yarım dosyalara denk gelmemek için kısa bakım ekranı (app/guncelleme.php).
@@ -125,6 +125,7 @@ require __DIR__ . '/defter.php';     // 4.45.0 veresiye defteri: taksit planı, 
 require __DIR__ . '/aranacak.php';   // 4.47.0 bugün aranacaklar: tek liste, arama sonucu
 require __DIR__ . '/fis.php';        // 4.48.0 ortak yarım A4 fiş (üst müşteri, alt mağaza)
 require __DIR__ . '/hizmet.php';     // 4.48.0 tamir / hizmet fişi
+require __DIR__ . '/sube.php';       // 4.49.0 şubeler: tek hesap, ortak müşteri; şubeye göre süzgeç ve yetki
 require __DIR__ . '/sgk-mutabakat.php';
 require __DIR__ . '/barkod.php';
 require __DIR__ . '/uts.php';      // 4.13.0 ÜTS bildirimleri

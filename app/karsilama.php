@@ -149,7 +149,7 @@ function render_karsilama(): void
         ]],
         ['Ekip ve şubeler', [
             ['Atölye ekranı', 'Duvardaki ekranda canlı iş listesi; fiyat, telefon ve reçete göstermez.'],
-            ['Çok şube (yakında)', 'Şubeye göre kullanıcı ve yetki, merkezden tüm şubeleri görme. Şu an geliştiriliyor.'],
+            ['Çok şube', 'Ortak müşteri kartı; şubeye göre sipariş, kasa, stok ve yetki. Şubeler arası transfer, başka şubede teslim, merkezden karşılaştırma.'],
             ['Personel ve prim', 'Kim ne sattı, kim ne tahsil etti; prim kendiliğinden hesaplanır.'],
             ['Stok ve etiket', 'Çerçeve ve cam stoğu, kritik stok uyarısı, barkodlu etiket.'],
             ['Kendi adınız', 'Müşteri sayfaları ve fişler dükkânınızın adını ve rengini taşır.'],

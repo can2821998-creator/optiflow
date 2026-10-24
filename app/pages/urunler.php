@@ -73,8 +73,9 @@ if (!isset($filtreler[$f])) {
 }
 $kat = query('k');
 $q = trim(query('q'));
+$st = urun_stok_ifade('urunler');   // 4.49.0 şube: aktif şubenin stoku
 $kosul = match ($f) {
-    'kritik' => 'AND is_active = 1 AND stok_takip = 1 AND stok <= min_stok',
+    'kritik' => "AND is_active = 1 AND stok_takip = 1 AND $st <= min_stok",
     'pasif'  => 'AND is_active = 0',
     'hepsi'  => '',
     default  => 'AND is_active = 1',
@@ -89,9 +90,12 @@ if ($q !== '') {
     $p[] = '%' . mb_strtolower($q) . '%';
     $p[] = $q;
 }
-$liste = rows("SELECT * FROM urunler WHERE 1 = 1 $kosul ORDER BY (stok_takip = 1 AND stok <= min_stok) DESC, kategori, ad LIMIT 500", $p);
+$liste = rows("SELECT urunler.*, $st AS stok FROM urunler WHERE 1 = 1 $kosul ORDER BY (stok_takip = 1 AND $st <= min_stok) DESC, kategori, ad LIMIT 500", $p);
 
 $duzenle = query_int('duzenle') ? urun_bul(query_int('duzenle')) : null;
+if ($duzenle) {
+    $duzenle['stok'] = urun_sube_stok($duzenle);
+}
 if (!$duzenle && $q !== '' && count($liste) === 1 && ($liste[0]['barkod'] ?? '') === $q) {
     $duzenle = $liste[0];
 }
@@ -99,9 +103,9 @@ $hareketler = $duzenle ? rows(
     'SELECT h.*, u.full_name AS kullanici FROM urun_hareketleri h LEFT JOIN user_accounts u ON u.id = h.created_by WHERE h.urun_id = ? ORDER BY h.id DESC LIMIT 30',
     [(int) $duzenle['id']]
 ) : [];
-$ozet = row("SELECT COUNT(*) AS kalem, COALESCE(SUM(CASE WHEN stok_takip = 1 AND stok > 0 THEN stok ELSE 0 END), 0) AS adet,
-                    COALESCE(SUM(CASE WHEN stok_takip = 1 AND stok > 0 THEN stok * COALESCE(maliyet, 0) ELSE 0 END), 0) AS maliyet,
-                    COALESCE(SUM(CASE WHEN stok_takip = 1 AND stok <= min_stok THEN 1 ELSE 0 END), 0) AS kritik
+$ozet = row("SELECT COUNT(*) AS kalem, COALESCE(SUM(CASE WHEN stok_takip = 1 AND $st > 0 THEN $st ELSE 0 END), 0) AS adet,
+                    COALESCE(SUM(CASE WHEN stok_takip = 1 AND $st > 0 THEN $st * COALESCE(maliyet, 0) ELSE 0 END), 0) AS maliyet,
+                    COALESCE(SUM(CASE WHEN stok_takip = 1 AND $st <= min_stok THEN 1 ELSE 0 END), 0) AS kritik
                FROM urunler WHERE is_active = 1") ?: ['kalem' => 0, 'adet' => 0, 'maliyet' => 0, 'kritik' => 0];
 $d = $duzenle ?? [];
 $para = static fn($v): string => $v === null || $v === '' ? '' : number_format((float) $v, 2, ',', '.');

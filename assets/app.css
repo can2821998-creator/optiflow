@@ -3197,3 +3197,38 @@ details.card:not([open]) > summary.card-head { border-radius: 12px; }
 .hizmet-form:has(input[name="hemen"][value="1"]:checked) .hizmet-hemen-yazi { display: inline; }
 .hizmet-form:has(input[name="hemen"][value="1"]:checked) .hizmet-birak-yazi { display: none; }
 @media (max-width: 900px) { .hizmet-izgara { grid-template-columns: minmax(0, 1fr); } }
+
+/* ==========================================================================
+   4.49.0 — Şubeler: menü seçicisi, şube rozeti, sipariş şube kartı, gelen gözlükler, transfer
+   ========================================================================== */
+.sube-secici { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; padding: 0 10px; min-height: 40px; border: 1px solid rgba(255, 255, 255, .12); border-radius: 10px; background: rgba(255, 255, 255, .05); color: var(--gece-yazi, #f4eef0); }
+.sube-secici .ic { width: 16px; height: 16px; color: var(--coral, #ff6b81); flex: none; }
+.sube-secici select { flex: 1; min-width: 0; min-height: 38px !important; border: 0 !important; background: transparent !important; color: inherit !important; font: 700 14px/1 var(--sans); box-shadow: none !important; padding: 0 20px 0 0 !important; appearance: none; cursor: pointer; }
+.sube-secici select option { color: #18120f; }
+.sube-secici.tek span { font: 700 14px/1 var(--sans); }
+.sube-rozet { display: inline-block; padding: 2px 6px; border-radius: 5px; background: var(--surface-3); border: 1px solid var(--line-strong); color: var(--ink-2); font: 600 11px/1.3 var(--mono); letter-spacing: .04em; vertical-align: 1px; }
+.sube-kart { padding-top: 14px; padding-bottom: 14px; }
+.sube-kart-govde { display: flex; flex-wrap: wrap; gap: 14px 34px; align-items: center; }
+.sube-kart-govde > div { display: grid; gap: 4px; }
+.sube-kart-govde small { font: 600 10.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.sube-kart-govde form.inline { display: flex; gap: 8px; align-items: center; margin: 0; }
+.sube-kart-govde select { min-height: 36px; }
+.text-warn { color: var(--amber); }
+.text-ok { color: var(--green); }
+.yoldaki { border-color: color-mix(in srgb, var(--amber) 45%, var(--line-strong)); }
+.yoldaki-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.yoldaki-liste li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.yoldaki-liste li a { color: var(--ink); text-decoration: none; }
+.yoldaki-liste li small { color: var(--muted); flex: 1; }
+.yoldaki-liste form { margin: 0; }
+.adet-gir { width: 76px; min-height: 36px !important; text-align: right; font: 600 15px/1 var(--mono); }
+.transfer-listesi { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.transfer-listesi li { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--line); border-left: 4px solid var(--line-strong); border-radius: 10px; }
+.transfer-listesi li.durum-yolda { border-left-color: var(--amber); }
+.transfer-listesi li.durum-teslim { border-left-color: var(--green); }
+.transfer-listesi .ust { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.transfer-listesi .ust span:first-of-type { flex: 1; font-weight: 700; }
+.transfer-listesi .eylem { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
+.transfer-listesi form { margin: 0; }
+.sube-tablo tfoot td { font-weight: 800; border-top: 2px solid var(--ink); }
+.sube-atama td.num, .sube-atama th.num { text-align: center; }

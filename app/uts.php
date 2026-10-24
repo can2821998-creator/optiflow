@@ -502,7 +502,7 @@ function uts_cerceve_bagla(int $urunId, bool $stokArtir, bool $kartOlustur): ?in
     if (!$f && $kartOlustur) {
         $mm = trim((string) $u['marka_model']);
         $parca = preg_split('/\s+/u', $mm, 2) ?: [];
-        $fid = insert('frame_items', [
+        $fid = insert('frame_items', (function_exists('sube_alan') ? sube_alan() : []) + [
             'brand'      => mb_substr($parca[0] ?? '', 0, 80) ?: 'ÜTS ürünü',
             'model'      => mb_substr($parca[1] ?? '', 0, 80) ?: null,
             'barcode'    => (string) $u['uno'],

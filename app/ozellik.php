@@ -112,6 +112,12 @@ function ozellik_tanimlari(): array
             'kisa'     => 'İnternet kesilince açık siparişler ve müşteri telefonları telefonda/tarayıcıda şifreli kopyadan görüntülenir. Kopya en çok 24 saat geçerlidir; çıkışta silinir.',
             'masaustu' => false,
         ],
+        // 4.49.0 — app/sube.php
+        'sube' => [
+            'ad'       => 'Şubeler',
+            'kisa'     => 'Tek hesapta birden çok şube: müşteri ortak; sipariş, kasa ve stok şubeye bağlı. Personel kendi şubesini, yönetici hepsini görür; şubeler karşılaştırması, stok transferi, başka şubede teslim.',
+            'masaustu' => false,
+        ],
     ];
 }
 

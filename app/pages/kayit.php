@@ -7,7 +7,7 @@ if (tenant_oturum()) {
 }
 
 $hata = '';
-$v = ['isim' => '', 'email' => '', 'admin_ad' => '', 'admin_kullanici' => ''];
+$v = ['isim' => '', 'email' => '', 'telefon' => '', 'admin_ad' => '', 'admin_kullanici' => ''];
 // 4.28.0: tanıtım sayfasında yazılan dükkân adı (?isim=) formu doldurur; yalnız görüntülenir (e() ile kaçışlı)
 if (!is_post() && isset($_GET['isim']) && is_string($_GET['isim'])) {
     $v['isim'] = mb_substr(trim($_GET['isim']), 0, 80);
@@ -15,6 +15,7 @@ if (!is_post() && isset($_GET['isim']) && is_string($_GET['isim'])) {
 if (is_post()) {
     $v['isim'] = trim(post('isim'));
     $v['email'] = trim(post('email'));
+    $v['telefon'] = trim(post('telefon'));
     $v['admin_ad'] = trim(post('admin_ad'));
     $v['admin_kullanici'] = trim(post('admin_kullanici'));
     $magazaSifre = (string) ($_POST['magaza_sifre'] ?? '');
@@ -26,7 +27,7 @@ if (is_post()) {
         $hata = 'Bu bağlantıdan bugün çok sayıda mağaza açıldı. Yarın tekrar deneyin ya da bizimle iletişime geçin.';
     } else {
         try {
-            $magaza = tenant_basvuru($v['isim'], $v['email'], $magazaSifre, $v['admin_ad'], $v['admin_kullanici'], $adminSifre);
+            $magaza = tenant_basvuru($v['isim'], $v['email'], $magazaSifre, $v['admin_ad'], $v['admin_kullanici'], $adminSifre, $v['telefon']);
             merkez_hiz_kaydet('kayit', $v['email']);
             if ($magaza['durum'] === 'aktif') {
                 tenant_oturum_ac($magaza);
@@ -79,6 +80,10 @@ if (is_post()) {
       <label class="field"><span>Mağaza e-postası</span>
         <input name="email" type="email" value="<?= e($v['email']) ?>" autocomplete="username" required>
         <small class="hint">Bu adresle mağaza girişi yaparsınız; personel girişinden farklıdır.</small>
+      </label>
+      <label class="field"><span>Cep telefonu</span>
+        <input name="telefon" type="tel" inputmode="tel" value="<?= e($v['telefon']) ?>" autocomplete="tel" required placeholder="0532 111 22 33">
+        <small class="hint">Hesabınız açılınca ve kurulumda size buradan ulaşırız.</small>
       </label>
       <div class="row2">
         <label class="field"><span>Mağaza şifresi</span>

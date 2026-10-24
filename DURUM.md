@@ -5,7 +5,7 @@
 **Instagram filmleri 4–6 (24.10 akşam):** kullanıcı kuralı: içerik **bütün gözlükçülerin ortak derdi** olmalı (keşfete düşen
 "defter açmadan teslim", "kim aranacak" gibi). Yayına: `veresiye` (Kalanını sonra veririm), `cam-takip` (Cam geldi mi?),
 `gecmis` (Geçen sefer hangi cam?). `fis-ozel` ve `subeler` ürüne özel → yayın dışı. Metinler SESLENDIRME.md 4–6 (v4/v5/v6.mp3
-TTSMaker'da okutulacak → `bol.py` → müzikle çekim). Sonraki fikirler README'de (kontakt lens bitiyor, yıllık kontrol…).
+TTSMaker'da okutulacak → `bol.py` → müzikle çekim). 24.10 22:40: v4/v5/v6 sesleri geldi, üç film seslendirmeli + müzikli çekilip kullanıcıya verildi (36 / 37 / 29 sn). Sonraki fikirler README'de (kontakt lens bitiyor, yıllık kontrol…).
 
 **4.55.0 (24.10):** yeni mağazaya rastgele çıktı görünümü (tenant_etkinlestir → cikti_yeni_magaza_ata; mevcut mağazalar
 değişmedi). Ayarlar menüsü solda gruplu yan menü oldu.

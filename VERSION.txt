@@ -1,6 +1,17 @@
 OPTIFLOW
-Release: 4.50.0 (2026-10-24)
+Release: 4.51.0 (2026-10-24)
 Bu dosya paketin eksiksiz yuklendigini kontrol etmek icindir.
+
+DEĞİŞİKLİK NOTLARI — 4.51.0 (Merkez e-postası: info@optiflow.com.tr'den otomatik + panelden e-posta; merkez DB'ye eposta_kuyruk)
+  - Kullanıcı: "kayıtta vs otomatik mail atsın, yönetim panelinden şablon ya da özel mail gönderebileyim, info@optiflow.com.tr'den".
+  - app/eposta.php: bağımlılıksız SMTP istemcisi (STARTTLS/SSL, AUTH LOGIN; Google Workspace: smtp.gmail.com:587 + uygulama
+    şifresi). Ayar storage/eposta/ayar.json (şifre gizli_sifrele ile şifreli). Her gönderim eposta_kuyruk'a girer, 3 deneme.
+  - Otomatik: başvuru alındı / hesap hazır (kayıtta ya da panelden etkinleştirilince) / size yeni kayıt bildirimi /
+    deneme bitimine 7 gün, 1 gün, bitti (cron). Her biri panelden açılıp kapanır, metinleri düzenlenir ({magaza} vb.).
+  - Merkez panel › E-posta: SMTP ayarı, deneme e-postası, şablonlar, tek mağaza / grup / elle adres gönderimi
+    (duyuru ya da hesap bildirimi), gönderim kaydı (yeniden dene, iptal). Mağaza detayında "E-posta gönder".
+  - Duyurularda "almak istemiyorum" bağlantısı (eposta-ret.php, HMAC) + List-Unsubscribe tek tık; magazalar.eposta_ret.
+  - tests/eposta: 74 test (sahte SMTP sunucusuyla protokol dahil).
 
 DEĞİŞİKLİK NOTLARI — 4.50.0 (Şubeler + kayıtta telefon; şema 41)
   - Özellik 'sube' (merkez panelinden mağaza başına açılır; kapalıyken hiçbir şey değişmez). Tek hesap, ORTAK müşteri
@@ -16,6 +27,7 @@ DEĞİŞİKLİK NOTLARI — 4.50.0 (Şubeler + kayıtta telefon; şema 41)
   - Kayıtta cep telefonu zorunlu (merkez magazalar.telefon); merkez panelinde listede ve ayrıntıda, düzenlenebilir.
   - Göç v40 (subeler, kullanici_subeleri, urun_stok, transfer tabloları, sube_id sütunları; mevcut her kayıt "Merkez" şubesine),
     v41 (çerçeve barkodu şube içinde tekil). Tanıtım sayfasında şube "yakında" kaldırıldı. Test: tests/sube/test.php (77).
+
 DEĞİŞİKLİK NOTLARI — 4.49.0 (Rehber: 10 yeni yazı, SSS + kaynaklar, FAQ yapılandırılmış verisi; şema değişmedi)
   - Kullanıcı: "rehberi optik, gözlük ve Medula aramalarında öne çıkacak içerikle doldur". 10 yeni yazı (app/rehber-hazir):
     gözlük reçetesi nasıl okunur, SGK gözlük hakkı, Medula Optik nedir, e-reçete ile gözlük, cam indeksi, progresif cam,

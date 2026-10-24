@@ -27,6 +27,13 @@ if (!(int) merkez_scalar("SELECT GET_LOCK('optiflow_cron', 1)")) {
 @set_time_limit(240);
 $bas = microtime(true);
 $sonuc = cron_tum_magazalar();
+// 4.50.0 — merkez e-postası: deneme hatırlatmaları + bekleyen e-posta kuyruğu
+try {
+    $ep = eposta_cron();
+} catch (Throwable $e) {
+    app_log('eposta_cron: ' . $e->getMessage());
+    $ep = ['hatirlatma' => 0, 'gonderilen' => 0, 'hata' => 0];
+}
 merkez_scalar("SELECT RELEASE_LOCK('optiflow_cron')");
 $toplamGonderilen = 0;
 $toplamKuyruk = 0;
@@ -39,4 +46,5 @@ foreach ($sonuc as $r) {
     }
 }
 echo 'tamam · mağaza ' . count($sonuc) . ' · kuyruğa ' . $toplamKuyruk . ' · gönderilen ' . $toplamGonderilen . ' · ÜTS ' . $toplamUts
+    . ' · e-posta ' . $ep['gonderilen'] . ($ep['hata'] ? ' (hata ' . $ep['hata'] . ')' : '')
     . ' · ' . round(microtime(true) - $bas, 2) . " sn\n";

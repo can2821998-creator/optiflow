@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-const APP_VERSION = '4.50.0';
+const APP_VERSION = '4.51.0';
 const APP_ROOT = __DIR__ . '/..';
 
 // 4.16.8: canlıya yükleme sürerken yarım dosyalara denk gelmemek için kısa bakım ekranı (app/guncelleme.php).
@@ -116,6 +116,7 @@ require __DIR__ . '/entegrasyon.php';
 require __DIR__ . '/whatsapp.php';
 require __DIR__ . '/lens.php';
 require __DIR__ . '/gorevler.php';
+require __DIR__ . '/eposta.php';   // 4.51.0 merkez e-postası (SMTP, şablonlar, kuyruk)
 require __DIR__ . '/odeme.php';
 require __DIR__ . '/tedarik.php';
 require __DIR__ . '/kagitsiz.php';   // 4.32.0 kâğıtsız tezgâh: yarım sayfa sipariş fişi, gün sonu depo siparişi
@@ -169,7 +170,7 @@ $kokIstek = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'index.php'
 $GLOBALS['__kok_istek'] = $kokIstek;
 
 if (!tenant_oturum() && isset($_COOKIE[HATIRLA_MAGAZA_CEREZ]) && !$kokIstek
-    && !in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['cron.php', 'odeme-bildirim.php', 'kayit.php', 'merkez-panel.php', 'tesekkurler.php', 'asistan.php'], true)) {
+    && !in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['cron.php', 'odeme-bildirim.php', 'kayit.php', 'merkez-panel.php', 'tesekkurler.php', 'asistan.php', 'eposta-ret.php'], true)) {
     magaza_hatirla_dene();
 }
 
@@ -193,7 +194,7 @@ $kopruUcNoktasi = basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'sgk-ak
  * doğrulamasını yapar (PayTR: HMAC imzası; cron: gizli anahtar). Mağaza veritabanını
  * uç noktanın kendisi, doğrulamadan SONRA seçer.
  */
-$sunucuUcNoktasi = in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['cron.php', 'odeme-bildirim.php', 'asistan.php'], true);   // 4.30.0 asistan.php: telefon asistanı (cihaz anahtarı)
+$sunucuUcNoktasi = in_array(basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')), ['cron.php', 'odeme-bildirim.php', 'asistan.php', 'eposta-ret.php'], true);   // 4.30.0 asistan.php: telefon asistanı (cihaz anahtarı)
 
 /*
  * 4.16.0 — Müşteriye verilen sayfalar (fiş / garanti kartı karekodu): müşterinin mağaza oturumu

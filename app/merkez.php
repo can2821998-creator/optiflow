@@ -137,6 +137,29 @@ function merkez_sema_hazirla(PDO $pdo): void
     // 4.20.1 — standart dışı MySQL portu: panelde girilen port eskiden kaydedilmiyordu (bkz. magaza_db_ayari)
     merkez_kolon_ekle($pdo, 'magazalar', 'db_port', 'SMALLINT UNSIGNED NULL');
     merkez_kolon_ekle($pdo, 'magazalar', 'telefon', 'VARCHAR(20) NULL');   // 4.50.0 kayıtta iletişim telefonu
+    // 4.51.0 — merkez e-postası (app/eposta.php): gönderim kuyruğu + duyurulardan çıkan mağazalar
+    $pdo->exec(
+        "CREATE TABLE IF NOT EXISTS eposta_kuyruk (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            magaza_id INT UNSIGNED NULL,
+            kime VARCHAR(190) NOT NULL,
+            konu VARCHAR(200) NOT NULL,
+            metin MEDIUMTEXT NOT NULL,
+            tur VARCHAR(12) NOT NULL DEFAULT 'islem',
+            sablon VARCHAR(40) NOT NULL DEFAULT 'serbest',
+            anahtar VARCHAR(120) NULL,
+            durum VARCHAR(12) NOT NULL DEFAULT 'bekliyor',
+            deneme TINYINT UNSIGNED NOT NULL DEFAULT 0,
+            hata VARCHAR(255) NULL,
+            created_at DATETIME NOT NULL,
+            guncelleme DATETIME NULL,
+            gonderildi_at DATETIME NULL,
+            UNIQUE KEY uq_ek_anahtar (anahtar),
+            INDEX idx_ek_durum (durum, id),
+            INDEX idx_ek_magaza (magaza_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+    merkez_kolon_ekle($pdo, 'magazalar', 'eposta_ret', 'TINYINT(1) NOT NULL DEFAULT 0');
 }
 
 /** Mağaza satırından db_baglanti_degistir() ayarı (port boşsa varsayılan 3306). */
@@ -264,7 +287,11 @@ function tenant_basvuru(string $isim, string $email, string $magazaSifre, string
         merkez_db()->exec("CREATE DATABASE IF NOT EXISTS `$dbAdi` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     } catch (PDOException $e) {
         // 1044/1045: yetki yok — beklemede kalır, ürün sahibi merkez panelden elle etkinleştirir.
-        return merkez_row('SELECT * FROM magazalar WHERE id = ?', [$magazaId]);
+        $m = merkez_row('SELECT * FROM magazalar WHERE id = ?', [$magazaId]);
+        if (function_exists('eposta_olay_kayit')) {
+            eposta_olay_kayit($m);   // 4.51.0 "başvurunuz alındı" + size "yeni kayıt"
+        }
+        return $m;
     }
     try {
         tenant_etkinlestir($magazaId, (string) ($sunucu['host'] ?? 'localhost'), $dbAdi, (string) ($sunucu['user'] ?? ''), (string) ($sunucu['password'] ?? ''), (int) ($sunucu['port'] ?? 0) ?: null);
@@ -272,7 +299,11 @@ function tenant_basvuru(string $isim, string $email, string $magazaSifre, string
         // 4.20.1: veritabanı hata ayrıntısı ziyaretçiye gösterilmez; başvuru beklemede kalır, merkez panelden etkinleştirilir.
         app_log('tenant_basvuru #' . $magazaId . ': ' . $e->getMessage());
     }
-    return merkez_row('SELECT * FROM magazalar WHERE id = ?', [$magazaId]);
+    $m = merkez_row('SELECT * FROM magazalar WHERE id = ?', [$magazaId]);
+    if (function_exists('eposta_olay_kayit')) {
+        eposta_olay_kayit($m);   // 4.51.0 aktifse "hesabınız hazır", değilse "başvurunuz alındı" + size "yeni kayıt"
+    }
+    return $m;
 }
 
 /**
